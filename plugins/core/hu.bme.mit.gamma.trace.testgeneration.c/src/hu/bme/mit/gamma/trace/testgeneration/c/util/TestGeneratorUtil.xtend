@@ -10,19 +10,18 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.testgeneration.c.util
 
-import hu.bme.mit.gamma.expression.model.Expression
-import hu.bme.mit.gamma.expression.model.impl.ArrayLiteralExpressionImpl
-import hu.bme.mit.gamma.statechart.interface_.Port
-import hu.bme.mit.gamma.trace.testgeneration.c.TypeSerializer
-import org.eclipse.emf.ecore.EObject
-import org.eclipse.xtext.EcoreUtil2
-import org.eclipse.emf.ecore.util.EcoreUtil
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
-import java.util.List
+import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.InjectedVariableDeclarationAnnotation
+import hu.bme.mit.gamma.expression.model.impl.ArrayLiteralExpressionImpl
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
+import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.trace.model.Act
 import hu.bme.mit.gamma.trace.model.TimeElapse
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
-import hu.bme.mit.gamma.expression.model.InjectedVariableDeclarationAnnotation
+import hu.bme.mit.gamma.trace.testgeneration.c.TypeSerializer
+import java.util.List
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.xtext.EcoreUtil2
 
 class TestGeneratorUtil {
 	

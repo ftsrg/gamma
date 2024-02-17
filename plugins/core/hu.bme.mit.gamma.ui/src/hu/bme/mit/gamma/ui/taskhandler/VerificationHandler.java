@@ -41,6 +41,7 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.GenmodelModelFactory;
 import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
+import hu.bme.mit.gamma.genmodel.model.TestGeneration;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.nuxmv.verification.NuxmvVerification;
 import hu.bme.mit.gamma.plantuml.serialization.SvgSerializer;
@@ -85,7 +86,6 @@ import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean;
 import hu.bme.mit.gamma.verification.util.AbstractVerification;
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result;
-import hu.bme.mit.gamma.genmodel.model.TestGeneration;
 import hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil;
@@ -102,7 +102,6 @@ public class VerificationHandler extends TaskHandler {
 	protected final String traceFileName = "ExecutionTrace";
 	protected final String testFileName = traceFileName + "Simulation";
 	
-	protected Verification verification;
 	protected TimeSpecification timeout = null;
 	
 	//
@@ -135,7 +134,6 @@ public class VerificationHandler extends TaskHandler {
 	//
 	
 	public void execute(Verification verification) throws IOException, InterruptedException {
-		this.verification = verification;
 		// Setting target folder
 		setProjectLocation(verification); // Before the target folder
 		setTargetFolder(verification);
@@ -311,9 +309,11 @@ public class VerificationHandler extends TaskHandler {
 			retrievedTraces.addAll(backAnnotatedTraces);
 		}
 		
+		ProgrammingLanguage programmingLanguage = verification.getProgrammingLanguages().get(0);
 		traces.addAll(retrievedTraces);
+		
 		if (serializeTraces) { // After 'traces.add...'
-			serializeTraces();
+			serializeTraces(programmingLanguage);
 			MakefileGenerator.tests.clear(); // Manual reset
 		}
 		
@@ -499,7 +499,7 @@ public class VerificationHandler extends TaskHandler {
 		traceUtil.removeCoveredExecutionTraces(traces);
 	}
 	
-	public void serializeTraces() throws IOException {
+	public void serializeTraces(ProgrammingLanguage programmingLanguage) throws IOException {
 		// Serializing
 		String testFolderUri = serializeTest ? this.testFolderUri : null;
 		String testFileName = serializeTest ? this.testFileName : null;
@@ -507,7 +507,7 @@ public class VerificationHandler extends TaskHandler {
 		for (ExecutionTrace trace : traces) {
 			serializer.serialize(targetFolderUri, traceFileName, svgFileName,
 					testFolderUri, testFileName, packageName, trace,
-					file, verification.getProgrammingLanguages().get(0));
+					file, programmingLanguage);
 		}
 	}
 	

@@ -19,8 +19,8 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpr
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 
-import static extension hu.bme.mit.gamma.trace.testgeneration.c.util.TestGeneratorUtil.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.trace.testgeneration.c.util.TestGeneratorUtil.*
 
 class ExpressionSerializer {
 	

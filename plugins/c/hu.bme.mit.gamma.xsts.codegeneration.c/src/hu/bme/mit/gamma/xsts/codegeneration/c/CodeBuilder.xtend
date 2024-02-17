@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.xsts.codegeneration.c
 
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.xsts.codegeneration.c.model.CodeModel
 import hu.bme.mit.gamma.xsts.codegeneration.c.model.HeaderModel
 import hu.bme.mit.gamma.xsts.codegeneration.c.platforms.SupportedPlatforms
@@ -28,7 +29,6 @@ import java.util.Set
 import org.eclipse.emf.common.util.URI
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
-import hu.bme.mit.gamma.statechart.interface_.Component
 
 /**
  * The {@code CodeBuilder} class implements the {@code IStatechartCode} interface and is responsible for generating C code from an XSTS model.

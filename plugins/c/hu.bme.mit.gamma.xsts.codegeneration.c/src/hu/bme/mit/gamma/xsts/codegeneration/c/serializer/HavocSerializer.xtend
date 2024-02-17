@@ -48,7 +48,7 @@ class HavocSerializer {
      * @throws IllegalArgumentException if the type is not supported
      */
 	def dispatch String serialize(Type type, String name) {
-		throw new IllegalArgumentException("Not supported type: " + type);
+		throw new IllegalArgumentException("Not supported type: " + type)
 	}
 	
 	/**
@@ -114,7 +114,7 @@ class HavocSerializer {
      * @throws IllegalArgumentException if the expression is not supported
      */
 	def dispatch String serialize(Expression expression) {
-		throw new IllegalArgumentException("Not supported expression: " + expression);
+		throw new IllegalArgumentException("Not supported expression: " + expression)
 	}
 	
 	/**
@@ -124,7 +124,7 @@ class HavocSerializer {
      * @return the string representation of the serialized direct reference expression
      */
 	def dispatch String serialize(DirectReferenceExpression expression) {
-		return expression.declaration.type.serialize(expression.declaration.name);
+		return expression.declaration.type.serialize(expression.declaration.name)
 	}
 	
 }

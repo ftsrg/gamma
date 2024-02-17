@@ -11,11 +11,11 @@
 package hu.bme.mit.gamma.trace.testgeneration.c
 
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
-import org.eclipse.emf.common.util.URI
-import java.io.File
-import java.nio.file.Paths
-import java.nio.file.Files
 import hu.bme.mit.gamma.util.FileUtil
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Paths
+import org.eclipse.emf.common.util.URI
 
 class MakefileGenerator {
 	static val String ENV_NAME = "unity"

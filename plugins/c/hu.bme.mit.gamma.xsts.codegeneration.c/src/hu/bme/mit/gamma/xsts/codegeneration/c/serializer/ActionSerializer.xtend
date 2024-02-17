@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.expression.model.impl.ArrayLiteralExpressionImpl
 import hu.bme.mit.gamma.expression.model.impl.DirectReferenceExpressionImpl
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
+import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.IfAction
@@ -28,9 +29,8 @@ import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil.*
-import hu.bme.mit.gamma.xsts.model.AssumeAction
+import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 /**
  * This class provides a serializer for actions in XSTS models.
@@ -41,7 +41,7 @@ class ActionSerializer {
 	 * The ActionSerializer class provides methods for serializing action-related components.
 	 * This class is intended for serialization purposes.
 	 */
-	public static val ActionSerializer INSTANCE = new ActionSerializer;
+	public static val ActionSerializer INSTANCE = new ActionSerializer
 	
 	/**
 	 * Constructs a new instance of the ActionSerializer class.
@@ -50,9 +50,9 @@ class ActionSerializer {
 	protected new() {
 	}
 	
-	val HavocSerializer havocSerializer = HavocSerializer.INSTANCE;
-	val ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE;
-	val VariableDeclarationSerializer variableDeclarationSerializer = VariableDeclarationSerializer.INSTANCE;
+	val HavocSerializer havocSerializer = HavocSerializer.INSTANCE
+	val ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	val VariableDeclarationSerializer variableDeclarationSerializer = VariableDeclarationSerializer.INSTANCE
 	
 	/**
 	 * Serializes an initializing action.
@@ -61,7 +61,7 @@ class ActionSerializer {
   	 * @return a CharSequence that represents the serialized initializing action
   	 */
 	def CharSequence serializeInitializingAction(XSTS xSts) {
-		return '''«xSts.initializingAction.serialize»''';
+		return '''«xSts.initializingAction.serialize»'''
 	}
 	
 	/**
@@ -71,7 +71,7 @@ class ActionSerializer {
 	 * @return a CharSequence that represents the serialized action
  	 */
 	def dispatch CharSequence serialize(Action action) {
-		throw new IllegalArgumentException("Not supported action: " + action);
+		throw new IllegalArgumentException("Not supported action: " + action)
 	}
 	
 	/**
@@ -97,7 +97,7 @@ class ActionSerializer {
  	 * @return a CharSequence that represents the serialized SequentialAction
 	 */
 	def dispatch CharSequence serialize(SequentialAction action) {
-		return '''«FOR xstsSubaction : action.actions SEPARATOR System.lineSeparator»«xstsSubaction.serialize»«ENDFOR»''';
+		return '''«FOR xstsSubaction : action.actions SEPARATOR System.lineSeparator»«xstsSubaction.serialize»«ENDFOR»'''
 	}
 	
 	/**
@@ -107,7 +107,7 @@ class ActionSerializer {
 	 * @return a CharSequence that represents the serialized ParallelAction
 	 */
 	def dispatch CharSequence serialize(ParallelAction action) {
-		return '''«FOR xstsSubaction : action.actions SEPARATOR System.lineSeparator»«xstsSubaction.serialize»«ENDFOR»''';
+		return '''«FOR xstsSubaction : action.actions SEPARATOR System.lineSeparator»«xstsSubaction.serialize»«ENDFOR»'''
 	}
 	
 	/**
@@ -131,7 +131,7 @@ class ActionSerializer {
 	 * @return a CharSequence that represents the serialized HavocAction
 	 */
 	def dispatch CharSequence serialize(HavocAction action) {
-		return '''«expressionSerializer.serialize(action.lhs)» = «havocSerializer.serialize(action.lhs)»;''';
+		return '''«expressionSerializer.serialize(action.lhs)» = «havocSerializer.serialize(action.lhs)»;'''
 	}
 	
 	/**
@@ -146,7 +146,7 @@ class ActionSerializer {
 		/* in case of arrays we handle things differently */
 		if (lhs && rhs)
 			return expressionSerializer.serialize(action.lhs, action.rhs as ArrayLiteralExpression)
-		return '''«expressionSerializer.serialize(action.lhs)» = «expressionSerializer.serialize(action.rhs)»;''';
+		return '''«expressionSerializer.serialize(action.lhs)» = «expressionSerializer.serialize(action.rhs)»;'''
 	}
 	
 	/**
@@ -166,7 +166,7 @@ class ActionSerializer {
 	 * @return a CharSequence that represents the serialized EmptyAction
 	 */
 	def dispatch CharSequence serialize(EmptyAction action) {
-		return '''/* Empty Action */''';
+		return '''/* Empty Action */'''
 	}
 	
 	/**

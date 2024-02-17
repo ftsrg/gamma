@@ -40,8 +40,9 @@ public class TestGenerationHandler extends TaskHandler {
 		//
 		checkArgument(testGeneration.getProgrammingLanguages().size() == 1, 
 				"A single programming language must be specified: " + testGeneration.getProgrammingLanguages());
-		checkArgument(testGeneration.getProgrammingLanguages().get(0) == ProgrammingLanguage.JAVA ||
-				testGeneration.getProgrammingLanguages().get(0) == ProgrammingLanguage.C,
+		
+		ProgrammingLanguage programmingLanguage = testGeneration.getProgrammingLanguages().get(0);
+		checkArgument(programmingLanguage == ProgrammingLanguage.JAVA || programmingLanguage == ProgrammingLanguage.C,
 				"Currently only Java and C supported.");
 		
 		switch(testGeneration.getProgrammingLanguages().get(0)) {

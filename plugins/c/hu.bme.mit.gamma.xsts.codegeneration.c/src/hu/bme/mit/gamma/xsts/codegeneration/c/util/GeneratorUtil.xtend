@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.model.impl.ArrayLiteralExpressionImpl
@@ -26,6 +27,7 @@ import hu.bme.mit.gamma.expression.model.impl.ArrayTypeDefinitionImpl
 import hu.bme.mit.gamma.expression.model.impl.DeclarationReferenceAnnotationImpl
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.ExpressionSerializer
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.composite.PortBinding
 import hu.bme.mit.gamma.statechart.interface_.Component
@@ -41,13 +43,11 @@ import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.SystemMasterMessageQueueGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
+import java.util.List
 import org.eclipse.emf.common.util.BasicEList
-import org.eclipse.emf.common.util.EList
 import org.eclipse.emf.ecore.EObject
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
-import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 
 class GeneratorUtil {
 	
@@ -122,7 +122,7 @@ class GeneratorUtil {
 	 * @param variable the VariableDeclaration to get declaration references for
 	 * @return a list of declarations referenced by the VariableDeclaration
 	 */
-	static def EList<Declaration> getDeclarationReference(VariableDeclaration variable) {
+	static def List<Declaration> getDeclarationReference(VariableDeclaration variable) {
 		val reference = (variable.annotations.filter[it instanceof DeclarationReferenceAnnotationImpl].head as DeclarationReferenceAnnotation)
 		if (reference === null) return new BasicEList()
 		return reference.declarations

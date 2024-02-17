@@ -67,7 +67,7 @@ class ExpressionSerializer {
 	protected new() {
 	}
 	
-	val VariableDeclarationSerializer variableDeclarationSerializer = VariableDeclarationSerializer.INSTANCE;
+	val VariableDeclarationSerializer variableDeclarationSerializer = VariableDeclarationSerializer.INSTANCE
 	
 	/**
      * Serializes the given expression.
@@ -77,7 +77,7 @@ class ExpressionSerializer {
      * @throws IllegalArgumentException if the expression is not supported
      */
 	def dispatch String serialize(Expression expression) {
-		throw new IllegalArgumentException("Not supported expression: " + expression);
+		throw new IllegalArgumentException("Not supported expression: " + expression)
 	}
 	
 	/**
@@ -88,7 +88,7 @@ class ExpressionSerializer {
      * @throws IllegalArgumentException if the expression cannot be transformed
      */
 	def dispatch String serialize(ElseExpression expression) {
-		throw new IllegalArgumentException("Cannot be transformed");
+		throw new IllegalArgumentException("Cannot be transformed")
 	}
 	
 	/**
@@ -113,9 +113,9 @@ class ExpressionSerializer {
      */
 	def dispatch String serialize(EnumerationLiteralExpression expression) {
 		val definition = expression.reference;
-		val enumerationType = definition.eContainer as EnumerationTypeDefinition;
-		val typeDeclaration = enumerationType.eContainer as TypeDeclaration;
-		return definition.name + "_" + typeDeclaration.name.toLowerCase;
+		val enumerationType = definition.eContainer as EnumerationTypeDefinition
+		val typeDeclaration = enumerationType.eContainer as TypeDeclaration
+		return definition.name + "_" + typeDeclaration.name.toLowerCase
 	}
 	
 	/**
@@ -125,7 +125,7 @@ class ExpressionSerializer {
      * @return the serialized IntegerLiteralExpression as a string
      */
 	def dispatch String serialize(IntegerLiteralExpression expression) {
-		return expression.value.toString;
+		return expression.value.toString
 	}
 	
 	/**
@@ -135,7 +135,7 @@ class ExpressionSerializer {
      * @return the serialized DecimalLiteralExpression as a string
      */
 	def dispatch String serialize(DecimalLiteralExpression expression) {
-		return expression.value.toString;
+		return expression.value.toString
 	}
 	
 	/**
@@ -145,7 +145,7 @@ class ExpressionSerializer {
      * @return the serialized RationalLiteralExpression as a string
      */
 	def dispatch String serialize(RationalLiteralExpression expression) {
-		return '''(((float) «expression.numerator.toString») / «expression.denominator.toString»)''';
+		return '''(((float) «expression.numerator.toString») / «expression.denominator.toString»)'''
 	}
 	
 	/**
@@ -155,7 +155,7 @@ class ExpressionSerializer {
      * @return the serialized TrueExpression as a string
      */
 	def dispatch String serialize(TrueExpression expression) {
-		return '''true''';
+		return '''true'''
 	}
 	
 	/**
@@ -165,7 +165,7 @@ class ExpressionSerializer {
      * @return the serialized FalseExpression as a string
      */
 	def dispatch String serialize(FalseExpression expression) {
-		return '''false''';
+		return '''false'''
 	}
 	
 	/**
@@ -175,7 +175,7 @@ class ExpressionSerializer {
      * @return the serialized NotExpression as a string
      */
 	def dispatch String serialize(NotExpression expression) {
-		return '''!(«expression.operand.serialize»)''';
+		return '''!(«expression.operand.serialize»)'''
 	}
 	
 	/**
@@ -185,7 +185,7 @@ class ExpressionSerializer {
 	 * @return The serialized OrExpression object as a string.
 	 */
 	def dispatch String serialize(OrExpression expression) {
-		return '''(«FOR operand : expression.operands SEPARATOR " || "»«operand.serialize»«ENDFOR»)''';
+		return '''(«FOR operand : expression.operands SEPARATOR " || "»«operand.serialize»«ENDFOR»)'''
 	}
 	
 	/**
@@ -195,7 +195,7 @@ class ExpressionSerializer {
 	 * @return The serialized XorExpression object as a string.
 	 */
 	def dispatch String serialize(XorExpression expression) {
-		return '''(«FOR operand : expression.operands SEPARATOR " ^ "»«operand.serialize»«ENDFOR»)''';
+		return '''(«FOR operand : expression.operands SEPARATOR " ^ "»«operand.serialize»«ENDFOR»)'''
 	}
 	
 	/**
@@ -205,7 +205,7 @@ class ExpressionSerializer {
 	 * @return The serialized AndExpression object as a string.
 	 */
 	def dispatch String serialize(AndExpression expression) {
-		return '''(«FOR operand : expression.operands SEPARATOR " && "»(«operand.serialize»)«ENDFOR»)''';
+		return '''(«FOR operand : expression.operands SEPARATOR " && "»(«operand.serialize»)«ENDFOR»)'''
 	}
 	
 	/**
@@ -215,7 +215,7 @@ class ExpressionSerializer {
 	 * @return The serialized ImplyExpression object as a string.
 	 */
 	def dispatch String serialize(ImplyExpression expression) {
-		return '''(!(«expression.leftOperand.serialize») || «expression.rightOperand.serialize»)''';
+		return '''(!(«expression.leftOperand.serialize») || «expression.rightOperand.serialize»)'''
 	}
 	
 	/**
@@ -225,7 +225,7 @@ class ExpressionSerializer {
 	 * @return The serialized IfThenElseExpression object as a string.
 	 */
 	def dispatch String serialize(IfThenElseExpression expression) {
-		return '''(«expression.condition.serialize» ? «expression.then.serialize» : «expression.^else.serialize»)''';
+		return '''(«expression.condition.serialize» ? «expression.then.serialize» : «expression.^else.serialize»)'''
 	}
 	
 	/**
@@ -235,7 +235,7 @@ class ExpressionSerializer {
 	 * @return The serialized EqualityExpression object as a string.
 	 */
 	def dispatch String serialize(EqualityExpression expression) {
-		return '''(«expression.leftOperand.serialize» == «expression.rightOperand.serialize»)''';
+		return '''(«expression.leftOperand.serialize» == «expression.rightOperand.serialize»)'''
 	}
 	
 	/**
@@ -245,7 +245,7 @@ class ExpressionSerializer {
 	 * @return The serialized InequalityExpression object as a string.
 	 */
 	def dispatch String serialize(InequalityExpression expression) {
-		return '''(«expression.leftOperand.serialize» != «expression.rightOperand.serialize» )''';
+		return '''(«expression.leftOperand.serialize» != «expression.rightOperand.serialize» )'''
 	}
 	
 	/**
@@ -255,7 +255,7 @@ class ExpressionSerializer {
 	 * @return The serialized GreaterExpression object as a string.
 	 */
 	def dispatch String serialize(GreaterExpression expression) {
-		return '''(«expression.leftOperand.serialize» > «expression.rightOperand.serialize»)''';
+		return '''(«expression.leftOperand.serialize» > «expression.rightOperand.serialize»)'''
 	}
 	
 	/**
@@ -265,7 +265,7 @@ class ExpressionSerializer {
 	 * @return The serialized GreaterEqualExpression object as a string.
 	 */
 	def dispatch String serialize(GreaterEqualExpression expression) {
-		return '''(«expression.leftOperand.serialize» >= «expression.rightOperand.serialize»)''';
+		return '''(«expression.leftOperand.serialize» >= «expression.rightOperand.serialize»)'''
 	}
 	
 	/**
@@ -275,7 +275,7 @@ class ExpressionSerializer {
 	 * @return The serialized LessExpression object as a string.
 	 */
 	def dispatch String serialize(LessExpression expression) {
-		return '''(«expression.leftOperand.serialize» < «expression.rightOperand.serialize»)''';
+		return '''(«expression.leftOperand.serialize» < «expression.rightOperand.serialize»)'''
 	}
 	
 	/**
@@ -285,7 +285,7 @@ class ExpressionSerializer {
 	 * @return The serialized LessEqualExpression object as a string.
 	 */
 	def dispatch String serialize(LessEqualExpression expression) {
-		return '''(«expression.leftOperand.serialize» <= «expression.rightOperand.serialize»)''';
+		return '''(«expression.leftOperand.serialize» <= «expression.rightOperand.serialize»)'''
 	}
 	
 	/**
@@ -295,7 +295,7 @@ class ExpressionSerializer {
 	 * @return the string representation of the AddExpression
 	 */
 	def dispatch String serialize(AddExpression expression) {
-		return '''(«FOR operand : expression.operands SEPARATOR " + "»«operand.serialize»«ENDFOR»)''';
+		return '''(«FOR operand : expression.operands SEPARATOR " + "»«operand.serialize»«ENDFOR»)'''
 	}
 	
 	/**
@@ -305,7 +305,7 @@ class ExpressionSerializer {
 	 * @return the string representation of the SubtractExpression
 	 */
 	def dispatch String serialize(SubtractExpression expression) {
-		return '''(«expression.leftOperand.serialize» - «expression.rightOperand.serialize»)''';
+		return '''(«expression.leftOperand.serialize» - «expression.rightOperand.serialize»)'''
 	}
 	
 	/**
@@ -315,7 +315,7 @@ class ExpressionSerializer {
 	 * @return the string representation of the MultiplyExpression
 	 */
 	def dispatch String serialize(MultiplyExpression expression) {
-		return '''(«FOR operand : expression.operands SEPARATOR " * "»«operand.serialize»«ENDFOR»)''';
+		return '''(«FOR operand : expression.operands SEPARATOR " * "»«operand.serialize»«ENDFOR»)'''
 	}
 	
 	/**
@@ -325,7 +325,7 @@ class ExpressionSerializer {
 	 * @return the string representation of the DivideExpression
 	 */
 	def dispatch String serialize(DivideExpression expression) {
-		return '''(«expression.leftOperand.serialize» / «expression.rightOperand.serialize»)''';
+		return '''(«expression.leftOperand.serialize» / «expression.rightOperand.serialize»)'''
 	}
 	
 	/**
@@ -335,7 +335,7 @@ class ExpressionSerializer {
 	 * @return the string representation of the ModExpression
 	 */
 	def dispatch String serialize(ModExpression expression) {
-		return '''(«expression.leftOperand.serialize» % «expression.rightOperand.serialize»)''';
+		return '''(«expression.leftOperand.serialize» % «expression.rightOperand.serialize»)'''
 	}
 	
 	/**
@@ -345,7 +345,7 @@ class ExpressionSerializer {
 	 * @return the string representation of the UnaryPlusExpression
 	 */
 	def dispatch String serialize(UnaryPlusExpression expression) {
-		return '''+«expression.operand.serialize»''';
+		return '''+«expression.operand.serialize»'''
 	}
 	
 	/**
@@ -355,7 +355,7 @@ class ExpressionSerializer {
 	 * @return the string representation of the UnaryMinusExpression
 	 */
 	def dispatch String serialize(UnaryMinusExpression expression) {
-		return '''-«expression.operand.serialize»''';
+		return '''-«expression.operand.serialize»'''
 	}
 	
 	/**
@@ -365,7 +365,7 @@ class ExpressionSerializer {
 	 * @return a serialized representation of the array access expression
 	 */
 	def dispatch String serialize(ArrayAccessExpression expression) {
-		return '''«expression.operand.serialize»[«expression.index.serialize»]''';
+		return '''«expression.operand.serialize»[«expression.index.serialize»]'''
 	}
 	
 	/**
@@ -375,7 +375,7 @@ class ExpressionSerializer {
 	 * @return a serialized representation of the array literal expression
 	 */
 	def dispatch String serialize(ArrayLiteralExpression expression) {
-		return '''{«expression.operands.map[it.serialize].join(', ')»}''';
+		return '''{«expression.operands.map[it.serialize].join(', ')»}'''
 	}
 	
 	/**
@@ -403,7 +403,7 @@ class ExpressionSerializer {
 	def dispatch String serialize(DirectReferenceExpressionImpl reference, ArrayLiteralExpression literal) {
 		val bgd = reference.basicGetDeclaration as VariableDeclaration
 		val type = GeneratorUtil.getArrayType(bgd.type as ArrayTypeDefinition, false, bgd.name)
-		val postfix = variableDeclarationSerializer.serialize(bgd.type, bgd.annotations.exists[it instanceof ClockVariableDeclarationAnnotation], bgd.name);
+		val postfix = variableDeclarationSerializer.serialize(bgd.type, bgd.annotations.exists[it instanceof ClockVariableDeclarationAnnotation], bgd.name)
 		return '''
 			«type» temp«reference.hashCode»«postfix» = «literal.serialize»;
 			memcpy(«reference.serialize», temp«reference.hashCode», sizeof(«reference.serialize»));'''

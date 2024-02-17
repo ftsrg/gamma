@@ -19,13 +19,13 @@ import org.eclipse.emf.common.util.URI
  */
 abstract class FileModel {
 	/** The name of the model. */
-	protected String name;
+	protected String name
 	/** The name of the file. */
-	protected String filename;
+	protected String filename
 	/** The content of the file. */
-	protected String content;
+	protected String content
 	/** The includes of the file */
-	protected String include;
+	protected String include
 	
 	val FileUtil fileUtil = FileUtil.INSTANCE
 	
@@ -48,7 +48,7 @@ abstract class FileModel {
      * @param uri the URI where the file should be saved
      */
 	def void save(URI uri) {
-		val URI local = uri.appendSegment(filename);
+		val URI local = uri.appendSegment(filename)
 		val File file = fileUtil.getFile(local.toFileString())
 		
 		if (file.exists())
@@ -63,7 +63,7 @@ abstract class FileModel {
      * @param include the include to be added to the file
      */
 	def void addInclude(String include) {
-		this.include += include;
+		this.include += include
 	}
 	
 	/**
@@ -72,7 +72,7 @@ abstract class FileModel {
      * @param content the content to be added to the file
      */
 	def void addContent(String content) {
-		this.content += System.lineSeparator + content;
+		this.content += System.lineSeparator + content
 	}
 	
 	/**
@@ -80,6 +80,6 @@ abstract class FileModel {
      * 
      * @return the content of the file
      */
-	abstract override String toString();
+	abstract override String toString()
 	
 }

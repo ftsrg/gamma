@@ -184,11 +184,13 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 		}
 		fileUtil.forceDelete(temporaryTraceFolder);
 
+		
+		ProgrammingLanguage programmingLanguage = testGeneration.getProgrammingLanguages().get(0);
 		// Serializing traces
 		for (ExecutionTrace testTrace : testsTraces) {
 			serializer.serialize(targetFolderUri, traceFileName,
 					testFolderUri, testFileName, packageName, testTrace,
-					file, testGeneration.getProgrammingLanguages().get(0));
+					file, programmingLanguage);
 		}
 	}
 

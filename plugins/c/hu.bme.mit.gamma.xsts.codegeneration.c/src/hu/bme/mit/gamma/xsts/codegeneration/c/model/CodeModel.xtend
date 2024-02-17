@@ -22,7 +22,7 @@ class CodeModel extends FileModel {
 	 * @param name the name of the C file to be generated
 	 */
 	new(String name) {
-		super(name, '''«name.toLowerCase».c''');
+		super(name, '''«name.toLowerCase».c''')
 	}
 	
 	/**

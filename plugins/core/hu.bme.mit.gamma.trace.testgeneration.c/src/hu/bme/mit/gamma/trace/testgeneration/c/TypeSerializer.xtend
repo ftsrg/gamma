@@ -19,7 +19,7 @@ import hu.bme.mit.gamma.expression.model.RationalLiteralExpression
 class TypeSerializer {
 	
 	def String serialize(Expression expression) {
-		throw new IllegalArgumentException("Not supported expression: " + expression);
+		throw new IllegalArgumentException("Not supported expression: " + expression)
 	}
 	
 	def dispatch String serialize(IntegerLiteralExpression expression, String name) {
@@ -27,15 +27,15 @@ class TypeSerializer {
 	}
 	
 		def dispatch String serialize(BooleanLiteralExpression type, String name) {
-		return '''bool''';
+		return '''bool'''
 	}
 
 	def dispatch String serialize(DecimalLiteralExpression type, String name) {
-		return '''float''';
+		return '''float'''
 	}
 
 	def dispatch String serialize(RationalLiteralExpression type, String name) {
-		return '''float''';
+		return '''float'''
 	}
 	
 	

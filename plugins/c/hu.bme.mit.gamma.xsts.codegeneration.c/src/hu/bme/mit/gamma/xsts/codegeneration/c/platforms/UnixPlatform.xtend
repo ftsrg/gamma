@@ -21,7 +21,7 @@ class UnixPlatform implements IPlatform {
      * @return the headers as a string
      */
 	override getHeaders() {
-		return '''#include <sys/time.h>''';
+		return '''#include <sys/time.h>'''
 	}
 	
 	/**
@@ -30,7 +30,7 @@ class UnixPlatform implements IPlatform {
      * @return the struct as a string
      */
 	override getStruct() {
-		return '''struct timeval tval_before, tval_after, tval_result;''';
+		return '''struct timeval tval_before, tval_after, tval_result;'''
 	}
 	
 	/**
@@ -39,7 +39,7 @@ class UnixPlatform implements IPlatform {
      * @return the initialization as a string
      */
 	override getInitialization() {
-		return '''gettimeofday(&statechart->tval_before, NULL);  // start measuring time during initialization''';
+		return '''gettimeofday(&statechart->tval_before, NULL);  // start measuring time during initialization'''
 	}
 	
 	/**
@@ -53,7 +53,7 @@ class UnixPlatform implements IPlatform {
 			timersub(&statechart->tval_after, &statechart->tval_before, &statechart->tval_result);
 			unsigned int «IPlatform.CLOCK_VARIABLE_NAME» = (unsigned int)statechart->tval_result.tv_sec * 1000 + (unsigned int)statechart->tval_result.tv_usec / 1000;
 			gettimeofday(&statechart->tval_before, NULL);
-		''';
+		'''
 	}
 	
 }

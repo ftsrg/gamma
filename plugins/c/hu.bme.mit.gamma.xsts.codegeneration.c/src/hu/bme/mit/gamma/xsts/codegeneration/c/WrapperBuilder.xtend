@@ -20,7 +20,6 @@ import hu.bme.mit.gamma.xsts.codegeneration.c.model.HeaderModel
 import hu.bme.mit.gamma.xsts.codegeneration.c.platforms.IPlatform
 import hu.bme.mit.gamma.xsts.codegeneration.c.platforms.Platforms
 import hu.bme.mit.gamma.xsts.codegeneration.c.platforms.SupportedPlatforms
-import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.ExpressionSerializer
 import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.VariableDeclarationSerializer
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
@@ -41,71 +40,71 @@ import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNaming
 class WrapperBuilder implements IStatechartCode {
 	
 	/**
-	 * Function pointer generator flag.
+	 * Function pointer generator flag. This flag enables the generation
+	 * of function pointers for firing out events as function calls.
 	 */
-	boolean pointers;
+	boolean generatePointers
 	
 	/**
 	 * The XSTS (Extended Symbolic Transition Systems) used for code generation.
 	 */
-	XSTS xsts;
+	XSTS xsts
 	/**
  	 * The name of the wrapper component.
  	 */
-	String name;
+	String name
 	/**
  	 * The name of the original statechart.
 	 */
-	String stName;
+	String stName
 	
 	/**
 	 * The code model for generating wrapper code.
 	 */
-	CodeModel code;
+	CodeModel code
 	/**
 	 * The header model for generating wrapper code.
  	 */
-	HeaderModel header;
+	HeaderModel header
 	/**
 	 * The Gamma component
 	 */
-	Component component;
+	Component component
 	
 	/**
 	 * The supported platform for code generation.
 	 */
-	SupportedPlatforms platform = SupportedPlatforms.UNIX;
+	SupportedPlatforms platform = SupportedPlatforms.UNIX
 	
 	/* Serializers used for code generation */
 	val ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
-	val ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE;
-	val VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE;
-	val VariableDeclarationSerializer variableDeclarationSerializer = VariableDeclarationSerializer.INSTANCE;
+	val VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE
+	val VariableDeclarationSerializer variableDeclarationSerializer = VariableDeclarationSerializer.INSTANCE
 	
 	/**
 	 * The set of input variable declarations.
 	 */
-	val Set<VariableDeclaration> inputs = newHashSet;
+	val Set<VariableDeclaration> inputs = newHashSet
 	/**
 	 * The set of output variable declarations.
  	 */
-	val Set<VariableDeclaration> outputs = newHashSet;
+	val Set<VariableDeclaration> outputs = newHashSet
 	
 	/**
      * Constructs a WrapperBuilder object.
      * 
      * @param xsts The XSTS (Extended Symbolic Transition Systems) used for wrapper code generation.
      */
-	new(Component component, XSTS xsts, boolean pointers) {
+	new(Component component, XSTS xsts, boolean generatePointers) {
 		this.xsts = xsts
 		this.name = xsts.name.toFirstUpper + "Wrapper"
 		this.stName = xsts.name + "Statechart"
-		this.pointers = pointers
+		this.generatePointers = generatePointers
 		this.component = component
 		
 		/* code files */
-		this.code = new CodeModel(name);
-		this.header = new HeaderModel(name);
+		this.code = new CodeModel(name)
+		this.header = new HeaderModel(name)
 		
 		/* in & out events and parameters in a unique set, these sets are being used to generate setters/getters representing ports */
 		/* important! in the wrapper we need every parameter regardless of persistency */
@@ -121,7 +120,7 @@ class WrapperBuilder implements IStatechartCode {
      * @param platform the platform
      */
 	override setPlatform(SupportedPlatforms platform) {
-		this.platform = platform;
+		this.platform = platform
 	}
 	
 	/**
@@ -148,12 +147,12 @@ class WrapperBuilder implements IStatechartCode {
 		header.addContent('''
 			/* Forward declaration of «name» */
 			typedef struct «name»;
-		
+
 			/* Wrapper for statechart «stName» */
 			typedef struct {
 				«stName» «stName.toLowerCase»;
 				«Platforms.get(platform).getStruct()»
-				«IF pointers» «FOR port : component.ports.filter[it.interfaceRealization.realizationMode == RealizationMode.PROVIDED]»
+				«IF generatePointers» «FOR port : component.ports.filter[it.interfaceRealization.realizationMode == RealizationMode.PROVIDED]»
 					«FOR event : port.interfaceRealization.interface.events SEPARATOR System.lineSeparator»void (*event«event.event.getOutputName(port).toFirstUpper»)(«FOR param : event.event.parameterDeclarations SEPARATOR ', '»«variableDeclarationSerializer.serialize(param.type, false, param.name)»«ENDFOR»);«ENDFOR»
 				«ENDFOR»«ENDIF»
 				uint32_t (*getElapsed)(struct «name»*);
@@ -236,7 +235,7 @@ class WrapperBuilder implements IStatechartCode {
 			}
 		''');
 		
-		if (pointers) {
+		if (generatePointers) {
 			code.addContent('''
 				void checkEventFiring(«name»* statechart) {
 					«FOR port : component.ports.filter[it.interfaceRealization.realizationMode == RealizationMode.PROVIDED]»
@@ -255,7 +254,7 @@ class WrapperBuilder implements IStatechartCode {
 		void runCycle«name»(«name»* statechart) {
 			time«name»(statechart);
 			runCycle«stName»(&statechart->«stName.toLowerCase»);
-			«IF pointers»checkEventFiring(statechart);«ENDIF»
+			«IF generatePointers»checkEventFiring(statechart);«ENDIF»
 		}
 		''')
 		
@@ -310,18 +309,18 @@ class WrapperBuilder implements IStatechartCode {
      */
 	override save(URI uri) {
 		/* create src-gen if not present */
-		var URI local = uri.appendSegment("src-gen");
+		var URI local = uri.appendSegment("src-gen")
 		if (!new File(local.toFileString()).exists())
-			Files.createDirectories(Paths.get(local.toFileString()));
+			Files.createDirectories(Paths.get(local.toFileString()))
 			
 		/* create c codegen folder if not present */
 		local = local.appendSegment(xsts.name.toLowerCase)
 		if (!new File(local.toFileString()).exists())
-			Files.createDirectories(Paths.get(local.toFileString()));
+			Files.createDirectories(Paths.get(local.toFileString()))
 		
 		/* save models */
-		code.save(local);
-		header.save(local);
+		code.save(local)
+		header.save(local)
 	}
 	
 	

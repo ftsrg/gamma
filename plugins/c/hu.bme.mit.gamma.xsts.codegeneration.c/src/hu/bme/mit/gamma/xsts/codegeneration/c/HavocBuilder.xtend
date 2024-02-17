@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.c
 
+import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.codegeneration.c.model.CodeModel
 import hu.bme.mit.gamma.xsts.codegeneration.c.model.HeaderModel
@@ -22,30 +23,29 @@ import java.nio.file.Paths
 import org.eclipse.emf.common.util.URI
 
 import static extension hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil.*
-import hu.bme.mit.gamma.statechart.interface_.Component
 
 class HavocBuilder implements IStatechartCode {
 	/**
 	 * The XSTS (Extended Symbolic Transition Systems) used for code generation.
 	 */
-	XSTS xsts;
+	XSTS xsts
 	/**
  	 * The name of the component.
  	 */
-	String name;
+	String name
 	
 	/**
 	 * The code model for generating code.
 	 */
-	CodeModel code;
+	CodeModel code
 	/**
 	 * The header model for generating code.
  	 */
-	HeaderModel header;
+	HeaderModel header
 	/**
 	 * Whether our XSTS model contains HavocAction-s or not. Enough to compute once.
 	 */
-	static boolean containsHavocAction = false;
+	static boolean containsHavocAction = false
 	
 	/* Serializers used for havoc code generation */
 	val GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
@@ -72,8 +72,8 @@ class HavocBuilder implements IStatechartCode {
 		this.name = xsts.name.toFirstUpper + "Havoc"
 		
 		/* code files */
-		this.code = new CodeModel(name);
-		this.header = new HeaderModel(name);
+		this.code = new CodeModel(name)
+		this.header = new HeaderModel(name)
 		
 		/* parts of the XSTS model that our code generator use */
 		val usedParts = newArrayList
@@ -201,20 +201,20 @@ class HavocBuilder implements IStatechartCode {
 		}
 			
 		/* create src-gen if not present */
-		var URI local = uri.appendSegment("src-gen");
+		var URI local = uri.appendSegment("src-gen")
 		if (!new File(local.toFileString()).exists()) {
-			Files.createDirectories(Paths.get(local.toFileString()));
+			Files.createDirectories(Paths.get(local.toFileString()))
 		}
 
 		/* create c codegen folder if not present */
 		local = local.appendSegment(xsts.name.toLowerCase)
 		if (!new File(local.toFileString()).exists()) {
-			Files.createDirectories(Paths.get(local.toFileString()));
+			Files.createDirectories(Paths.get(local.toFileString()))
 		}
 
 		/* save models */
-		code.save(local);
-		header.save(local);
+		code.save(local)
+		header.save(local)
 	}
 	
 }

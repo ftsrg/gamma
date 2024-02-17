@@ -21,14 +21,14 @@ import hu.bme.mit.gamma.expression.model.RationalTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.model.VoidTypeDefinition
 import hu.bme.mit.gamma.expression.model.impl.ArrayTypeDefinitionImpl
 import hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
-
-import static extension hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil.*
 import hu.bme.mit.gamma.xsts.model.XSTS
 import java.math.BigInteger
-import hu.bme.mit.gamma.expression.model.VoidTypeDefinition
+
+import static extension hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil.*
 
 /**
  * Serializer for variable declarations.
@@ -50,7 +50,7 @@ class VariableDeclarationSerializer {
 	protected new() {
 	}
 	
-	val ExpressionSerializer expressionSerializer = new ExpressionSerializer;
+	val ExpressionSerializer expressionSerializer = new ExpressionSerializer
 	
 	/**
 	 * Serialize a Declaration into a String.
@@ -60,7 +60,7 @@ class VariableDeclarationSerializer {
 	 * @throws IllegalArgumentException if the provided declaration is not supported
 	 */
 	def dispatch String serialize(Declaration declaration) {
-		throw new IllegalArgumentException("Not supported declaration: " + declaration);
+		throw new IllegalArgumentException("Not supported declaration: " + declaration)
 	}
 	
 	/**
@@ -74,7 +74,7 @@ class VariableDeclarationSerializer {
 		val clock = declaration.annotations.exists[it instanceof ClockVariableDeclarationAnnotation]
 		val vtype = (declaration.type instanceof ArrayTypeDefinitionImpl) ? GeneratorUtil.getArrayType(declaration.type as ArrayTypeDefinition, clock, declaration.name) : serialize(declaration.type, clock, declaration.name)
 		val postfix = (declaration.type instanceof ArrayTypeDefinitionImpl) ? serialize(declaration.type, clock, declaration.name) : ""
-		return '''«vtype» «declaration.name»«postfix»«IF rhs» = «expressionSerializer.serialize(declaration.expression)»«ENDIF»;''';
+		return '''«vtype» «declaration.name»«postfix»«IF rhs» = «expressionSerializer.serialize(declaration.expression)»«ENDIF»;'''
 	}
 	
 	/**
@@ -87,7 +87,7 @@ class VariableDeclarationSerializer {
      * @throws IllegalArgumentException always
      */
 	def dispatch String serialize(Type type, boolean clock, String name) {
-		throw new IllegalArgumentException("Not supported type: " + type);
+		throw new IllegalArgumentException("Not supported type: " + type)
 	}
 	
 	/**
@@ -99,7 +99,7 @@ class VariableDeclarationSerializer {
      * @return the serialized type reference as a string
      */
 	def dispatch String serialize(TypeReference type, boolean clock, String name) {
-		return '''«type.reference.type.serialize(clock, type.reference.name)»''';
+		return '''«type.reference.type.serialize(clock, type.reference.name)»'''
 	}
 	
 	/**
@@ -111,7 +111,7 @@ class VariableDeclarationSerializer {
      * @return the serialized boolean type as a string
      */
 	def dispatch String serialize(BooleanTypeDefinition type, boolean clock, String name) {
-		return '''bool''';
+		return '''bool'''
 	}
 	
 	/**
@@ -125,7 +125,7 @@ class VariableDeclarationSerializer {
 	def dispatch String serialize(IntegerTypeDefinition type, boolean clock, String name) {
 		val size = (type.eContainer instanceof VariableDeclaration && type.eContainer.eContainer instanceof XSTS) ? new BigInteger((type.eContainer as VariableDeclaration).getInitialValueEvaluated(type.eContainer.eContainer as XSTS).toString) : UINT32_MAX
 		val unsigned = (size > UINT32_MAX) ? 'uint64_t' : 'uint32_t'
-		return clock ? unsigned : '''int32_t''';
+		return clock ? unsigned : '''int32_t'''
 	}
 	
 	/**
@@ -137,7 +137,7 @@ class VariableDeclarationSerializer {
      * @return the serialized decimal type as a string
      */
 	def dispatch String serialize(DecimalTypeDefinition type, boolean clock, String name) {
-		return '''float''';
+		return '''float'''
 	}
 	
 	/**
@@ -149,7 +149,7 @@ class VariableDeclarationSerializer {
      * @return the serialized void type as a string
      */
 	def dispatch String serialize(VoidTypeDefinition type, boolean clock, String name) {
-		return '''void''';
+		return '''void'''
 	}
 	
 	/**
@@ -161,7 +161,7 @@ class VariableDeclarationSerializer {
      * @return the serialized rational type as a string
      */
 	def dispatch String serialize(RationalTypeDefinition type, boolean clock, String name) {
-		return '''float''';
+		return '''float'''
 	}
 	
 	/**
@@ -174,7 +174,7 @@ class VariableDeclarationSerializer {
 	 */
 	def dispatch String serialize(ArrayTypeDefinition type, boolean clock, String name) {
 		val inner = type.elementType instanceof ArrayTypeDefinitionImpl
-		return '''[«expressionSerializer.serialize(type.size)»]«IF inner»«type.elementType.serialize(clock, name)»«ENDIF»''';
+		return '''[«expressionSerializer.serialize(type.size)»]«IF inner»«type.elementType.serialize(clock, name)»«ENDIF»'''
 	}
 	
 	/**
@@ -186,7 +186,7 @@ class VariableDeclarationSerializer {
      * @return the serialized enum name as a string
      */
 	def dispatch String serialize(EnumerationTypeDefinition type, boolean clock, String name) {
-		return '''enum «name.transformString»''';
+		return '''enum «name.transformString»'''
 	}
 	
 }
