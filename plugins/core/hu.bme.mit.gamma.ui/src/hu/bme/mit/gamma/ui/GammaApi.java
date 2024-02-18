@@ -180,7 +180,8 @@ public class GammaApi {
 									TestGeneration testGeneration = (TestGeneration) task;
 									TestGenerationHandler handler = new TestGenerationHandler(file);
 									handler.execute(testGeneration, projectName);
-									MakefileGenerator.tests.clear(); // Manual reset
+									String targetFolder = testGeneration.getTargetFolder().get(0);
+									new MakefileGenerator(List.of(testGeneration.getExecutionTrace()), URI.createFileURI(targetFolder)).execute();
 									System.out.println("Manual reset from api");
 									logger.log(Level.INFO, "The test generation has been finished");
 								}

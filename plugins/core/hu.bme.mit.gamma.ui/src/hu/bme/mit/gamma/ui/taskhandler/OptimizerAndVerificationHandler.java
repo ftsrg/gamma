@@ -21,11 +21,13 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.emf.common.util.URI;
 
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
+import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer.StaticSingleAssignmentTransformer;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer.StaticSingleAssignmentTransformer.SsaType;
@@ -250,9 +252,9 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			verificationHandler.optimizeTraces();
 		}
     
+		ProgrammingLanguage programmingLanguage = verification.getProgrammingLanguages().get(0);
 		if (serializeTraces) {
-			verificationHandler.serializeTraces(); // Serialization in one pass
-      MakefileGenerator.tests.clear(); // Manual reset
+			verificationHandler.serializeTraces(programmingLanguage); // Serialization in one pass
 		}
     
 		// Reinstate original state

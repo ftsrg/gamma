@@ -314,7 +314,6 @@ public class VerificationHandler extends TaskHandler {
 		
 		if (serializeTraces) { // After 'traces.add...'
 			serializeTraces(programmingLanguage);
-			MakefileGenerator.tests.clear(); // Manual reset
 		}
 		
 		// Note that .get and .json postfix ids will not match if optimization is applied
@@ -508,6 +507,7 @@ public class VerificationHandler extends TaskHandler {
 			serializer.serialize(targetFolderUri, traceFileName, svgFileName,
 					testFolderUri, testFileName, packageName, trace,
 					file, programmingLanguage);
+		new MakefileGenerator(traces, URI.createFileURI(targetFolderUri)).execute();
 		}
 	}
 	

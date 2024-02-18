@@ -67,10 +67,6 @@ public class TestGenerationHandler extends TaskHandler {
 		URI path = URI.createURI(projectLocation);
 		hu.bme.mit.gamma.trace.testgeneration.c.TestGenerator testGenerator = new hu.bme.mit.gamma.trace.testgeneration.c.TestGenerator(executionTrace, path, name);
 		testGenerator.execute();
-		
-		/* makefile code */
-		MakefileGenerator makefileGenerator = new MakefileGenerator(executionTrace, path, name);
-		makefileGenerator.execute();
 	}
 	
 	private void generateJavaTest(TestGeneration testGeneration, String packageName) throws IOException {

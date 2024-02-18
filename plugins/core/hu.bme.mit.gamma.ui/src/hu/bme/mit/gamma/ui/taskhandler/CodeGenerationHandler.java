@@ -56,12 +56,13 @@ public class CodeGenerationHandler extends TaskHandler {
 		//
 		checkArgument(codeGeneration.getProgrammingLanguages().size() == 1, 
 				"A single programming language must be specified: " + codeGeneration.getProgrammingLanguages());
-		checkArgument(codeGeneration.getProgrammingLanguages().get(0) == ProgrammingLanguage.JAVA ||
-				codeGeneration.getProgrammingLanguages().get(0) == ProgrammingLanguage.C,
+		
+		ProgrammingLanguage programmingLanguage = codeGeneration.getProgrammingLanguages().get(0);
+		checkArgument(programmingLanguage == ProgrammingLanguage.JAVA || programmingLanguage == ProgrammingLanguage.C,
 				"Currently only Java and C supported.");
 		setCodeGeneration(codeGeneration, packageName);
 		
-		switch(codeGeneration.getProgrammingLanguages().get(0)) {
+		switch(programmingLanguage) {
 		case JAVA:
 			generateJavaCode(codeGeneration);
 			break;

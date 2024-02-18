@@ -15,39 +15,40 @@ import hu.bme.mit.gamma.util.FileUtil
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.util.List
 import org.eclipse.emf.common.util.URI
+import hu.bme.mit.gamma.statechart.interface_.Component
 
 class MakefileGenerator {
 	static val String ENV_NAME = "unity"
-	/* requires manual reset after the test generation has finished */
-	public static val tests = newArrayList
 	
 	val FileUtil fileUtil = FileUtil.INSTANCE
 	
 	val URI out
-	val String name
-	val ExecutionTrace trace
+	val Component component
+	val List<ExecutionTrace> traces
 	
-	new(ExecutionTrace trace, URI out, String name) {
-		this.trace = trace
-		this.name = name
+	new(List<ExecutionTrace> traces, URI out) {
+		if (traces.size == 0)
+			throw new IllegalArgumentException('At least one trace is required.')
+		this.component = traces.get(0).component
+		this.traces = traces
 		this.out = out
-		tests.add(name.toLowerCase)
 	}
 	
 	def String generate() {
 		return '''
 			CC = gcc
 			CFLAGS = -Wall -lunity -fcommon «IF System.getenv(ENV_NAME) !== null»-L«System.getenv(ENV_NAME)»«ENDIF»
-			SOURCES = «trace.component.name.toLowerCase».c «trace.component.name.toLowerCase».h «trace.component.name.toLowerCase»wrapper.c «trace.component.name.toLowerCase»wrapper.h
-			TESTS = «tests.join('.c ')»
-			OUTPUT = «trace.component.name.toLowerCase».exe
+			SOURCES = «component.name.toLowerCase».c «component.name.toLowerCase».h «component.name.toLowerCase»wrapper.c «component.name.toLowerCase»wrapper.h
+			TESTS = «traces.map[it.name].join('.c ')»
+			OUTPUT = «component.name.toLowerCase».exe
 			
-			all: «tests.join(' ')»
+			all: «traces.map[it.name].join(' ')»
 			
-			«FOR test : tests SEPARATOR System.lineSeparator»
-				«test»: $(SOURCES)
-					$(CC) -o $(OUTPUT) «test».c $(SOURCES) $(CFLAGS)
+			«FOR trace : traces SEPARATOR System.lineSeparator»
+				«trace.name»: $(SOURCES)
+					$(CC) -o $(OUTPUT) «trace.name».c $(SOURCES) $(CFLAGS)
 					./$(OUTPUT)
 					rm -f $(OUTPUT)
 			«ENDFOR»
@@ -62,7 +63,7 @@ class MakefileGenerator {
 			Files.createDirectories(Paths.get(testgen.toString()))
 			
 		/* create project folder if not present */
-		val URI local = testgen.appendSegment(trace.component.name.toLowerCase)
+		val URI local = testgen.appendSegment(component.name.toLowerCase)
 		if (!new File(local.toString()).exists())
 			Files.createDirectories(Paths.get(local.toString()))
 			
