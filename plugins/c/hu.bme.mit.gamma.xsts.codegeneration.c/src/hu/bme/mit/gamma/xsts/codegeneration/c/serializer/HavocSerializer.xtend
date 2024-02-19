@@ -25,6 +25,19 @@ import hu.bme.mit.gamma.expression.model.TypeReference
  * Also supports direct reference expressions.
  */
 class HavocSerializer {
+	
+	/**
+	 * The HavocSerializer class provides methods for serializing Havoc-related components.
+	 * This class is intended for serialization purposes.
+	 */
+	public static val HavocSerializer INSTANCE = new HavocSerializer
+	
+	/**
+	 * Constructs a new instance of the HavocSerializer class.
+	 * This constructor is marked as protected to prevent direct instantiation.
+	 */
+	protected new() {
+	}
 
 	/**
      * Throws an exception for unsupported types.
@@ -35,7 +48,7 @@ class HavocSerializer {
      * @throws IllegalArgumentException if the type is not supported
      */
 	def dispatch String serialize(Type type, String name) {
-		throw new IllegalArgumentException("Not supported type: " + type);
+		throw new IllegalArgumentException("Not supported type: " + type)
 	}
 	
 	/**
@@ -101,7 +114,7 @@ class HavocSerializer {
      * @throws IllegalArgumentException if the expression is not supported
      */
 	def dispatch String serialize(Expression expression) {
-		throw new IllegalArgumentException("Not supported expression: " + expression);
+		throw new IllegalArgumentException("Not supported expression: " + expression)
 	}
 	
 	/**
@@ -111,7 +124,7 @@ class HavocSerializer {
      * @return the string representation of the serialized direct reference expression
      */
 	def dispatch String serialize(DirectReferenceExpression expression) {
-		return expression.declaration.type.serialize(expression.declaration.name);
+		return expression.declaration.type.serialize(expression.declaration.name)
 	}
 	
 }

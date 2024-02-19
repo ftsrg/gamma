@@ -52,6 +52,7 @@ import hu.bme.mit.gamma.genmodel.model.TraceGeneration;
 import hu.bme.mit.gamma.genmodel.model.TraceReplayModelGeneration;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation;
+import hu.bme.mit.gamma.trace.testgeneration.c.MakefileGenerator;
 import hu.bme.mit.gamma.ui.taskhandler.AdaptiveBehaviorConformanceCheckingHandler;
 import hu.bme.mit.gamma.ui.taskhandler.AdaptiveContractTestGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.AnalysisModelTransformationAndVerificationHandler;
@@ -179,6 +180,9 @@ public class GammaApi {
 									TestGeneration testGeneration = (TestGeneration) task;
 									TestGenerationHandler handler = new TestGenerationHandler(file);
 									handler.execute(testGeneration, projectName);
+									String targetFolder = testGeneration.getTargetFolder().get(0);
+									new MakefileGenerator(List.of(testGeneration.getExecutionTrace()), URI.createFileURI(targetFolder)).execute();
+									System.out.println("Manual reset from api");
 									logger.log(Level.INFO, "The test generation has been finished");
 								}
 								else if (task instanceof Verification) {

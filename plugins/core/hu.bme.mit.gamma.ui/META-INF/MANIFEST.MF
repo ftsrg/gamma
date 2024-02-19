@@ -50,8 +50,10 @@ Require-Bundle: com.google.gson,
  hu.bme.mit.gamma.nuxmv.verification,
  hu.bme.mit.gamma.xsts.nuxmv.transformation,
  hu.bme.mit.gamma.fei.xsap.transformation,
+ hu.bme.mit.gamma.xsts.codegeneration.c,
  hu.bme.mit.gamma.ocra.transformation,
- hu.bme.mit.gamma.mutation
+ hu.bme.mit.gamma.mutation,
+ hu.bme.mit.gamma.trace.testgeneration.c;bundle-version="2.10.0"
 Export-Package: hu.bme.mit.gamma.ui,
  hu.bme.mit.gamma.ui.taskhandler,
  hu.bme.mit.gamma.ui.util

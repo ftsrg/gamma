@@ -76,13 +76,14 @@ public class CommandHandler extends AbstractHandler {
 		
 		LOGGER.info("XSTS model " + xSts.getName() + " successfully read");
 		
-		/* define the platform */
+		/* define the platform and function pointers*/
+		final boolean pointers = true;
 		final SupportedPlatforms platform = SupportedPlatforms.UNIX;
 		
 		/* define what to generate */
 		List<IStatechartCode> generate = List.of(
 			new CodeBuilder(xSts),
-			new WrapperBuilder(xSts),
+			new WrapperBuilder(xSts, pointers),
 			new HavocBuilder(xSts)
 		);
 		

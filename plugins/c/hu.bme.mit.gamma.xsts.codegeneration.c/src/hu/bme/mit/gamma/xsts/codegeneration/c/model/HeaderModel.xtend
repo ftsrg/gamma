@@ -21,14 +21,25 @@ class HeaderModel extends FileModel {
      * @param name the name of the header file
      */
 	new(String name) {
-		super('''«name.toLowerCase».h''');
-		this.content = '''
-			#include <stdbool.h>
+		super(name, '''«name.toLowerCase».h''')
+	}
+	
+	/**
+     * Returns the content of the file.
+     * 
+     * @return the content of the file
+     */
+	override String toString() {
+		'''
+			«include»
 			
 			/* header guard */
 			#ifndef «name.toUpperCase»_HEADER
 			#define «name.toUpperCase»_HEADER
-		''';
+			«content»
+			
+			#endif /* «name.toUpperCase»_HEADER */
+		'''
 	}
 	
 }

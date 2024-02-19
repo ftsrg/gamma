@@ -28,7 +28,7 @@ class Platforms {
 	/**
      * Map to store the platform instances.
      */
-	static val Map<SupportedPlatforms, IPlatform> platforms = addPlatforms();
+	static val Map<SupportedPlatforms, IPlatform> platforms = addPlatforms()
 	
 	/**
      * Adds the platform instances to the map.
@@ -36,7 +36,7 @@ class Platforms {
      * @return The map of platforms.
      */
 	private static def addPlatforms() {
-		val temp = new HashMap<SupportedPlatforms, IPlatform>();
+		val temp = new HashMap<SupportedPlatforms, IPlatform>()
 		
 		/* add all available platforms here */
 		temp += SupportedPlatforms.UNIX -> new UnixPlatform()
@@ -51,7 +51,7 @@ class Platforms {
      * @return The platform instance.
      */
 	static def IPlatform get(SupportedPlatforms platform) {
-		return platforms.get(platform);
+		return platforms.get(platform)
 	}
 	
 }

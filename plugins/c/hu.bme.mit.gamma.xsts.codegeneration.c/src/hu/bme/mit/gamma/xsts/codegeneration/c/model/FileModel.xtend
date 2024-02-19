@@ -18,26 +18,28 @@ import org.eclipse.emf.common.util.URI
  * Represents a file in the generated C code.
  */
 abstract class FileModel {
+	/** The name of the model. */
+	protected String name
 	/** The name of the file. */
-	protected String name;
+	protected String filename
 	/** The content of the file. */
-	protected String content;
+	protected String content
+	/** The includes of the file */
+	protected String include
 	
 	val FileUtil fileUtil = FileUtil.INSTANCE
-	
-	/** New line */
-	public static final String NEW_LINE =
-	'''
-
-	''';
 	
 	/**
      * Constructs a new {@code FileModel} instance with the given name.
      * 
-     * @param name the name of the file
+     * @param name the name of the model
+     * @param filename the name of the file
      */
-	new(String name) {
+	new(String name, String filename) {
 		this.name = name
+		this.filename = filename
+		content = new String
+		include = new String
 	}
 	
 	/**
@@ -46,13 +48,22 @@ abstract class FileModel {
      * @param uri the URI where the file should be saved
      */
 	def void save(URI uri) {
-		val URI local = uri.appendSegment(name);
+		val URI local = uri.appendSegment(filename)
 		val File file = fileUtil.getFile(local.toFileString())
 		
 		if (file.exists())
 			fileUtil.forceDelete(file)
 			
-		fileUtil.saveString(file, content)
+		fileUtil.saveString(file, toString)
+	}
+	
+	/**
+     * Adds an include to the file.
+     * 
+     * @param include the include to be added to the file
+     */
+	def void addInclude(String include) {
+		this.include += include
 	}
 	
 	/**
@@ -61,7 +72,7 @@ abstract class FileModel {
      * @param content the content to be added to the file
      */
 	def void addContent(String content) {
-		this.content += NEW_LINE + content;
+		this.content += System.lineSeparator + content
 	}
 	
 	/**
@@ -69,8 +80,6 @@ abstract class FileModel {
      * 
      * @return the content of the file
      */
-	override String toString() {
-		return this.content;
-	}
+	abstract override String toString()
 	
 }

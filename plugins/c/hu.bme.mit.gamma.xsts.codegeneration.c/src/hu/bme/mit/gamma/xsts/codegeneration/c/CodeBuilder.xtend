@@ -10,8 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.c
 
-import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.xsts.codegeneration.c.model.CodeModel
 import hu.bme.mit.gamma.xsts.codegeneration.c.model.HeaderModel
 import hu.bme.mit.gamma.xsts.codegeneration.c.platforms.SupportedPlatforms
@@ -63,11 +63,11 @@ class CodeBuilder implements IStatechartCode {
 	SupportedPlatforms platform = SupportedPlatforms.UNIX;
 
 	/* Serializers used for code generation */
-	val ActionSerializer actionSerializer = new ActionSerializer;
-	val ExpressionSerializer expressionSerializer = new ExpressionSerializer;
+	val ActionSerializer actionSerializer = ActionSerializer.INSTANCE;
+	val ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE;
 	val VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE;
-	val TypeDeclarationSerializer typeDeclarationSerializer = new TypeDeclarationSerializer;
-	val VariableDeclarationSerializer variableDeclarationSerializer = new VariableDeclarationSerializer;
+	val TypeDeclarationSerializer typeDeclarationSerializer = TypeDeclarationSerializer.INSTANCE;
+	val VariableDeclarationSerializer variableDeclarationSerializer = VariableDeclarationSerializer.INSTANCE;
 
 	/**
 	 * The set of input variable declarations.
@@ -87,7 +87,7 @@ class CodeBuilder implements IStatechartCode {
      * 
      * @param xsts the XSTS (Extended Symbolic Transition Systems) used for code generation
      */
-	new(XSTS xsts) {
+	new(Component component, XSTS xsts) {
 		this.xsts = xsts;
 		this.name = xsts.name.toFirstUpper;
 		this.stName = name + "Statechart";
@@ -122,6 +122,12 @@ class CodeBuilder implements IStatechartCode {
      * Constructs the statechart's header code.
      */
 	override void constructHeader() {
+		/* Add imports to the file */
+		header.addInclude('''
+			#include <stdint.h>
+			#include <stdbool.h>
+		''');
+		
 		/* Enum Type Declarations */
 		header.addContent('''
 			«FOR typeDeclaration : xsts.typeDeclarations SEPARATOR System.lineSeparator»
@@ -134,11 +140,7 @@ class CodeBuilder implements IStatechartCode {
 			/* Structure representing «name» component */
 			typedef struct {
 				«FOR variableDeclaration : xsts.variableDeclarations»
-					«variableDeclarationSerializer.serialize(
-						variableDeclaration.type,
-						variableDeclaration.annotations.exists[it instanceof ClockVariableDeclarationAnnotation],
-						variableDeclaration.name
-					)» «variableDeclaration.name»;
+					«variableDeclarationSerializer.serialize(variableDeclaration)»
 				«ENDFOR»
 			} «stName»;
 		''');
@@ -160,23 +162,21 @@ class CodeBuilder implements IStatechartCode {
 			/* Run cycle in component «name» */
 			void runCycle«stName»(«stName»* statechart);
 		''');
-
-		/* End if in header guard */
-		header.addContent('''
-			#endif /* «name.toUpperCase»_HEADER */
-		''');
 	}
 
 	/**
      * Constructs the statechart's C code.
      */
 	override void constructCode() {
-		/* Add havoc import in case it is required */
-		code.addContent('''
-			«IF HavocBuilder.isHavocRequired»
-				#include "«name.toLowerCase»havoc.h"
-			«ENDIF»
-		''')
+		/* Add imports to the file */
+		code.addInclude('''
+			#include <stdlib.h>
+			#include <string.h>
+			#include <stdbool.h>
+			
+			#include "«name.toLowerCase».h"
+			«IF HavocBuilder.isHavocRequired»#include "«name.toLowerCase»havoc.h"«ENDIF»
+		''');
 		
 		/* Reset struct */
 		code.addContent('''

@@ -10,11 +10,11 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.c
 
+import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.codegeneration.c.model.CodeModel
 import hu.bme.mit.gamma.xsts.codegeneration.c.model.HeaderModel
 import hu.bme.mit.gamma.xsts.codegeneration.c.platforms.SupportedPlatforms
-import hu.bme.mit.gamma.xsts.codegeneration.c.serializer.TypeDeclarationSerializer
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import java.io.File
@@ -22,32 +22,33 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import org.eclipse.emf.common.util.URI
 
+import static extension hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil.*
+
 class HavocBuilder implements IStatechartCode {
 	/**
 	 * The XSTS (Extended Symbolic Transition Systems) used for code generation.
 	 */
-	XSTS xsts;
+	XSTS xsts
 	/**
  	 * The name of the component.
  	 */
-	String name;
+	String name
 	
 	/**
 	 * The code model for generating code.
 	 */
-	CodeModel code;
+	CodeModel code
 	/**
 	 * The header model for generating code.
  	 */
-	HeaderModel header;
+	HeaderModel header
 	/**
 	 * Whether our XSTS model contains HavocAction-s or not. Enough to compute once.
 	 */
-	static boolean containsHavocAction = false;
+	static boolean containsHavocAction = false
 	
 	/* Serializers used for havoc code generation */
 	val GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
-	val TypeDeclarationSerializer typeDeclarationSerializer = new TypeDeclarationSerializer;
 	
 	/* Boundary definitions */
 	val INT_MIN = -32768  // -2^15 
@@ -66,13 +67,13 @@ class HavocBuilder implements IStatechartCode {
      * 
      * @param xsts the XSTS (Extended Symbolic Transition Systems) used for code generation
      */
-	new(XSTS xsts) {
+	new(Component component, XSTS xsts) {
 		this.xsts = xsts
 		this.name = xsts.name.toFirstUpper + "Havoc"
 		
 		/* code files */
-		this.code = new CodeModel(name);
-		this.header = new HeaderModel(name);
+		this.code = new CodeModel(name)
+		this.header = new HeaderModel(name)
 		
 		/* parts of the XSTS model that our code generator use */
 		val usedParts = newArrayList
@@ -105,12 +106,17 @@ class HavocBuilder implements IStatechartCode {
      * Constructs the havoc header code.
      */
 	override constructHeader() {
-		/* Declaration of boundaries */
-		header.addContent('''
+		/* Add imports to the file */
+		header.addInclude('''
 			#include <time.h>
+			#include <stdint.h>
+			#include <stdbool.h>
 			
 			#include "«xsts.name.toLowerCase».h"
-			
+		''');
+		
+		/* Declaration of boundaries */
+		header.addContent('''
 			/* boundaries for int */
 			#define INT_MIN «INT_MIN»
 			#define INT_MAX «INT_MAX»
@@ -121,7 +127,7 @@ class HavocBuilder implements IStatechartCode {
 			
 			/* boundaries for enums */
 			«FOR type : xsts.typeDeclarations»
-				#define «type.name.toUpperCase»_LENGTH «typeDeclarationSerializer.getLength(type.type)»
+				#define «type.name.toUpperCase»_LENGTH «type.type.getLength»
 			«ENDFOR»
 		''');
 		
@@ -135,13 +141,8 @@ class HavocBuilder implements IStatechartCode {
 			float havoc_float();
 			«FOR type : xsts.typeDeclarations»
 				/* runtime generated random «type.name» */
-				enum «TypeDeclarationSerializer.transformString(type.name)» havoc_«type.name»();
+				enum «type.name.transformString» havoc_«type.name»();
 			«ENDFOR»
-		''');
-		
-		/* End if in header guard */
-		header.addContent('''
-			#endif /* «name.toUpperCase»_HEADER */
 		''');
 	}
 	
@@ -149,6 +150,14 @@ class HavocBuilder implements IStatechartCode {
      * Constructs the havoc code.
      */
 	override constructCode() {
+		/* Add imports to the file */
+		code.addInclude('''
+			#include <stdlib.h>
+			#include <stdbool.h>
+			
+			#include "«name.toLowerCase».h"
+		''');
+		
 		/* Function for generating random values for each type */
 		code.addContent('''
 			/* runtime generated random boolean */
@@ -158,7 +167,7 @@ class HavocBuilder implements IStatechartCode {
 			}
 
 			/* runtime generated random int */
-			int havoc_int() {
+			int32_t havoc_int() {
 				srand(time(NULL));
 				return (rand() % (INT_MAX - INT_MIN + 1)) + INT_MIN;
 			}
@@ -171,9 +180,9 @@ class HavocBuilder implements IStatechartCode {
 			
 			«FOR type : xsts.typeDeclarations SEPARATOR System.lineSeparator»
 				/* runtime generated random «type.name» */
-				enum «TypeDeclarationSerializer.transformString(type.name)» havoc_«type.name»() {
+				enum «type.name.transformString» havoc_«type.name»() {
 					srand(time(NULL));
-					return (enum «TypeDeclarationSerializer.transformString(type.name)»)(rand() % «type.name.toUpperCase»_LENGTH);
+					return (enum «type.name.transformString»)(rand() % «type.name.toUpperCase»_LENGTH);
 				}
 			«ENDFOR»
 		''')
@@ -192,20 +201,20 @@ class HavocBuilder implements IStatechartCode {
 		}
 			
 		/* create src-gen if not present */
-		var URI local = uri.appendSegment("src-gen");
+		var URI local = uri.appendSegment("src-gen")
 		if (!new File(local.toFileString()).exists()) {
-			Files.createDirectories(Paths.get(local.toFileString()));
+			Files.createDirectories(Paths.get(local.toFileString()))
 		}
 
 		/* create c codegen folder if not present */
 		local = local.appendSegment(xsts.name.toLowerCase)
 		if (!new File(local.toFileString()).exists()) {
-			Files.createDirectories(Paths.get(local.toFileString()));
+			Files.createDirectories(Paths.get(local.toFileString()))
 		}
 
 		/* save models */
-		code.save(local);
-		header.save(local);
+		code.save(local)
+		header.save(local)
 	}
 	
 }

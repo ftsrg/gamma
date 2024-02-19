@@ -348,7 +348,7 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 				
 				// Traces and tests are not serialized
 				traceSerializer.serialize(traceFolderUri, traceFileName, null, testFolderUri,
-						testFileName, packageName, programmingLanguage, trace);
+						testFileName, packageName, trace, file, programmingLanguage);
 				
 				// Extend trace metrics - used when another mutation is conducted
 				extendTraceMetrics(stateFrequency, trace);
