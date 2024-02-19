@@ -21,7 +21,6 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.emf.common.util.URI;
 
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
@@ -39,7 +38,6 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceE
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Package;
-import hu.bme.mit.gamma.trace.testgeneration.c.MakefileGenerator;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.transformation.util.PropertyUnfolder;
@@ -198,6 +196,10 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			if (!analysisLanguages.contains(AnalysisLanguage.XSTS_UPPAAL)) {
 				// In UPPAAL, literals are referenced via indexes, so they cannot be removed
 				xStsReducer.deleteUnusedEnumLiteralsExceptOne(xSts, keepableGammaEnumLiterals);
+			}
+			else {
+				// Therefore, they are renamed to indicate that they are unused
+				xStsReducer.renameUnusedEnumLiteralsExceptOne(xSts, keepableGammaEnumLiterals);
 			}
 			
 			XstsOptimizer xStsOptimizer = XstsOptimizer.INSTANCE;

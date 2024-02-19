@@ -30,7 +30,6 @@ import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
-import java.util.logging.Level
 import java.util.logging.Logger
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
@@ -151,9 +150,9 @@ class SystemReducer {
 		// TODO Handle init action: There can be event transmission e.g., in state entry actions
 		
 		val xStsInputEventVariables = clonedXSts.inputVariables
-		logger.log(Level.INFO, "Transforming cloned XSTS to check the cone of influence of input events")
+		logger.info("Transforming cloned XSTS to check the cone of influence of input events")
 		clonedXSts.deleteUnusedAndWrittenOnlyVariables
-		logger.log(Level.INFO, "Finished transforming the cloned XSTS")
+		logger.info("Finished transforming the cloned XSTS")
 		
 		val xStsDeletedInputEventVariables = xStsInputEventVariables
 				.filter[it.containingXsts === null]
@@ -161,7 +160,7 @@ class SystemReducer {
 		for (xStsDeletedInputEventVariable : xStsDeletedInputEventVariables) {
 			val name = xStsDeletedInputEventVariable.name
 			val xStsInputVariable = xSts.getVariable(name) // Tracing
-			logger.log(Level.INFO, "Deleting input variable " + name)
+			logger.info("Deleting input variable " + name)
 			
 			for (reference : xSts.getAllContentsOfType(DirectReferenceExpression)) {
 				if (reference.declaration === xStsDeletedInputEventVariable) {
@@ -308,7 +307,7 @@ class SystemReducer {
 		// nullptr exceptions if the method call (parameters) is not correct
 		for (xStsDeletableVariable : xStsDeleteableVariables) {
 			xStsDeletableVariable.deleteDeclaration // Delete needed due to e.g., transientVariables list
-			logger.log(Level.INFO, "Deleting XSTS variable " + xStsDeletableVariable.name)
+			logger.info("Deleting XSTS variable " + xStsDeletableVariable.name)
 		}
 	}
 	
@@ -316,6 +315,28 @@ class SystemReducer {
 	
 	def void deleteUnusedEnumLiteralsExceptOne(XSTS xSts,
 			Collection<? extends EnumerationLiteralDefinition> keepableLiterals) { // Unfolded Gamma variables
+		val xStsDeletableLiterals = xSts.getUnusedEnumLiteralsExceptOne(keepableLiterals)
+		
+		// Enum types cannot be deleted as there must remain an else literal for each of them
+		for (xStsDeletableLiteral : xStsDeletableLiterals) {
+			logger.info("Deleting XSTS enum literal " + xStsDeletableLiteral.name)
+			xStsDeletableLiteral.remove
+		}
+	}
+	
+	def void renameUnusedEnumLiteralsExceptOne(XSTS xSts,
+			Collection<? extends EnumerationLiteralDefinition> keepableLiterals) { // Unfolded Gamma variables
+		val xStsDeletableLiterals = xSts.getUnusedEnumLiteralsExceptOne(keepableLiterals)
+		
+		for (xStsDeletableLiteral : xStsDeletableLiterals) {
+			val unusedLiteralName = unusedEnumerationLiteralName
+			logger.info("Renaming XSTS enum literal " + xStsDeletableLiteral.name + " to " + unusedLiteralName)
+			xStsDeletableLiteral.name = unusedLiteralName
+		}
+	}
+	
+	protected def getUnusedEnumLiteralsExceptOne(XSTS xSts,
+			Collection<? extends EnumerationLiteralDefinition> keepableLiterals) {
 		val xStsLiterals = xSts.getAllContentsOfType(EnumerationLiteralDefinition)
 		
 		val xStsLiteralReferences = xSts.getAllContentsOfType(EnumerationLiteralExpression)
@@ -342,17 +363,7 @@ class SystemReducer {
 				xStsElseBranchedEnums += xStsContainingEnum
 			}
 		}
-		//
-		
-		for (xStsDeletableLiteral : xStsDeletableLiterals) {
-//			val xStsEnumerationType = xStsDeletableLiteral.getContainerOfType(EnumerationTypeDefinition)
-			logger.log(Level.INFO, "Deleting XSTS enum literal " + xStsDeletableLiteral.name)
-			xStsDeletableLiteral.remove
-			// Enum types cannot be deleted as there must remain an else literal for each of them
-//			if (xStsEnumerationType.literals.empty) {
-//				xStsEnumerationType.delete
-//			}
-		}
+		xStsDeletableLiterals
 	}
 	
 	//
@@ -423,7 +434,7 @@ class SystemReducer {
 					for (eventReference : queue.sourceEventReferences.toSet) {
 						if (storedPort === eventReference.eventSource) {
 							eventReference.remove
-							logger.log(Level.INFO, '''Removing unused «storedPort.name» reference from «queue.name»''')
+							logger.info('''Removing unused «storedPort.name» reference from «queue.name»''')
 						}
 					}
 				}
@@ -431,7 +442,7 @@ class SystemReducer {
 			
 			// Always empty queues are removed
 			if (queue.eventPassings.empty) {
-				logger.log(Level.INFO, '''Removing always empty «queue.name»''')
+				logger.info('''Removing always empty «queue.name»''')
 				queue.remove
 			}
 		}

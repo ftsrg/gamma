@@ -24,7 +24,6 @@ import java.util.logging.Logger
 import org.eclipse.xtend.lib.annotations.Data
 import uppaal.expressions.Expression
 import uppaal.templates.Selection
-import uppaal.types.RangeTypeSpecification
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
@@ -68,27 +67,34 @@ class HavocHandler {
 	}
 	
 	def dispatch SelectionStruct createSelection(EnumerationTypeDefinition type, VariableDeclaration variable) {
-//		val name = Namings.name
-		val upperLiteral = type.literals.size - 1
-//		
+		val literals = type.literals
+		val upperLiteral = literals.size - 1
+		
 		val lowerBound = ntaBuilder.createLiteralExpression("0")
 		val upperBound = ntaBuilder.createLiteralExpression(upperLiteral.toString)
-//		val selection = ntaBuilder.createIntegerSelection(name, lowerBound, upperBound)
 		
-//		return new SelectionStruct(selection, null)
+		val name = Namings.name
+		val selection = ntaBuilder.createIntegerSelection(name, lowerBound, upperBound)
 		
 		// Limiting the range to actually used literals + another one
-		val integerValueSelection = variable.createSelectionOfIntegerValues // Already contains "else" literal
-		// Selection.variable can be null if it is not compared to anything
-		if (integerValueSelection.selection !== null) {
-			val range = integerValueSelection.selection.typeDefinition as RangeTypeSpecification
-			val bounds = range.bounds
-			bounds.lowerBound = lowerBound
-			bounds.upperBound = upperBound
-		}
-		// Every referenced literal is selected to be complete (as negations can mess things up)
+		val referencableLiterals = literals.reject[it.unused] // Already contains "else" literal
+		// See OptimizerAndVerificationHandler for unused marking
 		
-		return integerValueSelection
+		if (referencableLiterals.size == literals.size) {
+			// A  continuous range, no need for additional guards
+			return new SelectionStruct(selection, null)
+		}
+		
+		val indexes = referencableLiterals.map[it.index]
+		val equalities = newArrayList // Filters the "interesting" values from the range
+		for (integerValue : indexes) {
+			equalities += ntaBuilder.createEqualityExpression(
+				selection, ntaBuilder.createLiteralExpression(integerValue.toString))
+		}
+		
+		val guard = ntaBuilder.wrapIntoOrExpression(equalities)
+		
+		return new SelectionStruct(selection, guard)
 	}
 	
 	def dispatch SelectionStruct createSelection(IntegerTypeDefinition type, VariableDeclaration variable) {
