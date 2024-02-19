@@ -25,10 +25,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
-import hu.bme.mit.gamma.xsts.codegeneration.c.CodeBuilder;
-import hu.bme.mit.gamma.xsts.codegeneration.c.HavocBuilder;
 import hu.bme.mit.gamma.xsts.codegeneration.c.IStatechartCode;
-import hu.bme.mit.gamma.xsts.codegeneration.c.WrapperBuilder;
 import hu.bme.mit.gamma.xsts.codegeneration.c.platforms.SupportedPlatforms;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 
@@ -53,7 +50,7 @@ public class CommandHandler extends AbstractHandler {
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		
-		/* read parameter from ui event */
+		/* read parameter from UI event */
 		IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelection(event);
 		Object element = selection.getFirstElement();
 		
@@ -80,11 +77,11 @@ public class CommandHandler extends AbstractHandler {
 		final boolean pointers = true;
 		final SupportedPlatforms platform = SupportedPlatforms.UNIX;
 		
-		/* define what to generate */
+		// Load component too, if you want to use this
 		List<IStatechartCode> generate = List.of(
-			new CodeBuilder(xSts),
-			new WrapperBuilder(xSts, pointers),
-			new HavocBuilder(xSts)
+//			new CodeBuilder(xSts),
+//			new WrapperBuilder(xSts, pointers),
+//			new HavocBuilder(xSts)
 		);
 		
 		/* build c code */

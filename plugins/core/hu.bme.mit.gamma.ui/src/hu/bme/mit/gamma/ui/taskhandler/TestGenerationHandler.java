@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019-2023 Contributors to the Gamma project
+ * Copyright (c) 2019-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -16,7 +16,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
@@ -37,6 +36,7 @@ public class TestGenerationHandler extends TaskHandler {
 		// Setting target folder
 		setProjectLocation(testGeneration); // Before the target folder
 		setTargetFolder(testGeneration);
+		setTestGeneration(testGeneration, packageName);
 		//
 		checkArgument(testGeneration.getProgrammingLanguages().size() == 1, 
 				"A single programming language must be specified: " + testGeneration.getProgrammingLanguages());
@@ -45,15 +45,15 @@ public class TestGenerationHandler extends TaskHandler {
 		checkArgument(programmingLanguage == ProgrammingLanguage.JAVA || programmingLanguage == ProgrammingLanguage.C,
 				"Currently only Java and C supported.");
 		
-		switch(testGeneration.getProgrammingLanguages().get(0)) {
-		case JAVA:
-			generateJavaTest(testGeneration, packageName);
-			break;
-		case C:
-			generateCTest(testGeneration);
-			break;
-		default:
-			throw new IllegalArgumentException("Not known programming language: " + programmingLanguage);
+		switch (programmingLanguage) {
+			case JAVA:
+				generateJavaTest(testGeneration, packageName);
+				break;
+			case C:
+				generateCTest(testGeneration);
+				break;
+			default:
+				throw new IllegalArgumentException("Not known programming language: " + programmingLanguage);
 		}
 		
 	}
@@ -61,19 +61,22 @@ public class TestGenerationHandler extends TaskHandler {
 	private void generateCTest(TestGeneration testGeneration) {
 		logger.info("Generating C unit tests");
 		ExecutionTrace executionTrace = testGeneration.getExecutionTrace();
-		String name = (testGeneration.getFileName().size() > 0) ? testGeneration.getFileName().get(0) : file.getName().replace(file.getFileExtension(), "");
+		String name = (testGeneration.getFileName().size() > 0) ? testGeneration.getFileName().get(0) :
+			file.getName().replace(file.getFileExtension(), "");
 		
 		/* test code */
 		URI path = URI.createURI(projectLocation);
-		hu.bme.mit.gamma.trace.testgeneration.c.TestGenerator testGenerator = new hu.bme.mit.gamma.trace.testgeneration.c.TestGenerator(executionTrace, path, name);
+		hu.bme.mit.gamma.trace.testgeneration.c.TestGenerator testGenerator =
+				new hu.bme.mit.gamma.trace.testgeneration.c.TestGenerator(executionTrace, path, name);
 		testGenerator.execute();
+		MakefileGenerator makeFileGenerator = new MakefileGenerator(
+				testGeneration.getExecutionTrace(), URI.createFileURI(targetFolderUri));
+		makeFileGenerator.execute();
 	}
 	
 	private void generateJavaTest(TestGeneration testGeneration, String packageName) throws IOException {
-		setTestGeneration(testGeneration, packageName);
-		
 		ExecutionTrace executionTrace = testGeneration.getExecutionTrace();
-		logger.log(Level.INFO, "Test generation for: " + executionTrace.getName());
+		logger.info("Java test generation for: " + executionTrace.getName());
 		String fileName = testGeneration.getFileName().get(0);
 		TestGenerator testGenerator = new TestGenerator(executionTrace,
 				testGeneration.getPackageName().get(0), fileName);

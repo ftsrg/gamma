@@ -72,7 +72,6 @@ import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.theta.verification.ThetaVerification;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
-import hu.bme.mit.gamma.trace.testgeneration.c.MakefileGenerator;
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
 import hu.bme.mit.gamma.trace.util.TraceUtil;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
@@ -507,7 +506,6 @@ public class VerificationHandler extends TaskHandler {
 			serializer.serialize(targetFolderUri, traceFileName, svgFileName,
 					testFolderUri, testFileName, packageName, trace,
 					file, programmingLanguage);
-		new MakefileGenerator(traces, URI.createFileURI(targetFolderUri)).execute();
 		}
 	}
 	
@@ -555,37 +553,23 @@ public class VerificationHandler extends TaskHandler {
 			
 			// Test
 			boolean serializeTest = testFolderUri != null && testFileName != null && basePackage != null;
-      
-      if (!serializeTest)
-				return;
-      
-			TestGeneration testGeneration = GenmodelModelFactory.eINSTANCE.createTestGeneration();
-			testGeneration.setExecutionTrace(trace);
-			/* set filename */
-			testGeneration.getFileName().clear();
-			testGeneration.getFileName().add(testFileName + id);
-			/* set programming language */
-			testGeneration.getProgrammingLanguages().clear();
-			testGeneration.getProgrammingLanguages().add(programmingLanguage);
+			if (serializeTest) {
+				TestGeneration testGeneration = GenmodelModelFactory.eINSTANCE.createTestGeneration();
+				testGeneration.setExecutionTrace(trace);
+				
+				String className = testFileName + id;
+				testGeneration.getFileName().add(className);
+				testGeneration.getProgrammingLanguages().add(programmingLanguage);
+				
+				TestGenerationHandler testGenerationHandler = new TestGenerationHandler(file);
+				testGenerationHandler.execute(testGeneration, basePackage);
 			
-			TestGenerationHandler tgh = new TestGenerationHandler(file);
-			try {
-				tgh.execute(testGeneration, basePackage);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			
-			// Test
-//			boolean serializeTest = testFolderUri != null && testFileName != null && basePackage != null;
-//			if (serializeTest) {
-//				String className = testFileName + id;
-//				
 //				TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
 //				String testCode = testGenerator.execute();
 //				String packageUri = testGenerator.getPackageName().replaceAll("\\.", "/");
 //				fileUtil.saveString(testFolderUri + File.separator + packageUri +
 //					File.separator + className + ".java", testCode);
-//			}
+			}
 		}
 
 		protected void serializeJavaTestCase(String testFolderUri, String basePackage,

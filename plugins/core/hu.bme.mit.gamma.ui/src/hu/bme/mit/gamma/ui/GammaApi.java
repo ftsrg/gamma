@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.ui;
 
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -52,7 +51,6 @@ import hu.bme.mit.gamma.genmodel.model.TraceGeneration;
 import hu.bme.mit.gamma.genmodel.model.TraceReplayModelGeneration;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation;
-import hu.bme.mit.gamma.trace.testgeneration.c.MakefileGenerator;
 import hu.bme.mit.gamma.ui.taskhandler.AdaptiveBehaviorConformanceCheckingHandler;
 import hu.bme.mit.gamma.ui.taskhandler.AdaptiveContractTestGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.AnalysisModelTransformationAndVerificationHandler;
@@ -138,30 +136,30 @@ public class GammaApi {
 							//
 							if (task instanceof YakinduCompilation) {
 								if (task instanceof InterfaceCompilation) {
-									logger.log(Level.INFO, "The Yakindu-Gamma interface transformation has been started");
+									logger.info("The Yakindu-Gamma interface transformation has been started");
 									InterfaceCompilation interfaceCompilation = (InterfaceCompilation) task;
 									InterfaceCompilationHandler handler = new InterfaceCompilationHandler(file);
 									handler.execute(interfaceCompilation);
-									logger.log(Level.INFO, "The Yakindu-Gamma interface transformation has been finished");
+									logger.info("The Yakindu-Gamma interface transformation has been finished");
 								}
 								else if (task instanceof StatechartCompilation) {
-									logger.log(Level.INFO, "The Yakindu-Gamma transformation has been started");
+									logger.info("The Yakindu-Gamma transformation has been started");
 									StatechartCompilation statechartCompilation = (StatechartCompilation) task;
 									StatechartCompilationHandler handler = new StatechartCompilationHandler(file);
 									handler.execute(statechartCompilation);
-									logger.log(Level.INFO, "The Yakindu-Gamma transformation has been finished");
+									logger.info("The Yakindu-Gamma transformation has been finished");
 								}
 							} else {
 								final String projectName = project.getName().toLowerCase();
 								if (task instanceof CodeGeneration) {
 									CodeGeneration codeGeneration = (CodeGeneration) task;
-									logger.log(Level.INFO, "The code generation has been started");
+									logger.info("The code generation has been started");
 									CodeGenerationHandler handler = new CodeGenerationHandler(file);
 									handler.execute(codeGeneration, projectName);
-									logger.log(Level.INFO, "The code generation has been finished");
+									logger.info("The code generation has been finished");
 								}
 								else if (task instanceof AnalysisModelTransformation) {
-									logger.log(Level.INFO, "The analyis transformation has been started");
+									logger.info("The analyis transformation has been started");
 									AnalysisModelTransformation analysisModelTransformation = (AnalysisModelTransformation) task;
 									// Maybe different classes should be created for distinction?
 									if (GenmodelDerivedFeatures.isVerifyAnalysisTask(analysisModelTransformation)) {
@@ -173,20 +171,17 @@ public class GammaApi {
 										AnalysisModelTransformationHandler handler = new AnalysisModelTransformationHandler(file);
 										handler.execute(analysisModelTransformation);
 									}
-									logger.log(Level.INFO, "The analysis transformation has been finished");
+									logger.info("The analysis transformation has been finished");
 								}
 								else if (task instanceof TestGeneration) {
-									logger.log(Level.INFO, "The test generation has been started");
+									logger.info("The test generation has been started");
 									TestGeneration testGeneration = (TestGeneration) task;
 									TestGenerationHandler handler = new TestGenerationHandler(file);
 									handler.execute(testGeneration, projectName);
-									String targetFolder = testGeneration.getTargetFolder().get(0);
-									new MakefileGenerator(List.of(testGeneration.getExecutionTrace()), URI.createFileURI(targetFolder)).execute();
-									System.out.println("Manual reset from api");
-									logger.log(Level.INFO, "The test generation has been finished");
+									logger.info("The test generation has been finished");
 								}
 								else if (task instanceof Verification) {
-									logger.log(Level.INFO, "The verification has been started");
+									logger.info("The verification has been started");
 									Verification verification = (Verification) task;
 									// Maybe different classes should be created for distinction?
 									if (GenmodelDerivedFeatures.isOptimizableVerificationTask(verification)) {
@@ -197,95 +192,95 @@ public class GammaApi {
 										VerificationHandler handler = new VerificationHandler(file);
 										handler.execute(verification);
 									}
-									logger.log(Level.INFO, "The verification has been finished");
+									logger.info("The verification has been finished");
 								}
 								else if (task instanceof TraceGeneration) {
-									logger.log(Level.INFO, "Theta trace generation has been started");
+									logger.info("Theta trace generation has been started");
 									TraceGeneration traceGeneration = (TraceGeneration) task;
 									TraceGenerationHandler handler = new TraceGenerationHandler(file);
 									handler.execute(traceGeneration);
-									logger.log(Level.INFO, "Theta trace generation has been finished");
+									logger.info("Theta trace generation has been finished");
 								}
 								else if (task instanceof Slicing) {
-									logger.log(Level.INFO, "The slicing has been started");
+									logger.info("The slicing has been started");
 									Slicing slicing = (Slicing) task;
 									SlicingHandler handler = new SlicingHandler(file);
 									handler.execute(slicing);
-									logger.log(Level.INFO, "The slicing has been finished");
+									logger.info("The slicing has been finished");
 								}
 								else if (task instanceof TraceReplayModelGeneration) {
-									logger.log(Level.INFO, "The test replay model generation has been started");
+									logger.info("The test replay model generation has been started");
 									TraceReplayModelGeneration traceReplayModelGeneration = (TraceReplayModelGeneration) task;
 									TraceReplayModelGenerationHandler handler = new TraceReplayModelGenerationHandler(file);
 									handler.execute(traceReplayModelGeneration);
-									logger.log(Level.INFO, "The test replay model generation has been finished");
+									logger.info("The test replay model generation has been finished");
 								}
 								else if (task instanceof AdaptiveContractTestGeneration) {
-									logger.log(Level.INFO, "The adaptive contract test generation has been started");
+									logger.info("The adaptive contract test generation has been started");
 									AdaptiveContractTestGeneration testGeneration = (AdaptiveContractTestGeneration) task;
 									AdaptiveContractTestGenerationHandler handler = new AdaptiveContractTestGenerationHandler(file);
 									handler.execute(testGeneration);
-									logger.log(Level.INFO, "The adaptive contract test generation has been finished");
+									logger.info("The adaptive contract test generation has been finished");
 								}
 								else if (task instanceof AdaptiveBehaviorConformanceChecking) {
-									logger.log(Level.INFO, "The adaptive behavior conformance checking has been started");
+									logger.info("The adaptive behavior conformance checking has been started");
 									AdaptiveBehaviorConformanceChecking conformanceChecking = (AdaptiveBehaviorConformanceChecking) task;
 									AdaptiveBehaviorConformanceCheckingHandler handler =
 											new AdaptiveBehaviorConformanceCheckingHandler(file);
 									handler.execute(conformanceChecking);
-									logger.log(Level.INFO, "The adaptive behavior conformance checking has been finished");
+									logger.info("The adaptive behavior conformance checking has been finished");
 								}
 								else if (task instanceof StatechartContractTestGeneration) {
 									StatechartContractTestGeneration testGeneration = (StatechartContractTestGeneration) task; 
 									StatechartContractTestGenerationHandler handler = new StatechartContractTestGenerationHandler(file);
 									handler.execute(testGeneration);
-									logger.log(Level.INFO, "The contract-based test generation has been finished");
+									logger.info("The contract-based test generation has been finished");
 								}
 								else if (task instanceof StatechartContractGeneration) {
 									StatechartContractGeneration statechartGeneration = (StatechartContractGeneration) task; 
 									StatechartContractGenerationHandler handler = new StatechartContractGenerationHandler(file);
 									handler.execute(statechartGeneration);
-									logger.log(Level.INFO, "The contract statechart generation has been finished");
+									logger.info("The contract statechart generation has been finished");
 								}
 								else if (task instanceof EventPriorityTransformation) {
-									logger.log(Level.INFO, "The event priority transformation has been started");
+									logger.info("The event priority transformation has been started");
 									EventPriorityTransformation eventPriorityTransformation = (EventPriorityTransformation) task;
 									EventPriorityTransformationHandler handler = new EventPriorityTransformationHandler(file);
 									handler.execute(eventPriorityTransformation);
-									logger.log(Level.INFO, "The event priority transformation has been finished");
+									logger.info("The event priority transformation has been finished");
 								}
 								else if (task instanceof PhaseStatechartGeneration) {
-									logger.log(Level.INFO, "The phase statechart transformation has been started");
+									logger.info("The phase statechart transformation has been started");
 									PhaseStatechartGeneration phaseStatechartGeneration = (PhaseStatechartGeneration) task;
 									PhaseGenerationHandler handler = new PhaseGenerationHandler(file);
 									handler.execute(phaseStatechartGeneration);
-									logger.log(Level.INFO, "The phase statechart transformation has been finished");
+									logger.info("The phase statechart transformation has been finished");
 								}
 								else if (task instanceof FaultTreeGeneration) {
-									logger.log(Level.INFO, "The fault tree generation has been started");
+									logger.info("The fault tree generation has been started");
 									FaultTreeGeneration faultTreeGeneration = (FaultTreeGeneration) task;
 									FaultTreeGenerationHandler handler = new FaultTreeGenerationHandler(file);
 									handler.execute(faultTreeGeneration);
-									logger.log(Level.INFO, "The fault tree generation has been finished");
+									logger.info("The fault tree generation has been finished");
 								}
 								else if (task instanceof FmeaTableGeneration) {
-									logger.log(Level.INFO, "The FMEA table generation has been started");
+									logger.info("The FMEA table generation has been started");
 									FmeaTableGeneration fmeaTableGeneration = (FmeaTableGeneration) task;
 									FmeaTableGenerationHandler handler = new FmeaTableGenerationHandler(file);
 									handler.execute(fmeaTableGeneration);
-									logger.log(Level.INFO, "The FMEA table generation has been finished");
+									logger.info("The FMEA table generation has been finished");
 								}
 								else if (task instanceof ModelMutation modelMutation) {
-									logger.log(Level.INFO, "Model mutation has been started");
+									logger.info("Model mutation has been started");
 									ModelMutationHandler handler = new ModelMutationHandler(file);
 									handler.execute(modelMutation);
-									logger.log(Level.INFO, "Model mutation has been finished");
+									logger.info("Model mutation has been finished");
 								}
 								else if (task instanceof MutationBasedTestGeneration mutationBasedTestGeneration) {
-									logger.log(Level.INFO, "Model mutation has been started");
+									logger.info("Model mutation has been started");
 									MutationBasedTestGenerationHandler handler = new MutationBasedTestGenerationHandler(file);
 									handler.execute(mutationBasedTestGeneration);
-									logger.log(Level.INFO, "Model mutation has been finished");
+									logger.info("Model mutation has been finished");
 								}
 							}
 							// Iteration end
@@ -296,18 +291,18 @@ public class GammaApi {
 						hook.endTaskProcess();
 						//
 						// Refreshing the project
-						logger.log(Level.INFO, "Refreshing project");
+						logger.info("Refreshing project");
 						project.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
-						logger.log(Level.INFO, "Refreshing project has been finished");
+						logger.info("Refreshing project has been finished");
 					}
 				}
 				else {
-					logger.log(Level.WARNING, "The given resource does not contain a GenModel: " + resource);
+					logger.warning("The given resource does not contain a GenModel: " + resource);
 				}
 			}
 		} catch (InterruptedException e) {
 			String threadName = Thread.currentThread().getName();
-			logger.log(Level.INFO, "The task run by this thread has been cancelled: " + threadName);
+			logger.info("The task run by this thread has been cancelled: " + threadName);
 			System.out.println("The task run by this thread has been cancelled: " + threadName);
 		}
 	}
