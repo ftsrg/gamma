@@ -65,6 +65,7 @@ import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage;
+import hu.bme.mit.gamma.statechart.interface_.InterfaceParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Port;
@@ -192,6 +193,16 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				Region region = stateReferenceExpression.getRegion();
 				List<State> states = StatechartModelDerivedFeatures.getStates(region);
 				return Scopes.scopeFor(states);
+			}
+			if (context instanceof InterfaceParameterReferenceExpression interfaceParameterReferenceExpression) {
+				if (reference == InterfaceModelPackage.Literals.INTERFACE_PARAMETER_REFERENCE_EXPRESSION__PARAMETER) {
+					checkState(interfaceParameterReferenceExpression.getEvent() != null);
+					Event event = interfaceParameterReferenceExpression.getEvent();					
+					return Scopes.scopeFor(event.getParameterDeclarations());
+				} else if (reference == InterfaceModelPackage.Literals.INTERFACE_PARAMETER_REFERENCE_EXPRESSION__EVENT) {
+					Interface _interface = StatechartModelDerivedFeatures.getContainingInterface(interfaceParameterReferenceExpression);	
+					return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllEvents(_interface));
+				}
 			}
 
 			// Composite system

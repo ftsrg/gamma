@@ -2210,4 +2210,36 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return validationResultMessages;
 	}
 	
+	public Collection<ValidationResultMessage> checkPortInvariants(Port port) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+
+		List<Expression> invariants = port.getInvariants();
+		for (Expression invariant : invariants) {
+			if (!typeDeterminator.isBoolean(invariant)) {
+				int index = invariants.indexOf(invariant);
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"A port invariant must be a boolean expression",
+						new ReferenceInfo(InterfaceModelPackage.Literals.PORT__INVARIANTS, index)));
+			}
+		}
+
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkInterfaceInvariants(Interface gammaInterface) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+
+		List<Expression> invariants = gammaInterface.getInvariants();
+		for (Expression invariant : invariants) {
+			if (!typeDeterminator.isBoolean(invariant)) {
+				int index = invariants.indexOf(invariant);
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"An interface invariant must be a boolean expression",
+						new ReferenceInfo(InterfaceModelPackage.Literals.PORT__INVARIANTS, index)));
+			}
+		}
+
+		return validationResultMessages;
+	}
+	
 }

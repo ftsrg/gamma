@@ -1,0 +1,7 @@
+package Interfaces
+
+interface Trigger {
+	out event trigger(value: integer)
+	invariant this.trigger::value < 100
+//	invariant (trigger.value < 100)
+}

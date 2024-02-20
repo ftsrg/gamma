@@ -1,0 +1,13 @@
+package port_invariant_system
+
+import "Interfaces"
+import "portinvariants"
+
+sync System [
+	port system_trigger1 : requires Trigger
+	port system_trigger2 : requires Trigger
+] {
+	component statechartWithPortInvariants : StatechartWithPortinvariants
+	bind system_trigger1 -> statechartWithPortInvariants.trigger1
+	bind system_trigger2 -> statechartWithPortInvariants.trigger2
+}

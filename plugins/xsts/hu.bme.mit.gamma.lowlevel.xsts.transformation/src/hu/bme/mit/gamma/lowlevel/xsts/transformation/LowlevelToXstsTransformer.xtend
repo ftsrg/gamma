@@ -213,6 +213,7 @@ class LowlevelToXstsTransformer {
 		
 		handleStateInvariants
 		handleStatechartInvariants
+		handleEnvironmentalInvariants
 		
 		handleTransientAndResettableVariableAnnotations
 		handleRunUponExternalEventAnnotation
@@ -750,7 +751,7 @@ class LowlevelToXstsTransformer {
 		val lowlevelStatechartInvariants = lowlevelStatechart.invariants
 		
 		if (!lowlevelStatechartInvariants.empty) {
-				val xStsInvariants = lowlevelStatechart.invariants.map[it.transformExpression]
+				val xStsInvariants = lowlevelStatechartInvariants.map[it.transformExpression]
 				val xStsStatechartInvariant = xStsInvariants.wrapIntoAndExpression
 
 				val xStsAssumeStatechartInvariant = xStsStatechartInvariant.createAssumeAction
@@ -760,6 +761,22 @@ class LowlevelToXstsTransformer {
 				xStsMergedAction.appendToAction(xStsAssumeStatechartInvariant)
 				val xStsCongifurationInitAction = xSts.configurationInitializingTransition.action
 				xStsCongifurationInitAction.appendToAction(xStsAssumeStatechartInvariant.clone)
+		}
+	}
+	
+	protected def handleEnvironmentalInvariants() {
+		val lowlevelStatechart = trace.statechart
+		val lowlevelEnvironmentalInvariants = lowlevelStatechart.environmentalInvariants
+		
+		if (!lowlevelEnvironmentalInvariants.empty) {
+				val xStsInvariants = lowlevelEnvironmentalInvariants.map[it.transformExpression]
+				val xStsEnvironmentalInvariant = xStsInvariants.wrapIntoAndExpression
+
+				val xStsAssumeEnvironmentalInvariant = xStsEnvironmentalInvariant.createAssumeAction
+				xStsAssumeEnvironmentalInvariant.addInvariantAnnotation
+				
+				val xStsMergedAction = xSts.mergedAction
+				xStsAssumeEnvironmentalInvariant.prependToAction(xStsMergedAction)
 		}
 	}
 	

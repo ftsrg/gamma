@@ -129,6 +129,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		handleValidationResultMessage(statechartModelValidator.checkParameterName(event));
 	}
 	
+	@Check
+	public void checkInterfaceInvariants(Interface gammaInterface) {
+		handleValidationResultMessage(statechartModelValidator.checkInterfaceInvariants(gammaInterface));
+	}
+	
 	// Statechart adaptive contract
 	
 	@Check
@@ -327,6 +332,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkStatechartInvariants(StatechartDefinition statechart) {
 		handleValidationResultMessage(statechartModelValidator.checkStatechartInvariants(statechart));
+	}
+	
+	@Check
+	public void checkPortInvariants(Port port) {
+		handleValidationResultMessage(statechartModelValidator.checkPortInvariants(port));
 	}
 	
 	// Composite system
