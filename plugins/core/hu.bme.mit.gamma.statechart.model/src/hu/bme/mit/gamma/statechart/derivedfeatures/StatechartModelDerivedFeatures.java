@@ -3553,15 +3553,19 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return getComponentAnnotation(component, NegativeContractStatechartAnnotation.class) != null;
 	}
 	
+	public static List<Expression> getInterfaceInvariants(Port port) {
+		return port.getInterfaceRealization().getInterface().getInvariants();
+	}
+	
 	public static List<Expression> mapInterfaceInvariantsToPort(Port port) {
-		List<Expression> interfaceInvariants = ecoreUtil.clone(port.getInterfaceRealization().getInterface().getInvariants());
+		List<Expression> interfaceInvariants = ecoreUtil.clone(getInterfaceInvariants(port));
 		
 		for (Expression interfaceInvariant : interfaceInvariants) {
 			List<InterfaceParameterReferenceExpression> interfaceParameterReferenceExpressions = ecoreUtil.getSelfAndAllContentsOfType(interfaceInvariant, InterfaceParameterReferenceExpression.class);
 			for (InterfaceParameterReferenceExpression interfaceParameterReferenceExpression : interfaceParameterReferenceExpressions) {
 				Expression portInvariant = statechartUtil.createEventParameterReference(port,
 						interfaceParameterReferenceExpression.getParameter());
-				ecoreUtil.changeAndReplace(portInvariant, interfaceParameterReferenceExpression, interfaceParameterReferenceExpression.eContainer());
+				ecoreUtil.replace(portInvariant, interfaceParameterReferenceExpression);
 			}
 		}
 		
