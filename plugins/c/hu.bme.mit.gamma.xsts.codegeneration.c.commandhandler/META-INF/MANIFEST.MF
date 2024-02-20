@@ -3,11 +3,11 @@ Bundle-ManifestVersion: 2
 Bundle-Name: C Code Generator Command Handler
 Bundle-SymbolicName: hu.bme.mit.gamma.xsts.codegeneration.c.commandhandler;singleton:=true
 Bundle-Version: 2.10.0.qualifier
-Require-Bundle: org.eclipse.ui;bundle-version="3.202.0",
- org.eclipse.core.runtime;bundle-version="3.26.100",
- org.eclipse.core.resources;bundle-version="3.18.200",
- hu.bme.mit.gamma.xsts.model;bundle-version="2.8.0",
- hu.bme.mit.gamma.xsts.codegeneration.c;bundle-version="1.0.0"
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.core.resources,
+ hu.bme.mit.gamma.xsts.model,
+ hu.bme.mit.gamma.xsts.codegeneration.c
 Automatic-Module-Name: hu.bme.mit.gamma.xsts.codegeneration.c.commandhandler
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
