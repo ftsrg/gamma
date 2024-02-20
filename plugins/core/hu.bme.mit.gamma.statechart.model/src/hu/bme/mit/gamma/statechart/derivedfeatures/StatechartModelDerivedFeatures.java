@@ -1076,12 +1076,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return (EventDeclaration) event.eContainer();
 	}
 	
-	public static Interface getContainingInterface(Event event) {
-		return ecoreUtil.getContainerOfType(event, Interface.class);
-	}
-	
-	public static Interface getContainingInterface(InterfaceParameterReferenceExpression expression) {
-		return ecoreUtil.getContainerOfType(expression, Interface.class);
+	public static Interface getContainingInterface(EObject object) {
+		return ecoreUtil.getContainerOfType(object, Interface.class);
 	}
 	
 	public static List<EventDeclaration> getAllEventDeclarations(Port port) {
@@ -3557,64 +3553,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return getComponentAnnotation(component, NegativeContractStatechartAnnotation.class) != null;
 	}
 	
-	protected static void _mapInterfaceInvariantToPort(Port port, BinaryExpression expression) {
-		_mapInterfaceInvariantToPort(port, expression.getLeftOperand());
-		_mapInterfaceInvariantToPort(port, expression.getRightOperand());
-	}
-	
-	protected static void _mapInterfaceInvariantToPort(Port port, IfThenElseExpression expression) {
-		_mapInterfaceInvariantToPort(port, expression.getCondition());
-		_mapInterfaceInvariantToPort(port, expression.getThen());
-		_mapInterfaceInvariantToPort(port, expression.getElse());
-	}
-	
-	protected static void _mapInterfaceInvariantToPort(Port port, MultiaryExpression expression) {
-		List<Expression> _operands = expression.getOperands();
-		for (Expression operand : _operands) {
-			_mapInterfaceInvariantToPort(port, operand);
-		}
-	}
-	
-	protected static void _mapInterfaceInvariantToPort(Port port, UnaryExpression expression) {
-		_mapInterfaceInvariantToPort(port, expression.getOperand());
-	}
-	
-	protected static void _mapInterfaceInvariantToPort(Port port, ReferenceExpression expression) {
-		if (expression instanceof InterfaceParameterReferenceExpression) {
-			// The InterfaceParameterReferenceExpressions are replaced with EventParameterReferenceExpressions using the port realizing the interface
-			InterfaceParameterReferenceExpression interfaceParameterReferenceExpression = (InterfaceParameterReferenceExpression) expression;
-			Expression portInvariant = statechartUtil.createEventParameterReference(port,
-					interfaceParameterReferenceExpression.getParameter());
-			ecoreUtil.changeAndReplace(portInvariant, interfaceParameterReferenceExpression, interfaceParameterReferenceExpression.eContainer());
-		} else if (expression instanceof AccessExpression) {
-			AccessExpression accessExpression = (AccessExpression) expression;
-			_mapInterfaceInvariantToPort(port, accessExpression.getOperand());
-		}
-	}
-	
-	protected static void _mapInterfaceInvariantToPort(Port port, Expression expression) {
-		if (expression instanceof ReferenceExpression) {
-			_mapInterfaceInvariantToPort(port, (ReferenceExpression) expression);
-		} else if (expression instanceof BinaryExpression) {
-			_mapInterfaceInvariantToPort(port, (BinaryExpression) expression);
-		} else if (expression instanceof IfThenElseExpression) {
-			_mapInterfaceInvariantToPort(port, (IfThenElseExpression) expression);
-		} else if (expression instanceof MultiaryExpression) {
-			_mapInterfaceInvariantToPort(port, (MultiaryExpression) expression);
-		} else if (expression instanceof NullaryExpression) {
-			// Nothing to map here
-		} else if (expression instanceof UnaryExpression) {
-			_mapInterfaceInvariantToPort(port, (UnaryExpression) expression);
-		} else {
-			throw new IllegalArgumentException("Unhandled parameter types: " + Arrays.<Object>asList(expression).toString());
-		}
-	}
-	
 	public static List<Expression> mapInterfaceInvariantsToPort(Port port) {
 		List<Expression> interfaceInvariants = ecoreUtil.clone(port.getInterfaceRealization().getInterface().getInvariants());
 		
 		for (Expression interfaceInvariant : interfaceInvariants) {
-			_mapInterfaceInvariantToPort(port, interfaceInvariant);
+			List<InterfaceParameterReferenceExpression> interfaceParameterReferenceExpressions = ecoreUtil.getSelfAndAllContentsOfType(interfaceInvariant, InterfaceParameterReferenceExpression.class);
+			for (InterfaceParameterReferenceExpression interfaceParameterReferenceExpression : interfaceParameterReferenceExpressions) {
+				Expression portInvariant = statechartUtil.createEventParameterReference(port,
+						interfaceParameterReferenceExpression.getParameter());
+				ecoreUtil.changeAndReplace(portInvariant, interfaceParameterReferenceExpression, interfaceParameterReferenceExpression.eContainer());
+			}
 		}
 		
 		return interfaceInvariants;

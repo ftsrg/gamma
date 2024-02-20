@@ -194,18 +194,15 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				List<State> states = StatechartModelDerivedFeatures.getStates(region);
 				return Scopes.scopeFor(states);
 			}
-			if (context instanceof InterfaceParameterReferenceExpression
-					&& reference == InterfaceModelPackage.Literals.INTERFACE_PARAMETER_REFERENCE_EXPRESSION__EVENT) {
-				InterfaceParameterReferenceExpression interfaceParameterReferenceExpression = (InterfaceParameterReferenceExpression) context;
-				Interface _interface = StatechartModelDerivedFeatures.getContainingInterface(interfaceParameterReferenceExpression);	
-				return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllEvents(_interface));
-			}
-			if (context instanceof InterfaceParameterReferenceExpression
-					&& reference == InterfaceModelPackage.Literals.INTERFACE_PARAMETER_REFERENCE_EXPRESSION__PARAMETER) {
-				InterfaceParameterReferenceExpression interfaceParameterReferenceExpression = (InterfaceParameterReferenceExpression) context;
-				checkState(interfaceParameterReferenceExpression.getEvent() != null);
-				Event event = interfaceParameterReferenceExpression.getEvent();					
-				return Scopes.scopeFor(event.getParameterDeclarations());
+			if (context instanceof InterfaceParameterReferenceExpression interfaceParameterReferenceExpression) {
+				if (reference == InterfaceModelPackage.Literals.INTERFACE_PARAMETER_REFERENCE_EXPRESSION__PARAMETER) {
+					checkState(interfaceParameterReferenceExpression.getEvent() != null);
+					Event event = interfaceParameterReferenceExpression.getEvent();					
+					return Scopes.scopeFor(event.getParameterDeclarations());
+				} else if (reference == InterfaceModelPackage.Literals.INTERFACE_PARAMETER_REFERENCE_EXPRESSION__EVENT) {
+					Interface _interface = StatechartModelDerivedFeatures.getContainingInterface(interfaceParameterReferenceExpression);	
+					return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllEvents(_interface));
+				}
 			}
 
 			// Composite system
