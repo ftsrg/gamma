@@ -25,7 +25,6 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.ArrayList
 import java.util.List
 import java.util.Set
-import org.eclipse.emf.common.util.EList
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -36,8 +35,8 @@ class ModelSerializer {
 	//
 	
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
-	protected static final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
-	val Naming naming = new Naming()
+	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected final Naming naming = new Naming
 	
 	
 	
@@ -47,69 +46,63 @@ class ModelSerializer {
 		return component.execute
 	}
 	
-	def String execute(Component component) {
-        '''
+	def String execute(Component component) '''
         «serializeSystemComponent(component)»
         «serializeSubComponents(getSubComponents(component))»
-        '''
-	}
+    '''
 	
-      def String serializeSystemComponent(Component component) {
-      	val ports = component.allPorts
-        '''COMPONENT «component.name» system
-        		   INTERFACE
-        			«serializeInterface(ports)»
-        		   REFINEMENT
-        			«serializeRefinement(component)»
-        		'''
-    }
+	
+    def String serializeSystemComponent(Component component) '''
+      	COMPONENT «component.name» system
+      		INTERFACE
+        		«serializeInterface(component.allPorts)»
+      		REFINEMENT
+        		«serializeRefinement(component)»
+        		
+    '''
     
     
-	def String serializeSubComponents(Set<Component> components) {	
-		'''«FOR component : components»
-			COMPONENT «component.name»
-					INTERFACE
-			        			«serializeInterface(component.ports)»
-					REFINEMENT
-			        			«serializeRefinement(component)»
+    
+	def String serializeSubComponents(Set<Component> components) '''
+		«FOR component : components»
+		COMPONENT «component.name»
+			INTERFACE
+				«serializeInterface(component.ports)»
+			REFINEMENT
+				«serializeRefinement(component)»
 			        			
-		«ENDFOR»'''
-	}
+		«ENDFOR»
+	'''
+	
 
-	def String serializeInterface(List<Port> ports) {
-        '''
+	def String serializeInterface(List<Port> ports) '''
         «FOR port : ports»
 	        «FOR event : port.inputEvents»
-	        INPUT «naming.getPortName(port, event)»
+		        INPUT «naming.getPortName(port, event)»
 	        «ENDFOR»
 	        «FOR event : port.outputEvents»
-	        OUTPUT «naming.getPortName(port, event)»
+	        	OUTPUT «naming.getPortName(port, event)»
 	        «ENDFOR»
         «ENDFOR»
-        
-        ''' 
-    }
+    ''' 
+    
     
 	def serializeRefinement(Component component) {
 		val subcomponents = extractSubcomponentInstances(component)
 		val bindings = extractBindings(component)
 		val channels = extractChannels(component)
-		if(!subcomponents.nullOrEmpty) {
+		if(!subcomponents.nullOrEmpty) '''
+			«FOR sub: subcomponents»
+				«naming.getSubName(sub)»
+			«ENDFOR»
+			
+			«FOR binding : bindings»
+				«serializeBinding(binding)»
+			«ENDFOR»
+			«FOR channel : channels»
+				«serializeChannel(channel)»
+			«ENDFOR»
 		'''
-		«FOR sub: subcomponents»
-		«naming.getSubName(sub)»
-		«ENDFOR»
-		
-		«FOR binding : bindings»
-			«serializeBinding(binding)»
-		«ENDFOR»
-		«FOR channel : channels»
-			«serializeChannel(channel)»
-		«ENDFOR»
-		
-		'''
-		
-		}
 	}
 	
 		
@@ -119,44 +112,38 @@ class ModelSerializer {
 		'''
 		«FOR port : ports»
 			«FOR event : events»
-			«naming.getChannelName(channel, port, event)»
+				«naming.getChannelName(channel, port, event)»
 			«ENDFOR»
 		«ENDFOR»
 		'''
 	}
 	
-	def serializeBinding(PortBinding binding) {
-		'''
+	def serializeBinding(PortBinding binding) '''
 		«FOR event : binding.compositeSystemPort.allEvents»
 			«naming.getBindingName(binding, event)»
 		«ENDFOR»
-		'''
+	'''
 
-	}
-		
-	def List<ComponentInstance> extractSubcomponentInstances(Component component) {
-		val derivedComponents = new ArrayList
+	
+	def List<? extends ComponentInstance> extractSubcomponentInstances(Component component) {
 		if(component instanceof CompositeComponent) {
-			for(instance : component.derivedComponents) {
-				derivedComponents.add(instance)
-			}
-			return derivedComponents
+			return component.derivedComponents
 		}
 	}
 	
 
-	def EList<PortBinding> extractBindings(Component component) {
+	def List<PortBinding> extractBindings(Component component) {
 		if(component instanceof CompositeComponent) {
 			return component.portBindings			
 		}
 	}
 	
 	def List<Channel> extractChannels(Component component) {
-	if(component instanceof CompositeComponent) {
+		if(component instanceof CompositeComponent) {
 			return component.channels			
 		}	
 	}
-		
+	//TODO statechartmodelderivedfeaturesre cserélni	
 	def Set<Component> getSubComponents(Component component) {
 		val derivedComponents = newHashSet
 		if(component instanceof CompositeComponent) {
@@ -166,26 +153,26 @@ class ModelSerializer {
 			return derivedComponents
 		}
 	}
-
-    
 }
 
 class Naming {
 	
-	def String getSubName(ComponentInstance sub) {
-		'''SUB «sub.name» : «sub.derivedType.name»;'''
-	}
+	def String getSubName(ComponentInstance sub) '''
+		SUB «sub.name» : «sub.derivedType.name»;
+	'''
 	
-    def String getPortName(Port port, Event event) {
-        '''PORT «port.name»_«event.name» : event;'''    
-    }
+	
+    def String getPortName(Port port, Event event) '''
+   		PORT «port.name»_«event.name» : event;
+   	'''    
+    
 
     def String getChannelName(Channel channel, InstancePortReference port, Event event) {
         val leftInstance = port.instance.name
         val leftPort = port.port.name
         val rightInstance = channel.providedPort.instance.name
-        val rightPortName = channel.providedPort.port.name
-		'''CONNECTION «leftInstance».«leftPort»_«event.name» := «rightInstance».«rightPortName»_«event.name»;'''
+        val rightPortName = channel.providedPort.port.name 
+        '''CONNECTION «leftInstance».«leftPort»_«event.name» := «rightInstance».«rightPortName»_«event.name»;'''
     }
     
     def String getBindingName(PortBinding binding, Event event) {
@@ -193,12 +180,12 @@ class Naming {
     	val rightInstance = binding.instancePortReference.instance.name
     	val rightPort = binding.instancePortReference.port.name
     	
-    	if(binding.compositeSystemPort.interfaceRealization.realizationMode == RealizationMode.PROVIDED) {
-    	'''CONNECTION «leftInstance»_«event.name» := «rightInstance».«rightPort»_«event.name»;'''		
-    	} else {
-    	'''CONNECTION «rightInstance».«rightPort»_«event.name» := «leftInstance»_«event.name»;'''				
-    	}
-    	
+    	if(binding.compositeSystemPort.interfaceRealization.realizationMode == RealizationMode.PROVIDED) '''
+    		CONNECTION «leftInstance»_«event.name» := «rightInstance».«rightPort»_«event.name»;
+    	'''		
+    	else '''
+    		CONNECTION «rightInstance».«rightPort»_«event.name» := «leftInstance»_«event.name»;
+    	'''
     }
     
 }
