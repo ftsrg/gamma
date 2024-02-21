@@ -420,6 +420,10 @@ class GammaToXstsTransformer {
 			val loopActionUnroller = LoopActionUnroller.INSTANCE
 			loopActionUnroller.unrollLoopActions(xSts)
 		}
+		
+		if (unfoldMessageQueues || optimizeOneCapacityArrays || unrollLoopActions) {
+			xStsOptimizer.optimizeXSts(xSts) // Maybe unfoldings/unrollings can be exploited
+		}
 	}
 	
 }

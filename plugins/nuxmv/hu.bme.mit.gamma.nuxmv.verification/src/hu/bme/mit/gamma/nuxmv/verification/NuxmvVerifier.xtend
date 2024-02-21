@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Gamma project
+ * Copyright (c) 2023-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.nuxmv.verification
 
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.util.FileUtil
+import hu.bme.mit.gamma.util.ScannerLogger
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier
 import java.io.File
@@ -106,7 +107,7 @@ class NuxmvVerifier extends AbstractVerifier {
 		logger.info("Running nuXmv: " + nuXmvCommand.join(" "))
 		
 		var Scanner resultReader = null
-		
+		var ScannerLogger errorReader = null
 		var Result traceResult = null
 		
 		try {
@@ -114,13 +115,15 @@ class NuxmvVerifier extends AbstractVerifier {
 			
 			// Reading the result of the command
 			resultReader = new Scanner(process.inputReader)
+			errorReader = new ScannerLogger(new Scanner(process.errorReader))
+			errorReader.start
 			
 			val resultPattern = '''(.*invariant.*is.*)|(.*specification.*is.*)'''
 			var resultFound = false
 			result  = ThreeStateBoolean.UNDEF
 			while (!resultFound && resultReader.hasNextLine) {
 				val line = resultReader.nextLine
-				if (!line.startsWith("***") && !line.nullOrEmpty) { // No header printing
+				if (!line.nullOrEmpty && !line.startsWith("***")) { // No header printing
 					logger.info("nuXmv: " + line)
 				}
 				if (line.matches(resultPattern)) {
@@ -152,6 +155,7 @@ class NuxmvVerifier extends AbstractVerifier {
 			logger.info("Quitting nuXmv shell")
 		} finally {
 			resultReader?.close
+			errorReader?.cancel
 			cancel
 		}
 		
@@ -214,6 +218,7 @@ class NuxmvVerifier extends AbstractVerifier {
 		logger.info("Running nuXmv to convert property to invariance: " + nuXmvCommand.join(" "))
 		
 		var Scanner resultReader = null
+		var ScannerLogger errorReader = null
 		
 		try {
 			val PROPERTY_START = "000 :"
@@ -222,11 +227,14 @@ class NuxmvVerifier extends AbstractVerifier {
 			
 			val process = Runtime.getRuntime().exec(nuXmvCommand)
 			resultReader = new Scanner(process.inputReader)
+			errorReader = new ScannerLogger(new Scanner(process.errorReader))
+			errorReader.start
+			
 			var line = ""
 			while (!line.startsWith(PROPERTY_START) &&
 					!line.startsWith(PARSING_ERROR) && !line.startsWith(ERROR)) {
 				line = resultReader.nextLine
-				if (!line.startsWith("***") && !line.nullOrEmpty) { // No header printing
+				if (!line.nullOrEmpty && !line.startsWith("***")) { // No header printing
 					logger.info("nuXmv: " + line)
 				}
 			}
@@ -243,6 +251,7 @@ class NuxmvVerifier extends AbstractVerifier {
 			return null
 		} finally {
 			resultReader?.close
+			errorReader?.cancel
 		}
 	}
 	
