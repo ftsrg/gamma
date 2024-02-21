@@ -31,9 +31,9 @@ class PromelaVerification extends AbstractVerification {
 		val MAX_DEPTH = 10000
 		return #[
 //			"-search -a -b" // default: -a search for acceptance cycles, -b bounded search mode, makes it an error to exceed the search depth, triggering and error trail
-			'''-search -n -m«MAX_DEPTH» -w32 -DVECTORSZ=6144 -DNOBOUNDCHECK -DSAFETY -DSFH'''
-//			'''-search -n -I -m«MAX_DEPTH» -w32 -DVECTORSZ=6144'''
-//			'''-search -n -bfs -DVECTORSZ=6144 -DCOLLAPSE'''
+			'''-search -n -m«MAX_DEPTH» -w32 -DVECTORSZ=6144 -DNOBOUNDCHECK''' // -DSAFETY -DSFH
+//			'''-search -n -I -m«MAX_DEPTH» -w32 -DVECTORSZ=6144 -DNOBOUNDCHECK'''
+//			'''-search -n -bfs -DVECTORSZ=6144 -DCOLLAPSE -DNOBOUNDCHECK'''
 		]
 		// -A apply slicing algorithm
 		// -m Changes the semantics of send events. Ordinarily, a send action will be (blocked) if the target message buffer is full. With this option a message sent to a full buffer is lost.
