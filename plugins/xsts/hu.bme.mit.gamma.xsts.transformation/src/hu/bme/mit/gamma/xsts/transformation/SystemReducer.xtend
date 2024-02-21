@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.PredicateExpression
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.UnremovableVariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
@@ -157,10 +158,10 @@ class SystemReducer {
 		val xStsDeletedInputEventVariables = xStsInputEventVariables
 				.filter[it.containingXsts === null]
 		
+		logger.info("Deleting input variables " + xStsDeletedInputEventVariables.map[it.name].join(", "))
 		for (xStsDeletedInputEventVariable : xStsDeletedInputEventVariables) {
 			val name = xStsDeletedInputEventVariable.name
 			val xStsInputVariable = xSts.getVariable(name) // Tracing
-			logger.info("Deleting input variable " + name)
 			
 			for (reference : xSts.getAllContentsOfType(DirectReferenceExpression)) {
 				if (reference.declaration === xStsDeletedInputEventVariable) {
@@ -170,6 +171,7 @@ class SystemReducer {
 			}
 			// These references cannot be rhs-s in assignments if the above algorithms are correct
 		}
+		
 		// Optimization only if needed
 		if (!xStsDeletedInputEventVariables.empty) {
 			// Value propagation - inline: XstsOptimizer has this and many other techniques
@@ -305,9 +307,9 @@ class SystemReducer {
 		
 		// Note that only writes are handled - reads are not, so the following can cause
 		// nullptr exceptions if the method call (parameters) is not correct
+		logger.info("Deleting XSTS variables " + xStsDeleteableVariables.map[it.name].join(", "))
 		for (xStsDeletableVariable : xStsDeleteableVariables) {
 			xStsDeletableVariable.deleteDeclaration // Delete needed due to e.g., transientVariables list
-			logger.info("Deleting XSTS variable " + xStsDeletableVariable.name)
 		}
 	}
 	
@@ -318,8 +320,8 @@ class SystemReducer {
 		val xStsDeletableLiterals = xSts.getUnusedEnumLiteralsExceptOne(keepableLiterals)
 		
 		// Enum types cannot be deleted as there must remain an else literal for each of them
+		logger.info("Deleting XSTS enum literals: " + xStsDeletableLiterals.map[it.name].join(", "))
 		for (xStsDeletableLiteral : xStsDeletableLiterals) {
-			logger.info("Deleting XSTS enum literal " + xStsDeletableLiteral.name)
 			xStsDeletableLiteral.remove
 		}
 	}
@@ -328,19 +330,32 @@ class SystemReducer {
 			Collection<? extends EnumerationLiteralDefinition> keepableLiterals) { // Unfolded Gamma variables
 		val xStsDeletableLiterals = xSts.getUnusedEnumLiteralsExceptOne(keepableLiterals)
 		
+		logger.info("Renaming XSTS enum literals to " + unusedEnumerationLiteralName + ": " + xStsDeletableLiterals.map[it.name].join(", "))
 		for (xStsDeletableLiteral : xStsDeletableLiterals) {
 			val unusedLiteralName = unusedEnumerationLiteralName
-			logger.info("Renaming XSTS enum literal " + xStsDeletableLiteral.name + " to " + unusedLiteralName)
 			xStsDeletableLiteral.name = unusedLiteralName
 		}
 	}
 	
 	protected def getUnusedEnumLiteralsExceptOne(XSTS xSts,
 			Collection<? extends EnumerationLiteralDefinition> keepableLiterals) {
-		val xStsLiterals = xSts.getAllContentsOfType(EnumerationLiteralDefinition)
+		val xStsEnums = xSts.typeDeclarations.map[it.typeDefinition]
+				.filter(EnumerationTypeDefinition).toList
+		val xStsLiterals = xStsEnums.map[it.literals].flatten.toList
 		
 		val xStsLiteralReferences = xSts.getAllContentsOfType(EnumerationLiteralExpression)
-		val xStsReferencedLiterals = xStsLiteralReferences.map[it.reference].toSet
+		
+		val xStsLiteralReferenced = newLinkedHashSet
+		xStsLiteralReferenced += xStsLiteralReferences.map[it.reference]
+		
+		val xStsLiteralReferencedByPredicate = xStsLiteralReferences
+				.filter[it.isDirectlyContainedBy(PredicateExpression)].map[it.reference].toSet
+		
+//		val xStsLiteralUnreferenced = newArrayList
+//		xStsLiteralUnreferenced += xStsLiterals
+//		xStsLiteralUnreferenced -= xStsLiteralReferenced
+		
+		// Could make progress here if we knew what literals are referenced in a 'positive' or 'negative' way
 		
 		val xStsKeepableLiterals = keepableLiterals // customizeName? - remains the same
 									.map[val name = it.name
@@ -349,21 +364,31 @@ class SystemReducer {
 											.filter[it.getContainerOfType(TypeDeclaration).name == typeDeclarationName &&
 													it.name === name]].flatten.toSet
 		
-		val xStsDeletableLiterals = newHashSet
+		val xStsDeletableLiterals = newArrayList
 		xStsDeletableLiterals += xStsLiterals
-		xStsDeletableLiterals -= xStsReferencedLiterals
+		xStsDeletableLiterals -= xStsLiteralReferenced
 		xStsDeletableLiterals -= xStsKeepableLiterals
 		
-		// Keeping the lowest literal for the "else" branch
-		val xStsElseBranchedEnums = newHashSet
-		for (xStsDeletableLiteral : xStsDeletableLiterals.toList) {
-			val xStsContainingEnum = xStsDeletableLiteral.getContainerOfType(EnumerationTypeDefinition)
-			if (!xStsElseBranchedEnums.contains(xStsContainingEnum)) {
-				xStsDeletableLiterals -= xStsDeletableLiteral // No else branch for this enum yet, the literal cannot be removed
-				xStsElseBranchedEnums += xStsContainingEnum
+		for (xStsEnum : xStsEnums) {
+			val xStsEnumLiterals = xStsEnum.literals
+			val xStsDeletableEnumLiterals = newArrayList
+			xStsDeletableEnumLiterals += xStsEnumLiterals
+			xStsDeletableEnumLiterals.retainAll(xStsDeletableLiterals)
+			val xStsKeepableEnumLiterals = newArrayList
+			xStsKeepableEnumLiterals += xStsEnumLiterals
+			xStsKeepableEnumLiterals -= xStsDeletableEnumLiterals
+			
+			val needElseLiteral = xStsEnumLiterals.size == xStsDeletableEnumLiterals || (// If we want to delete all literals
+					!xStsDeletableEnumLiterals.empty && // Or, if we want to delete literals
+					xStsLiteralReferenced.containsAll(xStsKeepableLiterals) && // And the keepable is not already an else literal (otherwise it already serves as one)
+					xStsLiteralReferencedByPredicate.containsAll(xStsKeepableEnumLiterals))  // And every keepable literal is referenced from a predicate (and not only from an assignment action which can serve as an else literal)
+			if (needElseLiteral) { 
+				val xStsElseEnumLiteral = xStsDeletableEnumLiterals.head // Keeping the lowest literal for the "else" branch
+				xStsDeletableLiterals -= xStsElseEnumLiteral
 			}
 		}
-		xStsDeletableLiterals
+		
+		return xStsDeletableLiterals
 	}
 	
 	//

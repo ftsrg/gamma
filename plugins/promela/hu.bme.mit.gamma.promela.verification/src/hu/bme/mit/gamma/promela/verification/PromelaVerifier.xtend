@@ -110,7 +110,9 @@ class PromelaVerifier extends AbstractVerifier {
 				outputString.append(line + System.lineSeparator)
 				
 				if (firstLine === null) {
-					if (!line.contains("error: max search depth too small")) {
+					if (!line.contains("error: max search depth too small") &&
+							!line.contains("Depth=") &&
+							!line.contains("resizing hashtable to")) {
 						firstLine = line
 					}
 				}
@@ -127,16 +129,13 @@ class PromelaVerifier extends AbstractVerifier {
 				super.result = ThreeStateBoolean.TRUE
 			}
 			
+			// Adapting result
 			super.result = super.result.adaptResult
 			
 			if (!trailFile.exists) {
 				// No proof/counterexample
 				return new Result(result, null)
 			}
-			
-//			super.result = ThreeStateBoolean.FALSE
-			// Adapting result
-//			super.result = super.result.adaptResult
 			
 			// spin -t -p -g -l -w PromelaFile.pml
 			val traceCommand = #["spin", "-t", "-p", "-g", /*"-l",*/ "-w", modelFile.name /* see exec wokr-dir */]

@@ -79,9 +79,13 @@ class HavocHandler {
 		
 		val integerValues = root.calculateIntegerValues(variable)
 		
-		val defaultValue = type.defaultExpression.evaluateInteger // 0
-		val elseValue = integerValues.contains(defaultValue) ? integerValues.max + 1 : defaultValue
-		integerValues += elseValue // Adding another value for an "else" branch
+		// In theory, an else value is not needed as all 'interesting' positive and negative values are already present
+		// from 1-hop distance - thus, it would be more robust to include an elseValue, but it poses too much burden
+//		val elseValue = integerValues.contains(defaultValue) ? integerValues.max + 1 : defaultValue
+		if (integerValues.empty) {
+			val defaultValue = type.defaultExpression.evaluateInteger // 0
+			integerValues += defaultValue // Adding another value for an "else" branch
+		}
 		
 		for (integerValue : integerValues) {
 			val integerLiteral = expressionFactory.createIntegerLiteralExpression
