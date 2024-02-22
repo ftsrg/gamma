@@ -33,6 +33,8 @@
     <eLiterals name="UNTIL"/>
     <eLiterals name="RELEASE" value="1"/>
     <eLiterals name="WEAK_UNTIL" value="2" literal="WEAK_UNTIL"/>
+    <eLiterals name="BEFORE" value="3" literal="BEFORE"/>
+    <eLiterals name="WEAK_BEFORE" value="4" literal="WEAK_BEFORE"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="UnaryPathOperator">
     <eLiterals name="GLOBAL"/>

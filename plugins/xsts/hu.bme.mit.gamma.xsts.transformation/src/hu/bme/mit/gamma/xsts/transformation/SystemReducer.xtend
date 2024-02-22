@@ -298,8 +298,8 @@ class SystemReducer {
 	//
 	
 	protected def void deleteVariablesAndAssignments(XSTS xSts,
-			Collection<VariableDeclaration> xStsDeleteableVariables) {
-		val xStsDeletableAssignments = xStsDeleteableVariables.getAssignments(xSts)
+			Collection<VariableDeclaration> xStsDeletableVariables) {
+		val xStsDeletableAssignments = xStsDeletableVariables.getAssignments(xSts)
 		for (xStsDeletableAssignmentAction : xStsDeletableAssignments) {
 			createEmptyAction.replace(
 				xStsDeletableAssignmentAction) // To avoid nullptrs
@@ -307,8 +307,8 @@ class SystemReducer {
 		
 		// Note that only writes are handled - reads are not, so the following can cause
 		// nullptr exceptions if the method call (parameters) is not correct
-		logger.info("Deleting XSTS variables " + xStsDeleteableVariables.map[it.name].join(", "))
-		for (xStsDeletableVariable : xStsDeleteableVariables) {
+		logger.info("Deleting XSTS variables " + xStsDeletableVariables.map[it.name].join(", "))
+		for (xStsDeletableVariable : xStsDeletableVariables) {
 			xStsDeletableVariable.deleteDeclaration // Delete needed due to e.g., transientVariables list
 		}
 	}

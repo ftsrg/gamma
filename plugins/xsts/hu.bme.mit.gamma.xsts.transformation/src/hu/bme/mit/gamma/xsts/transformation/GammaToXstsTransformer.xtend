@@ -422,8 +422,11 @@ class GammaToXstsTransformer {
 		}
 		
 		if (unfoldMessageQueues || optimizeOneCapacityArrays || unrollLoopActions) {
+			logger.log(Level.INFO, "Optimizing XSTS another time: " + xSts.name)
 			xStsOptimizer.optimizeXSts(xSts) // Maybe unfoldings/unrollings can be exploited
 		}
+		
+		logger.log(Level.INFO, "Optimization has finished for " + xSts.name)
 	}
 	
 }

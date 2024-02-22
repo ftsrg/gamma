@@ -37,7 +37,7 @@ class PromelaVerification extends AbstractVerification {
 	
 	override getDefaultArguments() {
 		val MAX_DEPTH = 9900
-		val HASH_TABLE_SIZE = 26
+		val HASH_TABLE_SIZE = 27
 		return #[
 //			"-search -a -b" // default: -a search for acceptance cycles, -b bounded search mode, makes it an error to exceed the search depth, triggering and error trail
 			'''-search -n -m«MAX_DEPTH» -w«HASH_TABLE_SIZE» -DVECTORSZ=6144 -DNOBOUNDCHECK''' // -DBITSTATE -DNOFAIR
