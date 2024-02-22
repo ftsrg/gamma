@@ -44,7 +44,6 @@ import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collections
 import java.util.List
-import java.util.logging.Level
 import java.util.logging.Logger
 
 import static hu.bme.mit.gamma.xsts.transformation.util.Namings.*
@@ -151,14 +150,14 @@ class GammaToXstsTransformer {
 	}
 	
 	def execute(Package _package) {
-		logger.log(Level.INFO, "Starting main execution of Gamma-XSTS transformation")
+		logger.info("Starting main execution of Gamma-XSTS transformation")
 		val gammaComponent = _package.firstComponent // Getting the first component
 		// "transform", not "execute", as we want to distinguish between statecharts
 		val lowlevelPackage = gammaToLowlevelTransformer.transform(_package)
 		// Serializing the xSTS
 		val xSts = gammaComponent.transform(lowlevelPackage) // Transforming the Gamma component
 		// Creating system event groups for traceability purposes
-		logger.log(Level.INFO, "Creating system event groups for " + gammaComponent.name)
+		logger.info("Creating system event groups for " + gammaComponent.name)
 		xSts.createSystemEventGroups(gammaComponent) // Now synchronous event variables are put in there
 		// Removing duplicated types
 		xSts.removeDuplicatedTypes
@@ -171,7 +170,7 @@ class GammaToXstsTransformer {
 		xSts.optimize
 		
 		if (initialState !== null) {
-			logger.log(Level.INFO, "Setting initial state " + gammaComponent.name)
+			logger.info("Setting initial state " + gammaComponent.name)
 			val initialStateHandler = new InitialStateHandler(xSts, gammaComponent,
 				initialState, initialStateSetting)
 			initialStateHandler.execute
@@ -276,7 +275,7 @@ class GammaToXstsTransformer {
 	}
 	
 	protected def removeDuplicatedTypes(XSTS xSts) {
-		logger.log(Level.INFO, "Checking if the XSTS contains multiple type declarations with the same name")
+		logger.info("Checking if the XSTS contains multiple type declarations with the same name")
 		val types = xSts.typeDeclarations
 		for (var i = 0; i < types.size - 1; i++) {
 			val lhs = types.get(i)
@@ -295,7 +294,7 @@ class GammaToXstsTransformer {
 		val duplications = typeDeclarationNames
 				.filter[Collections.frequency(typeDeclarationNames, it) > 1].toList
 		if (!duplications.empty) {
-			logger.log(Level.INFO, "The XSTS contains multiple type declarations with the same name: " + duplications)
+			logger.info("The XSTS contains multiple type declarations with the same name: " + duplications)
 		}
 		// It is possible that in some instances of the same region, some states are removed due to optimization
 		var id = 0
@@ -387,16 +386,16 @@ class GammaToXstsTransformer {
 		
 	
 	protected def optimize(XSTS xSts) {
-		logger.log(Level.INFO, "Optimizing reset, environment and merged actions in " + xSts.name)
+		logger.info("Optimizing reset, environment and merged actions in " + xSts.name)
 		val XstsOptimizer xStsOptimizer = XstsOptimizer.INSTANCE
 		xStsOptimizer.optimizeXSts(xSts) // Affects all actions
 		
 		if (optimize) {
-			logger.log(Level.INFO, "Optimizing read-only variables in " + xSts.name)
+			logger.info("Optimizing read-only variables in " + xSts.name)
 			val variableRemover = RemovableVariableRemover.INSTANCE
 			variableRemover.removeReadOnlyVariables(xSts) // Affects parameter and input variables, too
 			
-			logger.log(Level.INFO, "Resetting resettable variables in the environment in " + xSts.name)
+			logger.info("Resetting resettable variables in the environment in " + xSts.name)
 			val resetter  = ResettableVariableResetter.INSTANCE
 			resetter.resetResettableVariables(xSts)
 			
@@ -405,28 +404,28 @@ class GammaToXstsTransformer {
 		}
 		
 		if (unfoldMessageQueues) {
-			logger.log(Level.INFO, "Unfolding message queues in " + xSts.name)
+			logger.info("Unfolding message queues in " + xSts.name)
 			val messageQueueOptimizer = MessageQueueOptimizer.INSTANCE
 			messageQueueOptimizer.unfoldMessageQueues(xSts)
 		}
 		// Unfold before one-capacity array to ensure "sound" queue unfolding (one-capacity arrays can be non-queues)
 		if (optimizeOneCapacityArrays) {
-			logger.log(Level.INFO, "Optimizing one capacity arrays in " + xSts.name)
+			logger.info("Optimizing one capacity arrays in " + xSts.name)
 			val arrayOptimizer = ArrayOptimizer.INSTANCE
 			arrayOptimizer.optimizeOneCapacityArrays(xSts)
 		}
 		if (unrollLoopActions) {
-			logger.log(Level.INFO, "Unrolling loop actions in " + xSts.name)
+			logger.info("Unrolling loop actions in " + xSts.name)
 			val loopActionUnroller = LoopActionUnroller.INSTANCE
 			loopActionUnroller.unrollLoopActions(xSts)
 		}
 		
 		if (unfoldMessageQueues || optimizeOneCapacityArrays || unrollLoopActions) {
-			logger.log(Level.INFO, "Optimizing XSTS another time: " + xSts.name)
+			logger.info("Optimizing XSTS another time: " + xSts.name)
 			xStsOptimizer.optimizeXSts(xSts) // Maybe unfoldings/unrollings can be exploited
 		}
 		
-		logger.log(Level.INFO, "Optimization has finished for " + xSts.name)
+		logger.info("Optimization has finished for " + xSts.name)
 	}
 	
 }
