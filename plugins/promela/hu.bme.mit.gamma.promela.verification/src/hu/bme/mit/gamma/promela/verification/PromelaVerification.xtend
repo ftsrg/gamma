@@ -27,12 +27,20 @@ class PromelaVerification extends AbstractVerification {
 		return new PromelaVerifier
 	}
 	
+	override getDefaultArgumentsForInvarianceChecking() {
+		val INVARIANT_ARGUMENTS = #["-DSAFETY", "-DSFH"]
+		val defaultArguments = defaultArguments
+		val defaultArgumentsForInvariants = defaultArguments.map[it + " " + INVARIANT_ARGUMENTS.join(" ")]
+		
+		return defaultArgumentsForInvariants
+	}
+	
 	override getDefaultArguments() {
 		val MAX_DEPTH = 9900
 		val HASH_TABLE_SIZE = 26
 		return #[
 //			"-search -a -b" // default: -a search for acceptance cycles, -b bounded search mode, makes it an error to exceed the search depth, triggering and error trail
-			'''-search -n -m«MAX_DEPTH» -w«HASH_TABLE_SIZE» -DVECTORSZ=6144 -DNOBOUNDCHECK''' // -DBITSTATE -DSAFETY -DSFH
+			'''-search -n -m«MAX_DEPTH» -w«HASH_TABLE_SIZE» -DVECTORSZ=6144 -DNOBOUNDCHECK''' // -DBITSTATE -DNOFAIR
 //			'''-search -n -I -m«MAX_DEPTH» -w«HASH_TABLE_SIZE» -DVECTORSZ=6144 -DNOBOUNDCHECK'''
 //			'''-search -n -bfs -DVECTORSZ=6144 -DCOLLAPSE -DNOBOUNDCHECK'''
 		]

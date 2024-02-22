@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -126,11 +126,21 @@ abstract class AbstractVerification {
 	
 	abstract protected def PropertySerializer createPropertySerializer()
 	
+	//
 	abstract def String[] getDefaultArguments()
 	
 	def String[] getDefaultArguments(File modelFile) {
 		return defaultArguments
 	}
+	
+	def String[] getDefaultArgumentsForInvarianceChecking(File modelFile) {
+		return defaultArgumentsForInvarianceChecking
+	}
+	
+	def String[] getDefaultArgumentsForInvarianceChecking() {
+		return defaultArguments
+	}
+	//
 	
 	protected def sanitizeArgument(String argument) {
 		val match = Pattern.matches(getArgumentPattern, argument.trim)
