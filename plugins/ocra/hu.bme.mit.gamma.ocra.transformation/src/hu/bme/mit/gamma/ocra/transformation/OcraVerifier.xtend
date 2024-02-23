@@ -23,10 +23,8 @@ class OcraVerifier {
 		fileUtil.saveString(commandFile, serializedCommand)
 		
 		val ocraCommand = #[ocraPath] + #["-source", commandFile.absolutePath]
-		
 				
 		try {
-			
 			val process =  Runtime.getRuntime().exec(ocraCommand)
 			val resultReader = new Scanner(process.inputReader)
 			val successRegex = ".*" + "oss specification"+ ".*"
@@ -38,7 +36,7 @@ class OcraVerifier {
 					System.out.println(line)
 				}
 			}
-		}catch (Exception e) {
+		} catch (Exception e) {
 			throw e
 		}
 		

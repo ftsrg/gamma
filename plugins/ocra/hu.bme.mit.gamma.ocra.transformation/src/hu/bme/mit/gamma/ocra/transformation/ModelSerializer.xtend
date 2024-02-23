@@ -22,7 +22,6 @@ import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import java.util.ArrayList
 import java.util.List
 import java.util.Set
 
@@ -35,7 +34,7 @@ class ModelSerializer {
 	//
 	
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
-	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final Naming naming = new Naming
 	
 	
@@ -91,7 +90,7 @@ class ModelSerializer {
 		val subcomponents = extractSubcomponentInstances(component)
 		val bindings = extractBindings(component)
 		val channels = extractChannels(component)
-		if(!subcomponents.nullOrEmpty) '''
+		if (!subcomponents.nullOrEmpty) '''
 			«FOR sub: subcomponents»
 				«naming.getSubName(sub)»
 			«ENDFOR»
@@ -126,28 +125,28 @@ class ModelSerializer {
 
 	
 	def List<? extends ComponentInstance> extractSubcomponentInstances(Component component) {
-		if(component instanceof CompositeComponent) {
+		if (component instanceof CompositeComponent) {
 			return component.derivedComponents
 		}
 	}
 	
 
 	def List<PortBinding> extractBindings(Component component) {
-		if(component instanceof CompositeComponent) {
+		if (component instanceof CompositeComponent) {
 			return component.portBindings			
 		}
 	}
 	
 	def List<Channel> extractChannels(Component component) {
-		if(component instanceof CompositeComponent) {
+		if (component instanceof CompositeComponent) {
 			return component.channels			
 		}	
 	}
-	//TODO statechartmodelderivedfeaturesre cserélni	
+	//TODO itt sajnos nem tudom hogy mire gondoltál, nem találtam olyan funkciót mint írtál
 	def Set<Component> getSubComponents(Component component) {
 		val derivedComponents = newHashSet
-		if(component instanceof CompositeComponent) {
-			for(instance : component.derivedComponents) {
+		if (component instanceof CompositeComponent) {
+			for (instance : component.derivedComponents) {
 				derivedComponents.add(instance.derivedType)
 			}
 			return derivedComponents
@@ -165,14 +164,14 @@ class Naming {
     def String getPortName(Port port, Event event) '''
    		PORT «port.name»_«event.name» : event;
    	'''    
-    
 
     def String getChannelName(Channel channel, InstancePortReference port, Event event) {
         val leftInstance = port.instance.name
         val leftPort = port.port.name
         val rightInstance = channel.providedPort.instance.name
-        val rightPortName = channel.providedPort.port.name 
-        '''CONNECTION «leftInstance».«leftPort»_«event.name» := «rightInstance».«rightPortName»_«event.name»;'''
+        val rightPortName = channel.providedPort.port.name '''
+        CONNECTION «leftInstance».«leftPort»_«event.name» := «rightInstance».«rightPortName»_«event.name»;
+        '''
     }
     
     def String getBindingName(PortBinding binding, Event event) {
@@ -180,7 +179,7 @@ class Naming {
     	val rightInstance = binding.instancePortReference.instance.name
     	val rightPort = binding.instancePortReference.port.name
     	
-    	if(binding.compositeSystemPort.interfaceRealization.realizationMode == RealizationMode.PROVIDED) '''
+    	if (binding.compositeSystemPort.interfaceRealization.realizationMode == RealizationMode.PROVIDED) '''
     		CONNECTION «leftInstance»_«event.name» := «rightInstance».«rightPort»_«event.name»;
     	'''		
     	else '''

@@ -53,8 +53,6 @@ class Gamma2OcraTransformerSerializer {
 		
 		val ocraFile = new File(targetFolderUri + File.separator + fileName.ocraFileName)
 		ocraFile.saveString(ocraString)
-		ocraVerifier.verifyQuery(ocraFile)
-		
+		ocraVerifier.verifyQuery(ocraFile)	
 	}
-	
 }
