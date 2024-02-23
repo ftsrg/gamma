@@ -20,7 +20,9 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterRefe
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceParameterReferenceExpression;
+import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
+import hu.bme.mit.gamma.statechart.statechart.TimeoutReferenceExpression;
 
 public class ExpressionTypeDeterminator extends ExpressionTypeDeterminator2 {
 	// Singleton
@@ -42,6 +44,12 @@ public class ExpressionTypeDeterminator extends ExpressionTypeDeterminator2 {
 			ParameterDeclaration parameter = referenceExpression.getParameter();
 			Type type = parameter.getType();
 			return ecoreUtil.clone(type);
+		}
+		else if (expression instanceof TimeoutReferenceExpression) {
+			return factory.createIntegerTypeDefinition();
+		}
+		else if (expression instanceof TimeSpecification) {
+			return factory.createIntegerTypeDefinition();
 		}
 		else if (expression instanceof ComponentInstanceVariableReferenceExpression reference) {
 			VariableDeclaration variable = reference.getVariableDeclaration();

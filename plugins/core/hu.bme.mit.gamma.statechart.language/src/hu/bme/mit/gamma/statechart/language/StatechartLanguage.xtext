@@ -549,6 +549,13 @@ TimeSpecification returns InterfaceModel::TimeSpecification:
 	value=AdditiveExpression unit=TimeUnit
 ;
 
+@Override
+LiteralExpression returns ExpressionModel::Expression: 
+	super |
+	('time' '(' TimeSpecification ')')
+;
+
+
 enum TimeUnit returns InterfaceModel::TimeUnit:
 	MILLISECOND = 'ms' | SECOND = 's' | HOUR = 'h'
 ;
@@ -654,6 +661,7 @@ PrimaryExpression returns ExpressionModel::Expression:
 	super |
 	EventParameterReferenceExpression |
 	InterfaceParameterReferenceExpression |
+	TimeoutReferenceExpression |
 	( EventReference '::' ) | // Now this are not usable only in triggers
 	StateReferenceExpression
 ;
@@ -668,7 +676,10 @@ EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenc
 InterfaceParameterReferenceExpression returns InterfaceModel::InterfaceParameterReferenceExpression:
 	//this is a placeholder for the language to be unambiguous
 	'this' '.' event=[InterfaceModel::Event] '::' parameter=[ExpressionModel::ParameterDeclaration];
-
+	
+TimeoutReferenceExpression returns TimeoutReferenceExpression:
+	'timeout-elapsed' '(' timeout=[TimeoutDeclaration] ')'
+;
 
 // Action Language Extensions
 

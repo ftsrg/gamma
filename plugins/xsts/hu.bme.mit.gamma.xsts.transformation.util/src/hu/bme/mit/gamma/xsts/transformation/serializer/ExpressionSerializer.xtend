@@ -22,6 +22,8 @@ import hu.bme.mit.gamma.expression.model.NotExpression
 import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+import hu.bme.mit.gamma.statechart.statechart.TimeoutReferenceExpression
+import hu.bme.mit.gamma.expression.model.Expression
 
 class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSerializer {
 	// Singleton
@@ -56,6 +58,16 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 //		}
 		
 		return '''«declaration.name»'''
+	}
+	
+	def String serialize(TimeoutReferenceExpression expression) '''«expression.timeout.name»'''
+	
+	override String serialize(Expression expression) {
+		if (expression instanceof TimeoutReferenceExpression) {
+			return expression.serialize
+		} else {
+			return super.serialize(expression)
+		}
 	}
 	
 }

@@ -21,11 +21,14 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpr
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
+import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
+import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference;
+import hu.bme.mit.gamma.statechart.statechart.TimeoutReferenceExpression;
 
 public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSerializer {
 	// Singleton
@@ -49,6 +52,25 @@ public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.Expre
 	
 	protected String _serialize(TimeoutEventReference expression) {
 		return "timeout " + expression.getTimeout().getName();
+	}
+	
+	protected String _serialize(TimeoutReferenceExpression expression) {
+		return expression.getTimeout().getName();
+	}
+	
+	protected String _serialize(TimeSpecification timeSpecification) {
+		return serialize(timeSpecification.getValue()) + " " + _serialize(timeSpecification.getUnit());
+	}
+	
+	protected String _serialize(TimeUnit timeUnit) {
+		switch (timeUnit) {
+		case SECOND:
+			return "s";
+		case MILLISECOND:
+			return "ms";
+		default:
+			throw new IllegalArgumentException("Not known time unit: " + timeUnit);
+		}
 	}
 	
 	//
@@ -127,23 +149,29 @@ public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.Expre
 		if (expression instanceof EventParameterReferenceExpression eventParameterReferenceExpression) {
 			return _serialize(eventParameterReferenceExpression);
 		}
-		if (expression instanceof StateReferenceExpression) {
-			return _serialize((StateReferenceExpression) expression);
+		if (expression instanceof StateReferenceExpression stateReferenceExpression) {
+			return _serialize(stateReferenceExpression);
 		}
-		if (expression instanceof ComponentInstanceReferenceExpression) {
-			return _serialize((ComponentInstanceReferenceExpression) expression);
+		if (expression instanceof ComponentInstanceReferenceExpression componentInstanceReferenceExpression) {
+			return _serialize(componentInstanceReferenceExpression);
 		}
-		if (expression instanceof ComponentInstanceStateReferenceExpression) {
-			return _serialize((ComponentInstanceStateReferenceExpression) expression);
+		if (expression instanceof ComponentInstanceStateReferenceExpression componentInstanceStateReferenceExpression) {
+			return _serialize(componentInstanceStateReferenceExpression);
 		}
-		if (expression instanceof ComponentInstanceVariableReferenceExpression) {
-			return _serialize((ComponentInstanceVariableReferenceExpression) expression);
+		if (expression instanceof ComponentInstanceVariableReferenceExpression componentInstanceVariableReferenceExpression) {
+			return _serialize(componentInstanceVariableReferenceExpression);
 		}
-		if (expression instanceof ComponentInstanceEventReferenceExpression) {
-			return _serialize((ComponentInstanceEventReferenceExpression) expression);
+		if (expression instanceof ComponentInstanceEventReferenceExpression componentInstanceEventReferenceExpression) {
+			return _serialize(componentInstanceEventReferenceExpression);
 		}
-		if (expression instanceof ComponentInstanceEventParameterReferenceExpression) {
-			return _serialize((ComponentInstanceEventParameterReferenceExpression) expression);
+		if (expression instanceof ComponentInstanceEventParameterReferenceExpression componentInstanceEventParameterReferenceExpression) {
+			return _serialize(componentInstanceEventParameterReferenceExpression);
+		}
+		if (expression instanceof TimeoutReferenceExpression timeoutReferenceExpression) {
+			return _serialize(timeoutReferenceExpression);
+		}
+		if (expression instanceof TimeSpecification timeSpecification) {
+			return _serialize(timeSpecification);
 		}
 		return super.serialize(expression);
 	}
