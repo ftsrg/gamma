@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,32 +17,42 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 
+import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
+import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
+import hu.bme.mit.gamma.genmodel.model.ComponentReference;
+import hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint;
+import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
 import hu.bme.mit.gamma.genmodel.model.TraceReplayModelGeneration;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
-import hu.bme.mit.gamma.property.util.PropertyUtil;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory;
+import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
+import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
 import hu.bme.mit.gamma.statechart.statechart.State;
+import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures;
 import hu.bme.mit.gamma.trace.environment.transformation.EnvironmentModel;
 import hu.bme.mit.gamma.trace.environment.transformation.TraceReplayModelGenerator;
 import hu.bme.mit.gamma.trace.environment.transformation.TraceReplayModelGenerator.Result;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 
 public class TraceReplayModelGenerationHandler extends TaskHandler {
+	//
+	protected final InterfaceModelFactory interfaceFactory = InterfaceModelFactory.eINSTANCE;
+	//
 	
-	protected PropertyUtil util = PropertyUtil.INSTANCE;
-
 	public TraceReplayModelGenerationHandler(IFile file) {
 		super(file);
 	}
 	
-	public void execute(TraceReplayModelGeneration modelGeneration) throws IOException {
+	public void execute(TraceReplayModelGeneration modelGeneration) throws IOException, InterruptedException {
 		// Setting target folder
 		setTargetFolder(modelGeneration);
 		//
 		setTraceReplayModelGeneration(modelGeneration);
-		
+		// TODO multiple traces
 		ExecutionTrace executionTrace = modelGeneration.getExecutionTrace();
 		List<String> fileName = modelGeneration.getFileName();
 		List<String> environmentModelFileName = modelGeneration.getEnvironmentModelFileName();
@@ -60,13 +70,53 @@ public class TraceReplayModelGenerationHandler extends TaskHandler {
 		State lastState = result.getLastState();
 		Component systemModel = result.getSystemModel();
 		
-		PropertyPackage propertyPackage = util.createAtomicInstanceStateReachabilityProperty(
+		PropertyPackage propertyPackage = propertyUtil.createAtomicInstanceStateReachabilityProperty(
 				systemModel, environmentInstance, lastState);
 		
 		// Serialization
 		serializer.saveModel(ecoreUtil.getRoot(environmentModel), targetFolderUri, environmentModelName + ".gcd");
 		serializer.saveModel(ecoreUtil.getRoot(systemModel), targetFolderUri, systemName + ".gcd");
 		serializer.saveModel(ecoreUtil.getRoot(propertyPackage), targetFolderUri, systemName + ".gpd");
+		
+		// If we want to execute it right away...
+		// Make sure that the ExecutionTrace is back-annotated to original!
+		Expression schedulingTime = TraceModelDerivedFeatures.getSchedulingTime(executionTrace);
+		
+		List<AnalysisLanguage> analysisLanguages = modelGeneration.getAnalysisLanguages();
+		for (AnalysisLanguage language : analysisLanguages) {
+			String analysisFileName = fileName.get(0) + "-" + language.toString();
+			
+			AnalysisModelTransformation transformation = factory.createAnalysisModelTransformation();
+			ComponentReference componentReference = factory.createComponentReference();
+			componentReference.setComponent(systemModel);
+			
+			transformation.setModel(componentReference);
+			transformation.setPropertyPackage(propertyPackage);
+			
+			transformation.getLanguages().add(language);
+			
+			transformation.getFileName().add(analysisFileName);
+			transformation.getTargetFolder().addAll(modelGeneration.getTargetFolder());
+			
+			if (schedulingTime != null) {
+				OrchestratingConstraint constraint = factory.createOrchestratingConstraint();
+				transformation.setConstraint(constraint);
+				
+				TimeSpecification min = interfaceFactory.createTimeSpecification();
+				min.setValue(
+						ecoreUtil.clone(schedulingTime));
+				min.setUnit(TimeUnit.MILLISECOND);
+				TimeSpecification max = ecoreUtil.clone(min);
+				constraint.setMinimumPeriod(min);
+				constraint.setMaximumPeriod(max);
+			}
+			
+			AnalysisModelTransformationAndVerificationHandler handler = new
+					AnalysisModelTransformationAndVerificationHandler(file, true, false, true, ProgrammingLanguage.JAVA);
+			handler.execute(transformation);
+			
+			// TODO Check trace-conformance right here?
+		}
 	}
 
 	private void setTraceReplayModelGeneration(TraceReplayModelGeneration modelGeneration) {

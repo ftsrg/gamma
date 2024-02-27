@@ -34,6 +34,7 @@ import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.State;
+import hu.bme.mit.gamma.trace.model.Act;
 import hu.bme.mit.gamma.trace.model.Cycle;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.model.ExecutionTraceAllowedWaitingAnnotation;
@@ -42,6 +43,7 @@ import hu.bme.mit.gamma.trace.model.ExecutionTraceCommentAnnotation;
 import hu.bme.mit.gamma.trace.model.NegativeTestAnnotation;
 import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Step;
+import hu.bme.mit.gamma.trace.model.TimeElapse;
 
 public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
@@ -104,6 +106,40 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 	
 	//
+	
+	public static Expression getSchedulingTime(ExecutionTrace trace) {
+		List<Step> steps = trace.getSteps();
+		List<Step> notFirstSteps = new ArrayList<Step>(steps);
+		
+		if (notFirstSteps.isEmpty()) {
+			return null;
+		}
+		
+		notFirstSteps.remove(0);
+		TimeElapse schedulingTimeElapse = null;
+		for (Step step : notFirstSteps) {
+			List<Act> actions = step.getActions();
+			List<TimeElapse> timeElapses = javaUtil.filterIntoList(actions, TimeElapse.class);
+			if (timeElapses.isEmpty()) {
+				return null;
+			}
+			
+			TimeElapse timeElapse = javaUtil.getOnlyElement(timeElapses);
+			if (schedulingTimeElapse == null) {
+				schedulingTimeElapse = timeElapse;
+			}
+			else {
+				Expression generalElapsedTime = schedulingTimeElapse.getElapsedTime();
+				Expression actualElapsedTime = timeElapse.getElapsedTime();
+				if (evaluator.evaluateInteger(generalElapsedTime) != evaluator.evaluateInteger(actualElapsedTime)) {
+					return null;
+				}
+			}
+		}
+		
+		Expression generalElapsedTime = schedulingTimeElapse.getElapsedTime();
+		return ecoreUtil.clone(generalElapsedTime);
+	}
 	
 	public static Expression getLowermostAssert(Expression assertion) {
 		if (assertion instanceof NotExpression negatedAssert) {

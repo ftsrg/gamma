@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -334,13 +334,17 @@ TraceGeneration returns TraceGeneration: // Generate all traces with Theta
 
 TraceReplayModelGeneration returns TraceReplayModelGeneration:
 	{TraceReplayModelGeneration} 'trace-replay' '{'
-		'trace' ':' executionTrace=[trace::ExecutionTrace]
+		(
+			'trace' ':' executionTrace=[trace::ExecutionTrace] |
+			('trace-folder' ':' executionTraceFolder+=STRING)+
+		) // For multiple traces
 		(
 			'system-file' ':' fileName+=STRING | // The name of the file containing the system
 			'folder' ':' targetFolder+=STRING | 
 			'environment-model-file' ':' environmentModelFileName+=STRING |
 			'environment-model' ':' environmentModel=EnvironmentModel |
-			'consider-out-events' ':' considerOutEvents=BOOLEAN
+			'consider-out-events' ':' considerOutEvents=BOOLEAN |
+			'language' ':' analysisLanguages+=AnalysisLanguage
 		)*
 	'}'
 ;

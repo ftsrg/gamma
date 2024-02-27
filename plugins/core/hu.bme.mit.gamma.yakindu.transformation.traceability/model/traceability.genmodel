@@ -5,7 +5,7 @@
     editorDirectory="/hu.bme.mit.gamma.yakindu.transformation.traceability.editor/src-gen"
     modelPluginID="hu.bme.mit.gamma.yakindu.transformation.traceability" modelName="Traceability"
     rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container" importerID="org.eclipse.emf.importer.ecore"
-    complianceLevel="8.0" copyrightFields="false" usedGenPackages="../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model ../../org.yakindu.base.types/model/base.genmodel#//base ../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model ../../org.yakindu.sct.model.sgraph/model/emf/sgraph.genmodel#//sgraph ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//composite ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//interface ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//statechart ../../org.yakindu.base.types/model/types.genmodel#//types"
+    complianceLevel="17.0" copyrightFields="false" usedGenPackages="../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model ../../org.yakindu.base.types/model/base.genmodel#//base ../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model ../../org.yakindu.sct.model.sgraph/model/emf/sgraph.genmodel#//sgraph ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//composite ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//interface ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//statechart ../../org.yakindu.base.types/model/types.genmodel#//types"
     operationReflection="true" importOrganizing="true">
   <foreignModel>traceability.ecore</foreignModel>
   <genPackages prefix="Traceability" basePackage="hu.bme.mit.gamma.yakindu.transformation"
