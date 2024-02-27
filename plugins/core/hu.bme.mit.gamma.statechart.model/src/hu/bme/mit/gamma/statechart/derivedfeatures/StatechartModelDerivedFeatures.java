@@ -13,7 +13,6 @@ package hu.bme.mit.gamma.statechart.derivedfeatures;
 import java.math.BigInteger;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -36,25 +35,18 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures;
 import hu.bme.mit.gamma.action.model.Action;
-import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
-import hu.bme.mit.gamma.expression.model.BinaryExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
-import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
-import hu.bme.mit.gamma.expression.model.MultiaryExpression;
-import hu.bme.mit.gamma.expression.model.NullaryExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
-import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
-import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
@@ -2270,9 +2262,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		for (Region region : compositeElement.getRegions()) {
 			for (StateNode stateNode : region.getStateNodes()) {
 				stateNodes.add(stateNode);
-				if (stateNode instanceof State) {
-					State state = (State) stateNode;
-					stateNodes.addAll(getAllStateNodes(state));
+				if (stateNode instanceof State state) {
+					stateNodes.addAll(
+							getAllStateNodes(state));
 				}
 			}
 		}
@@ -2282,9 +2274,20 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static Collection<State> getAllStates(CompositeElement compositeElement) {
 		Set<State> states = new HashSet<State>();
 		for (StateNode stateNode : getAllStateNodes(compositeElement)) {
-			if (stateNode instanceof State) {
-				State state = (State) stateNode;
+			if (stateNode instanceof State state) {
 				states.add(state);
+			}
+		}
+		return states;
+	}
+	
+	public static Collection<State> getAllStates(Region region) {
+		Set<State> states = new HashSet<State>();
+		for (StateNode stateNode : region.getStateNodes()) {
+			if (stateNode instanceof State state) {
+				states.add(state);
+				states.addAll(
+						getAllStates(state));
 			}
 		}
 		return states;
@@ -2357,6 +2360,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return (State) annotation.eContainer();
 	}
 	
+	public static Region getTopRegion(EObject object) {
+		EObject container = object.eContainer();
+		if (container instanceof StatechartDefinition) {
+			return (Region) object;
+		}
+		return getTopRegion(container);
+	}
+	
 	public static Region getParentRegion(StateNode node) {
 		return (Region) node.eContainer();
 	}
@@ -2385,6 +2396,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			}
 		}
 		return false;
+	}
+	
+	public static List<Region> getOrthogonalRegions(Region region) {
+		CompositeElement compositeElement = getContainingCompositeElement(region);
+		List<Region> orthogonalRegions = new ArrayList<Region>(
+				compositeElement.getRegions());
+		orthogonalRegions.remove(region);
+		return orthogonalRegions;
 	}
 	
 	public static boolean areTransitivelyOrthogonal(StateNode lhs, StateNode rhs) {
@@ -3174,7 +3193,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return precedingStates;
 	}
 	
-	public static Set<State> getReachableStates(StateNode node) {
+	public static Set<State> getReachableStates(StateNode node) { // Same level
 		Set<State> reachableStates = new HashSet<State>();
 		for (Transition outgoingTransition : getOutgoingTransitions(node)) {
 			StateNode target = outgoingTransition.getTargetState();
@@ -3186,6 +3205,15 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 						getReachableStates(target));
 			}
 		}
+		return reachableStates;
+	}
+	
+	public static Collection<State> getAllReachableStates(StateNode node) { // Every level
+		Set<StateNode> visitedNodes = new HashSet<StateNode>();
+		
+		getTransitionDistances(node, visitedNodes, new HashSet<Region>());
+		List<State> reachableStates = javaUtil.filterIntoList(visitedNodes, State.class);
+		
 		return reachableStates;
 	}
 	
@@ -3208,20 +3236,26 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	
 	public static Map<Transition, Integer> getContainedTransitionDistances(CompositeElement composite) {
-		return getContainedTransitionDistances(composite, new HashSet<StateNode>());
+		return getContainedTransitionDistances(composite, new HashSet<StateNode>(), new HashSet<Region>());
 	}
 	
 	public static Map<Transition, Integer> getContainedTransitionDistances(
-			CompositeElement composite, Set<StateNode> visitedNodes) {
+			CompositeElement composite, Set<StateNode> visitedNodes, Set<Region> visitedSubregionsBottomUp) {
 		Map<Transition, Integer> distance = new LinkedHashMap<Transition, Integer>();
 		
 		List<Map<Transition, Integer>> distances = new ArrayList<Map<Transition, Integer>>();
-		
-		List<Region> regions = composite.getRegions();
+		//
+		if (composite instanceof State state) {
+			visitedNodes.add(state);
+		}
+		//
+		List<Region> regions = new ArrayList<Region>(composite.getRegions());
+		regions.removeAll(visitedSubregionsBottomUp);
 		for (Region region : regions) {
 			List<EntryState> entryStates = ecoreUtil.getContentsOfType(region, EntryState.class); // Single level
 			for (EntryState entryState : entryStates) {
-				Map<Transition, Integer> subregionDistance = getTransitionDistances(entryState, visitedNodes);
+				Map<Transition, Integer> subregionDistance = getTransitionDistances(
+						entryState, visitedNodes, visitedSubregionsBottomUp);
 				distances.add(subregionDistance);
 			}
 		}
@@ -3233,11 +3267,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static Map<Transition, Integer> getTransitionDistances(StateNode node) {
-		return getTransitionDistances(node, new HashSet<StateNode>());
+		return getTransitionDistances(node, new HashSet<StateNode>(), new HashSet<Region>());
 	}
 	
 	public static Map<Transition, Integer> getTransitionDistances(
-			StateNode node, Set<StateNode> visitedNodes) {
+			StateNode node, Set<StateNode> visitedNodes, Set<Region> visitedSubregionsBottomUp) {
 		Map<Transition, Integer> distance = new LinkedHashMap<Transition, Integer>();
 		//
 		if (visitedNodes.contains(node)) {
@@ -3245,15 +3279,32 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 		//
 		visitedNodes.add(node);
+		//
 		
 		List<Map<Transition, Integer>> distances = new ArrayList<Map<Transition, Integer>>();
-		// Same level
+		// Children
+		if (node instanceof State state) {
+			Map<Transition, Integer> subregionDistance = getContainedTransitionDistances(
+					state, visitedNodes, visitedSubregionsBottomUp);
+			distances.add(subregionDistance);
+		}
+		// Outgoing transitions
 		List<Transition> outgoingTransitions = getOutgoingTransitions(node);
 		for (Transition outgoingTransition : outgoingTransitions) {
 			distance.put(outgoingTransition, 0);
 			
 			StateNode target = outgoingTransition.getTargetState();
-			Map<Transition, Integer> targetDistance = getTransitionDistances(target, visitedNodes);
+			// If we enter a composite state from a "normal way", even though we entered it from bottom, we traverse it again
+			if (target instanceof State targetState) {
+				List<Region> targetRegions = targetState.getRegions();
+				if (javaUtil.containsAny(targetRegions, visitedSubregionsBottomUp)) {
+					visitedNodes.remove(targetState);
+					visitedSubregionsBottomUp.removeAll(targetRegions);
+				}
+			}
+			//
+			Map<Transition, Integer> targetDistance = getTransitionDistances(
+					target, visitedNodes, visitedSubregionsBottomUp);
 			for (Transition transition : targetDistance.keySet()) {
 				targetDistance.replace(transition,
 						targetDistance.get(transition) + 1); // As this is the distance from a target node
@@ -3262,15 +3313,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 		// Parent
 		if (hasParentState(node)) {
+			// We do not want to enter again when checking subregions
+			Region parentRegion = getParentRegion(node);
+			visitedSubregionsBottomUp.add(parentRegion);
+			//
 			State ancestor = getParentState(node);
-			Map<Transition, Integer> ancestorDistance = getTransitionDistances(ancestor, visitedNodes);
+			Map<Transition, Integer> ancestorDistance = getTransitionDistances(
+					ancestor, visitedNodes, visitedSubregionsBottomUp);
 			distances.add(ancestorDistance);
-		}
-		
-		// Children
-		if (node instanceof State state) {
-			Map<Transition, Integer> subregionDistance = getContainedTransitionDistances(state, visitedNodes);
-			distances.add(subregionDistance);
+			//
+			visitedSubregionsBottomUp.remove(parentRegion);
 		}
 		
 		// Summing the minimal distances
@@ -3318,8 +3370,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static Component getMonitoredComponent(StatechartDefinition adaptiveContract) {
 		List<ComponentAnnotation> annotations = adaptiveContract.getAnnotations();
 		for (ComponentAnnotation annotation: annotations) { 
-			if (annotation instanceof AdaptiveContractAnnotation) {
-				AdaptiveContractAnnotation adaptiveContractAnnotation = (AdaptiveContractAnnotation) annotation;
+			if (annotation instanceof AdaptiveContractAnnotation adaptiveContractAnnotation) {
 				return adaptiveContractAnnotation.getMonitoredComponent();
 			}
 		}
@@ -3330,16 +3381,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		Package _package = getContainingPackage(component);
 		Collection<ComponentInstance> componentInstances = new HashSet<ComponentInstance>();
 		for (Component siblingComponent : _package.getComponents()) {
-			if (siblingComponent instanceof CompositeComponent) {
-				CompositeComponent compositeComponent = (CompositeComponent) siblingComponent;
+			if (siblingComponent instanceof CompositeComponent compositeComponent) {
 				for (ComponentInstance componentInstance : getDerivedComponents(compositeComponent)) {
 					if (getDerivedType(componentInstance) == component) {
 						componentInstances.add(componentInstance);
 					}
 				}
 			}
-			if (siblingComponent instanceof AsynchronousAdapter) {
-				AsynchronousAdapter asynchronousAdapter = (AsynchronousAdapter) siblingComponent;
+			if (siblingComponent instanceof AsynchronousAdapter asynchronousAdapter) {
 				SynchronousComponentInstance componentInstance = asynchronousAdapter.getWrappedComponent();
 				if (componentInstance.getType() == component) {
 					componentInstances.add(componentInstance);

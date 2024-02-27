@@ -396,7 +396,7 @@ class GammaToXstsTransformer {
 			variableRemover.removeReadOnlyVariables(xSts) // Affects parameter and input variables, too
 			
 			logger.info("Resetting resettable variables in the environment in " + xSts.name)
-			val resetter  = ResettableVariableResetter.INSTANCE
+			val resetter = ResettableVariableResetter.INSTANCE
 			resetter.resetResettableVariables(xSts)
 			
 			xStsOptimizer.optimizeXSts(xSts) // Once again after the potential variable removals above

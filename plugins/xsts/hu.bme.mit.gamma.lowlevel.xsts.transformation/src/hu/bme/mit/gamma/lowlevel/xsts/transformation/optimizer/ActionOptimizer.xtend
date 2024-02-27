@@ -97,6 +97,7 @@ class ActionOptimizer {
 			newXStsAction = newXStsAction.optimizeParallelActions // Might be resource intensive
 			newXStsAction.deleteUnnecessaryAssumeActions // Not correct in other transformation implementations
 			newXStsAction.deleteDefinitelyFalseBranches
+			newXStsAction.deleteDefinitelyFalseBranchesFromAssumptions
 			newXStsAction.optimizeExpressions // Could be extracted to the expression metamodel?
 		}
 		return newXStsAction
@@ -589,6 +590,7 @@ class ActionOptimizer {
 			val xStsFirstAction = xStsActions.get(i)
 			if (xStsFirstAction instanceof AbstractAssignmentAction) {
 				val lhs = xStsFirstAction.lhs
+				val variable = lhs.accessedDeclaration
 				var foundAssignmentToTheSameVariable = false
 				for (var j = i + 1; j < xStsActions.size && !foundAssignmentToTheSameVariable; j++) {
 					val xStsSecondAction = xStsActions.get(j)
@@ -598,7 +600,6 @@ class ActionOptimizer {
 							var isVariableRead = false
 							for (var k = i + 1; k <= j && !isVariableRead; k++) {
 								val xStsInBetweenAction = xStsActions.get(k)
-								val variable = lhs.accessedDeclaration
 								// Not perfect for arrays: a[0] := 1; b := a[2]; a[0] := 2;
 								val readVariables = xStsInBetweenAction.readVariables
 								if (readVariables.contains(variable)) {
@@ -808,6 +809,41 @@ class ActionOptimizer {
 				// Branch does not contain a 'firstAtomicAction' - full nondeterministic
 				// continue...
 				branch.deleteDefinitelyFalseBranches
+			}
+		}
+	}
+	
+	//
+	
+	protected def void deleteDefinitelyFalseBranchesFromAssumptions(Action action) {
+		val assumeActions = action.getSelfAndAllContentsOfType(AssumeAction)
+		val falseAssumeActions = assumeActions.filter[it.definitelyFalseAssumeAction]
+		for (assumeAction : falseAssumeActions) {
+			val nondeterministicBranch = assumeAction.getChildOfContainerOfType(NonDeterministicAction)
+			val ifBranch = assumeAction.getChildOfContainerOfType(IfAction)
+			var targetIf = true
+			if (nondeterministicBranch !== null && ifBranch !== null) {
+				targetIf = nondeterministicBranch.containsTransitively(ifBranch)
+			}
+			if (ifBranch !== null && targetIf) {
+				// Note that the (negated) condition should be prepended to the then or else branch
+				// But we don't do this, as we expect correct models
+				val ifAction = ifBranch.eContainer as IfAction
+				val then = ifAction.then
+				val _else = ifAction.^else
+				
+				if (ifBranch === then) {
+					_else.replace(ifAction)
+				}
+				else {
+					then.replace(ifAction)
+				}
+			}
+			else if (nondeterministicBranch !== null) {
+				nondeterministicBranch.remove
+			}
+			else {
+				// Both are null, so the whole transition must be removed: should not happen in practice
 			}
 		}
 	}

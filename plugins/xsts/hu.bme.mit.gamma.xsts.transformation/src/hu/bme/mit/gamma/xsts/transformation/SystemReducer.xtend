@@ -10,27 +10,38 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation
 
+import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
+import hu.bme.mit.gamma.expression.model.EquivalenceExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.PredicateExpression
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.UnremovableVariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.XstsOptimizer
+import hu.bme.mit.gamma.property.derivedfeatures.PropertyModelDerivedFeatures
+import hu.bme.mit.gamma.property.model.AtomicFormula
+import hu.bme.mit.gamma.property.model.CommentableStateFormula
+import hu.bme.mit.gamma.property.model.StateFormula
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
+import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
+import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
+import java.util.Map
 import java.util.logging.Logger
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
@@ -45,7 +56,7 @@ class SystemReducer {
 	// Auxiliary objects
 	protected final extension XstsOptimizer xStsOptimizer = XstsOptimizer.INSTANCE
 	protected final extension VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE
-	protected final extension GammaEcoreUtil expressionUtil = GammaEcoreUtil.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE
@@ -122,6 +133,93 @@ class SystemReducer {
 		}
 		for (xStsDeletableVariable : xStsDeletableVariables) {
 			xStsDeletableVariable.delete // Delete needed due to e.g., transientVariables list
+		}
+	}
+	
+	//
+	
+	def void deleteUnnecessaryStates(XSTS xSts, CommentableStateFormula formula,
+			Map<State, Collection<State>> reachableStates) {
+		val stateFormula = formula.formula
+		xSts.deleteUnnecessaryStates(stateFormula, reachableStates)
+	}
+	
+	def void deleteUnnecessaryStates(XSTS xSts, StateFormula formula,
+			Map<State, Collection<State>> reachableStates) {
+		if (PropertyModelDerivedFeatures.isInvariant(formula)) {
+			val atomicFormulas = ecoreUtil.getSelfAndAllContentsOfType(formula, AtomicFormula)
+			val stateReferences = ecoreUtil.getSelfAndAllContentsOfType(atomicFormulas,
+					ComponentInstanceStateReferenceExpression) // TODO Extend with other references, too
+			
+			for (stateReference : stateReferences) {
+				val instance = stateReference.instance
+				val state = stateReference.state
+				val topRegion = state.topRegion
+				val allStates = topRegion.allStates
+				
+				val unreachableFromStates = newHashSet
+				for (aState : allStates) {
+					val reachableStatesFromAState = reachableStates.get(aState)
+					if (!reachableStatesFromAState.contains(state)) {
+						unreachableFromStates += aState
+					}
+				}
+				logger.info("State " + state.name + " is unreachable from states: " + unreachableFromStates.map[it.name].join(", "))
+				
+				val xStsLiteralPredicates = newArrayList
+				val xStsLiteralAssignments = newArrayList
+				
+				if (!unreachableFromStates.empty) {
+					xStsLiteralPredicates += xSts.getAllContentsOfType(EnumerationLiteralExpression)
+							.map[it.eContainer].filter(EquivalenceExpression).filter(BinaryExpression)
+					xStsLiteralAssignments += xSts.getAllContentsOfType(AssignmentAction)
+							.filter[it.rhs instanceof EnumerationLiteralExpression]
+				}
+				
+				for (unreachableState : unreachableFromStates) {
+					val region = StatechartModelDerivedFeatures.getParentRegion(unreachableState)
+					
+					val xStsVariableName = region.customizeName(instance)
+					val xStsLiteralName = unreachableState.customizeName
+					
+					val xStsVariable = xSts.getVariable(xStsVariableName)
+					
+					// Setting the predicates to false
+					for (xStsLiteralPredicate : xStsLiteralPredicates) {
+						val lhs = xStsLiteralPredicate.leftOperand
+						val rhs = xStsLiteralPredicate.rightOperand
+						
+						var remove = false
+						
+						if (lhs instanceof EnumerationLiteralExpression) {
+							if (lhs.reference.name == xStsLiteralName) {
+								remove = true
+							}
+						}
+						else if (rhs instanceof EnumerationLiteralExpression) {
+							if (rhs.reference.name == xStsLiteralName) {
+								remove = true
+							}
+						}
+						
+						if (remove) {
+							createFalseExpression.replace(xStsLiteralPredicate)
+						}
+					}
+					// Delete unreachable transitions in XSTS
+					for (xStsLiteralAssignment : xStsLiteralAssignments) {
+						val lhs = xStsLiteralAssignment.lhs
+						val declaration = lhs.declaration
+						if (declaration === xStsVariable) {
+							val rhs = xStsLiteralAssignment.rhs as EnumerationLiteralExpression
+							val literal = rhs.reference
+							if (literal.name == xStsLiteralName) {
+								createFalseExpression.createAssumeAction.replace(xStsLiteralAssignment)
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 	

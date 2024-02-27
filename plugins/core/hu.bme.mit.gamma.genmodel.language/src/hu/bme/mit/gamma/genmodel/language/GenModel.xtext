@@ -317,7 +317,7 @@ Verification returns Verification:
 	'}'
 ;
 
-TraceGeneration returns TraceGeneration:
+TraceGeneration returns TraceGeneration: // Generate all traces with Theta
 	{TraceGeneration} 'trace-generation' '{'
 		(
 			'file' ':' fileName+=STRING |

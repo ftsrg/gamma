@@ -27,7 +27,8 @@ class LoopActionUnroller {
 	protected final extension ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE
 	
 	def unrollLoopActions(XSTS xSts) {
-		for (loopAction : xSts.getAllContentsOfType(LoopAction)) {
+		val loopActions = xSts.getAllContentsOfType(LoopAction)
+		for (loopAction : loopActions) {
 			val parameter = loopAction.iterationParameterDeclaration
 			val range = loopAction.range
 			val actionInLoop = loopAction.action

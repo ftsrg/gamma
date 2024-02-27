@@ -388,6 +388,20 @@ class GammaEcoreUtil {
 		return validTypeContainer.getSelfOrLastContainerOfType(type)
 	}
 	
+	def <T extends EObject> EObject getChildOfContainerOfType(EObject object, Class<T> type) {
+		val container = object.eContainer
+		
+		if (container === null) {
+			return null
+		}
+		
+		if (type.isInstance(container)) {
+			return object
+		}
+		return container.getChildOfContainerOfType(type)
+	}
+	
+	
 	def <T extends EObject> List<T> getContentsOfType(EObject object, Class<T> type) {
 		return object.eContents.filter(type).toList
 	}
