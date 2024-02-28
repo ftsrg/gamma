@@ -623,7 +623,8 @@ class ActionOptimizer {
 	}
 	
 	protected def optimizeIfActions(Action action) {
-		val block = action.createSequentialAction // Due to replacement issues
+		val block = (action instanceof SequentialAction) ? action :
+				action.createSequentialAction // Due to replacement issues
 		
 		val xStsIfActions = action.getSelfAndAllContentsOfType(IfAction)
 		for (xStsIfAction : xStsIfActions) {
@@ -648,6 +649,7 @@ class ActionOptimizer {
 				xStsIfAction.^else = createEmptyAction
 			}
 		}
+		
 		return block
 	}
 	
