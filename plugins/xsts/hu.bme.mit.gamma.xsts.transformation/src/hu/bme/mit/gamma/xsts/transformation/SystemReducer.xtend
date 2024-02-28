@@ -256,7 +256,9 @@ class SystemReducer {
 		val xStsDeletedInputEventVariables = xStsInputEventVariables
 				.filter[it.containingXsts === null]
 		
-		logger.info("Deleting input variables " + xStsDeletedInputEventVariables.map[it.name].join(", "))
+		if (!xStsDeletedInputEventVariables.empty) {
+			logger.info("Deleting input variables " + xStsDeletedInputEventVariables.map[it.name].join(", "))
+		}
 		for (xStsDeletedInputEventVariable : xStsDeletedInputEventVariables) {
 			val name = xStsDeletedInputEventVariable.name
 			val xStsInputVariable = xSts.getVariable(name) // Tracing
@@ -405,7 +407,9 @@ class SystemReducer {
 		
 		// Note that only writes are handled - reads are not, so the following can cause
 		// nullptr exceptions if the method call (parameters) is not correct
-		logger.info("Deleting XSTS variables " + xStsDeletableVariables.map[it.name].join(", "))
+		if (!xStsDeletableVariables.empty) {
+			logger.info("Deleting XSTS variables " + xStsDeletableVariables.map[it.name].join(", "))
+		}
 		for (xStsDeletableVariable : xStsDeletableVariables) {
 			xStsDeletableVariable.deleteDeclaration // Delete needed due to e.g., transientVariables list
 		}
@@ -418,7 +422,9 @@ class SystemReducer {
 		val xStsDeletableLiterals = xSts.getUnusedEnumLiteralsExceptOne(keepableLiterals)
 		
 		// Enum types cannot be deleted as there must remain an else literal for each of them
-		logger.info("Deleting XSTS enum literals: " + xStsDeletableLiterals.map[it.name].join(", "))
+		if (!xStsDeletableLiterals.empty) {
+			logger.info("Deleting XSTS enum literals: " + xStsDeletableLiterals.map[it.name].join(", "))
+		}
 		for (xStsDeletableLiteral : xStsDeletableLiterals) {
 			xStsDeletableLiteral.remove
 		}

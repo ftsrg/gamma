@@ -224,8 +224,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="TraceReplayModelGeneration" eSuperTypes="#//Task">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="executionTraceFolder" upperBound="-1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="executionTrace" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.trace.model/model/trace.ecore#//ExecutionTrace"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="executionTrace" eType="ecore:EClass ../../hu.bme.mit.gamma.trace.model/model/trace.ecore#//ExecutionTrace"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="environmentModelFileName"
         upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="environmentModel" lowerBound="1"

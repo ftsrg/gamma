@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -270,15 +270,32 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		List<String> systemFileNames = modelGeneration.getFileName();
 		if (systemFileNames.size() != 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"A single system file name must be specified",
+				"A single system file name must be specified",
 					new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME)));
 		}
 		List<String> targetFolders = modelGeneration.getTargetFolder();
 		if (targetFolders.size() > 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"At most one test folder can be specified",
+				"At most one test folder can be specified",
 					new ReferenceInfo(GenmodelModelPackage.Literals.TASK__TARGET_FOLDER)));
 		}
+		List<String> traceFolders = modelGeneration.getExecutionTraceFolder();
+		ExecutionTrace executionTrace = modelGeneration.getExecutionTrace();
+		if (traceFolders.isEmpty() && executionTrace == null) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+				"At least one execution trace or a containing folder has to be specified",
+					new ReferenceInfo(GenmodelModelPackage.Literals.TRACE_REPLAY_MODEL_GENERATION__EXECUTION_TRACE)));
+		}
+		File resourceFile = ecoreUtil.getFile(modelGeneration.eResource());
+		for (String traceFolder : traceFolders) {
+			if (!fileUtil.isValidRelativeFile(resourceFile, traceFolder)) {
+				int index = traceFolders.indexOf(traceFolder);
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+					"This is not a valid relative path to a trace folder: " + traceFolder,
+						new ReferenceInfo(GenmodelModelPackage.Literals.TRACE_REPLAY_MODEL_GENERATION__EXECUTION_TRACE_FOLDER, index)));
+			}
+		}
+		
 		return validationResultMessages;
 	}
 	

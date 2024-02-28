@@ -12,7 +12,9 @@ package hu.bme.mit.gamma.ui.taskhandler;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -52,70 +54,93 @@ public class TraceReplayModelGenerationHandler extends TaskHandler {
 		setTargetFolder(modelGeneration);
 		//
 		setTraceReplayModelGeneration(modelGeneration);
-		// TODO multiple traces
-		ExecutionTrace executionTrace = modelGeneration.getExecutionTrace();
-		List<String> fileName = modelGeneration.getFileName();
-		List<String> environmentModelFileName = modelGeneration.getEnvironmentModelFileName();
-		checkArgument(fileName.size() == 1 && environmentModelFileName.size() == 1 && executionTrace != null);
-		String systemName = fileName.get(0);
-		String environmentModelName = environmentModelFileName.get(0); // Set in setTraceReplayModelGeneration
-		EnvironmentModel environmentModelSetting = transformEnvironmentModel(modelGeneration.getEnvironmentModel());
 		
-		boolean considerOutEvents = modelGeneration.isConsiderOutEvents();
-		TraceReplayModelGenerator modelGenerator = new TraceReplayModelGenerator(executionTrace,
-				systemName, environmentModelName, environmentModelSetting, considerOutEvents);
-		Result result = modelGenerator.execute();
-		ComponentInstance environmentInstance = result.getEnvironmentModelIntance();
-		Component environmentModel = StatechartModelDerivedFeatures.getDerivedType(environmentInstance);
-		State lastState = result.getLastState();
-		Component systemModel = result.getSystemModel();
-		
-		PropertyPackage propertyPackage = propertyUtil.createAtomicInstanceStateReachabilityProperty(
-				systemModel, environmentInstance, lastState);
-		
-		// Serialization
-		serializer.saveModel(ecoreUtil.getRoot(environmentModel), targetFolderUri, environmentModelName + ".gcd");
-		serializer.saveModel(ecoreUtil.getRoot(systemModel), targetFolderUri, systemName + ".gcd");
-		serializer.saveModel(ecoreUtil.getRoot(propertyPackage), targetFolderUri, systemName + ".gpd");
-		
-		// If we want to execute it right away...
-		// Make sure that the ExecutionTrace is back-annotated to original!
-		Expression schedulingTime = TraceModelDerivedFeatures.getSchedulingTime(executionTrace);
-		
-		List<AnalysisLanguage> analysisLanguages = modelGeneration.getAnalysisLanguages();
-		for (AnalysisLanguage language : analysisLanguages) {
-			String analysisFileName = fileName.get(0) + "-" + language.toString();
+		// Loading the traces
+		List<ExecutionTrace> executionTraces = new ArrayList<>();
+		for (String relativeTraceFolder : modelGeneration.getExecutionTraceFolder()) {
+			File traceFolder = super.exporeRelativeFile(modelGeneration, relativeTraceFolder);
+			List<File> allFiles = fileUtil.getAllContainedFiles(traceFolder);
 			
-			AnalysisModelTransformation transformation = factory.createAnalysisModelTransformation();
-			ComponentReference componentReference = factory.createComponentReference();
-			componentReference.setComponent(systemModel);
-			
-			transformation.setModel(componentReference);
-			transformation.setPropertyPackage(propertyPackage);
-			
-			transformation.getLanguages().add(language);
-			
-			transformation.getFileName().add(analysisFileName);
-			transformation.getTargetFolder().addAll(modelGeneration.getTargetFolder());
-			
-			if (schedulingTime != null) {
-				OrchestratingConstraint constraint = factory.createOrchestratingConstraint();
-				transformation.setConstraint(constraint);
-				
-				TimeSpecification min = interfaceFactory.createTimeSpecification();
-				min.setValue(
-						ecoreUtil.clone(schedulingTime));
-				min.setUnit(TimeUnit.MILLISECOND);
-				TimeSpecification max = ecoreUtil.clone(min);
-				constraint.setMinimumPeriod(min);
-				constraint.setMaximumPeriod(max);
+			for (File traceFile : allFiles) {
+				try {
+					ExecutionTrace trace = (ExecutionTrace) ecoreUtil.normalLoad(traceFile);
+					executionTraces.add(trace);
+				} catch (RuntimeException e) {
+					// Not actually an execution trace
+				}
 			}
+		}
+		ExecutionTrace trace = modelGeneration.getExecutionTrace();
+		if (trace != null) {
+			executionTraces.add(trace);
+		}
+		//
+		int i = 0;
+		for (ExecutionTrace executionTrace : executionTraces) {
+			++i;
+			List<String> fileName = modelGeneration.getFileName();
+			List<String> environmentModelFileName = modelGeneration.getEnvironmentModelFileName();
+			checkArgument(fileName.size() == 1 && environmentModelFileName.size() == 1 && executionTrace != null);
+			String systemName = fileName.get(0);
+			String environmentModelName = environmentModelFileName.get(0); // Set in setTraceReplayModelGeneration
+			EnvironmentModel environmentModelSetting = transformEnvironmentModel(modelGeneration.getEnvironmentModel());
 			
-			AnalysisModelTransformationAndVerificationHandler handler = new
-					AnalysisModelTransformationAndVerificationHandler(file, true, false, true, ProgrammingLanguage.JAVA);
-			handler.execute(transformation);
+			boolean considerOutEvents = modelGeneration.isConsiderOutEvents();
+			TraceReplayModelGenerator modelGenerator = new TraceReplayModelGenerator(executionTrace,
+					systemName, environmentModelName, environmentModelSetting, considerOutEvents);
+			Result result = modelGenerator.execute();
+			ComponentInstance environmentInstance = result.getEnvironmentModelIntance();
+			Component environmentModel = StatechartModelDerivedFeatures.getDerivedType(environmentInstance);
+			State lastState = result.getLastState();
+			Component systemModel = result.getSystemModel();
 			
-			// TODO Check trace-conformance right here?
+			PropertyPackage propertyPackage = propertyUtil.createAtomicInstanceStateReachabilityProperty(
+					systemModel, environmentInstance, lastState);
+			
+			// Serialization
+			serializer.saveModel(ecoreUtil.getRoot(environmentModel), targetFolderUri, environmentModelName + ".gcd");
+			serializer.saveModel(ecoreUtil.getRoot(systemModel), targetFolderUri, systemName + ".gcd");
+			serializer.saveModel(ecoreUtil.getRoot(propertyPackage), targetFolderUri, systemName + ".gpd");
+			
+			// If we want to execute it right away...
+			// Make sure that the ExecutionTrace is back-annotated to original!
+			Expression schedulingTime = TraceModelDerivedFeatures.getSchedulingTime(executionTrace);
+			
+			List<AnalysisLanguage> analysisLanguages = modelGeneration.getAnalysisLanguages();
+			for (AnalysisLanguage language : analysisLanguages) {
+				String analysisFileName = fileName.get(0) + "-" + language.toString() + "-" + i;
+				
+				AnalysisModelTransformation transformation = factory.createAnalysisModelTransformation();
+				ComponentReference componentReference = factory.createComponentReference();
+				componentReference.setComponent(systemModel);
+				
+				transformation.setModel(componentReference);
+				transformation.setPropertyPackage(propertyPackage);
+				
+				transformation.getLanguages().add(language);
+				
+				transformation.getFileName().add(analysisFileName);
+				transformation.getTargetFolder().addAll(modelGeneration.getTargetFolder());
+				
+				if (schedulingTime != null) {
+					OrchestratingConstraint constraint = factory.createOrchestratingConstraint();
+					transformation.setConstraint(constraint);
+					
+					TimeSpecification min = interfaceFactory.createTimeSpecification();
+					min.setValue(
+							ecoreUtil.clone(schedulingTime));
+					min.setUnit(TimeUnit.MILLISECOND);
+					TimeSpecification max = ecoreUtil.clone(min);
+					constraint.setMinimumPeriod(min);
+					constraint.setMaximumPeriod(max);
+				}
+				
+				AnalysisModelTransformationAndVerificationHandler handler =
+						new AnalysisModelTransformationAndVerificationHandler(file, true, false, true, ProgrammingLanguage.JAVA);
+				handler.execute(transformation);
+				
+				// TODO Check trace-conformance right here?
+			}
 		}
 	}
 
@@ -123,8 +148,8 @@ public class TraceReplayModelGenerationHandler extends TaskHandler {
 		List<String> environmentModelFileName = modelGeneration.getEnvironmentModelFileName();
 		if (environmentModelFileName.isEmpty()) {
 			ExecutionTrace executionTrace = modelGeneration.getExecutionTrace();
-			environmentModelFileName.add(
-					executionTrace.getName());
+			String name = (executionTrace != null) ? executionTrace.getName() : "Environment";
+			environmentModelFileName.add(name);
 		}
 	}
 	

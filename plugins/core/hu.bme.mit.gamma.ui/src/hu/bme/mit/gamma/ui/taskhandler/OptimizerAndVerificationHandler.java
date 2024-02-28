@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
@@ -134,7 +133,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			// Checking if it is unfolded
 			if (!PropertyModelDerivedFeatures.isUnfolded(propertyPackage)) {
 				if (newTopComponent == null) {
-					logger.log(Level.INFO, "Loading unfolded package for property unfolding");
+					logger.info("Loading unfolded package for property unfolding");
 					
 					String unfoldedGsmFilePath = fileNamer.getUnfoldedPackageUri(analysisFilePath);
 					File unfoldedGsmFile = super.exporeRelativeFile(verification, unfoldedGsmFilePath);
@@ -266,7 +265,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			//
 			
 			verificationHandler.execute(verification);
-			logger.log(Level.INFO, "Verification property " + index + "/" + size + " finished");
+			logger.info("Verification property " + index + "/" + size + " finished");
 		}
 		
 		if (isOptimize) {
