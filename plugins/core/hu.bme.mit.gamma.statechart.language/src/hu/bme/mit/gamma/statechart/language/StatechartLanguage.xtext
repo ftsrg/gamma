@@ -552,7 +552,7 @@ TimeSpecification returns InterfaceModel::TimeSpecification:
 @Override
 LiteralExpression returns ExpressionModel::Expression: 
 	super |
-	('time' '(' TimeSpecification ')')
+	('time' TimeSpecification)
 ;
 
 
@@ -678,7 +678,7 @@ InterfaceParameterReferenceExpression returns InterfaceModel::InterfaceParameter
 	'this' '.' event=[InterfaceModel::Event] '::' parameter=[ExpressionModel::ParameterDeclaration];
 	
 TimeoutReferenceExpression returns TimeoutReferenceExpression:
-	'timeout-elapsed' '(' timeout=[TimeoutDeclaration] ')'
+	'time-elapsed' '(' timeout=[TimeoutDeclaration] ')'
 ;
 
 // Action Language Extensions
