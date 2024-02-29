@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -34,6 +34,8 @@ import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.State;
+import hu.bme.mit.gamma.statechart.util.ExpressionSerializer;
+import hu.bme.mit.gamma.trace.model.Act;
 import hu.bme.mit.gamma.trace.model.Cycle;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.model.ExecutionTraceAllowedWaitingAnnotation;
@@ -42,17 +44,18 @@ import hu.bme.mit.gamma.trace.model.ExecutionTraceCommentAnnotation;
 import hu.bme.mit.gamma.trace.model.NegativeTestAnnotation;
 import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Step;
+import hu.bme.mit.gamma.trace.model.TimeElapse;
 
 public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
-	
+	//
+	protected static final ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE;
+	//
 	public static List<ParameterDeclaration> getParameterDeclarations(ArgumentedElement element) {
-		if (element instanceof RaiseEventAction) {
-			RaiseEventAction raiseEventAction = (RaiseEventAction) element;
+		if (element instanceof RaiseEventAction raiseEventAction) {
 			Event event = raiseEventAction.getEvent();
 			return event.getParameterDeclarations();
 		}
-		if (element instanceof ExecutionTrace) {
-			ExecutionTrace trace = (ExecutionTrace) element;
+		if (element instanceof ExecutionTrace trace) {
 			return trace.getComponent().getParameterDeclarations();
 		}
 		throw new IllegalArgumentException("Not supported element: " + element);
@@ -104,6 +107,40 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 	
 	//
+	
+	public static Expression getSchedulingTime(ExecutionTrace trace) {
+		List<Step> steps = trace.getSteps();
+		List<Step> notFirstSteps = new ArrayList<Step>(steps);
+		
+		if (notFirstSteps.isEmpty()) {
+			return null;
+		}
+		
+		notFirstSteps.remove(0);
+		TimeElapse schedulingTimeElapse = null;
+		for (Step step : notFirstSteps) {
+			List<Act> actions = step.getActions();
+			List<TimeElapse> timeElapses = javaUtil.filterIntoList(actions, TimeElapse.class);
+			if (timeElapses.isEmpty()) {
+				return null;
+			}
+			
+			TimeElapse timeElapse = javaUtil.getOnlyElement(timeElapses);
+			if (schedulingTimeElapse == null) {
+				schedulingTimeElapse = timeElapse;
+			}
+			else {
+				Expression generalElapsedTime = schedulingTimeElapse.getElapsedTime();
+				Expression actualElapsedTime = timeElapse.getElapsedTime();
+				if (evaluator.evaluateInteger(generalElapsedTime) != evaluator.evaluateInteger(actualElapsedTime)) {
+					return null;
+				}
+			}
+		}
+		
+		Expression generalElapsedTime = schedulingTimeElapse.getElapsedTime();
+		return ecoreUtil.clone(generalElapsedTime);
+	}
 	
 	public static Expression getLowermostAssert(Expression assertion) {
 		if (assertion instanceof NotExpression negatedAssert) {
@@ -175,9 +212,8 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	public static List<RaiseEventAct> getOutEvents(Step step) {
 		List<RaiseEventAct> outEvents = new ArrayList<RaiseEventAct>();
 		for (Expression assertion : step.getAsserts()) {
-			if (assertion instanceof RaiseEventAct) {
-				outEvents.add(
-						(RaiseEventAct) assertion);
+			if (assertion instanceof RaiseEventAct act) {
+				outEvents.add(act);
 			}
 		}
 		return outEvents;
@@ -190,8 +226,8 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	public static List<ComponentInstanceStateReferenceExpression> getInstanceStateConfigurations(Step step) {
 		List<ComponentInstanceStateReferenceExpression> states = new ArrayList<ComponentInstanceStateReferenceExpression>();
 		for (Expression assertion : step.getAsserts()) {
-			if (assertion instanceof ComponentInstanceStateReferenceExpression) {
-				states.add((ComponentInstanceStateReferenceExpression) assertion);
+			if (assertion instanceof ComponentInstanceStateReferenceExpression exp) {
+				states.add(exp);
 			}
 		}
 		return states;
@@ -216,6 +252,82 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static List<ComponentInstanceVariableReferenceExpression> getInstanceVariableStates(Step step) {
 		return ecoreUtil.getAllContentsOfType(step, ComponentInstanceVariableReferenceExpression.class);
+	}
+	
+	public static List<ComponentInstanceReferenceExpression> getFirstComponentInstanceReferenceExpressions(ExecutionTrace trace) {
+		return ecoreUtil.getAllContentsOfType(trace, ComponentInstanceReferenceExpression.class)
+				.stream()
+				.filter(it -> !(it.eContainer() instanceof ComponentInstanceReferenceExpression))
+				.toList();
+	}
+	
+	//
+	
+	public static boolean areAssertsEquivalent(ExecutionTrace lhs, ExecutionTrace rhs) {
+		return areAssertsEquivalent(lhs, rhs, true);
+	}
+	
+	public static boolean areAssertsEquivalent(ExecutionTrace lhs, ExecutionTrace rhs, boolean considerInstanceNames) {
+		List<Step> lhsSteps = lhs.getSteps();
+		List<Step> rhsSteps = rhs.getSteps();
+		
+		return areAssertsEquivalent(lhsSteps, rhsSteps, considerInstanceNames);
+	}
+	
+	public static boolean areAssertsEquivalent(List<Step> lhs, List<Step> rhs, boolean considerInstanceNames) {
+		int size = lhs.size();
+		if (size != rhs.size()) {
+			return false;
+		}
+		
+		for (int i = 0; i < size; ++i) {
+			Step lhsStep = lhs.get(i);
+			Step rhsStep = rhs.get(i);
+			
+			if (!areAssertsEquivalent(lhsStep, rhsStep, considerInstanceNames)) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	public static boolean areAssertsEquivalent(Step lhs, Step rhs, boolean considerInstanceNames) {
+		// TODO remove injected variables
+		List<Expression> lhsAsserts = lhs.getAsserts();
+		List<Expression> rhsAsserts = rhs.getAsserts();
+		int size = lhsAsserts.size();
+		if (size != rhsAsserts.size()) {
+			return false;
+		}
+		
+		for (int i = 0; i < size; ++i) {
+			Expression lhsAssert = lhsAsserts.get(i);
+			Expression rhsAssert = rhsAsserts.get(i);
+			
+			if (!considerInstanceNames) {
+				lhsAssert = ecoreUtil.clone(lhsAssert);
+				rhsAssert = ecoreUtil.clone(rhsAssert);
+				
+				List<ComponentInstanceElementReferenceExpression> references = new ArrayList<ComponentInstanceElementReferenceExpression>(
+						ecoreUtil.getSelfAndAllContentsOfType(lhsAssert, ComponentInstanceElementReferenceExpression.class));
+				references.addAll(
+						ecoreUtil.getSelfAndAllContentsOfType(rhsAssert, ComponentInstanceElementReferenceExpression.class));
+				
+				for (ComponentInstanceElementReferenceExpression reference : references) {
+					reference.setInstance(null);
+				}
+			}
+			
+			String lhsSerial = expressionSerializer.serialize(lhsAssert);
+			String rhsSerial = expressionSerializer.serialize(rhsAssert);
+			
+			if (!lhsSerial.equals(rhsSerial)) {
+				return false;
+			}
+		}
+		
+		return true;
 	}
 	
 }

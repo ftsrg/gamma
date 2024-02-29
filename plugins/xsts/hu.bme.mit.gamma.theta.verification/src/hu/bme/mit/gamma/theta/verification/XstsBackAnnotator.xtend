@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021-2023 Contributors to the Gamma project
+ * Copyright (c) 2021-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -311,8 +311,15 @@ class XstsBackAnnotator {
 		for (instanceState : instanceStates) {
 			// A state is active if all of its ancestor states are active
 			val ancestorStates = instanceState.state.ancestors
-			if (!activatedStates.containsAll(ancestorStates)) {
-				instanceState.delete
+			for (ancestorState : ancestorStates) {
+				if (!activatedStates.contains(ancestorState)) { // Can happen due to slicing
+					val ancestorStateReference = instanceState.clone
+					ancestorStateReference.region = ancestorState.parentRegion
+					ancestorStateReference.state = ancestorState
+					
+					step.asserts += ancestorStateReference
+				}
+//				instanceState.delete // Was necessary when history literals were not yet introduced
 			}
 		}
 		raisedOutEvents.clear // Crucial

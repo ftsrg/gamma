@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -337,6 +337,11 @@ class GammaEcoreUtil {
 		return elements
 	}
 	
+	def <T extends EObject> boolean isDirectlyContainedBy(EObject object, Class<T> type) {
+		val container = object.eContainer
+		return type.isInstance(container)
+	}
+	
 	def <T extends EObject> boolean isContainedBy(EObject object, Class<T> type) {
 		val container = object.eContainer
 		if (container === null) {
@@ -382,6 +387,20 @@ class GammaEcoreUtil {
 		val validTypeContainer = container as T
 		return validTypeContainer.getSelfOrLastContainerOfType(type)
 	}
+	
+	def <T extends EObject> EObject getChildOfContainerOfType(EObject object, Class<T> type) {
+		val container = object.eContainer
+		
+		if (container === null) {
+			return null
+		}
+		
+		if (type.isInstance(container)) {
+			return object
+		}
+		return container.getChildOfContainerOfType(type)
+	}
+	
 	
 	def <T extends EObject> List<T> getContentsOfType(EObject object, Class<T> type) {
 		return object.eContents.filter(type).toList

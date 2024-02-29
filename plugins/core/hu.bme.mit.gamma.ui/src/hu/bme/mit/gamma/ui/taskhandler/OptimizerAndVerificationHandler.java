@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,9 +15,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
@@ -38,6 +40,8 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceE
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.statechart.statechart.State;
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.transformation.util.PropertyUnfolder;
@@ -129,7 +133,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			// Checking if it is unfolded
 			if (!PropertyModelDerivedFeatures.isUnfolded(propertyPackage)) {
 				if (newTopComponent == null) {
-					logger.log(Level.INFO, "Loading unfolded package for property unfolding");
+					logger.info("Loading unfolded package for property unfolding");
 					
 					String unfoldedGsmFilePath = fileNamer.getUnfoldedPackageUri(analysisFilePath);
 					File unfoldedGsmFile = super.exporeRelativeFile(verification, unfoldedGsmFilePath);
@@ -150,6 +154,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 					ecoreUtil.clone( // To prevent destroying the original property packages
 							propertyPackage.getFormulas()));
 		}
+		
 		propertyPackages.clear();
 		List<CommentableStateFormula> checkableFormulas = mainPropertyPackage.getFormulas();
 		int size = checkableFormulas.size();
@@ -159,6 +164,19 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 		// As such, it is unnecessary to optimize the generated trace(s)
 		boolean isOptimize = verification.isOptimize();
 //		verification.setOptimize(false); // Now one by one optimization is also supported
+		
+		// State slicing preparation
+		Map<State, Collection<State>> reachableStates = new HashMap<State, Collection<State>>();
+		Component component = mainPropertyPackage.getComponent();
+		Collection<StatechartDefinition> statecharts = StatechartModelDerivedFeatures.getAllContainedStatecharts(component);
+		for (StatechartDefinition statechart : statecharts) {
+			Collection<State> states = StatechartModelDerivedFeatures.getAllStates(statechart);
+			for (State state : states) {
+				Collection<State> allReachableStates = StatechartModelDerivedFeatures.getAllReachableStates(state);
+				reachableStates.put(state, allReachableStates);
+			}
+		}
+		//
 		
 		// A single one to store the traces and support later optimization - false: no trace serialization
 		verificationHandler = new VerificationHandler(file, false);
@@ -179,6 +197,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 					.map(it -> it.getVariableDeclaration())
 					.collect(Collectors.toList());
 			
+//			xStsReducer.deleteUnnecessaryStates(xSts, formula, reachableStates); // Still experimental
 			if (optimizeOutEvents) {
 				xStsReducer.deleteUnusedAndWrittenOnlyVariables(xSts, keepableGammaVariables);
 			}
@@ -246,7 +265,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			//
 			
 			verificationHandler.execute(verification);
-			logger.log(Level.INFO, "Verification property " + index + "/" + size + " finished");
+			logger.info("Verification property " + index + "/" + size + " finished");
 		}
 		
 		if (isOptimize) {

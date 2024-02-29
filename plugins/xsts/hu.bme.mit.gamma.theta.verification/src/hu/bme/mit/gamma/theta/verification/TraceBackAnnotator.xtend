@@ -22,7 +22,6 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.verification.util.TraceBuilder
 import java.util.NoSuchElementException
 import java.util.Scanner
-import java.util.logging.Level
 import java.util.logging.Logger
 
 import static com.google.common.base.Preconditions.checkState
@@ -94,7 +93,6 @@ class TraceBackAnnotator {
 		checkState(topComponentArguments.size == component.parameterDeclarations.size, 
 			"The number of top component arguments and top component parameters are not equal: " +
 				topComponentArguments.size + " - " + component.parameterDeclarations.size)
-		logger.log(Level.INFO, "The number of top component arguments is " + topComponentArguments.size)
 		trace.arguments += topComponentArguments.map[it.clone]
 		var step = createStep
 		trace.steps += step

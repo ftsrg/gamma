@@ -47,6 +47,7 @@ import hu.bme.mit.gamma.nuxmv.verification.NuxmvVerification;
 import hu.bme.mit.gamma.plantuml.serialization.SvgSerializer;
 import hu.bme.mit.gamma.plantuml.transformation.TraceToPlantUmlTransformer;
 import hu.bme.mit.gamma.promela.verification.PromelaVerification;
+import hu.bme.mit.gamma.property.derivedfeatures.PropertyModelDerivedFeatures;
 import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.StateFormula;
@@ -188,10 +189,6 @@ public class VerificationHandler extends TaskHandler {
 		}
 		//
 		
-		String[] arguments = verificationArguments.isEmpty() ?
-				verificationTask.getDefaultArguments(modelFile) :
-					verificationArguments.toArray(new String[verificationArguments.size()]);
-		
 		boolean isOptimize = verification.isOptimize();
 		
 		// Retrieved traces
@@ -248,6 +245,15 @@ public class VerificationHandler extends TaskHandler {
 		if (isOptimize) {
 			removeCoveredProperties(formulaQueue);
 		}
+		
+		boolean areAllPropertiesInvariants = verification.getQueryFiles().isEmpty() &&
+				verification.getPropertyPackages().stream()
+					.allMatch(it -> PropertyModelDerivedFeatures.areAllPropertiesInvariants(it));
+		String[] arguments = verificationArguments.isEmpty() ?
+				(areAllPropertiesInvariants ?
+						verificationTask.getDefaultArgumentsForInvarianceChecking(modelFile) : 
+							verificationTask.getDefaultArguments(modelFile)) :
+					verificationArguments.toArray(new String[verificationArguments.size()]);
 		
 		// Execution
 		while (!formulaQueue.isEmpty()) {

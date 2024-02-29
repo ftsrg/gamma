@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,26 +10,38 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation
 
+import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
+import hu.bme.mit.gamma.expression.model.EquivalenceExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.PredicateExpression
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.UnremovableVariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.XstsOptimizer
+import hu.bme.mit.gamma.property.derivedfeatures.PropertyModelDerivedFeatures
+import hu.bme.mit.gamma.property.model.AtomicFormula
+import hu.bme.mit.gamma.property.model.CommentableStateFormula
+import hu.bme.mit.gamma.property.model.StateFormula
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
+import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
+import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
+import java.util.Map
 import java.util.logging.Logger
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
@@ -44,7 +56,7 @@ class SystemReducer {
 	// Auxiliary objects
 	protected final extension XstsOptimizer xStsOptimizer = XstsOptimizer.INSTANCE
 	protected final extension VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE
-	protected final extension GammaEcoreUtil expressionUtil = GammaEcoreUtil.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE
@@ -126,6 +138,93 @@ class SystemReducer {
 	
 	//
 	
+	def void deleteUnnecessaryStates(XSTS xSts, CommentableStateFormula formula,
+			Map<State, Collection<State>> reachableStates) {
+		val stateFormula = formula.formula
+		xSts.deleteUnnecessaryStates(stateFormula, reachableStates)
+	}
+	
+	def void deleteUnnecessaryStates(XSTS xSts, StateFormula formula,
+			Map<State, Collection<State>> reachableStates) {
+		if (PropertyModelDerivedFeatures.isInvariant(formula)) {
+			val atomicFormulas = ecoreUtil.getSelfAndAllContentsOfType(formula, AtomicFormula)
+			val stateReferences = ecoreUtil.getSelfAndAllContentsOfType(atomicFormulas,
+					ComponentInstanceStateReferenceExpression) // TODO Extend with other references, too
+			
+			for (stateReference : stateReferences) {
+				val instance = stateReference.instance
+				val state = stateReference.state
+				val topRegion = state.topRegion
+				val allStates = topRegion.allStates
+				
+				val unreachableFromStates = newHashSet
+				for (aState : allStates) {
+					val reachableStatesFromAState = reachableStates.get(aState)
+					if (!reachableStatesFromAState.contains(state)) {
+						unreachableFromStates += aState
+					}
+				}
+				logger.info("State " + state.name + " is unreachable from states: " + unreachableFromStates.map[it.name].join(", "))
+				
+				val xStsLiteralPredicates = newArrayList
+				val xStsLiteralAssignments = newArrayList
+				
+				if (!unreachableFromStates.empty) {
+					xStsLiteralPredicates += xSts.getAllContentsOfType(EnumerationLiteralExpression)
+							.map[it.eContainer].filter(EquivalenceExpression).filter(BinaryExpression)
+					xStsLiteralAssignments += xSts.getAllContentsOfType(AssignmentAction)
+							.filter[it.rhs instanceof EnumerationLiteralExpression]
+				}
+				
+				for (unreachableState : unreachableFromStates) {
+					val region = StatechartModelDerivedFeatures.getParentRegion(unreachableState)
+					
+					val xStsVariableName = region.customizeName(instance)
+					val xStsLiteralName = unreachableState.customizeName
+					
+					val xStsVariable = xSts.getVariable(xStsVariableName)
+					
+					// Setting the predicates to false
+					for (xStsLiteralPredicate : xStsLiteralPredicates) {
+						val lhs = xStsLiteralPredicate.leftOperand
+						val rhs = xStsLiteralPredicate.rightOperand
+						
+						var remove = false
+						
+						if (lhs instanceof EnumerationLiteralExpression) {
+							if (lhs.reference.name == xStsLiteralName) {
+								remove = true
+							}
+						}
+						else if (rhs instanceof EnumerationLiteralExpression) {
+							if (rhs.reference.name == xStsLiteralName) {
+								remove = true
+							}
+						}
+						
+						if (remove) {
+							createFalseExpression.replace(xStsLiteralPredicate)
+						}
+					}
+					// Delete unreachable transitions in XSTS
+					for (xStsLiteralAssignment : xStsLiteralAssignments) {
+						val lhs = xStsLiteralAssignment.lhs
+						val declaration = lhs.declaration
+						if (declaration === xStsVariable) {
+							val rhs = xStsLiteralAssignment.rhs as EnumerationLiteralExpression
+							val literal = rhs.reference
+							if (literal.name == xStsLiteralName) {
+								createFalseExpression.createAssumeAction.replace(xStsLiteralAssignment)
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	//
+	
 	def void deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(XSTS xSts) {
 		xSts.deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(#[])
 	}
@@ -157,10 +256,12 @@ class SystemReducer {
 		val xStsDeletedInputEventVariables = xStsInputEventVariables
 				.filter[it.containingXsts === null]
 		
+		if (!xStsDeletedInputEventVariables.empty) {
+			logger.info("Deleting input variables " + xStsDeletedInputEventVariables.map[it.name].join(", "))
+		}
 		for (xStsDeletedInputEventVariable : xStsDeletedInputEventVariables) {
 			val name = xStsDeletedInputEventVariable.name
 			val xStsInputVariable = xSts.getVariable(name) // Tracing
-			logger.info("Deleting input variable " + name)
 			
 			for (reference : xSts.getAllContentsOfType(DirectReferenceExpression)) {
 				if (reference.declaration === xStsDeletedInputEventVariable) {
@@ -170,6 +271,7 @@ class SystemReducer {
 			}
 			// These references cannot be rhs-s in assignments if the above algorithms are correct
 		}
+		
 		// Optimization only if needed
 		if (!xStsDeletedInputEventVariables.empty) {
 			// Value propagation - inline: XstsOptimizer has this and many other techniques
@@ -296,8 +398,8 @@ class SystemReducer {
 	//
 	
 	protected def void deleteVariablesAndAssignments(XSTS xSts,
-			Collection<VariableDeclaration> xStsDeleteableVariables) {
-		val xStsDeletableAssignments = xStsDeleteableVariables.getAssignments(xSts)
+			Collection<VariableDeclaration> xStsDeletableVariables) {
+		val xStsDeletableAssignments = xStsDeletableVariables.getAssignments(xSts)
 		for (xStsDeletableAssignmentAction : xStsDeletableAssignments) {
 			createEmptyAction.replace(
 				xStsDeletableAssignmentAction) // To avoid nullptrs
@@ -305,9 +407,11 @@ class SystemReducer {
 		
 		// Note that only writes are handled - reads are not, so the following can cause
 		// nullptr exceptions if the method call (parameters) is not correct
-		for (xStsDeletableVariable : xStsDeleteableVariables) {
+		if (!xStsDeletableVariables.empty) {
+			logger.info("Deleting XSTS variables " + xStsDeletableVariables.map[it.name].join(", "))
+		}
+		for (xStsDeletableVariable : xStsDeletableVariables) {
 			xStsDeletableVariable.deleteDeclaration // Delete needed due to e.g., transientVariables list
-			logger.info("Deleting XSTS variable " + xStsDeletableVariable.name)
 		}
 	}
 	
@@ -318,8 +422,10 @@ class SystemReducer {
 		val xStsDeletableLiterals = xSts.getUnusedEnumLiteralsExceptOne(keepableLiterals)
 		
 		// Enum types cannot be deleted as there must remain an else literal for each of them
+		if (!xStsDeletableLiterals.empty) {
+			logger.info("Deleting XSTS enum literals: " + xStsDeletableLiterals.map[it.name].join(", "))
+		}
 		for (xStsDeletableLiteral : xStsDeletableLiterals) {
-			logger.info("Deleting XSTS enum literal " + xStsDeletableLiteral.name)
 			xStsDeletableLiteral.remove
 		}
 	}
@@ -328,19 +434,32 @@ class SystemReducer {
 			Collection<? extends EnumerationLiteralDefinition> keepableLiterals) { // Unfolded Gamma variables
 		val xStsDeletableLiterals = xSts.getUnusedEnumLiteralsExceptOne(keepableLiterals)
 		
+		logger.info("Renaming XSTS enum literals to " + unusedEnumerationLiteralName + ": " + xStsDeletableLiterals.map[it.name].join(", "))
 		for (xStsDeletableLiteral : xStsDeletableLiterals) {
 			val unusedLiteralName = unusedEnumerationLiteralName
-			logger.info("Renaming XSTS enum literal " + xStsDeletableLiteral.name + " to " + unusedLiteralName)
 			xStsDeletableLiteral.name = unusedLiteralName
 		}
 	}
 	
 	protected def getUnusedEnumLiteralsExceptOne(XSTS xSts,
 			Collection<? extends EnumerationLiteralDefinition> keepableLiterals) {
-		val xStsLiterals = xSts.getAllContentsOfType(EnumerationLiteralDefinition)
+		val xStsEnums = xSts.typeDeclarations.map[it.typeDefinition]
+				.filter(EnumerationTypeDefinition).toList
+		val xStsLiterals = xStsEnums.map[it.literals].flatten.toList
 		
 		val xStsLiteralReferences = xSts.getAllContentsOfType(EnumerationLiteralExpression)
-		val xStsReferencedLiterals = xStsLiteralReferences.map[it.reference].toSet
+		
+		val xStsLiteralReferenced = newLinkedHashSet
+		xStsLiteralReferenced += xStsLiteralReferences.map[it.reference]
+		
+		val xStsLiteralReferencedByPredicate = xStsLiteralReferences
+				.filter[it.isDirectlyContainedBy(PredicateExpression)].map[it.reference].toSet
+		
+//		val xStsLiteralUnreferenced = newArrayList
+//		xStsLiteralUnreferenced += xStsLiterals
+//		xStsLiteralUnreferenced -= xStsLiteralReferenced
+		
+		// Could make progress here if we knew what literals are referenced in a 'positive' or 'negative' way
 		
 		val xStsKeepableLiterals = keepableLiterals // customizeName? - remains the same
 									.map[val name = it.name
@@ -349,21 +468,31 @@ class SystemReducer {
 											.filter[it.getContainerOfType(TypeDeclaration).name == typeDeclarationName &&
 													it.name === name]].flatten.toSet
 		
-		val xStsDeletableLiterals = newHashSet
+		val xStsDeletableLiterals = newArrayList
 		xStsDeletableLiterals += xStsLiterals
-		xStsDeletableLiterals -= xStsReferencedLiterals
+		xStsDeletableLiterals -= xStsLiteralReferenced
 		xStsDeletableLiterals -= xStsKeepableLiterals
 		
-		// Keeping the lowest literal for the "else" branch
-		val xStsElseBranchedEnums = newHashSet
-		for (xStsDeletableLiteral : xStsDeletableLiterals.toList) {
-			val xStsContainingEnum = xStsDeletableLiteral.getContainerOfType(EnumerationTypeDefinition)
-			if (!xStsElseBranchedEnums.contains(xStsContainingEnum)) {
-				xStsDeletableLiterals -= xStsDeletableLiteral // No else branch for this enum yet, the literal cannot be removed
-				xStsElseBranchedEnums += xStsContainingEnum
+		for (xStsEnum : xStsEnums) {
+			val xStsEnumLiterals = xStsEnum.literals
+			val xStsDeletableEnumLiterals = newArrayList
+			xStsDeletableEnumLiterals += xStsEnumLiterals
+			xStsDeletableEnumLiterals.retainAll(xStsDeletableLiterals)
+			val xStsKeepableEnumLiterals = newArrayList
+			xStsKeepableEnumLiterals += xStsEnumLiterals
+			xStsKeepableEnumLiterals -= xStsDeletableEnumLiterals
+			
+			val needElseLiteral = xStsEnumLiterals.size == xStsDeletableEnumLiterals || (// If we want to delete all literals
+					!xStsDeletableEnumLiterals.empty && // Or, if we want to delete literals
+					xStsLiteralReferenced.containsAll(xStsKeepableLiterals) && // And the keepable is not already an else literal (otherwise it already serves as one)
+					xStsLiteralReferencedByPredicate.containsAll(xStsKeepableEnumLiterals))  // And every keepable literal is referenced from a predicate (and not only from an assignment action which can serve as an else literal)
+			if (needElseLiteral) { 
+				val xStsElseEnumLiteral = xStsDeletableEnumLiterals.head // Keeping the lowest literal for the "else" branch
+				xStsDeletableLiterals -= xStsElseEnumLiteral
 			}
 		}
-		xStsDeletableLiterals
+		
+		return xStsDeletableLiterals
 	}
 	
 	//

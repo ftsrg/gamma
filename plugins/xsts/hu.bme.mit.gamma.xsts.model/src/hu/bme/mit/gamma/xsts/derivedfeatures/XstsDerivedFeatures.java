@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -426,21 +426,14 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	private static Set<VariableDeclaration> _getReadVariables(AssignmentAction action) {
 		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
 
+		Set<VariableDeclaration> writtenVariables = getWrittenVariables(action); 
 		readVariables.addAll(
 				expressionUtil.getReferredVariables(
 						action.getLhs())); // Needed for array indexes
+		readVariables.removeAll(writtenVariables); // Removing the written array
 		readVariables.addAll(
 				expressionUtil.getReferredVariables(
 						action.getRhs()));
-		
-		Set<VariableDeclaration> writtenVariables = getWrittenVariables(action); 
-		// Removing the array vars - is this correct? Why do we remove arrays?
-		for (VariableDeclaration writtenVariable : writtenVariables) {
-			if (isArray(writtenVariable)) {
-				readVariables.remove(writtenVariable);
-			}
-		}
-		//
 		
 		return readVariables;
 	}
