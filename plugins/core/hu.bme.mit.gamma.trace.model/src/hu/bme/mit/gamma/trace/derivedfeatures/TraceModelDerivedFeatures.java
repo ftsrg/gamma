@@ -293,7 +293,6 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 	
 	public static boolean areAssertsEquivalent(Step lhs, Step rhs, boolean considerInstanceNames) {
-		// TODO remove injected variables
 		List<Expression> lhsAsserts = lhs.getAsserts();
 		List<Expression> rhsAsserts = rhs.getAsserts();
 		int size = lhsAsserts.size();

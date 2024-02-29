@@ -108,7 +108,7 @@ public class TraceReplayModelGenerationHandler extends TaskHandler {
 			//
 			Collection<ExecutionTrace> generatedTraces = new ArrayList<ExecutionTrace>();
 			
-			// If we want to execute it right away...
+			// We execute the conformance checking right away...
 			// Make sure that the ExecutionTrace is back-annotated to original!
 			Expression schedulingTime = TraceModelDerivedFeatures.getSchedulingTime(executionTrace);
 			
@@ -165,6 +165,7 @@ public class TraceReplayModelGenerationHandler extends TaskHandler {
 						executionTrace, generatedTrace, false /* Not back-annotated to original */);
 				if (!areAssertsEquivalent) {
 					logger.warning("A generated trace is not equivalent");
+//					throw new IllegalStateException("A generated trace is not equivalent");
 				}
 			}
 		}
