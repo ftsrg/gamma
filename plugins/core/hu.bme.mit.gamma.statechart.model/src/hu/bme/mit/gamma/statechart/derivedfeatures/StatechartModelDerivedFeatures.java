@@ -2748,6 +2748,39 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			}
 		}
 	}
+
+	public static boolean areConnected(StateNode node, Transition transition) {
+		StateNode source = transition.getSourceState();
+		StateNode target = transition.getTargetState();
+		
+		return node == source || node == target;
+	}
+	
+	public static boolean areConnected(Transition lhs, Transition rhs) {
+		return getConnectingStateNode(lhs, rhs) != null;
+	}
+	
+	public static StateNode getConnectingStateNode(Transition lhs, Transition rhs) {
+		StateNode lhsSource = lhs.getSourceState();
+		StateNode rhsSource = rhs.getSourceState();
+		StateNode lhsTarget = lhs.getTargetState();
+		StateNode rhsTarget = rhs.getTargetState();
+		
+		if (lhsSource == rhsSource) {
+			return lhsSource;
+		}
+		else if (lhsTarget == rhsTarget) {
+			return lhsTarget;
+		}
+		else if (lhsSource == rhsTarget) {
+			return lhsSource;
+		}
+		else if (lhsTarget == rhsSource) {
+			return lhsTarget;
+		}
+		
+		return null;
+	}
 	
 	public static boolean isSameRegion(Transition transition) {
 		return getParentRegion(transition.getSourceState()) == getParentRegion(transition.getTargetState());

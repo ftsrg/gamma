@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation
 
+import hu.bme.mit.gamma.action.model.AssignmentStatement
 import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
@@ -28,10 +29,15 @@ import hu.bme.mit.gamma.property.model.CommentableStateFormula
 import hu.bme.mit.gamma.property.model.StateFormula
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
+import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
 import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.StateNode
+import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
@@ -60,6 +66,7 @@ class SystemReducer {
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE
+	protected final extension CompositeModelFactory compositeFactory = CompositeModelFactory.eINSTANCE
 	protected final extension XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE
 	// Logger
 	protected final Logger logger = Logger.getLogger("GammaLogger")
@@ -147,11 +154,93 @@ class SystemReducer {
 	def void deleteUnnecessaryStates(XSTS xSts, StateFormula formula,
 			Map<State, Collection<State>> reachableStates) {
 		if (PropertyModelDerivedFeatures.isInvariant(formula)) {
-			val atomicFormulas = ecoreUtil.getSelfAndAllContentsOfType(formula, AtomicFormula)
-			val stateReferences = ecoreUtil.getSelfAndAllContentsOfType(atomicFormulas,
-					ComponentInstanceStateReferenceExpression) // TODO Extend with other references, too
+			val checkableStateReferences = newArrayList // Only individual state coverage, i.e., not supported: EF (a.State1 || b.State2)
 			
-			for (stateReference : stateReferences) {
+			val atomicFormulas = ecoreUtil.getSelfAndAllContentsOfType(formula, AtomicFormula)
+			// Individual state coverage
+			val stateReferences = ecoreUtil.getSelfAndAllContentsOfType(atomicFormulas,
+					ComponentInstanceStateReferenceExpression)
+			if (stateReferences.size == 1) {
+				checkableStateReferences += stateReferences
+			}
+			else {
+				// Variable-related coverage
+				val variableReferences = ecoreUtil.getSelfAndAllContentsOfType(atomicFormulas,
+						ComponentInstanceVariableReferenceExpression)
+				var ComponentInstanceReferenceExpression instanceReference
+				val assignmentsToVariables = newArrayList
+				if (variableReferences.size == 1) {
+					val variableReference = variableReferences.head
+					val variable = variableReference.variableDeclaration
+					instanceReference = variableReference.instance
+					val statechart = variable.containingStatechart
+					val assignments = statechart.getContentsOfType(AssignmentStatement)
+					
+					assignmentsToVariables += assignments.filter[it.lhs.declaration === variable]
+				}
+				else if (variableReferences.size == 2) {
+					val variableReferenceLhs = variableReferences.head
+					val variableLhs = variableReferenceLhs.variableDeclaration
+					val variableReferenceRhs = variableReferences.last
+					val variableRhs = variableReferenceRhs.variableDeclaration
+					
+					val statechart = variableLhs.containingStatechart
+					if (statechart === variableRhs.containingStatechart) {
+						instanceReference = variableReferenceLhs.instance
+						val assignments = statechart.getContentsOfType(AssignmentStatement)
+						
+						assignmentsToVariables += assignments.filter[
+								it.lhs.declaration === variableLhs || it.lhs.declaration === variableRhs]
+					}
+				}
+				if (instanceReference !== null) { // We found 
+					var StateNode stateNode = null
+					//
+					if (assignmentsToVariables.size == 1) { // Transition-coverage
+						val assignmentsToVariable = assignmentsToVariables.head
+						stateNode = assignmentsToVariable.containingOrSourceStateNode
+					}
+					else if (assignmentsToVariables.size == 2) {
+						val containingOrSourceStateNodes = assignmentsToVariables.map[it.containingOrSourceStateNode].toSet
+						if (containingOrSourceStateNodes.size == 1) {
+							stateNode = containingOrSourceStateNodes.head
+						}
+						else {
+							val containingStates = assignmentsToVariables.map[it.getContainerOfType(State)]
+							val containingTransitions = assignmentsToVariables.map[it.getContainerOfType(Transition)]
+							if (containingTransitions.size == 2) {
+								val transitionLhs = containingTransitions.head
+								val transitionRhs = containingTransitions.last
+								val connectingNode = transitionLhs.getConnectingStateNode(transitionRhs)
+								
+								if (connectingNode !== null) {
+									stateNode = connectingNode
+								}
+							}
+							else if (containingStates.size == 1 && containingTransitions.size == 1) {
+								val state = containingStates.head
+								val transition = containingTransitions.head
+								
+								if (state.areConnected(transition)) {
+									stateNode = state
+								}
+							}
+						}
+					}
+					// Did we find a single state (stateNode non-null)?
+					if (stateNode instanceof State) {
+						val stateReference = createComponentInstanceStateReferenceExpression
+						stateReference.instance = instanceReference.clone
+						stateReference.region = stateNode.parentRegion
+						stateReference.state = stateNode
+						
+						checkableStateReferences += stateReference
+					}
+				}
+			}
+			//
+			
+			for (stateReference : checkableStateReferences) {
 				val instance = stateReference.instance
 				val state = stateReference.state
 				val topRegion = state.topRegion
