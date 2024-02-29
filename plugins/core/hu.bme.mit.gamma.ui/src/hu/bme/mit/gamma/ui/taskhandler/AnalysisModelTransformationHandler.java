@@ -306,9 +306,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			}
 			
 			hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint orchestratingConstraint = null;
-			if (constraint instanceof hu.bme.mit.gamma.genmodel.model.SchedulingConstraint) {
-				hu.bme.mit.gamma.genmodel.model.SchedulingConstraint schedulingConstraint =
-						(hu.bme.mit.gamma.genmodel.model.SchedulingConstraint) constraint;
+			if (constraint instanceof hu.bme.mit.gamma.genmodel.model.SchedulingConstraint schedulingConstraint) {
 				List<hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint> instanceConstraints =
 						schedulingConstraint.getInstanceConstraint();
 				if (instanceConstraints.size() == 1) {
@@ -317,8 +315,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					orchestratingConstraint = topConstraint.getOrchestratingConstraint();
 				}
 			}
-			else if (constraint instanceof hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint) {
-				orchestratingConstraint = (hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint) constraint;
+			else if (constraint instanceof hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint aConstraint) {
+				orchestratingConstraint = aConstraint;
 			}
 			
 			if (orchestratingConstraint != null) {
@@ -328,6 +326,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				int max = statechartUtil.evaluateMilliseconds(maximumPeriod);
 				return new SimpleEntry<Integer, Integer>(min, max);
 			}
+			
 			throw new IllegalArgumentException("Not known constraint: " + constraint);
 		}
 		
@@ -433,18 +432,13 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			if (constraint == null) {
 				return null;
 			}
-			if (constraint instanceof hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint) {
-				hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint orchestratingConstraint =
-					(hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint) constraint;
+			if (constraint instanceof hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint orchestratingConstraint) {
 				return new OrchestratingConstraint(ecoreUtil.clone(orchestratingConstraint.getMinimumPeriod()),
 					ecoreUtil.clone(orchestratingConstraint.getMaximumPeriod())); // Cloning to prevent cross-references
 			}
-			if (constraint instanceof hu.bme.mit.gamma.genmodel.model.SchedulingConstraint) {
-				hu.bme.mit.gamma.genmodel.model.SchedulingConstraint schedulingConstraint =
-						(hu.bme.mit.gamma.genmodel.model.SchedulingConstraint) constraint;
+			if (constraint instanceof hu.bme.mit.gamma.genmodel.model.SchedulingConstraint schedulingConstraint) {
 				SchedulingConstraint gammaSchedulingConstraint = new SchedulingConstraint();
-				for (hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint instanceConstraint :
-						schedulingConstraint.getInstanceConstraint()) {
+				for (var instanceConstraint : schedulingConstraint.getInstanceConstraint()) {
 					gammaSchedulingConstraint.getInstanceConstraints().add(
 							transformAsynchronousInstanceConstraint(instanceConstraint));
 				}
