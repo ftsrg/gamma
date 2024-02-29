@@ -149,23 +149,23 @@ public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.Expre
 		if (expression instanceof EventParameterReferenceExpression eventParameterReferenceExpression) {
 			return _serialize(eventParameterReferenceExpression);
 		}
-		if (expression instanceof StateReferenceExpression stateReferenceExpression) {
-			return _serialize(stateReferenceExpression);
+		if (expression instanceof StateReferenceExpression reference) {
+			return _serialize(reference);
 		}
-		if (expression instanceof ComponentInstanceReferenceExpression componentInstanceReferenceExpression) {
-			return _serialize(componentInstanceReferenceExpression);
+		if (expression instanceof ComponentInstanceReferenceExpression reference) {
+			return _serialize(reference);
 		}
-		if (expression instanceof ComponentInstanceStateReferenceExpression componentInstanceStateReferenceExpression) {
-			return _serialize(componentInstanceStateReferenceExpression);
+		if (expression instanceof ComponentInstanceStateReferenceExpression reference) {
+			return _serialize(reference);
 		}
-		if (expression instanceof ComponentInstanceVariableReferenceExpression componentInstanceVariableReferenceExpression) {
-			return _serialize(componentInstanceVariableReferenceExpression);
+		if (expression instanceof ComponentInstanceVariableReferenceExpression reference) {
+			return _serialize(reference);
 		}
-		if (expression instanceof ComponentInstanceEventReferenceExpression componentInstanceEventReferenceExpression) {
-			return _serialize(componentInstanceEventReferenceExpression);
+		if (expression instanceof ComponentInstanceEventReferenceExpression reference) {
+			return _serialize(reference);
 		}
-		if (expression instanceof ComponentInstanceEventParameterReferenceExpression componentInstanceEventParameterReferenceExpression) {
-			return _serialize(componentInstanceEventParameterReferenceExpression);
+		if (expression instanceof ComponentInstanceEventParameterReferenceExpression reference) {
+			return _serialize(reference);
 		}
 		if (expression instanceof TimeoutReferenceExpression timeoutReferenceExpression) {
 			return _serialize(timeoutReferenceExpression);
