@@ -15,6 +15,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -39,6 +40,7 @@ import hu.bme.mit.gamma.trace.environment.transformation.EnvironmentModel;
 import hu.bme.mit.gamma.trace.environment.transformation.TraceReplayModelGenerator;
 import hu.bme.mit.gamma.trace.environment.transformation.TraceReplayModelGenerator.Result;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
+import hu.bme.mit.gamma.trace.model.Step;
 
 public class TraceReplayModelGenerationHandler extends TaskHandler {
 	//
@@ -75,6 +77,7 @@ public class TraceReplayModelGenerationHandler extends TaskHandler {
 			executionTraces.add(trace);
 		}
 		//
+		
 		int i = 0;
 		for (ExecutionTrace executionTrace : executionTraces) {
 			++i;
@@ -101,6 +104,9 @@ public class TraceReplayModelGenerationHandler extends TaskHandler {
 			serializer.saveModel(ecoreUtil.getRoot(environmentModel), targetFolderUri, environmentModelName + ".gcd");
 			serializer.saveModel(ecoreUtil.getRoot(systemModel), targetFolderUri, systemName + ".gcd");
 			serializer.saveModel(ecoreUtil.getRoot(propertyPackage), targetFolderUri, systemName + ".gpd");
+			
+			//
+			Collection<ExecutionTrace> generatedTraces = new ArrayList<ExecutionTrace>();
 			
 			// If we want to execute it right away...
 			// Make sure that the ExecutionTrace is back-annotated to original!
@@ -135,11 +141,31 @@ public class TraceReplayModelGenerationHandler extends TaskHandler {
 					constraint.setMaximumPeriod(max);
 				}
 				
+				boolean optimizeModel = false; // Due to the exact assert equivalence
 				AnalysisModelTransformationAndVerificationHandler handler =
-						new AnalysisModelTransformationAndVerificationHandler(file, true, false, true, ProgrammingLanguage.JAVA);
+						new AnalysisModelTransformationAndVerificationHandler(file, optimizeModel,
+								false, true, ProgrammingLanguage.JAVA);
 				handler.execute(transformation);
 				
-				// TODO Check trace-conformance right here?
+				generatedTraces.addAll(
+						handler.getTraces());
+			}
+			// Checking trace-conformance
+			for (ExecutionTrace generatedTrace : generatedTraces) {
+				// Removing environment instance
+				for (var reference : TraceModelDerivedFeatures
+						.getFirstComponentInstanceReferenceExpressions(generatedTrace)) {
+					if (environmentInstance.getName().equals(
+							reference.getComponentInstance().getName())) {
+						ecoreUtil.removeContainmentChainUntilType(reference, Step.class);
+					}
+				}
+				//
+				boolean areAssertsEquivalent = TraceModelDerivedFeatures.areAssertsEquivalent(
+						executionTrace, generatedTrace, false /* Not back-annotated to original */);
+				if (!areAssertsEquivalent) {
+					logger.warning("A generated trace is not equivalent");
+				}
 			}
 		}
 	}

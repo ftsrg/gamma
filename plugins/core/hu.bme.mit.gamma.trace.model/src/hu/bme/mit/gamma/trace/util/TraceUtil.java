@@ -353,13 +353,13 @@ public class TraceUtil extends StatechartUtil {
 		ComponentInstanceStateReferenceExpression stateCovering = null;
 		
 		for (Expression asser : coveringAsserts) {
-			if (asser instanceof ComponentInstanceStateReferenceExpression) {
-				stateCovering = (ComponentInstanceStateReferenceExpression) asser;
+			if (asser instanceof ComponentInstanceStateReferenceExpression exp) {
+				stateCovering = exp;
 			}
 		}
 		for (Expression asser : coveredAsserts) {
-			if (asser instanceof ComponentInstanceStateReferenceExpression) {
-				stateCovered = (ComponentInstanceStateReferenceExpression) asser;
+			if (asser instanceof ComponentInstanceStateReferenceExpression exp) {
+				stateCovered = exp;
 			}
 		}
 		if (stateCovered == null || stateCovering == null) {

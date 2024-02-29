@@ -323,11 +323,8 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 					}
 				}
 				
-				List<ComponentInstanceReferenceExpression> instanceReferences = ecoreUtil
-						.getAllContentsOfType(trace, ComponentInstanceReferenceExpression.class)
-						.stream()
-						.filter(it -> !(it.eContainer() instanceof ComponentInstanceReferenceExpression))
-						.toList();
+				List<ComponentInstanceReferenceExpression> instanceReferences =
+						TraceModelDerivedFeatures.getFirstComponentInstanceReferenceExpressions(trace);
 				for (ComponentInstanceReferenceExpression instanceReference : instanceReferences) {
 					ComponentInstance componentInstance = instanceReference.getComponentInstance();
 					String instanceName = componentInstance.getName();
