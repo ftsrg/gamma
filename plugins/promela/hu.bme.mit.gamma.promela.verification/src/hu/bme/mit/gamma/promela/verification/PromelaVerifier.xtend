@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 Contributors to the Gamma project
+ * Copyright (c) 2022-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -104,13 +104,18 @@ class PromelaVerifier extends AbstractVerifier {
 			
 			val outputString = new StringBuilder
 			var String firstLine = null // Result checking
-				
+			var boolean isSearchDepthTooSmall = false
+			
 			while (resultReader.hasNext) {
 				val line = resultReader.nextLine
 				outputString.append(line + System.lineSeparator)
 				
 				if (firstLine === null) {
-					if (!line.contains("error: max search depth too small") &&
+					val SEARCH_DEPTH_TOO_SMALL_STRING = "error: max search depth too small"
+					if (line.contains(SEARCH_DEPTH_TOO_SMALL_STRING)) {
+						isSearchDepthTooSmall = true
+					}
+					if (!line.contains(SEARCH_DEPTH_TOO_SMALL_STRING) &&
 							!line.contains("Depth=") &&
 							!line.contains("resizing hashtable to")) {
 						firstLine = line
@@ -122,7 +127,7 @@ class PromelaVerifier extends AbstractVerifier {
 			if (firstLine.contains("violated") || firstLine.contains("acceptance cycle")) {
 				super.result = ThreeStateBoolean.FALSE
 			}
-			else if (firstLine.contains("out of memory")) {
+			else if (firstLine.contains("out of memory") || isSearchDepthTooSmall) {
 				super.result = ThreeStateBoolean.UNDEF
 			}
 			else {

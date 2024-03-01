@@ -56,6 +56,10 @@ class PromelaVerification extends AbstractVerification {
 //		-DMA=1380   # better/slower compression, or
 //		-DHC # hash-compaction, approximation
 //		-DBITSTATE # supertrace, approximation
+		// Multi-core DFS mode
+//		-DMEMLIM=8000 --> necessary for multi-core settings - allow up to 8 GB of shared memory
+//		-DNCORE=N   --> enables multi_core verification if N>1
+//		-DFULL_TRAIL --> support full error trails (but increases memory use)
 
 /*
  *	Directives to Increase Speed
@@ -80,7 +84,7 @@ SPACE	optimize for space not speed
 	}
 	
 	protected override String getArgumentPattern() {
-		return "(-([A-Za-z])*([0-9])*(=)?([0-9])*( )*)*"
+		return "(-([A-Za-z_])*([0-9])*(=)?([0-9])*( )*)*"
 	}
 	
 	override protected createPropertySerializer() {

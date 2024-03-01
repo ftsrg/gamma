@@ -115,7 +115,7 @@ class NuxmvVerifier extends AbstractVerifier {
 			
 			// Reading the result of the command
 			resultReader = new Scanner(process.inputReader)
-			errorReader = new ScannerLogger(new Scanner(process.errorReader))
+			errorReader = new ScannerLogger(new Scanner(process.errorReader), false)
 			errorReader.start
 			
 			val resultPattern = '''(.*invariant.*is.*)|(.*specification.*is.*)'''
@@ -227,7 +227,7 @@ class NuxmvVerifier extends AbstractVerifier {
 			
 			val process = Runtime.getRuntime().exec(nuXmvCommand)
 			resultReader = new Scanner(process.inputReader)
-			errorReader = new ScannerLogger(new Scanner(process.errorReader))
+			errorReader = new ScannerLogger(new Scanner(process.errorReader), false)
 			errorReader.start
 			
 			var line = ""
