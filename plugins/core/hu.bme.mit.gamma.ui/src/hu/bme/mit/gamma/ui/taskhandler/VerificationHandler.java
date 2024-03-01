@@ -390,21 +390,37 @@ public class VerificationHandler extends TaskHandler {
 		}
 	}
 	
-	private void removeCoveredProperties(Queue<Entry<String, StateFormula>> formulaQueue) {
-		removeCoveredProperties(traces, formulaQueue);
+	protected void removeCoveredProperties2(Collection<? extends CommentableStateFormula> formulas) {
+		Collection<Entry<?, StateFormula>> wrappedFormulas = new ArrayList<Entry<?, StateFormula>>();
+		
+		final String dummyKey = "";
+		for (CommentableStateFormula commentableStateFormula : formulas) {
+			StateFormula formula = commentableStateFormula.getFormula();
+			Entry<?, StateFormula> entry = Map.entry(dummyKey, formula);
+			
+			wrappedFormulas.add(entry);
+		}
+		//
+		removeCoveredProperties(wrappedFormulas);
+		//
+		formulas.removeIf(it -> !wrappedFormulas.contains(Map.entry(dummyKey, it.getFormula())));
+	}
+	
+	protected void removeCoveredProperties(Collection<? extends Entry<?, StateFormula>> formulas) {
+		removeCoveredProperties(traces, formulas);
 	}
 	
 	private void removeCoveredProperties(Collection<? extends ExecutionTrace> traces,
-			Queue<Entry<String, StateFormula>> formulaQueue) {
+			Collection<? extends Entry<?, StateFormula>> formulas) {
 		for (ExecutionTrace trace : traces) {
-			removeCoveredProperties(trace, formulaQueue);
+			removeCoveredProperties(trace, formulas);
 		}
 	}
 
 	private void removeCoveredProperties(ExecutionTrace trace,
-			Queue<Entry<String, StateFormula>> formulaQueue) {
+			Collection<? extends Entry<?, StateFormula>> formulas) {
 		if (trace != null) {
-			List<StateFormula> stateFormulas = formulaQueue.stream()
+			List<StateFormula> stateFormulas = formulas.stream()
 					.map(it -> it.getValue())
 					.filter(it -> it != null)
 					.collect(Collectors.toList()); // Not null state formulas
@@ -414,7 +430,7 @@ public class VerificationHandler extends TaskHandler {
 			for (StateFormula coveredProperty : coveredProperties) {
 				String serializedProperty = propertySerializer.serialize(coveredProperty);
 				logger.info("Property already covered: " + serializedProperty);
-				formulaQueue.removeIf(it -> it.getValue() == coveredProperty);
+				formulas.removeIf(it -> it.getValue() == coveredProperty);
 			}
 		}
 	}

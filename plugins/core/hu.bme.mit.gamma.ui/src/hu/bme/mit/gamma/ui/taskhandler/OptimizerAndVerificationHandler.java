@@ -17,8 +17,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -123,7 +125,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 		
 		boolean optimizeOutEvents = verification.isOptimizeOutEvents();
 		
-		List<CommentableStateFormula> formulas = new ArrayList<CommentableStateFormula>();
+		Queue<CommentableStateFormula> formulas = new LinkedList<CommentableStateFormula>();
 		List<PropertyPackage> propertyPackages = verification.getPropertyPackages();
 		List<PropertyPackage> savedPropertyPackages = new ArrayList<PropertyPackage>(propertyPackages);
 		
@@ -157,7 +159,6 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 		
 		propertyPackages.clear();
 		List<CommentableStateFormula> checkableFormulas = mainPropertyPackage.getFormulas();
-		int size = checkableFormulas.size();
 		
 		// Only one property package - we will add the formulas one by one
 		propertyPackages.add(mainPropertyPackage);
@@ -181,9 +182,10 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 		// A single one to store the traces and support later optimization - false: no trace serialization
 		verificationHandler = new VerificationHandler(file, false);
 		//
-		for (CommentableStateFormula formula : formulas) {
+		int i = 0; // Only for logging
+		while (!formulas.isEmpty()) {
+			CommentableStateFormula formula = formulas.poll();
 			checkableFormulas.clear();
-			int index = formulas.indexOf(formula) + 1; // Only for logging
 			checkableFormulas.add(formula);
 			
 			// Reload XSTS to retrieve all variables
@@ -265,7 +267,12 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			//
 			
 			verificationHandler.execute(verification);
-			logger.info("Verification property " + index + "/" + size + " finished");
+			
+			// Checking if some of the unchecked properties are already covered by stored traces
+			if (isOptimize) {
+				verificationHandler.removeCoveredProperties2(formulas);
+			}
+			logger.info("The verification of property " + ++i + " finished; " + formulas.size() + " remaining");
 		}
 		
 		if (isOptimize) {

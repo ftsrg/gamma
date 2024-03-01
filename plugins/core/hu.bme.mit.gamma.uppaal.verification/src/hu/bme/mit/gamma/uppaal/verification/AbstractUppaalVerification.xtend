@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -23,7 +23,7 @@ abstract class AbstractUppaalVerification extends AbstractVerification {
 	}
 	
 	override getDefaultArguments() {
-		return #[ "-C -T -t0" ]
+		return #[ "-C -t0" ]
 //		-C Difference Bound Matrix
 //		-Z Bit-state hashing. Under-approximates states.
 //		-A Convex-hull approximation. Over-approximates states.
