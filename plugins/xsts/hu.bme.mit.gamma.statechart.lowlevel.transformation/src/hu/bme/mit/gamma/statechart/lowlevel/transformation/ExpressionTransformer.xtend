@@ -330,7 +330,7 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch Expression transformEventReference(ClockTickReference reference) {
-		throw new UnsupportedOperationException("Clock references are not yet transformed: " + reference)
+		throw new IllegalArgumentException("Clock references are not yet transformed: " + reference)
 	}
 	
 	def dispatch Expression transformEventReference(PortEventReference reference) {

@@ -18,4 +18,17 @@ abstract class AbstractUppaalVerification extends AbstractVerification {
 		return "((-A|-C|-H[0-9]*|-n[0-4]|-o[0-4]|-S[0-2]|-T|-Z|-N|-t[0-2])( )?)*"
 	}
 	
+	protected override createVerifier() {
+		return new UppaalVerifier
+	}
+	
+	override getDefaultArguments() {
+		return #[ "-C -T -t0" ]
+//		-C Difference Bound Matrix
+//		-Z Bit-state hashing. Under-approximates states.
+//		-A Convex-hull approximation. Over-approximates states.
+
+//		-T Reuse state space.
+	}
+	
 }
