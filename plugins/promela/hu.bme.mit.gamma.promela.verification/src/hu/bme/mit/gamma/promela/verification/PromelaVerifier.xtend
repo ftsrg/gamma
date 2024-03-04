@@ -17,6 +17,7 @@ import java.io.BufferedWriter
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStreamWriter
+import java.util.List
 import java.util.Scanner
 
 class PromelaVerifier extends AbstractVerifier {
@@ -73,6 +74,11 @@ class PromelaVerifier extends AbstractVerifier {
 	}
 	
 	private def Result verify(Object traceability, String parameters, File modelFile) {
+		return this.verify(traceability, parameters, modelFile, new BmcData(true))
+	}
+	
+	private def Result verify(Object traceability, String parameters, File modelFile,
+			BmcData bmcData) {
 		var Scanner resultReader = null
 		try {
 			// Directory where executing the command
@@ -80,7 +86,9 @@ class PromelaVerifier extends AbstractVerifier {
 			
 			// spin -search -a PromelaFile.pml
 			val splitParameters = parameters.split("\\s+")
-			val searchCommand = #["spin"] + splitParameters + #[modelFile.name /* see exec wokr-dir */]
+			val searchCommand = newArrayList("spin")
+			searchCommand += splitParameters
+			searchCommand += modelFile.name /* see exec wokr-dir */ 
 			
 			// trail file
 			val trailFile = new File(modelFile.trailFile)
@@ -91,48 +99,70 @@ class PromelaVerifier extends AbstractVerifier {
 			panFile.delete
 			panFile.deleteOnExit
 			
-			// Executing the command
-			logger.info("Executing command: " + searchCommand.join(" "))
-			process = Runtime.getRuntime().exec(searchCommand, null, execFolder)
-			val outputStream = process.inputStream
-			// Reading the result of the command
-			resultReader = new Scanner(outputStream)
-			
 			// save result of command
 			val outputFile = new File(execFolder, ".output.txt")
 			outputFile.deleteOnExit
 			
-			val outputString = new StringBuilder
-			var String firstLine = null // Result checking
-			var boolean isSearchDepthTooSmall = false
-			
-			while (resultReader.hasNext) {
-				val line = resultReader.nextLine
-				outputString.append(line + System.lineSeparator)
+			var isSearchDepthTooSmall = false
+			var outOfMemory = false
+			var needsAnotherIteration = false
+			do {
+				isSearchDepthTooSmall = false
+				outOfMemory = false
+				// Setting depth
+				if (bmcData.doBmc) {
+					bmcData.adjustSpinArgument(searchCommand)
+				}
+				// Executing the command
+				logger.info("Executing command: " + searchCommand.join(" "))
+				process = Runtime.getRuntime().exec(searchCommand, null, execFolder)
+				val outputStream = process.inputStream
+				// Reading the result of the command
+				resultReader = new Scanner(outputStream)
 				
-				if (firstLine === null) {
-					val SEARCH_DEPTH_TOO_SMALL_STRING = "error: max search depth too small"
-					if (line.contains(SEARCH_DEPTH_TOO_SMALL_STRING)) {
-						isSearchDepthTooSmall = true
-					}
-					if (!line.contains(SEARCH_DEPTH_TOO_SMALL_STRING) &&
-							!line.contains("Depth=") &&
-							!line.contains("resizing hashtable to")) {
-						firstLine = line
+				val outputString = new StringBuilder
+				var String firstLine = null // Result checking
+				
+				while (resultReader.hasNext) {
+					val line = resultReader.nextLine
+					outputString.append(line + System.lineSeparator)
+					
+					if (firstLine === null) {
+						val SEARCH_DEPTH_TOO_SMALL_STRING = "error: max search depth too small"
+						val OUT_OF_MEMORY_STRING = "out of memory"
+						if (line.contains(SEARCH_DEPTH_TOO_SMALL_STRING)) {
+							isSearchDepthTooSmall = true
+						}
+						if (line.contains(OUT_OF_MEMORY_STRING)) {
+							outOfMemory = true
+						}
+						if (!line.contains(SEARCH_DEPTH_TOO_SMALL_STRING) &&
+								!line.contains("Depth=") &&
+								!line.contains("resizing hashtable to")) {
+							firstLine = line
+						}
 					}
 				}
-			}
-			fileUtil.saveString(outputFile, outputString.toString)
-			
-			if (firstLine.contains("violated") || firstLine.contains("acceptance cycle")) {
-				super.result = ThreeStateBoolean.FALSE
-			}
-			else if (firstLine.contains("out of memory") || isSearchDepthTooSmall) {
-				super.result = ThreeStateBoolean.UNDEF
-			}
-			else {
-				super.result = ThreeStateBoolean.TRUE
-			}
+				fileUtil.saveString(outputFile, outputString.toString)
+				
+				if (firstLine.contains("violated") || firstLine.contains("acceptance cycle")) {
+					super.result = ThreeStateBoolean.FALSE
+				}
+				else if (outOfMemory || isSearchDepthTooSmall) {
+					super.result = ThreeStateBoolean.UNDEF
+				}
+				else {
+					super.result = ThreeStateBoolean.TRUE
+				}
+				
+				// BMC-related operations
+				needsAnotherIteration = bmcData.doBmc && super.result == ThreeStateBoolean.UNDEF &&
+						isSearchDepthTooSmall && !outOfMemory
+				if (needsAnotherIteration) {
+					bmcData.increaseDepth
+					logger.info('''Max search depth is too small. Increasing it to «bmcData.depth»''')
+				}
+			} while (needsAnotherIteration)
 			
 			// Adapting result
 			super.result = super.result.adaptResult
@@ -203,5 +233,55 @@ class PromelaVerifier extends AbstractVerifier {
 	def getPanFile(File modelFile) {
 		return modelFile.parent + File.separator + "pan"
 	}
+	
+	//
+	
+	static class BmcData {
+		
+		final String DEPTH_ARGUMENT = "m"
+		
+		boolean doBmc
+		int depth
+		double factor
+		
+		new() {
+			this(false)
+		}
+		
+		new(boolean doBmc) {
+			this(doBmc, 1200, 1.5)
+		}
+		
+		new(int depth, double factor) {
+			this(true, depth, factor)
+		}
+		
+		new(boolean doBmc, int depth, double factor) {
+			this.doBmc = doBmc
+			this.depth = depth
+			this.factor = factor
+		}
+		
+		def doBmc() {
+			return this.doBmc
+		}
+		
+		def adjustSpinArgument(List<String> searchCommand) {
+			val depthArgument = searchCommand.findFirst[it.matches("-" + DEPTH_ARGUMENT + "[0-9]+")]
+			val i = searchCommand.indexOf(depthArgument)
+			searchCommand.set(i, '''-«DEPTH_ARGUMENT»«depth»''')
+		}
+		
+		def increaseDepth() {
+			depth = (depth * factor) as int
+		}
+		
+		def getDepth() {
+			return depth
+		}
+		
+	}
+	
+	//
 	
 }
