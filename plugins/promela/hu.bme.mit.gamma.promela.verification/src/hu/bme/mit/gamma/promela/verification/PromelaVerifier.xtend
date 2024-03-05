@@ -92,23 +92,22 @@ class PromelaVerifier extends AbstractVerifier {
 			
 			// trail file
 			val trailFile = new File(modelFile.trailFile)
-			trailFile.delete
 			trailFile.deleteOnExit
 			// pan file
 			val panFile = new File(modelFile.panFile)
-			panFile.delete
 			panFile.deleteOnExit
 			
 			// save result of command
 			val outputFile = new File(execFolder, ".output.txt")
 			outputFile.deleteOnExit
 			
+			var isUnderApproximation = false //
 			var isSearchDepthTooSmall = false
-			var outOfMemory = false
+			var isOutOfMemory = false
 			var needsAnotherIteration = false
 			do {
 				isSearchDepthTooSmall = false
-				outOfMemory = false
+				isOutOfMemory = false
 				// Setting depth
 				if (bmcData.doBmc) {
 					bmcData.adjustSpinArgument(searchCommand)
@@ -134,7 +133,7 @@ class PromelaVerifier extends AbstractVerifier {
 							isSearchDepthTooSmall = true
 						}
 						if (line.contains(OUT_OF_MEMORY_STRING)) {
-							outOfMemory = true
+							isOutOfMemory = true
 						}
 						if (!line.contains(SEARCH_DEPTH_TOO_SMALL_STRING) &&
 								!line.contains("Depth=") &&
@@ -148,7 +147,7 @@ class PromelaVerifier extends AbstractVerifier {
 				if (firstLine.contains("violated") || firstLine.contains("acceptance cycle")) {
 					super.result = ThreeStateBoolean.FALSE
 				}
-				else if (outOfMemory || isSearchDepthTooSmall) {
+				else if (isOutOfMemory || isSearchDepthTooSmall) {
 					super.result = ThreeStateBoolean.UNDEF
 				}
 				else {
@@ -157,10 +156,17 @@ class PromelaVerifier extends AbstractVerifier {
 				
 				// BMC-related operations
 				needsAnotherIteration = bmcData.doBmc && super.result == ThreeStateBoolean.UNDEF &&
-						isSearchDepthTooSmall && !outOfMemory
+						isSearchDepthTooSmall && !isOutOfMemory
 				if (needsAnotherIteration) {
 					bmcData.increaseDepth
 					logger.info('''Max search depth is too small. Increasing it to «bmcData.depth»''')
+				}
+				else if (isOutOfMemory && !isUnderApproximation) { // Setting under-approximation when OOM
+					isOutOfMemory = false
+					isUnderApproximation = true
+					needsAnotherIteration = true
+					
+					bmcData.setUnderApproximation(searchCommand)
 				}
 			} while (needsAnotherIteration)
 			
@@ -177,7 +183,6 @@ class PromelaVerifier extends AbstractVerifier {
 			
 			// Never claim file
 			val nvrFile = new File(execFolder, "_spin_nvr.tmp")
-			nvrFile.delete
 			nvrFile.deleteOnExit
 			
 			// Executing the trace command
@@ -192,7 +197,6 @@ class PromelaVerifier extends AbstractVerifier {
 			if (SAVE_TRACE) {
 				// Trace file
 				val traceFile = new File(modelFile.traceFile)
-				traceFile.delete
 				traceFile.deleteOnExit
 				
 				val fos = new FileOutputStream(traceFile)
@@ -210,6 +214,12 @@ class PromelaVerifier extends AbstractVerifier {
 			val gammaPackage = traceability as Package
 			val backAnnotator = new TraceBackAnnotator(gammaPackage, resultReader)
 			val trace = backAnnotator.synchronizeAndExecute
+			
+			// Setting result w.r.t under-approximation
+			if (isUnderApproximation && trace === null) {
+				super.result = ThreeStateBoolean.UNDEF
+			}
+			//
 			
 			return new Result(result, trace)
 		} finally {
@@ -270,6 +280,10 @@ class PromelaVerifier extends AbstractVerifier {
 			val depthArgument = searchCommand.findFirst[it.matches("-" + DEPTH_ARGUMENT + "[0-9]+")]
 			val i = searchCommand.indexOf(depthArgument)
 			searchCommand.set(i, '''-«DEPTH_ARGUMENT»«depth»''')
+		}
+		
+		def setUnderApproximation(List<String> searchCommand) {
+			searchCommand += "-DBITSTATE"
 		}
 		
 		def increaseDepth() {

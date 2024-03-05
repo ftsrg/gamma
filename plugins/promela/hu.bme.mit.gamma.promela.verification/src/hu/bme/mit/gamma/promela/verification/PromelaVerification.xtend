@@ -49,8 +49,10 @@ class PromelaVerification extends AbstractVerification {
 		// -b bounded search mode, makes it an error to exceed the search depth, triggering and error trail
 		// -I like -i, but approximate and faster
 		// -i search for shortest path to error (causes an increase of complexity)
+		// -mN set max search depth to N steps (default N=10000)
+		// -MN use N Megabytes for bitstate hash array (bitstate mode)
+		// -GN use N Gigabytes for bitstate hash array (bitstate mode)
 		// -n no listing of unreached states at the end of the run
-		// -PN for models with embedded C code, reproduce trail, but print only steps from the process with pid N
 //		hint: to reduce memory, recompile with
 //		-DCOLLAPSE # good, fast compression, or
 //		-DMA=1380   # better/slower compression, or
