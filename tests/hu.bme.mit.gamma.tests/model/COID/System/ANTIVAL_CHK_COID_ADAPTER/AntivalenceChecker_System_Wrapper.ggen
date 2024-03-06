@@ -11,6 +11,12 @@ analysis {
 	transition-coverage {
 		include : [ system -> coid ]
 	}
+	constraint : {
+		top : {
+			minimum-orchestrating-period : 495 ms
+			maximum-orchestrating-period : 495 ms
+		}
+	}
 }
 
 verification {
