@@ -72,6 +72,12 @@ analysis {
 	component : ClockSystem
 	language : Promela
 	file: "ClockSystem-p"
+	constraint : {
+		top : {
+			minimum-orchestrating-period : 2 ms
+			maximum-orchestrating-period : 2 ms
+		}
+	}
 	state-coverage
 }
 
