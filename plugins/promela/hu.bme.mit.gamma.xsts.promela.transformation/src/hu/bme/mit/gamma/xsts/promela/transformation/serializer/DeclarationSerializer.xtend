@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 Contributors to the Gamma project
+ * Copyright (c) 2022-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.xsts.promela.transformation.util.MessageQueueHandler
 import hu.bme.mit.gamma.xsts.transformation.util.MessageQueueUtil
 import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 class DeclarationSerializer {
@@ -54,14 +55,31 @@ class DeclarationSerializer {
 			«typeDeclaration.serializeTypeDeclaration»
 		«ENDFOR»
 		
-		«FOR variableDeclaration : xSts.variableDeclarations
-				// Native message queue handling
-				.filter[!Configuration.HANDLE_NATIVE_MESSAGE_QUEUES || !xSts.messageQueueSizeGroup.variables.contains(it)]»
+		«FOR variableDeclaration : xSts.variableDeclarations.filter[it.mustSerializeVariable] /* Native message queue handling*/»
 			«variableDeclaration.serializeVariableDeclaration»
 		«ENDFOR»
 	'''
-
+	
 	// Variable
+	
+	protected def mustSerializeVariable(VariableDeclaration variableDeclaration) {
+		if (Configuration.HANDLE_NATIVE_MESSAGE_QUEUES) {
+			val xSts = variableDeclaration.containingXsts
+			val sizeVariables = xSts.messageQueueSizeGroup.variables
+			if (sizeVariables.contains(variableDeclaration)) {
+				val declarationReferenceAnnotation = variableDeclaration.declarationReferenceAnnotation
+				val messageQueue = declarationReferenceAnnotation.declarations.head
+				if (messageQueue === null) {
+					// Message queue has been removed due to optimization -> we need the size variable
+					return true
+				}
+				else {
+					return false
+				}
+			}
+		}
+		return true
+	}
 	
 	protected def String serializeVariableDeclaration(VariableDeclaration variable) {
 		// Promela does not support multidimensional arrays, so they need to be handled differently

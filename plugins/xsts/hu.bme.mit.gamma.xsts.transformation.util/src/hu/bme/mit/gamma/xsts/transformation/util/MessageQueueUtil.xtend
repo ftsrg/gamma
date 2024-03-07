@@ -23,13 +23,17 @@ import hu.bme.mit.gamma.expression.model.GreaterExpression
 import hu.bme.mit.gamma.expression.model.InequalityExpression
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 import hu.bme.mit.gamma.expression.model.LessEqualExpression
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.math.BigInteger
+
+import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
@@ -41,6 +45,8 @@ class MessageQueueUtil {
 	
 	protected final extension VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
+	protected final extension ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE
+	
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
@@ -89,6 +95,25 @@ class MessageQueueUtil {
 				}
 			}
 		}
+		else if (expression instanceof BinaryExpression) {
+			val left = expression.leftOperand
+			val right = expression.rightOperand
+			
+			if (left instanceof ReferenceExpression) {
+				val queueVariable = left.declaration
+				if (queueVariable.global && !queueVariable.array) {
+					val xSts = queueVariable.containingXsts
+					val queueVariables = xSts.messageQueueGroup.variables
+					
+					if (queueVariables.contains(queueVariable) &&
+							right instanceof EnumerationLiteralExpression) {
+						throw new IllegalArgumentException("A previous (n)empty/(n)full should have handled this already")
+//						return true
+					}
+				}
+			}
+		}
+		
 		return false
 	}
 	
@@ -155,9 +180,9 @@ class MessageQueueUtil {
 				val left = expression.leftOperand
 				if (left instanceof ArrayAccessExpression || // Original array
 						left instanceof DirectReferenceExpression) { // Unfolded array
-					val arrayDeclaration = left.declaration
-					if (arrayDeclaration.global) {
-						val xSts = arrayDeclaration.containingXsts
+					val queueDeclaration = left.declaration
+					if (queueDeclaration.global) {
+						val xSts = queueDeclaration.containingXsts
 						val messageQueues = newArrayList
 						messageQueues += xSts.masterMessageQueueGroup.variables
 						messageQueues += xSts.systemMasterMessageQueueGroup.variables
@@ -166,7 +191,7 @@ class MessageQueueUtil {
 						if (right instanceof EnumerationLiteralExpression) {
 							val literal = right.reference
 							val index = literal.index
-							return messageQueues.contains(arrayDeclaration) && index == 0
+							return messageQueues.contains(queueDeclaration) && index == 0
 						}
 					}
 				}
@@ -185,16 +210,27 @@ class MessageQueueUtil {
 	def isQueueAddAction(Action action) {
 		if (action instanceof AssignmentAction) {
 			val lhs = action.lhs
-			if (lhs instanceof ArrayAccessExpression) {
-				val array = lhs.declaration
-				if (array.global) {
-					val xSts = array.containingXsts
-					val messageQueues = xSts.messageQueueGroup.variables
-					
-					return messageQueues.contains(array)
+			val queue = lhs.declaration
+			if (queue.global) {
+				val xSts = queue.containingXsts
+				val messageQueues = xSts.messageQueueGroup.variables
+				
+				if (messageQueues.contains(queue)) {
+					if (lhs instanceof ArrayAccessExpression) {
+						checkState(queue.array)
+						return true // Array
+					}
+					else if (!queue.array) { // Single variable
+						val rhs = action.rhs
+						val type = queue.typeDefinition
+						val defaultExpression = type.defaultExpression
+						
+						return !rhs.helperEquals(defaultExpression) // As this is a reset action
+					}
 				}
 			}
 		}
+		
 		return false
 	}
 	
@@ -203,25 +239,32 @@ class MessageQueueUtil {
 			val lhs = action.lhs
 			val rhs = action.rhs
 			if (lhs instanceof DirectReferenceExpression) {
-				val array = lhs.declaration
-				if (array.global) {
-					val xSts = array.containingXsts
+				val queue = lhs.declaration
+				if (queue.global) {
+					val xSts = queue.containingXsts
 					val messageQueues = xSts.messageQueueGroup.variables
-					if (messageQueues.contains(array)) {
+					if (messageQueues.contains(queue)) {
 						if (rhs instanceof ArrayLiteralExpression) {
 							val head = rhs.operands.head // [ 0 <- array[1], ...]
 							if (head instanceof ArrayAccessExpression) {
+								checkState(queue.array)
 								val declaration = head.declaration
 								val index = head.index
 								if (index instanceof IntegerLiteralExpression) {
-									return declaration === array && index.value == BigInteger.ONE
+									return declaration === queue && index.value == BigInteger.ONE
+									// Good for now; additional checking needed if functions are extended
 								}
 							}
+						}
+						else if (!queue.array) { // master = _EMPTY
+							val defaultExpression = queue.defaultExpression
+							return rhs.helperEquals(defaultExpression)
 						}
 					}
 				}
 			}
 		}
+		
 		return false
 	}
 	
@@ -236,18 +279,25 @@ class MessageQueueUtil {
 			rhs = declaration.expression
 		}
 		
-		if (rhs instanceof ArrayAccessExpression) {
-			val array = rhs.declaration
-			if (array.global) {
-				val index = rhs.index
-				if (index instanceof IntegerLiteralExpression) {
-					val xSts = array.containingXsts
-					val messageQueues = xSts.messageQueueGroup.variables
-					
-					return messageQueues.contains(array) && index.value == BigInteger.ZERO
+		if (rhs instanceof ReferenceExpression) {
+			val queue = rhs.declaration
+			if (queue.global) {
+				val xSts = queue.containingXsts
+				val messageQueues = xSts.messageQueueGroup.variables
+				
+				if (messageQueues.contains(queue)) {
+					if (rhs instanceof ArrayAccessExpression) {
+						checkState(queue.array)
+						val index = rhs.index.evaluateInteger
+						return index == 0
+					}
+					else if (!queue.array) { // 1-capacity array
+						return rhs instanceof DirectReferenceExpression
+					}
 				}
 			}
 		}
+		
 		return false
 	}
 	
@@ -258,12 +308,13 @@ class MessageQueueUtil {
 			val lhs = action.lhs
 			val rhs = action.rhs
 			if (lhs instanceof DirectReferenceExpression) {
-				val array = lhs.declaration
-				if (array.global) {
-					val xSts = array.containingXsts
+				val queue = lhs.declaration
+				if (queue.global) {
+					val xSts = queue.containingXsts
 					val messageQueues = xSts.messageQueueGroup.variables
-					if (messageQueues.contains(array)) {
-						return rhs instanceof ArrayLiteralExpression
+					if (messageQueues.contains(queue)) {
+						return rhs.helperEquals(
+								queue.defaultExpression)
 					}
 				}
 			}

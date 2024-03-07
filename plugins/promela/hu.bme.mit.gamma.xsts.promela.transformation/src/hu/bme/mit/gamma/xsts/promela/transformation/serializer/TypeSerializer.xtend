@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 Contributors to the Gamma project
+ * Copyright (c) 2022-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -18,7 +18,6 @@ import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.transformation.util.MessageQueueUtil
 
@@ -49,22 +48,12 @@ class TypeSerializer {
 	
 	def dispatch String serializeType(BooleanTypeDefinition type) '''bool'''
 	
-	def dispatch String serializeType(IntegerTypeDefinition type) '''«IF type.masterArrayType»byte«ELSE»int«ENDIF»'''
+	def dispatch String serializeType(IntegerTypeDefinition type) '''int'''
 	
 	def dispatch String serializeType(EnumerationTypeDefinition type) '''{ «FOR literal : type.literals SEPARATOR ', '»«type.customizeEnumLiteralName(literal)»«ENDFOR» }'''
 	
 	def dispatch String serializeType(ArrayTypeDefinition type) '''«IF type.elementType instanceof ArrayTypeDefinition»«type
 			.getContainerOfType(Declaration).name»0«ELSE»«type.elementType.serializeType»«ENDIF»'''
-	
-	// 
-	
-	protected def isMasterArrayType(Type type) {
-		val declaration = type.getContainerOfType(VariableDeclaration)
-		if (declaration?.masterQueueVariable) {
-			return true
-		}
-		return false
-	}
 	
 	// Multidimensional array declaration serialization
 	

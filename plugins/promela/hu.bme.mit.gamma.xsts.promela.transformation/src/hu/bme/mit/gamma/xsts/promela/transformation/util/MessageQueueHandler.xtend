@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Gamma project
+ * Copyright (c) 2023-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.GreaterExpression
@@ -54,13 +55,7 @@ class MessageQueueHandler {
 		val arrayType = queue.typeDefinition as ArrayTypeDefinition
 		val elementType = arrayType.elementType
 		var serializedType = elementType.serializeType
-		if (queue.global) {
-			val xSts = queue.containingXsts
-			val masterQueues = xSts.masterMessageQueueGroup.variables
-			if (masterQueues.contains(queue)) {
-				serializedType = "byte" // Optimization
-			}
-		}
+		
 		return '''chan «queue.name» = [«arrayType.size.serialize»] of { «serializedType» };''' 
 	}
 	
@@ -89,19 +84,36 @@ class MessageQueueHandler {
 	
 	protected def serializeQueueSizeExpression(Expression expression) {
 		if (expression instanceof DirectReferenceExpression) {
-			val sizeVariable = expression.declaration
-			if (sizeVariable.global) {
-				if (sizeVariable instanceof VariableDeclaration) {
-					val xSts = sizeVariable.containingXsts
+			val variable = expression.declaration
+			val type = variable.typeDefinition
+			if (variable.global) {
+				if (variable instanceof VariableDeclaration) {
+					val xSts = variable.containingXsts
+					val queueVariables = xSts.messageQueueGroup.variables
 					val sizeVariables = xSts.messageQueueSizeGroup.variables
-					if (sizeVariables.contains(sizeVariable)) {
-						val declarationReferenceAnnotation = sizeVariable.declarationReferenceAnnotation
-						val messageQueue = declarationReferenceAnnotation.declarations.onlyElement
+					if (sizeVariables.contains(variable)) {
+						val declarationReferenceAnnotation = variable.declarationReferenceAnnotation
+						val messageQueue = declarationReferenceAnnotation.declarations.head
+						if (messageQueue === null) {
+							// The queue has been removed due to optimization
+							return '''«variable.name»'''
+						}
 						return '''len(«messageQueue.name»)'''
+					}
+					else if (queueVariables.contains(variable)) {
+						//
+						// Unreachable due to 'if (expression instanceof DirectReferenceExpression)'?
+						//
+						val extension expressionSerializer = ExpressionSerializer.INSTANCE
+						val emptyLiteral = type.defaultExpression as EnumerationLiteralExpression
+						return variable.createEqualityExpression(emptyLiteral)
+							.createIfThenElseExpression(0.toIntegerLiteral, 1.toIntegerLiteral)
+							.serialize
 					}
 				}
 			}
 		}
+		
 		throw new IllegalArgumentException("Not known expression: " + expression)
 	}
 	
@@ -163,25 +175,21 @@ class MessageQueueHandler {
 					val sizeVariable = reference.declaration
 					if (sizeVariable instanceof VariableDeclaration) {
 						val declarationReferenceAnnotation = sizeVariable.declarationReferenceAnnotation
-						val messageQueue = declarationReferenceAnnotation.declarations.onlyElement
-//						if (expression.isContainedBy(IfThenElseExpression)) {
+						val messageQueue = declarationReferenceAnnotation.declarations.head
+						if (messageQueue === null) { // Queue has been removed due to optimization
+							val extension expressionSerializer = ExpressionSerializer.INSTANCE
+							return expression.superSerialize
+						}
+						else {
 							return messageQueue.serializeQueueExpression(functionName)
-//						}
-//						else {
-//							return '''«functionName»(«messageQueue.name»)'''
-//						}
+						}
 					}
 				}
 			}
 			else if (masterQueueExpression.isInstance(expression)) { // 1-capacity master queue
-				val arrayAccess = expression.leftOperand as ArrayAccessExpression
-				val arrayDeclaration = arrayAccess.declaration
-//				if (expression.isContainedBy(IfThenElseExpression)) {
-					return arrayDeclaration.serializeQueueExpression(functionName)
-//				}
-//				else {
-//					return '''«functionName»(«arrayDeclaration.name»)'''
-//				}
+				val left = expression.leftOperand
+				val queueDeclaration = left.declaration
+				return queueDeclaration.serializeQueueExpression(functionName)
 			}
 		}
 		throw new IllegalArgumentException("Not known expression: " + expression)
@@ -190,15 +198,28 @@ class MessageQueueHandler {
 	// Promela does not support these functions in if-then-else structures
 	private def serializeQueueExpression(Declaration messageQueue, String functionName) {
 		val extension expressionSerializer = ExpressionSerializer.INSTANCE
-		val type = messageQueue.typeDefinition as ArrayTypeDefinition
-		val capacity = type.size
+		val type = messageQueue.typeDefinition
+		val isArray = type.array
+		val capacity = (type instanceof ArrayTypeDefinition) ? type.size : 1.toIntegerLiteral
 		
-		return switch (functionName) {
-			case "empty" : '''(len(«messageQueue.name») <= 0)'''
-			case "nempty" : '''(len(«messageQueue.name») > 0)'''
-			case "full" : '''(len(«messageQueue.name») >= «capacity.serialize»)'''
-			case "nfull" : '''(len(«messageQueue.name») < «capacity.serialize»)'''
-			default : throw new IllegalArgumentException("Not known function: " + functionName)
+		if (isArray) {
+			return switch (functionName) {
+				case "empty" : '''(len(«messageQueue.name») <= 0)'''
+				case "nempty" : '''(len(«messageQueue.name») > 0)'''
+				case "full" : '''(len(«messageQueue.name») >= «capacity.serialize»)'''
+				case "nfull" : '''(len(«messageQueue.name») < «capacity.serialize»)'''
+				default : throw new IllegalArgumentException("Not known function: " + functionName)
+			}
+		}
+		else {
+			val emptyLiteral = type.defaultExpression
+			return switch (functionName) {
+				case "empty" : '''(«messageQueue.name» == «emptyLiteral.serialize»)'''
+				case "nempty" : '''(«messageQueue.name» != «emptyLiteral.serialize»)'''
+				case "full" : '''(«messageQueue.name» != «emptyLiteral.serialize»)'''
+				case "nfull" : '''(«messageQueue.name» == «emptyLiteral.serialize»)'''
+				default : throw new IllegalArgumentException("Not known function: " + functionName)
+			}
 		}
 	}
 
@@ -232,11 +253,18 @@ class MessageQueueHandler {
 		if (action instanceof AssignmentAction) {
 			val lhs = action.lhs
 			val rhs = action.rhs
-			if (lhs instanceof ArrayAccessExpression) {
-				val array = lhs.declaration
-				return '''«array.name» ! «rhs.serialize»;'''
+			val queue = lhs.declaration
+			if (queue.global) {
+				val isArray = queue.array
+				if (isArray) {
+					return '''«queue.name» ! «rhs.serialize»;'''
+				}
+				else {
+					return '''«queue.name» = «rhs.serialize»;'''
+				}
 			}
 		}
+		
 		throw new IllegalArgumentException("Not known action: " + action)
 	}
 	// pop -> q ? x || queue := [0 -> queue[1], ...]
@@ -246,21 +274,28 @@ class MessageQueueHandler {
 		if (action instanceof AssignmentAction) {
 			val lhs = action.lhs
 			if (lhs instanceof DirectReferenceExpression) {
-				val array = lhs.declaration
-				if (array.global) {
-					val type = array.type as ArrayTypeDefinition
-					val elementType = type.elementType
-					val defaultExpression= elementType.defaultExpression.serialize
-					
-					val name = "pop_placeholder_" + action.hashCode.toString.replaceAll("-", "_")
-					
-					return '''
-						d_step {
-							local «elementType.serializeType» «name» = «defaultExpression»;
-							«array.name» ? «name»;
-							«name» = «defaultExpression»;
-						}
-					'''
+				val queue = lhs.declaration
+				val type = queue.typeDefinition
+				val isArray = type.array
+				if (queue.global) {
+					if (isArray) {
+						val arrayType = type as ArrayTypeDefinition
+						val elementType = arrayType.elementType
+						val defaultExpression = elementType.defaultExpression.serialize
+						
+						val name = "pop_placeholder_" + action.hashCode.toString.replaceAll("-", "_")
+						
+						return '''
+							d_step {
+								local «elementType.serializeType» «name» = «defaultExpression»;
+								«queue.name» ? «name»;
+								«name» = «defaultExpression»;
+							}
+						'''
+					}
+					else {
+						return '''«queue.name» = «type.defaultExpression.serialize»;'''
+					}
 				}
 			}
 		}
@@ -285,33 +320,65 @@ class MessageQueueHandler {
 			rhs = declaration.expression
 		}
 		
-		if (rhs instanceof ArrayAccessExpression) {
-			val array = rhs.declaration
-			if (array.global) {
-				val index = rhs.index
+		val queue = rhs.declaration
+		if (queue.global) {
+			val isArray = queue.array
+			if (isArray) {
+				val arrayAccess = rhs as ArrayAccessExpression
+				val index = arrayAccess.index
 				if (index instanceof IntegerLiteralExpression) {
-					val xSts = array.containingXsts
+					val xSts = queue.containingXsts
 					val messageQueues = xSts.messageQueueGroup.variables
-					if (messageQueues.contains(array) && index.value == BigInteger.ZERO) {
-						return '''«array.name» ? <«lhs.serialize»>;'''
+					if (messageQueues.contains(queue) && index.value == BigInteger.ZERO) {
+						return '''«queue.name» ? <«lhs.serialize»>;'''
 					}
 				}
 			}
+			else {
+				return '''«lhs.serialize» = «queue.name»;'''
+			}
 		}
+		
 		throw new IllegalArgumentException("Not known action: " + action)
 	}
 	
 	//
 	
 	protected def serializeQueueInitializingAction(Action action) {
-		return ''''''
+		val assignment = action as AssignmentAction
+		val lhs = assignment.lhs
+		val declaration = lhs.declaration
+		if (!declaration.array) { // Single queue variable
+			val extension expressionSerializer = ExpressionSerializer.INSTANCE
+			return '''«declaration.name» = «declaration.defaultExpression.serialize»;'''
+		}
+		return '''''' // Channels are not initialized
 	}
 	
 	// size := size + 1 / - 1
 	
 	protected def serializeQueueSizeAction(Action action) {
 		// In Promela, native channels store their own size
-		return ''''''
+		// Except if the master queue has been removed due to optimization
+		// In this case: we set the variable
+		if (action instanceof AssignmentAction) {
+			val lhs = action.lhs
+			val declaration = lhs.declaration
+			val xSts = declaration.containingXsts
+			val sizeVariables = xSts.messageQueueSizeGroup.variables
+			if (sizeVariables.contains(declaration)) {
+				val sizeVariable = declaration as VariableDeclaration
+				val declarationReferenceAnnotation = sizeVariable.declarationReferenceAnnotation
+				val messageQueue = declarationReferenceAnnotation.declarations.head
+				if (messageQueue === null) {
+					val extension expressionSerializer = ExpressionSerializer.INSTANCE
+					val rhs = action.rhs
+					return '''«sizeVariable.name» = «rhs.serialize»;'''
+				}
+			}
+		}
+		
+		return '''''' // In Promela, native channels store their own size
 	}
 	
 	// TODO clear -> || queue := [0 -> 0, ...]

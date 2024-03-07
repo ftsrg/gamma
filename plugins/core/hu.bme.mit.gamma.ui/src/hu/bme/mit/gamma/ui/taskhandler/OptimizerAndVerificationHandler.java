@@ -38,6 +38,7 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.XstsOptimizer;
 import hu.bme.mit.gamma.property.derivedfeatures.PropertyModelDerivedFeatures;
 import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
@@ -194,10 +195,17 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			// Optimize XSTS based on formula
 			List<ComponentInstanceVariableReferenceExpression> keepableVariableReferences =
 					ecoreUtil.getAllContentsOfType(formula,
-							ComponentInstanceVariableReferenceExpression.class); // Has to reference the unwrapped 
+							ComponentInstanceVariableReferenceExpression.class); // Must reference the unwrapped
 			List<VariableDeclaration> keepableGammaVariables = keepableVariableReferences.stream()
 					.map(it -> it.getVariableDeclaration())
 					.collect(Collectors.toList());
+			List<ComponentInstanceStateReferenceExpression> keepableStateReferences =
+					ecoreUtil.getAllContentsOfType(formula,
+							ComponentInstanceStateReferenceExpression.class); // Must reference the unwrapped
+			List<State> keepableGammaStates = keepableStateReferences.stream()
+					.map(it -> it.getState())
+					.collect(Collectors.toList());
+			//
 			
 //			xStsReducer.deleteUnnecessaryStates(xSts, formula, reachableStates); // Still experimental
 			if (optimizeOutEvents) {
@@ -207,7 +215,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 				xStsReducer.deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(xSts, keepableGammaVariables);
 			}
 			xStsReducer.deleteUnusedInputEventVariables(xSts, keepableGammaVariables);
-			xStsReducer.deleteTrivialCodomainVariablesExceptOutEvents(xSts, keepableGammaVariables);
+			xStsReducer.deleteTrivialCodomainVariablesExceptOutEvents(xSts, keepableGammaVariables, keepableGammaStates);
 			xStsReducer.deleteUnnecessaryInputVariablesExceptOutEvents(xSts, keepableGammaVariables);
 			// Deleting enum literals
 			Set<EnumerationLiteralDefinition> keepableGammaEnumLiterals =

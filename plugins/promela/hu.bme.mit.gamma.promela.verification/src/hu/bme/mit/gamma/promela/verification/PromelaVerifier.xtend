@@ -20,6 +20,8 @@ import java.io.OutputStreamWriter
 import java.util.List
 import java.util.Scanner
 
+import static com.google.common.base.Preconditions.checkState
+
 class PromelaVerifier extends AbstractVerifier {
 	//
 	protected extension LtlQueryAdapter queryAdapter = null // One needs to be created for every verification task
@@ -279,6 +281,7 @@ class PromelaVerifier extends AbstractVerifier {
 		def adjustSpinArgument(List<String> searchCommand) {
 			val depthArgument = searchCommand.findFirst[it.matches("-" + DEPTH_ARGUMENT + "[0-9]+")]
 			val i = searchCommand.indexOf(depthArgument)
+			checkState(i >= 0, "Not found depth argument: " + searchCommand.join(" "))
 			searchCommand.set(i, '''-«DEPTH_ARGUMENT»«depth»''')
 		}
 		

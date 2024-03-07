@@ -408,14 +408,16 @@ class SystemReducer {
 	}
 	
 	def void deleteTrivialCodomainVariablesExceptOutEvents(XSTS xSts,
-			Collection<? extends VariableDeclaration> keepableVariables) { // Unfolded Gamma variables
+			Collection<? extends VariableDeclaration> keepableVariables, // Unfolded Gamma variables
+			Collection<? extends State> keepableStates) {
 		val keepableXStsVariables = xSts.nonInternalOutputVariables
 		
-		xSts.deleteTrivialCodomainVariables(keepableVariables, keepableXStsVariables)
+		xSts.deleteTrivialCodomainVariables(keepableVariables, keepableStates, keepableXStsVariables)
 	}
 	
 	def void deleteTrivialCodomainVariables(XSTS xSts,
 			Collection<? extends VariableDeclaration> keepableVariables, // Unfolded Gamma variables
+			Collection<? extends State> keepableStates,
 			Collection<? extends VariableDeclaration> keepableXStsVariables) { // XSTS variables
 		val mapper = new ReferenceToXstsVariableMapper(xSts)
 		
@@ -423,6 +425,9 @@ class SystemReducer {
 		xStsKeepableVariables += keepableXStsVariables
 		for (keepableVariable : keepableVariables) {
 			xStsKeepableVariables += mapper.getVariableVariables(keepableVariable)
+		}
+		for (keepableState : keepableStates) {
+			xStsKeepableVariables += mapper.getRegionVariable(keepableState.parentRegion)
 		}
 		
 		val oneValueXStsVariableCodomains = xSts.oneValueVariableCodomains
