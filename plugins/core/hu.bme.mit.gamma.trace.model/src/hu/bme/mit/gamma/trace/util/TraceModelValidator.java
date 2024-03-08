@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -13,6 +13,8 @@ package hu.bme.mit.gamma.trace.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.Expression;
@@ -55,6 +57,18 @@ public class TraceModelValidator extends StatechartModelValidator {
 	
 	public Collection<ValidationResultMessage> checkArgumentTypes(ArgumentedElement element) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		if (element instanceof RaiseEventAct act) { // Assert acts do not have to have arguments
+			if (act.getArguments().isEmpty()) {
+				Step step = ecoreUtil.getContainerOfType(act, Step.class);
+				List<Expression> asserts = step.getAsserts();
+				EObject object = ecoreUtil.getChildOfContainerOfType(act, Step.class);
+				if (asserts.contains(object)) {
+					return validationResultMessages;
+				}
+			}
+		}
+		
 		List<ParameterDeclaration> parameters = TraceModelDerivedFeatures.getParameterDeclarations(element);
 		validationResultMessages.addAll(
 				super.checkArgumentTypes(element, parameters));

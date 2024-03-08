@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -80,8 +80,9 @@ class TraceBuilder {
 				for (outputEvent : outputPort.outputEvents) {
 					val isRaised = outputAsserts.exists[it.port == outputPort && it.event == outputEvent]
 					if (!isRaised) {
-						val unraisedExpression = outputPort.createRaiseEventAct(outputEvent)
-								.createNotExpression
+						val raiseEventAct = outputPort.createRaiseEventAct(outputEvent)
+						raiseEventAct.arguments.clear // !
+						val unraisedExpression = raiseEventAct.createNotExpression
 						asserts.add(0, unraisedExpression)
 					}
 				}
