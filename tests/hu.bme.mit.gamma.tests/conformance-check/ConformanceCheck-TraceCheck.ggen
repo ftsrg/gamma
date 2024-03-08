@@ -1,0 +1,10 @@
+trace-replay {
+	trace-folder : "trace-conformance-src"
+	folder : "trace-conformance-trg"
+	system-file : "ConformanceCheck"
+	consider-out-events : true
+	environment-model : off // Simple trace replay
+	language : Theta
+	language : Spin
+	language : nuXmv
+}

@@ -1,0 +1,22 @@
+import "ClockSystem.gcd"
+
+analysis {
+	component : ClockSystem
+	language : XSTS-UPPAAL
+	constraint : {
+		top : {
+			minimum-orchestrating-period : 1 ms
+			maximum-orchestrating-period : 1 ms
+		}
+	}
+	transition-coverage
+}
+
+verification {
+	file : "ClockSystem.xml"
+	property-file : ".ClockSystem.gpd"
+	language : XSTS-UPPAAL
+	back-annotate-to-original : true // Required 
+	optimize-traces : true // To avoid checking the same prefixes
+	trace-folder : "trace-conformance-src"
+}
