@@ -392,5 +392,8 @@
     <genClasses image="false" ecoreClass="statechart.ecore#//StateAnnotation"/>
     <genClasses image="false" ecoreClass="statechart.ecore#//TransitionAnnotation"/>
     <genClasses ecoreClass="statechart.ecore#//TransitionIdAnnotation"/>
+    <genClasses ecoreClass="statechart.ecore#//TimeoutReferenceExpression">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statechart.ecore#//TimeoutReferenceExpression/timeout"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

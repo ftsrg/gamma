@@ -230,6 +230,12 @@ class ExpressionTransformer {
 		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
 	}
 	
+	def dispatch List<Expression> transformExpression(TimeSpecification timeSpecification) {
+		return #[
+			timeSpecification.timeInMilliseconds.transformSimpleExpression
+		]
+	}
+	
 	// Key method: reference expression
 	
 	def List<ReferenceExpression> transformReferenceExpression(ReferenceExpression expression) {

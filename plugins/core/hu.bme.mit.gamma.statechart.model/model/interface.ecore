@@ -83,7 +83,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="eventReference" lowerBound="1"
         eType="#//EventReference" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="TimeSpecification">
+  <eClassifiers xsi:type="ecore:EClass" name="TimeSpecification" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//LiteralExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="value" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="unit" lowerBound="1" eType="#//TimeUnit"/>

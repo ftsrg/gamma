@@ -160,4 +160,8 @@
   <eClassifiers xsi:type="ecore:EClass" name="StateAnnotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="TransitionAnnotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="TransitionIdAnnotation" eSuperTypes="#//TransitionAnnotation ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="TimeoutReferenceExpression" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="timeout" lowerBound="1"
+        eType="#//TimeoutDeclaration"/>
+  </eClassifiers>
 </ecore:EPackage>
