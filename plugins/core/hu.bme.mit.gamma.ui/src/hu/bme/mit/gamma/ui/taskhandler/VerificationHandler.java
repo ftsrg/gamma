@@ -314,7 +314,6 @@ public class VerificationHandler extends TaskHandler {
 			retrievedTraces.addAll(backAnnotatedTraces);
 		}
 		
-		ProgrammingLanguage programmingLanguage = verification.getProgrammingLanguages().get(0);
 		traces.addAll(retrievedTraces);
 		
 		if (serializeTraces) { // After 'traces.add...'
