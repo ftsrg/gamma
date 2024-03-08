@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -53,7 +53,6 @@ import java.util.Collection
 import java.util.List
 import java.util.Map
 import java.util.Map.Entry
-import java.util.logging.Level
 import java.util.logging.Logger
 
 import static com.google.common.base.Preconditions.checkState
@@ -180,7 +179,7 @@ class ComponentTransformer {
 					val id = queue.getEventId(clock) // Id is needed during back-annotation
 					queueTraceability.put(clock, id)
 					storedClocks += clock
-					logger.log(Level.INFO, '''Assigning «id» to «clock.name»''')
+					logger.info( '''Assigning «id» to «clock.name»''')
 				}
 				val storedPortEvents = newLinkedHashSet
 				val events = queue.storedEvents
@@ -188,7 +187,7 @@ class ComponentTransformer {
 					val id = queue.getEventId(event) // Id is needed during back-annotation
 					queueTraceability.put(event, id)
 					storedPortEvents += event
-					logger.log(Level.INFO, '''Assigning «id» to «event.key.name».«event.value.name»''')
+					logger.info( '''Assigning «id» to «event.key.name».«event.value.name»''')
 				}
 				
 				val masterQueueName = queue.getMasterQueueName(adapterInstance)
@@ -255,13 +254,13 @@ class ComponentTransformer {
 								val messageQueueStruct = new MessageQueueStruct(slaveQueue, slaveSizeVariable, isInternal)
 								slaveQueues += messageQueueStruct
 								typeSlaveQueues += messageQueueStruct
-								logger.log(Level.INFO, '''Created a slave queue for «port.name».«event.name»::«parameter.name»''')
+								logger.info( '''Created a slave queue for «port.name».«event.name»::«parameter.name»''')
 							}
 							else {
 								// Internal queue, we do not care about traceability here
 								val messageQueueStruct = typeSlaveQueues.get(index)
 								slaveQueues += messageQueueStruct // Optimization - reusing an existing slave queue
-								logger.log(Level.INFO, '''Found a slave queue for «port.name».«event.name»::«parameter.name»''')
+								logger.info( '''Found a slave queue for «port.name».«event.name»::«parameter.name»''')
 							}
 						}
 					} // If no input event variable - slaveQueues is empty
@@ -484,6 +483,10 @@ class ComponentTransformer {
 					block.actions += branchExpressions.createIfAction(branchActions)
 				}
 			}
+			if (inputIfAction.condition === null) {
+				logger.warning('''Component instance «adapterInstance.name» has no incoming messages, so it is never executed...''')
+				createEmptyAction.replace(inputIfAction)
+			}
 			
 			// Clock mechanisms
 			val clockActions = createSequentialAction
@@ -607,7 +610,7 @@ class ComponentTransformer {
 			for (inEvent : systemAsynchronousSimplePort.inputEvents) {
 				val portEvent = new SimpleEntry(systemAsynchronousSimplePort, inEvent)
 				if (queueTraceability.contains(portEvent)) {
-					logger.log(Level.INFO,
+					logger.info(
 						'''Found «systemAsynchronousSimplePort.name».«inEvent.name» as system input event''')
 					systemInEvents += portEvent
 				}
@@ -742,7 +745,7 @@ class ComponentTransformer {
 								xStsRandomVariable.expression = xStsRandomVariable.defaultExpression
 								if (queue.isEnvironmentalAndCheck(systemPorts)) {
 									// We delete this slave queue later as we do not want to override internal parameters
-									logger.log(Level.INFO, "Internal parameter slave queue for system port: " + xStsSlaveQueue.name)
+									logger.info( "Internal parameter slave queue for system port: " + xStsSlaveQueue.name)
 									xStsDeletableSlaveQueues += xStsSlaveQueue
 								}
 								else {
@@ -1120,13 +1123,13 @@ class ComponentTransformer {
 	
 	def dispatch XSTS transform(AbstractSynchronousCompositeComponent component, Package lowlevelPackage) {
 		val name = component.name
-		logger.log(Level.INFO, "Transforming abstract synchronous composite " + name)
+		logger.info( "Transforming abstract synchronous composite " + name)
 		val xSts = name.createXsts
 		val componentMergedActions = <Component, Action>newHashMap // To handle multiple schedulings in CascadeCompositeComponents
 		val components = component.components
 		
 		if (components.empty) {
-			logger.log(Level.WARNING, "No components in abstract synchronous composite " + name)
+			logger.warning("No components in abstract synchronous composite " + name)
 			return xSts
 		}
 		
@@ -1237,14 +1240,14 @@ class ComponentTransformer {
 		}
 		xSts.changeTransitions(mergedAction.wrap)
 		
-		logger.log(Level.INFO, "Deleting unused instance ports in " + name)
+		logger.info( "Deleting unused instance ports in " + name)
 		xSts.deleteUnusedPorts(component) // Deleting variable assignments for unused ports
 		
 		// Connect only after "xSts.mergedTransition.action = mergedAction" / "xSts.changeTransitions"
-		logger.log(Level.INFO, "Connecting events through channels in " + name)
+		logger.info( "Connecting events through channels in " + name)
 		xSts.connectEventsThroughChannels(component) // Event (variable setting) connecting across channels
 		
-		logger.log(Level.INFO, "Binding event to system port events in " + name)
+		logger.info( "Binding event to system port events in " + name)
 		val oldInEventAction = xSts.inEventTransition.action
 		val bindingAssignments = xSts.createEventAndParameterAssignmentsBoundToTheSameSystemPort(component)
 		// Optimization: removing old NonDeterministicActions 
@@ -1260,7 +1263,7 @@ class ComponentTransformer {
 		
 		if (transformOrthogonalActions) {
 			// After connectEventsThroughChannels
-			logger.log(Level.INFO, "Transforming orthogonal actions in XSTS " + name)
+			logger.info( "Transforming orthogonal actions in XSTS " + name)
 			xSts.mergedAction.transform(xSts)
 			// Before optimize actions
 		}
@@ -1272,14 +1275,14 @@ class ComponentTransformer {
 		}
 		
 		// After in event optimization
-		logger.log(Level.INFO, "Readjusting internal event handlings in " + name)
+		logger.info( "Readjusting internal event handlings in " + name)
 		xSts.replaceInternalEventHandlingActions(component, traceability)
 		
 		return xSts
 	}
 	
 	def dispatch XSTS transform(StatechartDefinition statechart, Package lowlevelPackage) {
-		logger.log(Level.INFO, "Transforming statechart " + statechart.name)
+		logger.info( "Transforming statechart " + statechart.name)
 		/* Note that the package is already transformed and traced because of
 		   the "val lowlevelPackage = gammaToLowlevelTransformer.transform(_package)" call */
 		val lowlevelStatechart = gammaToLowlevelTransformer.transform(statechart)
