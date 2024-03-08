@@ -36,16 +36,16 @@ class PromelaVerification extends AbstractVerification {
 	}
 	
 	override getDefaultArguments() {
-		val MAX_DEPTH = 9900
+		val MAX_DEPTH = 1200
 		val HASH_TABLE_SIZE = 27
 		return #[
-//			"-search -a -b" // default: -a search for acceptance cycles, -b bounded search mode, makes it an error to exceed the search depth, triggering and error trail
-			'''-search -n -m«MAX_DEPTH» -w«HASH_TABLE_SIZE» -DVECTORSZ=6144 -DNOBOUNDCHECK''' // -DBITSTATE -DNOFAIR
-//			'''-search -n -I -m«MAX_DEPTH» -w«HASH_TABLE_SIZE» -DVECTORSZ=6144 -DNOBOUNDCHECK'''
-//			'''-search -n -bfs -DVECTORSZ=6144 -DCOLLAPSE -DNOBOUNDCHECK'''
+			'''-search -n -I -m«MAX_DEPTH» -w«HASH_TABLE_SIZE» -DVECTORSZ=4096 -DNOBOUNDCHECK''' // -DBITSTATE -DNOFAIR
+//			'''-search -n -m«MAX_DEPTH» -w«HASH_TABLE_SIZE» -DVECTORSZ=4096 -DNOBOUNDCHECK'''
+//			'''-search -n -bfs -DVECTORSZ=4096 -DCOLLAPSE -DNOBOUNDCHECK'''
 		]
 		// -A apply slicing algorithm
 		// -m Changes the semantics of send events. Ordinarily, a send action will be (blocked) if the target message buffer is full. With this option a message sent to a full buffer is lost.
+		// -a search for acceptance cycles
 		// -b bounded search mode, makes it an error to exceed the search depth, triggering and error trail
 		// -I like -i, but approximate and faster
 		// -i search for shortest path to error (causes an increase of complexity)
@@ -57,7 +57,7 @@ class PromelaVerification extends AbstractVerification {
 //		-DCOLLAPSE # good, fast compression, or
 //		-DMA=1380   # better/slower compression, or
 //		-DHC # hash-compaction, approximation
-//		-DBITSTATE # supertrace, approximation
+//		-DBITSTATE # supertrace, under-approximation
 		// Multi-core DFS mode
 //		-DMEMLIM=8000 --> necessary for multi-core settings - allow up to 8 GB of shared memory
 //		-DNCORE=N   --> enables multi_core verification if N>1

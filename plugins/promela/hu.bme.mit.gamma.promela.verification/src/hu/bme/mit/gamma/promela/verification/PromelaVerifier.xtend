@@ -76,7 +76,7 @@ class PromelaVerifier extends AbstractVerifier {
 	}
 	
 	private def Result verify(Object traceability, String parameters, File modelFile) {
-		return this.verify(traceability, parameters, modelFile, new BmcData(true))
+		return this.verify(traceability, parameters, modelFile, new BmcData(parameters))
 	}
 	
 	private def Result verify(Object traceability, String parameters, File modelFile,
@@ -260,6 +260,17 @@ class PromelaVerifier extends AbstractVerifier {
 			this(false)
 		}
 		
+		new(String arguments) {
+			this()
+			val splitArguments = arguments.split("\\s+")
+			for (splitArgument : splitArguments) {
+				if (splitArgument.depthArgument) {
+					this.doBmc = true
+					this.depth = splitArgument.depth
+				}
+			}
+		}
+		
 		new(boolean doBmc) {
 			this(doBmc, 1200, 1.5)
 		}
@@ -279,7 +290,7 @@ class PromelaVerifier extends AbstractVerifier {
 		}
 		
 		def adjustSpinArgument(List<String> searchCommand) {
-			val depthArgument = searchCommand.findFirst[it.matches("-" + DEPTH_ARGUMENT + "[0-9]+")]
+			val depthArgument = searchCommand.findFirst[it.depthArgument]
 			val i = searchCommand.indexOf(depthArgument)
 			checkState(i >= 0, "Not found depth argument: " + searchCommand.join(" "))
 			searchCommand.set(i, '''-«DEPTH_ARGUMENT»«depth»''')
@@ -295,6 +306,16 @@ class PromelaVerifier extends AbstractVerifier {
 		
 		def getDepth() {
 			return depth
+		}
+		
+		private def isDepthArgument(String argument) {
+			return argument.matches("-" + DEPTH_ARGUMENT + "[0-9]+")
+		}
+		
+		private def getDepth(String argument) {
+			val prefix = '''-«DEPTH_ARGUMENT»'''
+			val depth = argument.trim.substring(prefix.length)
+			return Integer.valueOf(depth)
 		}
 		
 	}
