@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -109,6 +109,16 @@ class TraceReplayModelGenerator {
 					}
 				}
 			}
+			// To allow for triggering the execution of async environment statechart
+			if (environmentModel.asynchronous) {
+				val asyncInputPort = environmentModel.ports.findFirst[it.hasInputEvents] // Must not be null
+				val systemAsyncInputPort = asyncInputPort.clone
+				systemModel.ports += systemAsyncInputPort
+				
+				systemModel.portBindings += systemAsyncInputPort.createPortBinding(
+					environmentInstance.createInstancePortReference(asyncInputPort))
+			}
+			//
 		}
 		else {
 			for (portBinding : portBindings) {

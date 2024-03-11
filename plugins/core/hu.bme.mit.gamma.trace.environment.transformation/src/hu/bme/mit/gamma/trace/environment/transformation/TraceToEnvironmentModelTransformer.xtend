@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -98,6 +98,7 @@ class TraceToEnvironmentModelTransformer {
 	
 	protected def transformPorts(StatechartDefinition environmentModel, Trace trace) {
 		val component = executionTrace.component
+		var hasAsnycInputEvent = false
 		for (componentPort : component.ports) {
 			// Environment ports: connected to the original ports
 			val environmentPort = componentPort.clone
@@ -110,7 +111,8 @@ class TraceToEnvironmentModelTransformer {
 			trace.putComponentEnvironmentPort(componentPort, environmentPort)
 			
 			// Proxy ports: led out to the system
-			if (this.environmentModel !== EnvironmentModel.OFF) { 
+			if (this.environmentModel !== EnvironmentModel.OFF || // To allow for triggering the execution of async environment statechart
+				(environmentModel.asynchronous && !hasAsnycInputEvent && componentPort.hasInputEvents)) {
 				val proxyPort = componentPort.clone
 				
 				proxyPort.name = componentPort.proxyPortName
@@ -118,6 +120,11 @@ class TraceToEnvironmentModelTransformer {
 				environmentModel.ports += proxyPort
 				trace.putComponentProxyPort(componentPort, proxyPort)
 				trace.putProxyEnvironmentPort(proxyPort, environmentPort)
+				//
+				if (componentPort.hasInputEvents) {
+					hasAsnycInputEvent = true
+				}
+				//
 			}
 		}
 	}

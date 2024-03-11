@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.eclipse.core.resources.IFile;
 
@@ -70,7 +69,7 @@ public class AnalysisModelTransformationAndVerificationHandler extends TaskHandl
 			AnalysisModelTransformationHandler transformationHandler = new AnalysisModelTransformationHandler(file);
 			transformation.setPropertyPackage(null); // No slicing - deprecated
 			transformationHandler.execute(transformation);
-			logger.log(Level.INFO, "Analysis transformation " + index + "/" + size + " finished");
+			logger.info("Analysis transformation " + index + "/" + size + " finished");
 			
 			String folder = transformation.getTargetFolder().get(0);
 			String plainFileName = fileUtil.getExtensionlessName(
@@ -108,7 +107,7 @@ public class AnalysisModelTransformationAndVerificationHandler extends TaskHandl
 						verificationHandler.getTraces());
 			}
 			
-			logger.log(Level.INFO, "Verification " + index + "/" + size + " finished");
+			logger.info("Verification " + index + "/" + size + " finished");
 		}
 	}
 	

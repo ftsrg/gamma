@@ -656,7 +656,8 @@ class SystemReducer {
 				if (unusedPorts.contains(storedPort)) {
 					for (eventReference : queue.sourceEventReferences.toSet) {
 						if (storedPort === eventReference.eventSource) {
-							eventReference.remove
+							val eventPassing = eventReference.eContainer
+							eventPassing.remove
 							logger.info('''Removing unused «storedPort.name» reference from «queue.name»''')
 						}
 					}

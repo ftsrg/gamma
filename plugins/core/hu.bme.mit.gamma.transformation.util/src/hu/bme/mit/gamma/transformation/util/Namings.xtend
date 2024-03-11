@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -24,9 +24,13 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 
 class Namings {
 	
+	private static def String addAsynchronousStatechartName(ComponentInstanceReferenceExpression instance) { return instance.lastInstance.addAsynchronousStatechartName }
+	private static def String addAsynchronousStatechartName(ComponentInstance instance) '''«IF instance.asynchronousStatechart»_«instance.derivedType.wrapperInstanceName»«ENDIF»'''
+	
+	
 //	def static String getFQN(List<ComponentInstance> instances) '''«FOR instance : instances SEPARATOR '_'»«instance.name»«IF instance.asynchronousStatechart»_«instance.derivedType.wrapperInstanceName»«ENDIF»«ENDFOR»'''
 	def static String getFQN(List<ComponentInstance> instances) '''«FOR instance : instances SEPARATOR '_'»«instance.name»«ENDFOR»'''
-	def static String getFQN(ComponentInstanceReferenceExpression instance) '''«instance.componentInstanceChain.FQN»'''
+	def static String getFQN(ComponentInstanceReferenceExpression instance) '''«instance.componentInstanceChain.FQN»«instance.addAsynchronousStatechartName»'''
 	def static String getFQN(ComponentInstance instance) '''«instance.componentInstanceChain.FQN»'''
 	
 	def static String getFQN(StateNode node) '''«node.parentRegion.FQN»_«node.name»'''

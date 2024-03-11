@@ -498,6 +498,9 @@ class ComponentTransformer {
 						.createVariableDeclarationWithDefaultInitialValue(xStsClockName)
 				xSts.variableDeclarations += xStsVariable // Target model modification
 				
+				variableInitAction.actions += xStsVariable.createAssignmentAction(
+						0.toIntegerLiteral)
+				
 				xStsVariable.addClockAnnotation // Because of this, time passing is modeled "automatically"
 				xSts.timeoutGroup.variables += xStsVariable
 				

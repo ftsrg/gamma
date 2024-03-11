@@ -25,7 +25,6 @@ import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.List
-import java.util.logging.Level
 import java.util.logging.Logger
 
 import static com.google.common.base.Preconditions.checkState
@@ -94,7 +93,7 @@ class ReferenceToXstsVariableMapper {
 				xStsVariables += xStsVariable
 			}
 			else {
-				logger.log(Level.INFO, "Not found XSTS variable for " + port.name + "." + event.name)
+				logger.info("Not found XSTS variable for " + port.name + "." + event.name)
 			}
 		}
 		return xStsVariables
@@ -137,7 +136,7 @@ class ReferenceToXstsVariableMapper {
 				xStsVariableLists += xStsVariables
 			}
 			else {
-				logger.log(Level.INFO, "Not found XSTS variable for " + port.name + "::" + parameter.name)
+				logger.info("Not found XSTS variable for " + port.name + "::" + parameter.name)
 			}
 		}
 		return xStsVariableLists
@@ -170,7 +169,7 @@ class ReferenceToXstsVariableMapper {
 				xStsVariables += xStsVariable
 			}
 			else {
-				logger.log(Level.INFO, "Not found XSTS variable for " + port.name + "." + event.name)
+				logger.info("Not found XSTS variable for " + port.name + "." + event.name)
 			}
 		}
 		return xStsVariables
@@ -211,7 +210,7 @@ class ReferenceToXstsVariableMapper {
 				xStsVariables += xStsVariable
 			}
 			else {
-				logger.log(Level.INFO, "Not found XSTS variable for " + port.name + "::" + parameter.name)
+				logger.info("Not found XSTS variable for " + port.name + "::" + parameter.name)
 			}
 		}
 		return xStsVariables

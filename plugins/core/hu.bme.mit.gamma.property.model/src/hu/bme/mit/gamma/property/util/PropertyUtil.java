@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -64,33 +64,59 @@ public class PropertyUtil extends StatechartUtil {
 		return propertyPackage;
 	}
 	
-	// Wrapping - adding proxy wrapper instance referenecs
+	// Wrapping - adding proxy wrapper instance references
 	
 	public void extendFormulasWithWrapperInstance(PropertyPackage propertyPackage) {
 		Component component = propertyPackage.getComponent();
-		for (CommentableStateFormula commentableStateFormula : propertyPackage.getFormulas()) {
-			StateFormula formula = commentableStateFormula.getFormula();
-			List<ComponentInstanceElementReferenceExpression> stateExpressions =
-					ecoreUtil.getAllContentsOfType(formula, ComponentInstanceElementReferenceExpression.class);
-			for (ComponentInstanceElementReferenceExpression stateExpression : stateExpressions) {
-				ComponentInstanceReferenceExpression instanceReference = stateExpression.getInstance();
-				ComponentInstance wrapperInstance = instantiateComponent(component);
-				prependAndReplace(instanceReference, wrapperInstance);
-			}
+		List<CommentableStateFormula> formulas = propertyPackage.getFormulas();
+		extendFormulasWithWrapperInstance(formulas, component);
+	}
+	
+	protected void extendFormulasWithWrapperInstance(List<CommentableStateFormula> formulas, Component component) {
+		for (CommentableStateFormula formula : formulas) {
+			extendFormulasWithWrapperInstance(formula, component);
 		}
+	}
+
+	protected void extendFormulasWithWrapperInstance(CommentableStateFormula commentableStateFormula, Component component) {
+		StateFormula formula = commentableStateFormula.getFormula();
+		List<ComponentInstanceElementReferenceExpression> stateExpressions =
+				ecoreUtil.getAllContentsOfType(formula, ComponentInstanceElementReferenceExpression.class);
+		for (ComponentInstanceElementReferenceExpression stateExpression : stateExpressions) {
+			extendFormulasWithWrapperInstance(component, stateExpression);
+		}
+	}
+
+	protected void extendFormulasWithWrapperInstance(Component component, ComponentInstanceElementReferenceExpression stateExpression) {
+		ComponentInstanceReferenceExpression instanceReference = stateExpression.getInstance();
+		ComponentInstance wrapperInstance = instantiateComponent(component);
+		prependAndReplace(instanceReference, wrapperInstance);
 	}
 	
 	public void removeFirstInstanceFromFormulas(PropertyPackage propertyPackage) {
-		for (CommentableStateFormula commentableStateFormula : propertyPackage.getFormulas()) {
-			StateFormula formula = commentableStateFormula.getFormula();
-			List<ComponentInstanceElementReferenceExpression> stateExpressions =
-					ecoreUtil.getAllContentsOfType(formula, ComponentInstanceElementReferenceExpression.class);
-			for (ComponentInstanceElementReferenceExpression stateExpression : stateExpressions) {
-				ComponentInstanceReferenceExpression instanceReference = stateExpression.getInstance();
-				ComponentInstanceReferenceExpression child = instanceReference.getChild();
-				ecoreUtil.replace(child, instanceReference);
-			}
+		List<CommentableStateFormula> formulas = propertyPackage.getFormulas();
+		removeFirstInstanceFromFormulas(formulas);
+	}
+	
+	protected void removeFirstInstanceFromFormulas(List<CommentableStateFormula> formulas) {
+		for (CommentableStateFormula commentableStateFormula : formulas) {
+			removeFirstInstanceFromFormula(commentableStateFormula);
 		}
+	}
+
+	protected void removeFirstInstanceFromFormula(CommentableStateFormula commentableStateFormula) {
+		StateFormula formula = commentableStateFormula.getFormula();
+		List<ComponentInstanceElementReferenceExpression> stateExpressions =
+				ecoreUtil.getAllContentsOfType(formula, ComponentInstanceElementReferenceExpression.class);
+		for (ComponentInstanceElementReferenceExpression stateExpression : stateExpressions) {
+			removeFirstInstanceFromFormula(stateExpression);
+		}
+	}
+
+	protected void removeFirstInstanceFromFormula(ComponentInstanceElementReferenceExpression stateExpression) {
+		ComponentInstanceReferenceExpression instanceReference = stateExpression.getInstance();
+		ComponentInstanceReferenceExpression child = instanceReference.getChild();
+		ecoreUtil.replace(child, instanceReference);
 	}
 	
 	//
