@@ -9,10 +9,10 @@ statechart Adder [
 	var count : integer
 	region main {
 		initial Initial
-		state A
+		state _X
 	}
 	
-	transition from Initial to A
-	transition from A to A when Execute.^execute / raise Toggle.add; count := count + 1;
+	transition from Initial to _X
+	transition from _X to _X when Execute.^execute / raise Toggle.add; count := count + 1;
 	
 }

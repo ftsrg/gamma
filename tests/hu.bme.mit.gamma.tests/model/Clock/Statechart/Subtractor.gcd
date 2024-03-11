@@ -9,10 +9,10 @@ statechart Subtractor [
 	var count : integer
 	region main {
 		initial Initial
-		state A
+		state _Y
 	}
 	
-	transition from Initial to A
-	transition from A to A when Execute.^execute / raise Toggle.subtract; count := count + 1;
+	transition from Initial to _Y
+	transition from _Y to _Y when Execute.^execute / raise Toggle.subtract; count := count + 1;
 	
 }
