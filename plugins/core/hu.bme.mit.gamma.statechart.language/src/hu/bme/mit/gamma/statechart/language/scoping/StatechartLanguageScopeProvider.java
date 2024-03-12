@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -126,21 +126,22 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
 				if (type instanceof StatechartDefinition) {
 					StatechartDefinition statechart = (StatechartDefinition) type;
-					return Scopes.scopeFor(statechart.getVariableDeclarations());
+					return Scopes.scopeFor(
+							statechart.getVariableDeclarations());
 				}
 			}
 			// Transitions
-			if (context instanceof Transition && (reference == StatechartModelPackage.Literals.TRANSITION__SOURCE_STATE
+			if (context instanceof Transition transition && (reference == StatechartModelPackage.Literals.TRANSITION__SOURCE_STATE
 					|| reference == StatechartModelPackage.Literals.TRANSITION__TARGET_STATE)) {
-				Transition transition = (Transition) context;
 				Collection<StateNode> candidates = stateNodesForTransition(transition);
 				return Scopes.scopeFor(candidates);
 			}
-			if (context instanceof PortEventReference && reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__EVENT) {
-				Port port = ((PortEventReference) context).getPort();
+			if (context instanceof PortEventReference portEventReference && reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__EVENT) {
+				Port port = portEventReference.getPort();
 				Interface _interface = port.getInterfaceRealization().getInterface();
 				// Not only in events are returned as less-aware users tend to write out events on triggers
-				return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllEvents(_interface));
+				return Scopes.scopeFor(
+						StatechartModelDerivedFeatures.getAllEvents(_interface));
 			}
 			if (reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__EVENT) {
 				// If the branch above does not work
@@ -151,33 +152,32 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				// Not only in events are returned as less-aware users tend to write out events on triggers
 				return Scopes.scopeFor(events);
 			}
-			if (context instanceof RaiseEventAction
+			if (context instanceof RaiseEventAction raiseEventAction
 					&& reference == StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT) {
-				RaiseEventAction raiseEventAction = (RaiseEventAction) context;
 				Port port = raiseEventAction.getPort();
 				Interface _interface = port.getInterfaceRealization().getInterface();
 				// Not only in events are returned as less-aware users tend to write in events on actions
-				return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllEvents(_interface));
+				return Scopes.scopeFor(
+						StatechartModelDerivedFeatures.getAllEvents(_interface));
 			}
 			/* Without such scoping rules, the following exception is thrown:
 			 * Caused By: org.eclipse.xtext.conversion.ValueConverterException: ID 'Test.testIn.testInValue'
 			 * contains invalid characters: '.' (0x2e) */
 			// Valueof
-			if (context instanceof EventParameterReferenceExpression
-					&& reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PORT) {
+			if (context instanceof EventParameterReferenceExpression &&
+					reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PORT) {
 				Component component = StatechartModelDerivedFeatures.getContainingComponent(context);				
 				return Scopes.scopeFor(component.getPorts());
 			}
-			if (context instanceof EventParameterReferenceExpression
-					&& reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT) {
-				EventParameterReferenceExpression expression = (EventParameterReferenceExpression) context;
+			if (context instanceof EventParameterReferenceExpression expression &&
+					reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT) {
 				checkState(expression.getPort() != null);
 				Port port = expression.getPort();
-				return Scopes.scopeFor(StatechartModelDerivedFeatures.getInputEvents(port));
+				return Scopes.scopeFor(
+						StatechartModelDerivedFeatures.getInputEvents(port));
 			}
-			if (context instanceof EventParameterReferenceExpression
-					&& reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PARAMETER) {
-				EventParameterReferenceExpression expression = (EventParameterReferenceExpression) context;
+			if (context instanceof EventParameterReferenceExpression expression &&
+					reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PARAMETER) {
 				checkState(expression.getPort() != null);
 				Event event = expression.getEvent();
 				return Scopes.scopeFor(event.getParameterDeclarations());
@@ -187,9 +187,8 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				Collection<Region> allRegions = StatechartModelDerivedFeatures.getAllRegions(statechart);
 				return Scopes.scopeFor(allRegions);
 			}
-			if (context instanceof StateReferenceExpression &&
+			if (context instanceof StateReferenceExpression stateReferenceExpression &&
 					reference == StatechartModelPackage.Literals.STATE_REFERENCE_EXPRESSION__STATE) {
-				StateReferenceExpression stateReferenceExpression = (StateReferenceExpression) context;
 				Region region = stateReferenceExpression.getRegion();
 				List<State> states = StatechartModelDerivedFeatures.getStates(region);
 				return Scopes.scopeFor(states);
@@ -198,10 +197,12 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				if (reference == InterfaceModelPackage.Literals.INTERFACE_PARAMETER_REFERENCE_EXPRESSION__PARAMETER) {
 					checkState(interfaceParameterReferenceExpression.getEvent() != null);
 					Event event = interfaceParameterReferenceExpression.getEvent();					
-					return Scopes.scopeFor(event.getParameterDeclarations());
+					return Scopes.scopeFor(
+							event.getParameterDeclarations());
 				} else if (reference == InterfaceModelPackage.Literals.INTERFACE_PARAMETER_REFERENCE_EXPRESSION__EVENT) {
 					Interface _interface = StatechartModelDerivedFeatures.getContainingInterface(interfaceParameterReferenceExpression);	
-					return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllEvents(_interface));
+					return Scopes.scopeFor(
+							StatechartModelDerivedFeatures.getAllEvents(_interface));
 				}
 			}
 
@@ -209,7 +210,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 
 			// Ports
 			if (context instanceof InterfaceRealization && reference == InterfaceModelPackage.Literals.INTERFACE_REALIZATION__INTERFACE) {
-				Package gammaPackage = (Package) context.eContainer().eContainer().eContainer();
+				Package gammaPackage = StatechartModelDerivedFeatures.getContainingPackage(context);
 				if (!gammaPackage.getImports().isEmpty()) {
 					Set<Interface> interfaces = new HashSet<Interface>();
 					gammaPackage.getImports().stream().map(it -> it.getInterfaces()).forEach(it -> interfaces.addAll(it));
@@ -222,26 +223,21 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				List<Port> ports = StatechartModelDerivedFeatures.getAllPorts(type);
 				return Scopes.scopeFor(ports);
 			}
-			if (context instanceof InstancePortReference && reference == CompositeModelPackage.Literals.INSTANCE_PORT_REFERENCE__PORT) {
-				InstancePortReference portInstance = (InstancePortReference) context;
+			if (context instanceof InstancePortReference portInstance && reference == CompositeModelPackage.Literals.INSTANCE_PORT_REFERENCE__PORT) {
 				ComponentInstance instance = portInstance.getInstance();
-				Component type = (instance instanceof SynchronousComponentInstance) ? 
-						((SynchronousComponentInstance) instance).getType() : 
-							((AsynchronousComponentInstance) instance).getType();
+				Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
 				if (type == null) {
 					return super.getScope(context, reference); 
 				}
 				List<Port> ports = new ArrayList<Port>(type.getPorts());
 				// In case of wrappers, we added the ports of the wrapped component as well
-				if (type instanceof AsynchronousAdapter) {
-					AsynchronousAdapter wrapper = (AsynchronousAdapter) type;
+				if (type instanceof AsynchronousAdapter wrapper) {
 					ports.addAll(wrapper.getWrappedComponent().getType().getPorts());
 				}				
 				return Scopes.scopeFor(ports);
 			}
-			if (context instanceof CompositeComponent && reference == CompositeModelPackage.Literals.INSTANCE_PORT_REFERENCE__PORT) {
+			if (context instanceof CompositeComponent component && reference == CompositeModelPackage.Literals.INSTANCE_PORT_REFERENCE__PORT) {
 				// If the branch above does not handle it
-				CompositeComponent component = (CompositeComponent) context;
 				List<? extends ComponentInstance> components = StatechartModelDerivedFeatures.getDerivedComponents(component);
 				Collection<Port> ports = new HashSet<Port>();
 				components.stream().map(it -> StatechartModelDerivedFeatures.getDerivedType(it))
@@ -264,12 +260,10 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			}
 			if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE) {
 				// Execution list
-				if (context instanceof CascadeCompositeComponent) {
-					CascadeCompositeComponent cascade = (CascadeCompositeComponent) context;
+				if (context instanceof CascadeCompositeComponent cascade) {
 					return Scopes.scopeFor(cascade.getComponents());
 				}
-				if (context instanceof ScheduledAsynchronousCompositeComponent) {
-					ScheduledAsynchronousCompositeComponent scheduled = (ScheduledAsynchronousCompositeComponent) context;
+				if (context instanceof ScheduledAsynchronousCompositeComponent scheduled) {
 					return Scopes.scopeFor(scheduled.getComponents());
 				}
 			}
@@ -289,14 +283,15 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					(reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__PORT ||
 					reference == StatechartModelPackage.Literals.ANY_PORT_EVENT_REFERENCE__PORT)) {
 				AsynchronousAdapter wrapper = ecoreUtil.getContainerOfType(context, AsynchronousAdapter.class);
-				return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllPorts(wrapper));
+				return Scopes.scopeFor(
+						StatechartModelDerivedFeatures.getAllPorts(wrapper));
 			}
 			if ((context instanceof MessageQueue || context instanceof ControlSpecification) &&
 					reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__EVENT) {
 				AsynchronousAdapter wrapper = ecoreUtil.getContainerOfType(context, AsynchronousAdapter.class);
 				Collection<Event> events = new HashSet<Event>();
 				StatechartModelDerivedFeatures.getAllPorts(wrapper).stream()
-					.forEach(it -> events.addAll(StatechartModelDerivedFeatures.getInputEvents(it)));
+						.forEach(it -> events.addAll(StatechartModelDerivedFeatures.getInputEvents(it)));
 				return Scopes.scopeFor(events);
 			}
 			if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
@@ -311,8 +306,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				ParametricElement element = ecoreUtil.getSelfOrContainerOfType(context, ParametricElement.class);
 				if (element != null) {
 					IScope parentScope = super.getScope(context, reference); // Parameters and constants
-					if (element instanceof StatechartDefinition) {
-						StatechartDefinition statechart = (StatechartDefinition) element;
+					if (element instanceof StatechartDefinition statechart) {
 						Collection<Declaration> declarations = new ArrayList<Declaration>();
 						declarations.addAll(statechart.getVariableDeclarations());
 						declarations.addAll(statechart.getFunctionDeclarations());
@@ -349,8 +343,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 	
 	@Override
 	protected List<FieldDeclaration> getFieldDeclarations(Expression operand) {
-		if (operand instanceof EventParameterReferenceExpression) {
-			EventParameterReferenceExpression reference = (EventParameterReferenceExpression) operand;
+		if (operand instanceof EventParameterReferenceExpression reference) {
 			Declaration declaration = reference.getParameter();
 			return super.getFieldDeclarations(declaration);
 		}
