@@ -41,6 +41,7 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
 import hu.bme.mit.gamma.xsts.model.Action
+import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.InEventGroup
 import hu.bme.mit.gamma.xsts.model.RegionGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
@@ -777,6 +778,20 @@ class ComponentTransformer {
 		val mergedAction = component.mergeAsynchronousCompositeActions(mergedAdapterActions)
 		// Merging it with clocks
 		mergedClockAction.actions += mergedAction
+		
+		// Replacing invariants if any (otherwise, they remain in the body of the if, not affecting the state if there are no input messages)
+		val assumeActions = mergedAction.getSelfAndAllContentsOfType(AssumeAction)
+		val environmentalInvariants = assumeActions.filter[it.environmentalInvariant]
+		for (environmentalInvariant : environmentalInvariants) {
+			createEmptyAction.replace(environmentalInvariant)
+			mergedClockAction.actions.add(0, environmentalInvariant)
+		}
+		val internalInvariants = assumeActions.filter[it.internalInvariant]
+		for (internalInvariant : internalInvariants) {
+			createEmptyAction.replace(internalInvariant)
+			mergedClockAction.actions += internalInvariant
+		}
+		//
 		
 		xSts.changeTransitions(mergedClockAction.wrap)
 		

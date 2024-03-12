@@ -996,8 +996,12 @@ public class XstsActionUtil extends ExpressionUtil {
 		addAnnotation(variable, xStsFactory.createStrictControlVariableDeclarationAnnotation());
 	}
 	
-	public void addInvariantAnnotation(AssumeAction action) {
-		addAnnotation(action, xStsFactory.createInvariantAnnotation());
+	public void addEnvironmentalInvariantAnnotation(AssumeAction action) {
+		addAnnotation(action, xStsFactory.createEnvironmentalInvariantAnnotation());
+	}
+	
+	public void addInternalInvariantAnnotation(AssumeAction action) {
+		addAnnotation(action, xStsFactory.createInternalInvariantAnnotation());
 	}
 	
 	public void addAnnotation(Action action, ActionAnnotation annotation) {

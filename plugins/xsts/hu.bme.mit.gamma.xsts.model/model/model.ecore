@@ -137,7 +137,10 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="XstsAnnotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="ActionAnnotation" abstract="true"/>
-  <eClassifiers xsi:type="ecore:EClass" name="InvariantAnnotation" eSuperTypes="#//ActionAnnotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="InvariantAnnotation" abstract="true"
+      eSuperTypes="#//ActionAnnotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="EnvironmentalInvariantAnnotation" eSuperTypes="#//InvariantAnnotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="InternalInvariantAnnotation" eSuperTypes="#//InvariantAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="OnDemandControlVariableDeclarationAnnotation"
       eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclarationAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="StrictControlVariableDeclarationAnnotation"

@@ -736,7 +736,7 @@ class LowlevelToXstsTransformer {
 				
 				val xStsStateInvariant =  xStsInvariantLhs.createImplyExpression(xStsInvariantRhs)
 				val xStsAssumeStateInvariant = xStsStateInvariant.createAssumeAction
-				xStsAssumeStateInvariant.addInvariantAnnotation
+				xStsAssumeStateInvariant.addInternalInvariantAnnotation
 				
 				val xStsMergedAction = xSts.mergedAction
 				xStsMergedAction.appendToAction(xStsAssumeStateInvariant)
@@ -751,16 +751,16 @@ class LowlevelToXstsTransformer {
 		val lowlevelStatechartInvariants = lowlevelStatechart.invariants
 		
 		if (!lowlevelStatechartInvariants.empty) {
-				val xStsInvariants = lowlevelStatechartInvariants.map[it.transformExpression]
-				val xStsStatechartInvariant = xStsInvariants.wrapIntoAndExpression
+			val xStsInvariants = lowlevelStatechartInvariants.map[it.transformExpression]
+			val xStsStatechartInvariant = xStsInvariants.wrapIntoAndExpression
 
-				val xStsAssumeStatechartInvariant = xStsStatechartInvariant.createAssumeAction
-				xStsAssumeStatechartInvariant.addInvariantAnnotation
-				
-				val xStsMergedAction = xSts.mergedAction
-				xStsMergedAction.appendToAction(xStsAssumeStatechartInvariant)
-				val xStsCongifurationInitAction = xSts.configurationInitializingTransition.action
-				xStsCongifurationInitAction.appendToAction(xStsAssumeStatechartInvariant.clone)
+			val xStsAssumeStatechartInvariant = xStsStatechartInvariant.createAssumeAction
+			xStsAssumeStatechartInvariant.addInternalInvariantAnnotation
+			
+			val xStsMergedAction = xSts.mergedAction
+			xStsMergedAction.appendToAction(xStsAssumeStatechartInvariant)
+			val xStsCongifurationInitAction = xSts.configurationInitializingTransition.action
+			xStsCongifurationInitAction.appendToAction(xStsAssumeStatechartInvariant.clone)
 		}
 	}
 	
@@ -769,14 +769,14 @@ class LowlevelToXstsTransformer {
 		val lowlevelEnvironmentalInvariants = lowlevelStatechart.environmentalInvariants
 		
 		if (!lowlevelEnvironmentalInvariants.empty) {
-				val xStsInvariants = lowlevelEnvironmentalInvariants.map[it.transformExpression]
-				val xStsEnvironmentalInvariant = xStsInvariants.wrapIntoAndExpression
+			val xStsInvariants = lowlevelEnvironmentalInvariants.map[it.transformExpression]
+			val xStsEnvironmentalInvariant = xStsInvariants.wrapIntoAndExpression
 
-				val xStsAssumeEnvironmentalInvariant = xStsEnvironmentalInvariant.createAssumeAction
-				xStsAssumeEnvironmentalInvariant.addInvariantAnnotation
-				
-				val xStsMergedAction = xSts.mergedAction
-				xStsAssumeEnvironmentalInvariant.prependToAction(xStsMergedAction)
+			val xStsAssumeEnvironmentalInvariant = xStsEnvironmentalInvariant.createAssumeAction
+			xStsAssumeEnvironmentalInvariant.addEnvironmentalInvariantAnnotation
+			
+			val xStsMergedAction = xSts.mergedAction
+			xStsAssumeEnvironmentalInvariant.prependToAction(xStsMergedAction)
 		}
 	}
 	

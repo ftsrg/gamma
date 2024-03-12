@@ -43,8 +43,10 @@ import hu.bme.mit.gamma.xsts.model.AssignmentAction;
 import hu.bme.mit.gamma.xsts.model.AssumeAction;
 import hu.bme.mit.gamma.xsts.model.AtomicAction;
 import hu.bme.mit.gamma.xsts.model.EmptyAction;
+import hu.bme.mit.gamma.xsts.model.EnvironmentalInvariantAnnotation;
 import hu.bme.mit.gamma.xsts.model.HavocAction;
 import hu.bme.mit.gamma.xsts.model.IfAction;
+import hu.bme.mit.gamma.xsts.model.InternalInvariantAnnotation;
 import hu.bme.mit.gamma.xsts.model.InvariantAnnotation;
 import hu.bme.mit.gamma.xsts.model.LoopAction;
 import hu.bme.mit.gamma.xsts.model.MultiaryAction;
@@ -94,6 +96,14 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static boolean isInvariant(Action action) {
 		return hasAnnotation(action, InvariantAnnotation.class);
+	}
+	
+	public static boolean isEnvironmentalInvariant(Action action) {
+		return hasAnnotation(action, EnvironmentalInvariantAnnotation.class);
+	}
+	
+	public static boolean isInternalInvariant(Action action) {
+		return hasAnnotation(action, InternalInvariantAnnotation.class);
 	}
 	
 	public static List<VariableDeclaration> getClockVariables(XSTS xSts) {
