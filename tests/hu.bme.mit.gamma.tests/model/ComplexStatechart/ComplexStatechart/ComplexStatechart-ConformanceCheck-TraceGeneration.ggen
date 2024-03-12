@@ -1,0 +1,32 @@
+import "ComplexStatechart/BottomUpComplexStatechart.gcd"
+import "ComplexStatechart/TopDownComplexStatechart.gcd"
+
+analysis {
+	component : BottomUp
+	language : XSTS-UPPAAL
+	transition-coverage
+}
+
+verification {
+	file : "BottomUpComplexStatechart.xml"
+	property-file : ".BottomUpComplexStatechart.gpd"
+	language : XSTS-UPPAAL
+	back-annotate-to-original : false // As the model is a statechart 
+	optimize-traces : true // To avoid checking the same prefixes
+	trace-folder : "trace-conformance-src"
+}
+
+analysis {
+	component : TopDown
+	language : XSTS-UPPAAL
+	transition-coverage
+}
+
+verification {
+	file : "TopDownComplexStatechart.xml"
+	property-file : ".TopDownComplexStatechart.gpd"
+	language : XSTS-UPPAAL
+	back-annotate-to-original : false // As the model is a statechart  
+	optimize-traces : true // To avoid checking the same prefixes
+	trace-folder : "trace-conformance-src"
+}

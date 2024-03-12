@@ -8,7 +8,7 @@ statechart TopDown [
 ] {
 	region main {
 		initial EntryMain
-		state A {
+		state A_ {
 			region A {
 				initial EntryA
 				state AA
@@ -31,13 +31,13 @@ statechart TopDown [
 				state BB
 			}
 		}
-		state B
-		state C
+		state B_
+		state C_
 	}
 	
-	transition from EntryMain to A
-	transition from A to B when Execute.exec
-	transition from B to C when Execute.exec
+	transition from EntryMain to A_
+	transition from A_ to B_ when Execute.exec
+	transition from B_ to C_ when Execute.exec
 	
 	transition from EntryA to AA
 	transition from AA to AB when Execute.exec
