@@ -155,8 +155,10 @@ public class TraceReplayModelGenerationHandler extends TaskHandler {
 				// Removing environment instance
 				for (var reference : TraceModelDerivedFeatures
 						.getFirstComponentInstanceReferenceExpressions(generatedTrace)) {
-					if (environmentInstance.getName().equals(
-							reference.getComponentInstance().getName())) {
+					ComponentInstance componentInstance = reference.getComponentInstance();
+					String instanceName = componentInstance.getName()+ "_"; // "_" to handle name extension for async statecharts
+					String environmentName = environmentInstance.getName() + "_";
+					if (instanceName.startsWith(environmentName)) {
 						ecoreUtil.removeContainmentChainUntilType(reference, Step.class);
 					}
 				}
