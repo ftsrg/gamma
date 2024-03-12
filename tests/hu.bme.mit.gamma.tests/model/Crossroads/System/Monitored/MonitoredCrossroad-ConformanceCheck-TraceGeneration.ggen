@@ -1,0 +1,20 @@
+import "MonitoredCrossroad.gcd"
+
+analysis {
+	component : MonitoredCrossroad
+	language : XSTS-UPPAAL
+	interaction-coverage
+	constraint : {
+		minimum-orchestrating-period : 500 ms
+		maximum-orchestrating-period : 500 ms
+	}
+}
+
+verification {
+	file : "MonitoredCrossroad.xml"
+	property-file : ".MonitoredCrossroad.gpd"
+	language : XSTS-UPPAAL
+	back-annotate-to-original : true // Required 
+	optimize-traces : true // To avoid checking the same prefixes
+	trace-folder : "trace-conformance-src"
+}
