@@ -1,0 +1,16 @@
+import "AdapterSystem.gcd"
+
+analysis {
+	component : AdapterSystem
+	language : XSTS-UPPAAL
+	transition-coverage
+}
+
+verification {
+	file : "AdapterSystem.xml"
+	property-file : ".AdapterSystem.gpd"
+	language : XSTS-UPPAAL
+	back-annotate-to-original : true // Required 
+	optimize-traces : true // To avoid checking the same prefixes
+	trace-folder : "trace-conformance-src"
+}

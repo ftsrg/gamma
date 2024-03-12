@@ -7,3 +7,4 @@ include "/model/Crossroads/System/Monitored/MonitoredCrossroad-ConformanceCheck-
 include "/model/Crossroads/System/Cascade/Crossroad-ConformanceCheck-TraceGeneration.ggen"
 include "/model/Crossroads/System/ScheduledAsynchronous/Crossroad-ConformanceCheck-TraceGeneration.ggen"
 include "/model/EventPassing/System/AdapterSystem-ConformanceCheck-TraceGeneration.ggen"
+include "/model/INPE/System/Mission-ConformanceCheck-TraceGeneration.ggen"
