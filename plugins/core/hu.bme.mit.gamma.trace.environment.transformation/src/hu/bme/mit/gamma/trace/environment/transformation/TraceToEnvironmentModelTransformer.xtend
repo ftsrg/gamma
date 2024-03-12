@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.environment.transformation
 
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
@@ -44,7 +45,8 @@ class TraceToEnvironmentModelTransformer {
 	protected extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	
-	protected extension StatechartModelFactory statechartModelFactory = StatechartModelFactory.eINSTANCE
+	protected extension StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE
+	protected extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	protected extension TraceModelFactory traceFactory = TraceModelFactory.eINSTANCE
 	
 	new(String environmentModelName, boolean considerOutEvents,
@@ -84,6 +86,8 @@ class TraceToEnvironmentModelTransformer {
 		val lastState = actualTransition.sourceState as State
 		actualTransition.targetState.remove
 		actualTransition.remove
+		
+		statechart.addAsynchronousExecutionConstraints // Before the original environment creator part!
 		
 		lastState.createOriginalEnvironmentBehavior
 		
@@ -126,6 +130,24 @@ class TraceToEnvironmentModelTransformer {
 				}
 				//
 			}
+		}
+	}
+	
+	protected def addAsynchronousExecutionConstraints(StatechartDefinition statechart) {
+		if (isComponentSynchronous) {
+			return
+		}
+		
+		val executionEnforcerVariable = createBooleanTypeDefinition
+				.createVariableDeclaration("executionEnforcer", createTrueExpression)
+		statechart.variableDeclarations += executionEnforcerVariable
+		executionEnforcerVariable.addResettableAnnotation // So that a transition has to be fired in every cycle
+		
+		statechart.invariants += executionEnforcerVariable.createEqualityExpression(createTrueExpression)
+		
+		val transitions = statechart.transitions
+		for (transition : transitions) {
+			transition.effects += executionEnforcerVariable.createAssignment(createTrueExpression)
 		}
 	}
 	
