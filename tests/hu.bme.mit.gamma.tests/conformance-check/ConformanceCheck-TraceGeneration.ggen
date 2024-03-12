@@ -8,3 +8,5 @@ include "/model/Crossroads/System/Cascade/Crossroad-ConformanceCheck-TraceGenera
 include "/model/Crossroads/System/ScheduledAsynchronous/Crossroad-ConformanceCheck-TraceGeneration.ggen"
 include "/model/EventPassing/System/AdapterSystem-ConformanceCheck-TraceGeneration.ggen"
 include "/model/INPE/System/Mission-ConformanceCheck-TraceGeneration.ggen"
+// Only deviancy: nuXmv does not return variable values starting with '_'
+//include "/model/InternalEvents/System/InternalEvents-ConformanceCheck-TraceGeneration.ggen"

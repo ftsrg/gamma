@@ -1,0 +1,16 @@
+import "Mission.gcd"
+
+analysis {
+	component : Mission
+	language : XSTS-UPPAAL
+	transition-coverage
+}
+
+verification {
+	file : "Mission.xml"
+	property-file : ".Mission.gpd"
+	language : XSTS-UPPAAL
+	back-annotate-to-original : true // Required 
+	optimize-traces : true // To avoid checking the same prefixes
+	trace-folder : "trace-conformance-src"
+}
