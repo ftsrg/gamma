@@ -67,7 +67,9 @@ class TraceToEnvironmentModelTransformer {
 		validate
 		
 		val statechart = (isComponentSynchronous) ?
-				createSynchronousStatechartDefinition : createAsynchronousStatechartDefinition
+				createSynchronousStatechartDefinition :
+				createAsynchronousStatechartDefinition => [it.capacity = 1.toIntegerLiteral] // Should be enough
+				
 		statechart.name = environmentModelName
 		statechart.transitionPriority = TransitionPriority.ORDER_BASED
 		
@@ -103,7 +105,7 @@ class TraceToEnvironmentModelTransformer {
 	protected def transformPorts(StatechartDefinition environmentModel, Trace trace) {
 		val component = executionTrace.component
 		var hasAsnycInputEvent = false
-		for (componentPort : component.ports) {
+		for (componentPort : component.allPorts) {
 			// Environment ports: connected to the original ports
 			val environmentPort = componentPort.clone
 			val interfaceRealization = environmentPort.interfaceRealization

@@ -857,8 +857,10 @@ class ComponentTransformer {
 								xStsMasterSizeVariable, eventId.createEnumerationLiteralExpression)
 						// Resetting out event variable if it is not  led out to the system
 						// Duplicated for broadcast ports - not a problem, but could be refactored
-						val isSystemPort = systemPorts.contains(connectedAdapterPort.boundTopComponentPort)
-						if (!isSystemPort || connectedAdapterPort.internal /* Though, the code keeps the internal raisings */) {
+						val boundTopComponentPort = port.boundTopComponentPort
+						val isSystemPort = systemPorts.contains(boundTopComponentPort)
+						val isInternalPort = port.internal
+						if (!isSystemPort || isInternalPort /* Though, the code keeps the internal raisings */) {
 							// Variable can be reset even if the event is persistent as the in-pair will store it
 							outEventResetActions.actions += xStsOutEventVariable.createVariableResetAction
 						}
@@ -881,7 +883,7 @@ class ComponentTransformer {
 									xStsOutParameterVariables.map[it.createReferenceExpression])
 							// Resetting out parameter variables if they are not led out to the system
 							// Duplicated for broadcast ports - not a problem, but could be refactored
-							if (!isSystemPort || connectedAdapterPort.internal /* Though, the code keeps the internal raisings */) {
+							if (!isSystemPort || isInternalPort /* Though, the code keeps the internal raisings */) {
 								outEventResetActions.actions += xStsOutParameterVariables.map[it.createVariableResetAction]
 							}
 						}
@@ -1394,7 +1396,7 @@ class ComponentTransformer {
 			return true
 		}
 		checkState(systemPorts.containsNone(topPorts) || topPorts.forall[it.internal],
-			"All or none of the event references must be of system ports in " + queue.containingComponent.name)
+			"All or none of the event references must be of system ports in " + queue.containingComponent.name + "' queue " + queue.name)
 		return false
 	}
 	

@@ -53,7 +53,7 @@ class XstsOptimizer {
 		xSts.changeTransitions(xSts.transitions.optimizeTransitions)
 		
 		//
-		val optimizeInitVariableTransition = false
+		val optimizeInitVariableTransition = true
 		if (optimizeInitVariableTransition) {
 			var initVariableAction = xSts.variableInitializingTransition.action as SequentialAction // Original
 			val initVariableSubactions = initVariableAction.actions
