@@ -1,4 +1,9 @@
 include "/model/Clock/System/ClockSystem-ConformanceCheck-TraceGeneration.ggen"
 include "/model/COID/System/ANTIVAL_CHK_COID/ANTIVAL_CHK_COID_System-ConformanceCheck-TraceGeneration.ggen"
 include "/model/COID/System/ANTIVAL_CHK_COID_ADAPTER/AntivalenceChecker_System_Wrapper-ConformanceCheck-TraceGeneration.ggen"
-include "/model/ComplexStatechart/ComplexStatechart/ComplexStatechart-ConformanceCheck-TraceGeneration.ggen"
+// Only deviancy: nuXmv does not return variable values starting with '_'
+//include "/model/ComplexStatechart/ComplexStatechart/ComplexStatechart-ConformanceCheck-TraceGeneration.ggen"
+include "/model/Crossroads/System/Monitored/MonitoredCrossroad-ConformanceCheck-TraceGeneration.ggen"
+include "/model/Crossroads/System/Cascade/Crossroad-ConformanceCheck-TraceGeneration.ggen"
+include "/model/Crossroads/System/ScheduledAsynchronous/Crossroad-ConformanceCheck-TraceGeneration.ggen"
+include "/model/EventPassing/System/AdapterSystem-ConformanceCheck-TraceGeneration.ggen"

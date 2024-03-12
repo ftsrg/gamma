@@ -3,7 +3,7 @@ package controller
 import "Interfaces/Interfaces.gcd"
 import "Controller.gcd"
 
-adapter ControllerAdapter of component controller: Controller [
+adapter ControllerAdapter of component control : Controller [
 	port Execute : provides Executable
 ] {
 	when any / run
