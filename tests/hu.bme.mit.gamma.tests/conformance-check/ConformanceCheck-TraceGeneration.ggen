@@ -1,1 +1,3 @@
 include "/model/Clock/System/ClockSystem-ConformanceCheck-TraceGeneration.ggen"
+include "/model/COID/System/ANTIVAL_CHK_COID/ANTIVAL_CHK_COID_System-ConformanceCheck-TraceGeneration.ggen"
+include "/model/COID/System/ANTIVAL_CHK_COID_ADAPTER/AntivalenceChecker_System_Wrapper-ConformanceCheck-TraceGeneration.ggen"

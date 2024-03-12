@@ -1,0 +1,22 @@
+import "ANTIVAL_CHK_COID_System.gcd"
+
+analysis {
+	component : AntivalenceChecker_System
+	language : XSTS-UPPAAL
+	transition-coverage {
+		include : [ coid ]
+	}
+	constraint : {
+		minimum-orchestrating-period : 495 ms
+		maximum-orchestrating-period : 495 ms
+	}
+}
+
+verification {
+	file : "ANTIVAL_CHK_COID_System.xml"
+	property-file : ".ANTIVAL_CHK_COID_System.gpd"
+	language : XSTS-UPPAAL
+	back-annotate-to-original : true // Required 
+	optimize-traces : true // To avoid checking the same prefixes
+	trace-folder : "trace-conformance-src"
+}
