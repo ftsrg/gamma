@@ -102,7 +102,11 @@ public class TraceReplayModelGenerationHandler extends TaskHandler {
 			
 			// Serialization
 			serializer.saveModel(ecoreUtil.getRoot(environmentModel), targetFolderUri, environmentModelName + ".gcd");
-			serializer.saveModel(ecoreUtil.getRoot(systemModel), targetFolderUri, systemName + ".gcd");
+			try {
+				serializer.saveModel(ecoreUtil.getRoot(systemModel), targetFolderUri, systemName + ".gcd");
+			} catch (RuntimeException e) { // Potentially models with the same ID
+				serializer.saveModel(ecoreUtil.getRoot(systemModel), targetFolderUri, systemName + ".gsm");
+			}
 			serializer.saveModel(ecoreUtil.getRoot(propertyPackage), targetFolderUri, systemName + ".gpd");
 			
 			//

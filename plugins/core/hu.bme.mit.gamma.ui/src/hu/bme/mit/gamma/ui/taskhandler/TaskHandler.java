@@ -22,7 +22,6 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 
-import hu.bme.mit.gamma.dialog.DialogUtil;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.genmodel.model.AbstractCodeGeneration;
@@ -199,12 +198,12 @@ public abstract class TaskHandler {
 					serializeProperty(rootElem, parentFolder, fileName);
 					return;
 				}
-			} catch (Exception e) {
-				e.printStackTrace();
-				DialogUtil.showErrorWithStackTrace("Model cannot be serialized", e);
+			} catch (RuntimeException e) {
+				throw e;
+//				DialogUtil.showErrorWithStackTrace("Model cannot be serialized", e);
 			}
 			new File(parentFolder + File.separator + fileName).delete();
-			// Saving like an EMF model
+			// Saving like an EMF model - not working: for this, we would need the corresponding file extension
 			ecoreUtil.normalSave(rootElem, parentFolder, fileName);
 		}
 		
