@@ -142,7 +142,7 @@ class StatechartToLowlevelTransformer {
 			return #[lowlevelEventOut]
 		}
 		else {
-			// In-out events
+			// In-out and internal events
 			// At low-level, INTERNAL events are transformed as INOUT events
 			checkState(gammaDirection == EventDirection.INOUT ||
 				gammaDirection == EventDirection.INTERNAL)
@@ -165,6 +165,9 @@ class StatechartToLowlevelTransformer {
 				it.name = "isRaised"
 				it.type = createBooleanTypeDefinition
 			]
+			if (direction == EventDirection.IN && gammaPort.internal) { // Internal event
+				it.isRaised.addInternalAnnotation
+			}
 		]
 		trace.put(gammaPort, gammaEvent, lowlevelEvent)
 		// Transforming the parameters

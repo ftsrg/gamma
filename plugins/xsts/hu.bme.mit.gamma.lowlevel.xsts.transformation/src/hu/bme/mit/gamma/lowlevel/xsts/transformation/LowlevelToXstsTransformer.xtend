@@ -208,7 +208,8 @@ class LowlevelToXstsTransformer {
 		xSts.fillNullTransitions
 		xSts.optimizeXSts // Needed to simplify the actions
 		if (optimize) {
-			xSts.removeReadOnlyVariables // Affects parameter and input variables, too
+			xSts.removeReadOnlyVariables(true) // Affects parameter and input variables, too
+			// Not internal variables at this point because they are handled later (internal events)
 		}
 		
 		handleStateInvariants
@@ -294,13 +295,15 @@ class LowlevelToXstsTransformer {
 						it.name = lowlevelEvent.name.eventName
 						it.type = createBooleanTypeDefinition // isRaised bool variable
 					]
-					xSts.variableDeclarations += xStsEventVariable // Target model modification
-					val eventVariableGroup = if (lowlevelEvent.direction == EventDirection.IN) {
-						xSts.inEventVariableGroup
-					} else {
-						xSts.outEventVariableGroup
+					if (lowlevelEvent.isRaised.internal) {
+						xStsEventVariable.addInternalAnnotation
 					}
+					xSts.variableDeclarations += xStsEventVariable // Target model modification
+					
+					val eventVariableGroup = (lowlevelEvent.direction == EventDirection.IN) ?
+							xSts.inEventVariableGroup : xSts.outEventVariableGroup
 					eventVariableGroup.variables += xStsEventVariable // Variable group modification
+					
 					trace.put(lowlevelEvent, xStsEventVariable) // Tracing event
 					trace.put(lowlevelEvent.isRaised, xStsEventVariable) // Tracing the contained isRaisedVariable
 					// Parameters 
@@ -310,22 +313,20 @@ class LowlevelToXstsTransformer {
 							it.name = lowlevelEventParameter.name.variableName
 							it.type = lowlevelEventParameter.type.transformType
 						]
-						xStsEventParameterVariables += xStsEventParameterVariable
-						val eventParameterVariableGroup = if (lowlevelEvent.direction == EventDirection.IN) {
-							xSts.inEventParameterVariableGroup
-						} else {
-							xSts.outEventParameterVariableGroup
-						}
 						xSts.variableDeclarations += xStsEventParameterVariable // Target model modification
+						xStsEventParameterVariables += xStsEventParameterVariable
+						
+						val eventParameterVariableGroup = (lowlevelEvent.direction == EventDirection.IN) ?
+								xSts.inEventParameterVariableGroup : xSts.outEventParameterVariableGroup
+						eventParameterVariableGroup.variables += xStsEventParameterVariable
 						if (lowlevelEvent.persistency == Persistency.TRANSIENT) {
 							// Event is transient, its parameters are marked environment-resettable variables
 							xStsEventParameterVariable.addEnvironmentResettableAnnotation
 						}
-						if (lowlevelEventParameter.isInternal) {
+						if (lowlevelEventParameter.internal) {
 							// Variable (parameter) must not be set from the environment, only other components
 							xStsEventParameterVariable.addInternalAnnotation
 						}
-						eventParameterVariableGroup.variables += xStsEventParameterVariable
 						trace.put(lowlevelEventParameter, xStsEventParameterVariable) // Tracing
 					}
 					// In-XSTS-model tracing

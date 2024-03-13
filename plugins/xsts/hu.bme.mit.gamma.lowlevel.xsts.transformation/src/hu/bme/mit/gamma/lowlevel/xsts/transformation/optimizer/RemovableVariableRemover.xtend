@@ -51,8 +51,12 @@ class RemovableVariableRemover {
 	}
 	
 	def void removeReadOnlyVariables(XSTS xSts) {
+		removeReadOnlyVariables(xSts, false)
+	}
+	
+	def void removeReadOnlyVariables(XSTS xSts, boolean keepInternalVariables) {
 		val readOnlyVariables = xSts.readOnlyVariables
-				.filter[it.global].toSet
+				.filter[it.global && (!keepInternalVariables || !it.internal)].toSet
 		// Local variables cannot be optimized like this: e.g., local a : integer = b; b := x; ... (a cannot be substituted by b anymore)
 		if (!readOnlyVariables.empty) {
 			val references = xSts.getAllContentsOfType(DirectReferenceExpression)
