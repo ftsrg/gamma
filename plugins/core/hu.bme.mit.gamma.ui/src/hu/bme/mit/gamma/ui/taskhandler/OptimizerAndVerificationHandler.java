@@ -288,7 +288,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			verificationHandler.optimizeTraces();
 		}
     
-		ProgrammingLanguage programmingLanguage = verification.getProgrammingLanguages().get(0);
+		ProgrammingLanguage programmingLanguage = verificationHandler.getProgrammingLanguage();
 		if (serializeTraces) {
 			verificationHandler.serializeTraces(programmingLanguage); // Serialization in one pass
 		}

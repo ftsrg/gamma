@@ -264,17 +264,19 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	//
 	
 	public static boolean areAssertsEquivalent(ExecutionTrace lhs, ExecutionTrace rhs) {
-		return areAssertsEquivalent(lhs, rhs, true);
+		return areAssertsEquivalent(lhs, rhs, true, true);
 	}
 	
-	public static boolean areAssertsEquivalent(ExecutionTrace lhs, ExecutionTrace rhs, boolean considerInstanceNames) {
+	public static boolean areAssertsEquivalent(ExecutionTrace lhs, ExecutionTrace rhs,
+				boolean considerInstanceNames, boolean considerInjectedVariables) {
 		List<Step> lhsSteps = lhs.getSteps();
 		List<Step> rhsSteps = rhs.getSteps();
 		
-		return areAssertsEquivalent(lhsSteps, rhsSteps, considerInstanceNames);
+		return areAssertsEquivalent(lhsSteps, rhsSteps, considerInstanceNames, considerInjectedVariables);
 	}
 	
-	public static boolean areAssertsEquivalent(List<Step> lhs, List<Step> rhs, boolean considerInstanceNames) {
+	public static boolean areAssertsEquivalent(List<Step> lhs, List<Step> rhs,
+				boolean considerInstanceNames, boolean considerInjectedVariables) {
 		int size = lhs.size();
 		if (size != rhs.size()) {
 			return false;
@@ -284,7 +286,7 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 			Step lhsStep = lhs.get(i);
 			Step rhsStep = rhs.get(i);
 			
-			if (!areAssertsEquivalent(lhsStep, rhsStep, considerInstanceNames)) {
+			if (!areAssertsEquivalent(lhsStep, rhsStep, considerInstanceNames, considerInjectedVariables)) {
 				return false;
 			}
 		}
@@ -292,9 +294,18 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return true;
 	}
 	
-	public static boolean areAssertsEquivalent(Step lhs, Step rhs, boolean considerInstanceNames) {
-		List<Expression> lhsAsserts = lhs.getAsserts();
-		List<Expression> rhsAsserts = rhs.getAsserts();
+	public static boolean areAssertsEquivalent(Step lhs, Step rhs,
+				boolean considerInstanceNames, boolean considerInjectedVariables) {
+		List<Expression> lhsAsserts = new ArrayList<Expression>(lhs.getAsserts());
+		List<Expression> rhsAsserts = new ArrayList<Expression>(rhs.getAsserts());
+		
+		if (!considerInjectedVariables) {
+			lhsAsserts.removeIf(it -> ecoreUtil.getSelfAndAllContentsOfType(it,	ComponentInstanceVariableReferenceExpression.class)
+					.stream().anyMatch(ref -> isInjected(ref.getVariableDeclaration())));
+			rhsAsserts.removeIf(it -> ecoreUtil.getSelfAndAllContentsOfType(it,	ComponentInstanceVariableReferenceExpression.class)
+					.stream().anyMatch(ref -> isInjected(ref.getVariableDeclaration())));
+		}
+		
 		int size = lhsAsserts.size();
 		if (size != rhsAsserts.size()) {
 			return false;

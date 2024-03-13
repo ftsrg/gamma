@@ -19,13 +19,13 @@ import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.ComponentReference;
 import hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint;
-import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
 import hu.bme.mit.gamma.genmodel.model.TraceReplayModelGeneration;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
@@ -101,13 +101,15 @@ public class TraceReplayModelGenerationHandler extends TaskHandler {
 					systemModel, environmentInstance, lastState);
 			
 			// Serialization
-			serializer.saveModel(ecoreUtil.getRoot(environmentModel), targetFolderUri, environmentModelName + ".gcd");
+			EObject environmentModelPackage = ecoreUtil.getRoot(environmentModel);
+			serializer.saveModel(environmentModelPackage, targetFolderUri, environmentModelName + ".gcd");
+			EObject systemModelPackage = ecoreUtil.getRoot(systemModel);
 			try {
-				serializer.saveModel(ecoreUtil.getRoot(systemModel), targetFolderUri, systemName + ".gcd");
+				serializer.saveModel(systemModelPackage, targetFolderUri, systemName + ".gcd");
 			} catch (RuntimeException e) { // Potentially models with the same ID
-				serializer.saveModel(ecoreUtil.getRoot(systemModel), targetFolderUri, systemName + ".gsm");
+				serializer.saveModel(systemModelPackage, targetFolderUri, systemName + ".gsm");
 			}
-			serializer.saveModel(ecoreUtil.getRoot(propertyPackage), targetFolderUri, systemName + ".gpd");
+			serializer.saveModel(propertyPackage, targetFolderUri, systemName + ".gpd");
 			
 			//
 			Collection<ExecutionTrace> generatedTraces = new ArrayList<ExecutionTrace>();
@@ -148,7 +150,7 @@ public class TraceReplayModelGenerationHandler extends TaskHandler {
 				boolean optimizeModel = false; // Due to the exact assert equivalence
 				AnalysisModelTransformationAndVerificationHandler handler =
 						new AnalysisModelTransformationAndVerificationHandler(file, optimizeModel,
-								false, true, ProgrammingLanguage.JAVA);
+								false, true, null);
 				handler.execute(transformation);
 				
 				generatedTraces.addAll(
@@ -168,7 +170,7 @@ public class TraceReplayModelGenerationHandler extends TaskHandler {
 				}
 				//
 				boolean areAssertsEquivalent = TraceModelDerivedFeatures.areAssertsEquivalent(
-						executionTrace, generatedTrace, false /* Not back-annotated to original */);
+						executionTrace, generatedTrace, false /* Not back-annotated to original */, false /* To counter flattened vs. original deviances */);
 				if (!areAssertsEquivalent) {
 					logger.warning("A generated trace is not equivalent");
 //					throw new IllegalStateException("A generated trace is not equivalent");

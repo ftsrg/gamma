@@ -530,6 +530,10 @@ public class VerificationHandler extends TaskHandler {
 		}
 	}
 	
+	public ProgrammingLanguage getProgrammingLanguage() {
+		return this.programmingLanguage;
+	}
+	
 	//
 	
 	public static class ExecutionTraceSerializer {
