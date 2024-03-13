@@ -70,7 +70,7 @@ class ComponentTransformer {
 	protected final GammaToLowlevelTransformer gammaToLowlevelTransformer
 	protected final MessageQueueTraceability queueTraceability
 	// Traceability
-	protected final Traceability traceability
+	protected XSTS xSts
 	// Transformation settings
 	protected final boolean transformOrthogonalActions
 	protected final boolean optimize
@@ -104,7 +104,6 @@ class ComponentTransformer {
 		this.optimizeEnvironmentalMessageQueues = optimizeEnvironmentalMessageQueues
 		this.transitionMerging = transitionMerging
 		this.queueTraceability = new MessageQueueTraceability
-		this.traceability = new Traceability
 	}
 	
 	def dispatch XSTS transform(Component component, Package lowlevelPackage) {
@@ -121,7 +120,7 @@ class ComponentTransformer {
 		
 		val name = component.name
 		val xSts = name.createXsts
-		traceability.XSts = xSts
+		this.xSts = xSts
 		
 		val eventReferenceMapper = new ReferenceToXstsVariableMapper(xSts)
 		val valueDeclarationTransformer = new ValueDeclarationTransformer
@@ -974,7 +973,7 @@ class ComponentTransformer {
 			return
 		}
 		
-		val XSTS xSts = traceability.XSts
+		val xSts = this.xSts
 		
 		val instanceEndcodingVariable = xSts.getOrCreateInstanceEndcodingVariable
 		
@@ -1057,15 +1056,13 @@ class ComponentTransformer {
 			xSts.customizeDeclarationNames(wrappedInstance)
 		}
 		
-		// Resetting out and events manually as a "schedule" call in the code does that
+		// Resetting out, in and internal events manually as a "schedule" call in the code does that
 		xSts.resetOutEventsBeforeMergedAction(wrappedType)
 		xSts.resetInEventsAfterMergedAction(wrappedType)
 		xSts.addInternalEventResetingActionsInMergedAction(wrappedType)
 		//
 		
-		// Internal event handling: only remove - event dispatch will tend to the addition
-		xSts.removeInternalEventHandlingActions(component, traceability)
-		//
+		// Internal event handling not required - event dispatch will tend to the addition
 		
 		if (isTopInPackage) {
 			val inEventAction = xSts.inEventTransition
@@ -1165,7 +1162,7 @@ class ComponentTransformer {
 			
 			// Internal event handling here as EventReferenceHandler cannot be used without customizeDeclarationNames
 			if (subcomponentType.statechart) {
-				newXSts.addInternalEventHandlingActions(subcomponentType, traceability)
+				newXSts.addInternalEventHandlingActions(subcomponentType)
 			}
 			//
 			
@@ -1295,8 +1292,8 @@ class ComponentTransformer {
 		}
 		
 		// After in event optimization
-		logger.info( "Readjusting internal event handlings in " + name)
-		xSts.replaceInternalEventHandlingActions(component, traceability)
+		logger.info( "Adding internal event handlings in " + name)
+		xSts.addInternalEventHandlingActions(component)
 		
 		return xSts
 	}

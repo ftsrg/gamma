@@ -73,6 +73,8 @@ class TraceReplayModelGenerator {
 		
 		val isEveryOutPortBroadcast = systemModel.ports
 				.forall[it.broadcastOrBroadcastMatcher]
+		val considerOutEvents = this.considerOutEvents &&
+				systemModel.ports.reject[it.internal].exists[it.hasOutputEvents] // Only if there exists a valid out-event
 		if (considerOutEvents) {
 			if (!isEveryOutPortBroadcast) {
 				// Special scheduling for not broadcast port handling
@@ -144,8 +146,10 @@ class TraceReplayModelGenerator {
 			val componentPort = portPair.key
 			val environmentPort = portPair.value
 			
-			systemModel.channels += connectPortsViaChannels(
-				componentInstance, componentPort, environmentInstance, environmentPort)
+			if (!componentPort.internal) { // Not connecting internal ports
+				systemModel.channels += connectPortsViaChannels(
+						componentInstance, componentPort, environmentInstance, environmentPort)
+			}
 		}
 		
 		// Wrapping the resulting packages

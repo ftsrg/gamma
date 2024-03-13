@@ -1886,6 +1886,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return simplePorts;
 	}
 	
+	public static boolean isTopComponentPort(Port port) {
+		Port boundTopComponentPort = getBoundTopComponentPort(port);
+		return boundTopComponentPort == port;
+	}
+	
 	public static Port getBoundTopComponentPort(Port port) {
 		Package _package = getContainingPackage(port);
 		List<PortBinding> portBindings = ecoreUtil.getAllContentsOfType(_package, PortBinding.class);
@@ -2192,11 +2197,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
     }
 	
 	public static int getLevel(StateNode stateNode) {
-		if (isTopRegion(getParentRegion(stateNode))) {
+		if (isTopRegion(
+				getParentRegion(stateNode))) {
 			return 1;
 		}
 		else {
-			return getLevel(getParentState(stateNode)) + 1;
+			return getLevel(
+					getParentState(stateNode)) + 1;
 		}
 	}
 	
@@ -3569,8 +3576,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static boolean isTop(Component component) {
 		try {
-			getParentComponent(component);
-			return false;
+			Component parent = getParentComponent(component);
+			return parent == null;
 		} catch (IllegalArgumentException e) {
 			return true;
 		}

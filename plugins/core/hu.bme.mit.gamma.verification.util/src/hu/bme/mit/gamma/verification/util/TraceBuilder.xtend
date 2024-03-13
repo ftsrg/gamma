@@ -77,7 +77,7 @@ class TraceBuilder {
 			val outputAsserts = step.outEvents
 			
 			for (outputPort : outputPorts) {
-				for (outputEvent : outputPort.outputEvents) {
+				for (outputEvent : outputPort.outputEvents.reject[it.internal]) { // Not for internal events
 					val isRaised = outputAsserts.exists[it.port == outputPort && it.event == outputEvent]
 					if (!isRaised) {
 						val raiseEventAct = outputPort.createRaiseEventAct(outputEvent)
@@ -97,7 +97,7 @@ class TraceBuilder {
 		for (raiseEventAct : raiseEventActs) {
 			val event = raiseEventAct.event
 			if (event.internal) {
-				raiseEventAct.remove
+				raiseEventAct.removeContainmentChainUntilType(Step)
 			}
 		}
 	}
