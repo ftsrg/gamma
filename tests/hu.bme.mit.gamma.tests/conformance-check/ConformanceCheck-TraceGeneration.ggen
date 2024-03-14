@@ -8,3 +8,4 @@ include "/model/Crossroads/System/ScheduledAsynchronous/Crossroad-ConformanceChe
 include "/model/EventPassing/System/AdapterSystem-ConformanceCheck-TraceGeneration.ggen"
 include "/model/INPE/System/Mission-ConformanceCheck-TraceGeneration.ggen"
 include "/model/InternalEvents/System/InternalEvents-ConformanceCheck-TraceGeneration.ggen"
+include "/model/LoopAction/LoopAction-ConformanceCheck-TraceGeneration.ggen"
