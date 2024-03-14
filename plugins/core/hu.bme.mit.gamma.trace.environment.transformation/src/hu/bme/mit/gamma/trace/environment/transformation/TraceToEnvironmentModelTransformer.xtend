@@ -32,7 +32,7 @@ class TraceToEnvironmentModelTransformer {
 	protected final extension Namings namings
 	
 	protected final String environmentModelName
-	protected final boolean considerOutEvents
+	protected final boolean handleOutEventPassing
 	protected final ExecutionTrace executionTrace
 	protected final EnvironmentModel environmentModel
 	protected final Trace trace
@@ -49,10 +49,10 @@ class TraceToEnvironmentModelTransformer {
 	protected extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	protected extension TraceModelFactory traceFactory = TraceModelFactory.eINSTANCE
 	
-	new(String environmentModelName, boolean considerOutEvents,
+	new(String environmentModelName, boolean handleOutEventPassing,
 			ExecutionTrace executionTrace, EnvironmentModel environmentModel) {
 		this.environmentModelName = environmentModelName
-		this.considerOutEvents = considerOutEvents
+		this.handleOutEventPassing = handleOutEventPassing
 		this.executionTrace = executionTrace
 		this.isComponentSynchronous = executionTrace.component.synchronous
 		this.environmentModel = environmentModel
@@ -60,7 +60,7 @@ class TraceToEnvironmentModelTransformer {
 		this.trace = new Trace
 		this.triggerTransformer = new TriggerTransformer(this.trace, this.namings)
 		this.originalEnvironmentBehaviorCreator = new OriginalEnvironmentBehaviorCreator(
-			this.trace, this.environmentModel, this.namings, this.considerOutEvents)
+				this.trace, this.environmentModel, this.namings, this.handleOutEventPassing)
 	}
 	
 	def execute() {

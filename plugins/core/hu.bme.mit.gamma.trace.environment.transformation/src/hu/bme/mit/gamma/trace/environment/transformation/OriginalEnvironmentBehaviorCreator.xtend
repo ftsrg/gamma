@@ -35,7 +35,7 @@ class OriginalEnvironmentBehaviorCreator {
 	
 	protected final Trace trace
 	protected final EnvironmentModel environmentModel
-	protected final boolean considerOutEvents
+	protected final boolean handleOutEventPassing
 	
 	protected final extension Namings namings
 	
@@ -47,31 +47,29 @@ class OriginalEnvironmentBehaviorCreator {
 	protected extension StatechartModelFactory statechartModelFactory = StatechartModelFactory.eINSTANCE
 	protected extension InterfaceModelFactory interfaceModelFactory = InterfaceModelFactory.eINSTANCE
 	
-	new(Trace trace, EnvironmentModel environmentModel, Namings namings, boolean considerOutEvents) {
+	new(Trace trace, EnvironmentModel environmentModel, Namings namings, boolean handleOutEventPassing) {
 		this.trace = trace
 		this.environmentModel = environmentModel
-		this.considerOutEvents = considerOutEvents
+		this.handleOutEventPassing = handleOutEventPassing
 		this.namings = namings
 	}
 	
 	def createOriginalEnvironmentBehavior(State lastState) {
-		val envrionmentModel = lastState.containingStatechart
-		if (environmentModel === EnvironmentModel.SYNCHRONOUS) {
+		if (environmentModel == EnvironmentModel.SYNCHRONOUS) {
 			lastState.createSynchronousEnvironmentBehavior
 		}
-		else if (environmentModel === EnvironmentModel.ASYNCHRONOUS) {
+		else if (environmentModel == EnvironmentModel.ASYNCHRONOUS) {
 			lastState.createAsynchronousEnvironmentBehavior
 		}
-		val considerOutEvents = this.considerOutEvents &&
-				envrionmentModel.ports.reject[it.internal].exists[it.hasOutputEvents] // Only if there exists a valid out-event
 		// No behavior in the case of OFF
-		if (considerOutEvents) {
+		if (handleOutEventPassing) {
+			val environmentModel = lastState.containingStatechart
 			val inOutCycleVariable = createBooleanTypeDefinition.createVariableDeclaration(
 				inOutCycleVariableName, createFalseExpression /* false- check initial execution
 				 * of the composite component to handle initial raises*/)
-			envrionmentModel.variableDeclarations += inOutCycleVariable
+			environmentModel.variableDeclarations += inOutCycleVariable
 			
-			val stateTransitions = envrionmentModel.transitions.filter[it.sourceState instanceof State]
+			val stateTransitions = environmentModel.transitions.filter[it.sourceState instanceof State]
 			for (stateTransition : stateTransitions) {
 				val source = stateTransition.sourceState
 				val variableReference = inOutCycleVariable.createReferenceExpression
@@ -84,7 +82,7 @@ class OriginalEnvironmentBehaviorCreator {
 			}
 			
 			// New region for setting the inOutCycleVariable
-			val inOutCycleState = envrionmentModel.createRegionWithState(inOutCycleRegionName,
+			val inOutCycleState = environmentModel.createRegionWithState(inOutCycleRegionName,
 					inOutCycleInitialStateName, inOutCycleStateName)
 			val inOutCycleTransition = inOutCycleState.createTransition(inOutCycleState)
 			inOutCycleTransition.trigger = createOnCycleTrigger
@@ -102,9 +100,7 @@ class OriginalEnvironmentBehaviorCreator {
 			lastState.removeRegions
 		}
 		
-		val considerOutEvents = this.considerOutEvents &&
-				lastState.containingStatechart.ports.reject[it.internal].exists[it.hasOutputEvents] // Only if there exists a valid out-event
-		if (considerOutEvents) {
+		if (handleOutEventPassing) {
 			val envrionmentModel = lastState.containingStatechart
 			val environmentProxyPortPairs = proxyEnvironmentPortPairs.invert.toSet
 			val lastOutState = envrionmentModel.createSynchronousEnvironmentBehavior(environmentProxyPortPairs,
@@ -198,9 +194,7 @@ class OriginalEnvironmentBehaviorCreator {
 			lastState.removeRegions
 		}
 		
-		val considerOutEvents = this.considerOutEvents &&
-				lastState.containingStatechart.ports.reject[it.internal].exists[it.hasOutputEvents] // Only if there exists a valid out-event
-		if (considerOutEvents) {
+		if (handleOutEventPassing) {
 			val envrionmentModel = lastState.containingStatechart
 			val environmentProxyPortPairs = proxyEnvironmentPortPairs.invert.toSet
 			val lastOutState = envrionmentModel.createAsynchronousEnvironmentBehavior(environmentProxyPortPairs,

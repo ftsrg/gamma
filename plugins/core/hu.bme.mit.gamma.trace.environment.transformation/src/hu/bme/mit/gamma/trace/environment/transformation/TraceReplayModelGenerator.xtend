@@ -32,6 +32,7 @@ class TraceReplayModelGenerator {
 	protected final String envrionmentModelName
 	protected final EnvironmentModel environmentModel
 	protected final boolean considerOutEvents
+	protected final boolean handleOutEventPassing
 	
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
@@ -44,6 +45,10 @@ class TraceReplayModelGenerator {
 		this.envrionmentModelName = envrionmentModelName
 		this.environmentModel = environmentModel
 		this.considerOutEvents = considerOutEvents
+		this.handleOutEventPassing = considerOutEvents &&
+				testModel.ports.reject[it.internal]
+					.reject[it.broadcast]
+					.exists[it.hasOutputEvents] // Only if there is a valid out-event on a non-broadcast port
 	}
 	
 	/**
@@ -52,7 +57,7 @@ class TraceReplayModelGenerator {
 	 */
 	def execute() {
 		val transformer = new TraceToEnvironmentModelTransformer(envrionmentModelName,
-				considerOutEvents, executionTrace, environmentModel)
+				handleOutEventPassing, executionTrace, environmentModel)
 		val result = transformer.execute
 		
 		val environmentModel = result.statechart
@@ -71,12 +76,8 @@ class TraceReplayModelGenerator {
 		environmentInstance.name = environmentInstance.name.toFirstLower
 		systemModel.prependComponentInstance(environmentInstance)
 		
-		val isEveryOutPortBroadcast = systemModel.ports
-				.forall[it.broadcastOrBroadcastMatcher]
-		val considerOutEvents = this.considerOutEvents &&
-				systemModel.ports.reject[it.internal].exists[it.hasOutputEvents] // Only if there exists a valid out-event
 		if (considerOutEvents) {
-			if (!isEveryOutPortBroadcast) {
+			if (handleOutEventPassing) {
 				// Special scheduling for not broadcast port handling
 				systemModel.initialExecutionList += environmentInstance.createInstanceReference // Initial out-raises
 				
