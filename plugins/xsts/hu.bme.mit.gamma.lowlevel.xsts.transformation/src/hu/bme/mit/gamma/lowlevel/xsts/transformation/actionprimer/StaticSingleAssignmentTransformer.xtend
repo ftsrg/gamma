@@ -69,7 +69,27 @@ class StaticSingleAssignmentTransformer {
 	}
 	
 	def execute() {
+		preprocessArrayAssignments
 		createStaticSingleAssignmentForm
+	}
+	
+	// Needed to support array assignments in SSA form (see 'primeLhs(ReferenceExpression lhs)')
+	
+	protected def preprocessArrayAssignments() {
+		val arrayAssignments = xSts.getSelfAndAllContentsOfType(AssignmentAction)
+				.filter[it.lhs.declaration.array].toList
+		var AssignmentAction previousAction = null
+		for (arrayAssignment : arrayAssignments) {
+			if (arrayAssignment.first ||
+					arrayAssignment.previous !== previousAction) {
+				val array = arrayAssignment.lhs.declaration as VariableDeclaration
+				val arraySaveAction = array.createAssignmentAction(array)
+				
+				arraySaveAction.prependToAction(arrayAssignment)
+			}
+		
+			previousAction = arrayAssignment
+		}
 	}
 	
 	// SSE first pass
