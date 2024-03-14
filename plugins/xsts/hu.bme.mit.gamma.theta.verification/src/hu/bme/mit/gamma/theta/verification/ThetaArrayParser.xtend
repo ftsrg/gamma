@@ -46,6 +46,13 @@ class ThetaArrayParser implements XstsArrayParser {
 					}
 				}
 			}
+			// Parsing default values if there are no other values in the array
+			if (values.empty && unwrapped.startsWith("(default")) {
+				val i = value.lastIndexOf("default")
+				val defaultValue = value.substring(i + "default".length + 1 /* Space */)
+				values += new IndexHierarchy(0) -> defaultValue
+			}
+			
 			return values
 		}
 		else {
