@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -55,15 +55,17 @@ class OriginalEnvironmentBehaviorCreator {
 	}
 	
 	def createOriginalEnvironmentBehavior(State lastState) {
+		val envrionmentModel = lastState.containingStatechart
 		if (environmentModel === EnvironmentModel.SYNCHRONOUS) {
 			lastState.createSynchronousEnvironmentBehavior
 		}
 		else if (environmentModel === EnvironmentModel.ASYNCHRONOUS) {
 			lastState.createAsynchronousEnvironmentBehavior
 		}
+		val considerOutEvents = this.considerOutEvents &&
+				envrionmentModel.ports.reject[it.internal].exists[it.hasOutputEvents] // Only if there exists a valid out-event
 		// No behavior in the case of OFF
 		if (considerOutEvents) {
-			val envrionmentModel = lastState.containingStatechart
 			val inOutCycleVariable = createBooleanTypeDefinition.createVariableDeclaration(
 				inOutCycleVariableName, createFalseExpression /* false- check initial execution
 				 * of the composite component to handle initial raises*/)
@@ -100,6 +102,8 @@ class OriginalEnvironmentBehaviorCreator {
 			lastState.removeRegions
 		}
 		
+		val considerOutEvents = this.considerOutEvents &&
+				lastState.containingStatechart.ports.reject[it.internal].exists[it.hasOutputEvents] // Only if there exists a valid out-event
 		if (considerOutEvents) {
 			val envrionmentModel = lastState.containingStatechart
 			val environmentProxyPortPairs = proxyEnvironmentPortPairs.invert.toSet
@@ -194,6 +198,8 @@ class OriginalEnvironmentBehaviorCreator {
 			lastState.removeRegions
 		}
 		
+		val considerOutEvents = this.considerOutEvents &&
+				lastState.containingStatechart.ports.reject[it.internal].exists[it.hasOutputEvents] // Only if there exists a valid out-event
 		if (considerOutEvents) {
 			val envrionmentModel = lastState.containingStatechart
 			val environmentProxyPortPairs = proxyEnvironmentPortPairs.invert.toSet
