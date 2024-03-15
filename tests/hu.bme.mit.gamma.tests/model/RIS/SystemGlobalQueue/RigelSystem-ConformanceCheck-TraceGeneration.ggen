@@ -1,0 +1,22 @@
+import "RigelSystem.gcd"
+
+analysis {
+	component : RigelSystem(1, /*2*/ -1)
+	language : SMV
+	constraint : {
+		top : {
+			minimum-orchestrating-period : 1 ms // Must match the first argument of the adapter
+			maximum-orchestrating-period : 1 ms
+		}
+	}
+	state-coverage
+}
+
+verification {
+	language : nuXmv // No optimization - probably only nuXmv can handle this model
+	file : "RigelSystem.smv"
+	property-file : ".RigelSystem.gpd"
+	back-annotate-to-original : true // Required 
+	optimize-traces : true // To avoid checking the same prefixes
+	trace-folder : "trace-conformance-src"
+}

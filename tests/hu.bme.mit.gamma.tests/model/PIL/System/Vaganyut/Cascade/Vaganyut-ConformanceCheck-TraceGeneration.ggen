@@ -1,0 +1,15 @@
+import "Vaganyut.gcd"
+
+analysis {
+	component : Vaganyut
+	language : Theta
+}
+
+verification {
+	language : Theta
+	file : "Vaganyut.xsts"
+	query-file : "CustomQueries.prop"
+	back-annotate-to-original : true // Required 
+	optimize-traces : true // To avoid checking the same prefixes
+	trace-folder : "trace-conformance-src"
+}

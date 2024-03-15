@@ -1,0 +1,60 @@
+import "Oldalvedelem_a.gcd"
+import "Oldalvedelem_b.gcd"
+import "Oldalvedelem_c.gcd"
+import "Oldalvedelem_d.gcd"
+
+analysis {
+	component : Oldalvedelem_a
+	language : Theta
+}
+
+verification {
+	language : Theta
+	file : "Oldalvedelem_a.xsts"
+	query-file : "CustomQueriesOldalvedelem_a.prop"
+	back-annotate-to-original : true // Required 
+	optimize-traces : true // To avoid checking the same prefixes
+	trace-folder : "trace-conformance-src"
+}
+
+analysis {
+	component : Oldalvedelem_b
+	language : Theta
+}
+
+verification {
+	language : Theta
+	file : "Oldalvedelem_b.xsts"
+	query-file : "CustomQueriesOldalvedelem_b.prop"
+	back-annotate-to-original : true // Required 
+	optimize-traces : true // To avoid checking the same prefixes
+	trace-folder : "trace-conformance-src"
+}
+
+analysis {
+	component : Oldalvedelem_c
+	language : Theta
+}
+
+verification {
+	language : Theta
+	file : "Oldalvedelem_c.xsts"
+	query-file : "CustomQueriesOldalvedelem_c.prop"
+	back-annotate-to-original : true // Required 
+	optimize-traces : true // To avoid checking the same prefixes
+	trace-folder : "trace-conformance-src"
+}
+
+analysis {
+	component : Oldalvedelem_d
+	language : Theta
+}
+
+verification {
+	language : Theta
+	file : "Oldalvedelem_d.xsts"
+	query-file : "CustomQueriesOldalvedelem_d.prop"
+	back-annotate-to-original : true // Required 
+	optimize-traces : true // To avoid checking the same prefixes
+	trace-folder : "trace-conformance-src"
+}
