@@ -1,0 +1,17 @@
+import "TrafficLightWrapper.gcd"
+
+analysis {
+	component : TrafficLightWrapper (1, true)
+	language : Theta
+	transition-coverage
+}
+
+verification {
+	language : Theta
+	file : "TrafficLightWrapper.xsts"
+	query-file : "CustomQueries.prop"
+	query-file : "TrafficLightWrapper.prop"
+	back-annotate-to-original : true // Required 
+	optimize-traces : true // To avoid checking the same prefixes
+	trace-folder : "trace-conformance-src"
+}

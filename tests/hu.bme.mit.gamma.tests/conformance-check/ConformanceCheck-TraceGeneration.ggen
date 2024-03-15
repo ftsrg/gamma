@@ -15,3 +15,8 @@ include "/model/PIL/System/Vaganyut/Cascade/Vaganyut-ConformanceCheck-TraceGener
 include "/model/PIL/System/Vaganyut/Synchronous/Vaganyut-ConformanceCheck-TraceGeneration.ggen"
 include "/model/RIS/SystemGlobalQueue/RigelSystem-ConformanceCheck-TraceGeneration.ggen"
 include "/model/RIS/SystemLocalQueue/RigelSystem-ConformanceCheck-TraceGeneration.ggen"
+include "/model/Spacecraft/System/Spacecraft-ConformanceCheck-TraceGeneration.ggen"
+include "/model/SSM/System/Mission-ConformanceCheck-TraceGeneration.ggen"
+include "/model/TMT/System/TMT-ConformanceCheck-TraceGeneration.ggen"
+include "/model/TrafficLight/System/TrafficLightWrapper-ConformanceCheck-TraceGeneration.ggen"
+include "/model/XSML/System/Dispatcher-ConformanceCheck-TraceGeneration.ggen"

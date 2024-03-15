@@ -1,0 +1,16 @@
+import "DispatcherMachineScheduledComposite.gcd"
+
+analysis {
+	component : DispatcherMachineScheduledComposite
+	language : Theta
+}
+
+verification {
+	language : Theta
+	test-language : java
+	file : "DispatcherMachineScheduledComposite.xsts"
+	query-file : "CustomQueries.prop"
+	back-annotate-to-original : true // Required 
+	optimize-traces : true // To avoid checking the same prefixes
+	trace-folder : "trace-conformance-src"
+}

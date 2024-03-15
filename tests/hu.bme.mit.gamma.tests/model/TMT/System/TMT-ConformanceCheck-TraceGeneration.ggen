@@ -1,0 +1,21 @@
+import "TMT.gsm"
+
+analysis {
+	component : Procedure_Executive_and_Analysis_SoftwareSyncWrapAsyncAdapter
+	language : XSTS-UPPAAL
+	constraint : {
+		top : {
+			minimum-orchestrating-period : 1 ms
+			maximum-orchestrating-period : 1 ms
+		}
+	}
+}
+
+verification {
+	language : XSTS-UPPAAL
+	file : "TMT.xml"
+	property-file : "TMT.gpm"
+	back-annotate-to-original : true // Required 
+	optimize-traces : true // To avoid checking the same prefixes
+	trace-folder : "trace-conformance-src"
+}
