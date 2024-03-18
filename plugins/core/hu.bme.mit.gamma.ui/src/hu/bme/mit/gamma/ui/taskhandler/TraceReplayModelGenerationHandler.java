@@ -40,6 +40,7 @@ import hu.bme.mit.gamma.trace.environment.transformation.EnvironmentModel;
 import hu.bme.mit.gamma.trace.environment.transformation.TraceReplayModelGenerator;
 import hu.bme.mit.gamma.trace.environment.transformation.TraceReplayModelGenerator.Result;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
+import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Step;
 
 public class TraceReplayModelGenerationHandler extends TaskHandler {
@@ -169,6 +170,12 @@ public class TraceReplayModelGenerationHandler extends TaskHandler {
 					}
 				}
 				//
+				final boolean ignoreOutEvents = false;
+				if (ignoreOutEvents) {
+					removeOutEvents(executionTrace);
+					removeOutEvents(generatedTrace);
+				}
+				//
 				boolean areAssertsEquivalent = TraceModelDerivedFeatures.areAssertsEquivalent(
 						executionTrace, generatedTrace, false /* Not back-annotated to original */, false /* To counter flattened vs. original deviances */);
 				if (!areAssertsEquivalent) {
@@ -178,13 +185,24 @@ public class TraceReplayModelGenerationHandler extends TaskHandler {
 			}
 		}
 	}
-
+	
+	//
+	
 	private void setTraceReplayModelGeneration(TraceReplayModelGeneration modelGeneration) {
 		List<String> environmentModelFileName = modelGeneration.getEnvironmentModelFileName();
 		if (environmentModelFileName.isEmpty()) {
 			ExecutionTrace executionTrace = modelGeneration.getExecutionTrace();
 			String name = (executionTrace != null) ? executionTrace.getName() : "Environment";
 			environmentModelFileName.add(name);
+		}
+	}
+	
+	private void removeOutEvents(ExecutionTrace trace) {
+		List<Step> steps = trace.getSteps();
+		for (Step step : steps) {
+			List<Expression> asserts = step.getAsserts();
+			asserts.removeIf(it -> ecoreUtil.isOrContainsTypesTransitively(
+					it, RaiseEventAct.class));
 		}
 	}
 	
