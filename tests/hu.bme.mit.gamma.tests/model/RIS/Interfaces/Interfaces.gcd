@@ -1,9 +1,5 @@
 package rigel
 
-
-type A : enum {
-	A, B
-}
 //
 
 procedure createInvalidateObj : RigelMsgHeader {

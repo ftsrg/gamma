@@ -16,7 +16,8 @@ verification {
 	language : nuXmv // No optimization - probably only nuXmv can handle this model
 	file : "RigelSystem.smv"
 	property-file : ".RigelSystem.gpd"
-	back-annotate-to-original : true // Required 
+	back-annotate-to-original : true // Required
+	optimize : true
 	optimize-traces : true // To avoid checking the same prefixes
 	trace-folder : "trace-conformance-src"
 }

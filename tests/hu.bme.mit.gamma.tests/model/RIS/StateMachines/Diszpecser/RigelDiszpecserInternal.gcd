@@ -14,7 +14,6 @@ statechart RigelDiszpecser(TimeDataPeriodic : integer, TimeDataTimeout : integer
 	port OrionDisconnToVk : requires OrionDisconnToVk
 	port AllObjDataSent : requires AllObjDataSent
 ] {
-	var a : A := A::B
 	var isObjOrionConnected : boolean
 	@Transient var _change_condition_8_0_0_objektumNyilvantarto : boolean := false
 	@Transient var _change_condition_8_0_1_objektumNyilvantarto : boolean := false
@@ -187,7 +186,7 @@ statechart RigelDiszpecser(TimeDataPeriodic : integer, TimeDataTimeout : integer
 	transition from _initialOfDiszpTeljesAdatLekerdezes___teljesAdatLekerdezes to
 		WaitForQuery_teljesAdatLekerdezes /
 		_initialOfDiszpTeljesAdatLekerdezes___teljesAdatLekerdezes_WaitForQuery_teljesAdatLekerdezes_0
-		:= true; a := A::A;
+		:= true;
 	@(WaitForQuery_teljesAdatLekerdezes_ProcessQuery_teljesAdatLekerdezes_1)
 	transition from WaitForQuery_teljesAdatLekerdezes to ProcessQuery_teljesAdatLekerdezes when
 		VezerloKozpontPortIn.message_RigelMsgHeader
