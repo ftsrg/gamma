@@ -119,6 +119,7 @@ public class TraceReplayModelGenerationHandler extends TaskHandler {
 			// Make sure that the ExecutionTrace is back-annotated to original!
 			Expression schedulingTime = TraceModelDerivedFeatures.getSchedulingTime(executionTrace);
 			
+			List<Expression> arguments = executionTrace.getArguments();
 			List<AnalysisLanguage> analysisLanguages = modelGeneration.getAnalysisLanguages();
 			for (AnalysisLanguage language : analysisLanguages) {
 				String analysisFileName = fileName.get(0) + "-" + language.toString() + "-" + i;
@@ -126,6 +127,10 @@ public class TraceReplayModelGenerationHandler extends TaskHandler {
 				AnalysisModelTransformation transformation = factory.createAnalysisModelTransformation();
 				ComponentReference componentReference = factory.createComponentReference();
 				componentReference.setComponent(systemModel);
+				if (!arguments.isEmpty()) {
+					componentReference.getArguments().addAll(
+							ecoreUtil.clone(arguments));
+				}
 				
 				transformation.setModel(componentReference);
 				transformation.setPropertyPackage(propertyPackage);
