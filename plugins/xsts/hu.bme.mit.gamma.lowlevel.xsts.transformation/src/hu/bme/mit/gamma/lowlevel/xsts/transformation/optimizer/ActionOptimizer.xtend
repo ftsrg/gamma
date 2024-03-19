@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -39,6 +39,7 @@ import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.model.XTransition
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.List
+import java.util.logging.Logger
 import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
@@ -56,6 +57,8 @@ class ActionOptimizer {
 	// Model factories
 	protected final ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE
+	
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	def optimize(Iterable<? extends XTransition> transitions) {
 		val optimizedTransitions = newArrayList
@@ -76,10 +79,13 @@ class ActionOptimizer {
 	}
 	
 	def optimize(Action action) {
+		val containsParallelAction = action.isOrContainsTypesTransitively(ParallelAction)
+		
 		var Action oldXStsAction
 		var Action newXStsAction = action
 		// Until the action cannot be optimized any more
 		while (!oldXStsAction.helperEquals(newXStsAction)) {
+			logger.info("Starting optimization iteration")
 			oldXStsAction = newXStsAction.clone
 			newXStsAction = newXStsAction
 				/* Cannot use "clone" as local variable actions contain variable declarations and
@@ -94,7 +100,9 @@ class ActionOptimizer {
 				
 			newXStsAction.optimizeAssignmentActions
 			newXStsAction.deleteTrivialNonDeterministicActions
-			newXStsAction = newXStsAction.optimizeParallelActions // Might be resource intensive
+			if (containsParallelAction) {
+				newXStsAction = newXStsAction.optimizeParallelActions // Might be resource intensive
+			}
 			newXStsAction.deleteUnnecessaryAssumeActions // Not correct in other transformation implementations
 			newXStsAction.deleteDefinitelyFalseBranches
 			newXStsAction.deleteDefinitelyFalseBranchesFromAssumptions
