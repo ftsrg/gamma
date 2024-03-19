@@ -9,14 +9,14 @@ statechart ReturnFunctionMachine [
 	var _returnFunctionMachine_ : _ReturnFunctionMachine_
 	transition from _initialOfReturnFunctionMachine__ to ReturnFunctionMachine__State
 	transition from ReturnFunctionMachine__State to ReturnFunctionMachine__State when P.message_int
-		[_returnFunctionMachine_ = _ReturnFunctionMachine_::A] / {
+		[_returnFunctionMachine_ = _ReturnFunctionMachine_::A_] / {
 		incrOrDecrX(P.message_int::message_intValue);
-		_returnFunctionMachine_ := _ReturnFunctionMachine_::B;
+		_returnFunctionMachine_ := _ReturnFunctionMachine_::B_;
 	}
 	transition from ReturnFunctionMachine__State to ReturnFunctionMachine__State when P.message_int
-		[_returnFunctionMachine_ = _ReturnFunctionMachine_::B] / {
+		[_returnFunctionMachine_ = _ReturnFunctionMachine_::B_] / {
 		if (positive(P.message_int::message_intValue)) {
-			_returnFunctionMachine_ := _ReturnFunctionMachine_::A;
+			_returnFunctionMachine_ := _ReturnFunctionMachine_::A_;
 		}
 	}
 	region ReturnFunctionMachine_ {

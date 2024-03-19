@@ -8,7 +8,7 @@ step {
 	}
 	assert {
 		variable returnFunctionMachine.x = 0;
-		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::A;
+		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::A_;
 	}
 }
 step {
@@ -18,7 +18,7 @@ step {
 	}
 	assert {
 		variable returnFunctionMachine.x = 0;
-		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::B;
+		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::B_;
 	}
 }
 step {
@@ -28,7 +28,7 @@ step {
 	}
 	assert {
 		variable returnFunctionMachine.x = 0;
-		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::B;
+		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::B_;
 	}
 }
 step {
@@ -38,7 +38,7 @@ step {
 	}
 	assert {
 		variable returnFunctionMachine.x = 0;
-		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::B;
+		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::B_;
 	}
 }
 step {
@@ -48,7 +48,7 @@ step {
 	}
 	assert {
 		variable returnFunctionMachine.x = 0;
-		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::A;
+		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::A_;
 	}
 }
 step {
@@ -58,7 +58,7 @@ step {
 	}
 	assert {
 		variable returnFunctionMachine.x = 1;
-		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::B;
+		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::B_;
 	}
 }
 step {
@@ -68,7 +68,7 @@ step {
 	}
 	assert {
 		variable returnFunctionMachine.x = 1;
-		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::A;
+		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::A_;
 	}
 }
 step {
@@ -78,6 +78,6 @@ step {
 	}
 	assert {
 		variable returnFunctionMachine.x = 0;
-		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::B;
+		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::B_;
 	}
 }

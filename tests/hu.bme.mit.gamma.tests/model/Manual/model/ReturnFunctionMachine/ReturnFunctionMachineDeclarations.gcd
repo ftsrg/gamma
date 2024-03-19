@@ -13,7 +13,7 @@ procedure positive(x : integer) : boolean {
 	return result;
 }
 type _ReturnFunctionMachine_ : enum {
-	A, B
+	A_, B_
 }
 interface P {
 	out event message_int(message_intValue : integer)
