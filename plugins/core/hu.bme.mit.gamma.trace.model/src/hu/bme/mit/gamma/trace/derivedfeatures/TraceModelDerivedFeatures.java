@@ -112,7 +112,7 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		List<Step> steps = trace.getSteps();
 		List<Step> notFirstSteps = new ArrayList<Step>(steps);
 		
-		if (notFirstSteps.isEmpty()) {
+		if (notFirstSteps.size() <= 1) {
 			return null;
 		}
 		

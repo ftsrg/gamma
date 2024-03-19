@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint;
 import hu.bme.mit.gamma.genmodel.model.TraceReplayModelGeneration;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory;
@@ -177,8 +178,14 @@ public class TraceReplayModelGenerationHandler extends TaskHandler {
 				//
 				final boolean ignoreOutEvents = false;
 				if (ignoreOutEvents) {
-					removeOutEvents(executionTrace);
-					removeOutEvents(generatedTrace);
+					removeAsserts(executionTrace, RaiseEventAct.class);
+					removeAsserts(generatedTrace, RaiseEventAct.class);
+				}
+				//
+				final boolean ignoreStateReferences = false;
+				if (ignoreStateReferences) {
+					removeAsserts(executionTrace, ComponentInstanceStateReferenceExpression.class);
+					removeAsserts(generatedTrace, ComponentInstanceStateReferenceExpression.class);
 				}
 				//
 				boolean areAssertsEquivalent = TraceModelDerivedFeatures.areAssertsEquivalent(
@@ -202,12 +209,11 @@ public class TraceReplayModelGenerationHandler extends TaskHandler {
 		}
 	}
 	
-	private void removeOutEvents(ExecutionTrace trace) {
+	private void removeAsserts(ExecutionTrace trace, Class<? extends EObject> clazz) {
 		List<Step> steps = trace.getSteps();
 		for (Step step : steps) {
 			List<Expression> asserts = step.getAsserts();
-			asserts.removeIf(it -> ecoreUtil.isOrContainsTypesTransitively(
-					it, RaiseEventAct.class));
+			asserts.removeIf(it -> ecoreUtil.isOrContainsTypesTransitively(it, clazz));
 		}
 	}
 	
