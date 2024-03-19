@@ -156,6 +156,7 @@ class GammaToXstsTransformer {
 		val lowlevelPackage = gammaToLowlevelTransformer.transform(_package)
 		// Serializing the xSTS
 		val xSts = gammaComponent.transform(lowlevelPackage) // Transforming the Gamma component
+		
 		// Creating system event groups for traceability purposes
 		logger.info("Creating system event groups for " + gammaComponent.name)
 		xSts.createSystemEventGroups(gammaComponent) // Now synchronous event variables are put in there

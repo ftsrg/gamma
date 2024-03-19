@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -151,7 +151,7 @@ class EnvironmentalActionFilter {
 				.filterNull // If something is not contained by NonDeterministicAction
 				.toSet
 		for (choice : choices) {
-			choice.remove
+			choice.replaceWithEmptyAction
 		}
 	}
 	
@@ -181,7 +181,7 @@ class EnvironmentalActionFilter {
 		else if (action instanceof IfAction) {
 			val xStsCondition = action.condition
 			if (xStsCondition.isDeletable(necessaryNames)) {
-				createEmptyAction.replace(action)
+				action.replaceWithEmptyAction
 				return
 			}
 			copyXStsSubactions += action.then
@@ -202,14 +202,14 @@ class EnvironmentalActionFilter {
 				val name = (xStsSubaction.lhs as DirectReferenceExpression).declaration.name
 				if (!necessaryNames.contains(name)) {
 					// Deleting
-					createEmptyAction.replace(xStsSubaction) // Remove might leave a null in LoopAction
+					xStsSubaction.replaceWithEmptyAction // Remove might leave a null in LoopAction
 				}
 			}
 			else if (xStsSubaction instanceof AssumeAction) {
 				val assumption = xStsSubaction.assumption
 				if (assumption.isDeletable(necessaryNames)) {
 					// Deleting the assume action
-					createEmptyAction.replace(xStsSubaction)
+					xStsSubaction.replaceWithEmptyAction
 				}
 			}
 			else if (xStsSubaction instanceof CompositeAction) {

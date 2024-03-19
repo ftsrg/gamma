@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -32,6 +32,8 @@ class RemovableVariableRemover {
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
+	//
+	
 	def void removeTransientVariables(XSTS xSts) {
 		val engine = ViatraQueryEngine.on(new EMFScope(xSts))
 		
@@ -43,7 +45,7 @@ class RemovableVariableRemover {
 			val xStsAssignments = xStsAssignmentMatcher.getAllValuesOfaction(
 					null, unreadTransientXStsVariable)
 			for (xStsAssignment : xStsAssignments) {
-				xStsAssignment.remove
+				xStsAssignment.replaceWithEmptyAction
 			}
 			// Deleting the potential containing VariableDeclarationAction too
 			unreadTransientXStsVariable.deleteDeclaration
@@ -70,7 +72,7 @@ class RemovableVariableRemover {
 						val lhs = assignment.lhs
 						val lhsDeclaration = lhs.declaration
 						if (lhsDeclaration == declaration) {
-							assignment.remove // Deleting assignment; supposed to be in "init" trans
+							assignment.replaceWithEmptyAction // Deleting assignment; supposed to be in "init" trans
 							needReplace = false
 						}
 					}

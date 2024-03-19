@@ -81,11 +81,13 @@ class ActionOptimizer {
 	def optimize(Action action) {
 		val containsParallelAction = action.isOrContainsTypesTransitively(ParallelAction)
 		
+		var i = 0
 		var Action oldXStsAction
 		var Action newXStsAction = action
 		// Until the action cannot be optimized any more
 		while (!oldXStsAction.helperEquals(newXStsAction)) {
-			logger.info("Starting optimization iteration")
+			logger.info("Starting optimization iteration " + i++)
+			
 			oldXStsAction = newXStsAction.clone
 			newXStsAction = newXStsAction
 				/* Cannot use "clone" as local variable actions contain variable declarations and
@@ -108,6 +110,7 @@ class ActionOptimizer {
 			newXStsAction.deleteDefinitelyFalseBranchesFromAssumptions
 			newXStsAction.optimizeExpressions // Could be extracted to the expression metamodel?
 		}
+		
 		return newXStsAction
 	}
 	
@@ -641,7 +644,7 @@ class ActionOptimizer {
 			val xStsElseAction = xStsIfAction.^else
 			
 			if (xStsThenAction.nullOrEmptyAction && xStsElseAction.nullOrEmptyAction) {
-				xStsIfAction.remove
+				xStsIfAction.replaceWithEmptyAction
 			}
 			else if (xStsCondition.definitelyTrueExpression) {
 				xStsThenAction.replace(xStsIfAction)
@@ -809,7 +812,7 @@ class ActionOptimizer {
 				val firstAction = branch.firstAtomicAction
 				if (firstAction instanceof AssumeAction) {
 					if (firstAction.isDefinitelyFalseAssumeAction) {
-						branch.remove
+						branch.replaceWithEmptyAction
 					}
 					else {
 						branch.deleteDefinitelyFalseBranches

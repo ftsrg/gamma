@@ -134,7 +134,7 @@ class InternalEventHandler {
 		val allInternalEventHandlingActions = action.getInternalEventHandlingActions(component)
 		
 		allInternalEventHandlingActions.retainAll(internalEventHandlingActions)
-		allInternalEventHandlingActions.forEach[it.remove]
+		allInternalEventHandlingActions.forEach[it.replaceWithEmptyAction]
 		
 		internalEventHandlingActions.clear // Clearing the trace set
 	}

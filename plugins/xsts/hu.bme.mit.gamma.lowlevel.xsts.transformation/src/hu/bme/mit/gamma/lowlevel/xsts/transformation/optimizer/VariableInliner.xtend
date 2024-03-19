@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -45,6 +45,7 @@ class VariableInliner {
 	
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	//
 
 	def inline(Iterable<? extends XTransition> transitions) {
 		for (transition : transitions) {
@@ -240,7 +241,7 @@ class VariableInliner {
 				val oldAssignment = oldSymbolicEntry.getLastValueGivingAction
 				if (oldAssignment instanceof AssignmentAction) {
 					// Local variable declarations actions cannot be deleted 
-					oldAssignment.remove
+					oldAssignment.replaceWithEmptyAction
 				}
 			}
 			// Removing read variables - if a variable is read, then the
@@ -302,7 +303,7 @@ class VariableInliner {
 			}
 		}
 		//
-		removableActions.forEach[it.remove]
+		removableActions.forEach[it.replaceWithEmptyAction]
 	}
 	
 	// Auxiliary
