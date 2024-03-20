@@ -47,16 +47,14 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 				return Scopes.scopeFor(executionTrace.import.components)
 			}
 		}
-		if ((context instanceof RaiseEventAct && reference == StatechartModelPackage.Literals.RAISE_EVENT_ACTION__PORT)
-			|| (context instanceof EventParameterReferenceExpression && reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PORT)
-		) {
+		if ((context instanceof RaiseEventAct && reference == StatechartModelPackage.Literals.RAISE_EVENT_ACTION__PORT) ||
+			(context instanceof EventParameterReferenceExpression && reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PORT)) {
 			val executionTrace = ecoreUtil.getContainerOfType(context, ExecutionTrace)
 			val component = executionTrace.component
 			return Scopes.scopeFor(component.allPorts)
 		}
-		if ((context instanceof RaiseEventAct && reference == StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT)
-			|| (context instanceof EventParameterReferenceExpression && reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT)
-		) {
+		if ((context instanceof RaiseEventAct && reference == StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT) ||
+				(context instanceof EventParameterReferenceExpression && reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT)) {
 			val port = if (context instanceof RaiseEventAct) {
 				context.port
 			} else if (context instanceof EventParameterReferenceExpression) {

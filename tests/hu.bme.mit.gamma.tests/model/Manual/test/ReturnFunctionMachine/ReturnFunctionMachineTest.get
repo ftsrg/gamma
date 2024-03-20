@@ -7,8 +7,8 @@ step {
 		reset
 	}
 	assert {
+		variable returnFunctionMachine.returnFunctionMachine_ = _ReturnFunctionMachine_::A_;
 		variable returnFunctionMachine.x = 0;
-		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::A_;
 	}
 }
 step {
@@ -17,8 +17,8 @@ step {
 		schedule component
 	}
 	assert {
+		variable returnFunctionMachine.returnFunctionMachine_ = _ReturnFunctionMachine_::B_;
 		variable returnFunctionMachine.x = 0;
-		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::B_;
 	}
 }
 step {
@@ -27,8 +27,8 @@ step {
 		schedule component
 	}
 	assert {
+		variable returnFunctionMachine.returnFunctionMachine_ = _ReturnFunctionMachine_::B_;
 		variable returnFunctionMachine.x = 0;
-		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::B_;
 	}
 }
 step {
@@ -37,8 +37,8 @@ step {
 		schedule component
 	}
 	assert {
+		variable returnFunctionMachine.returnFunctionMachine_ = _ReturnFunctionMachine_::B_;
 		variable returnFunctionMachine.x = 0;
-		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::B_;
 	}
 }
 step {
@@ -47,8 +47,8 @@ step {
 		schedule component
 	}
 	assert {
+		variable returnFunctionMachine.returnFunctionMachine_ = _ReturnFunctionMachine_::A_;
 		variable returnFunctionMachine.x = 0;
-		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::A_;
 	}
 }
 step {
@@ -57,8 +57,8 @@ step {
 		schedule component
 	}
 	assert {
+		variable returnFunctionMachine.returnFunctionMachine_ = _ReturnFunctionMachine_::B_;
 		variable returnFunctionMachine.x = 1;
-		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::B_;
 	}
 }
 step {
@@ -67,8 +67,8 @@ step {
 		schedule component
 	}
 	assert {
+		variable returnFunctionMachine.returnFunctionMachine_ = _ReturnFunctionMachine_::A_;
 		variable returnFunctionMachine.x = 1;
-		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::A_;
 	}
 }
 step {
@@ -77,7 +77,7 @@ step {
 		schedule component
 	}
 	assert {
+		variable returnFunctionMachine.returnFunctionMachine_ = _ReturnFunctionMachine_::B_;
 		variable returnFunctionMachine.x = 0;
-		variable returnFunctionMachine._returnFunctionMachine_ = _ReturnFunctionMachine_::B_;
 	}
 }
