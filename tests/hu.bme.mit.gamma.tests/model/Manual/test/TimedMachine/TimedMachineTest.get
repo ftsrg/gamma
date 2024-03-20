@@ -7,7 +7,7 @@ step {
 		reset
 	}
 	assert {
-		variable timedMachine._timedMachine_ = _TimedMachine_::Init;
+		variable timedMachine.timedMachine_ = _TimedMachine_::Init;
 	}
 }
 step {
@@ -16,8 +16,8 @@ step {
 		schedule component
 	}
 	assert {
-		variable timedMachine._timedMachine_ = _TimedMachine_::Other;
-		variable timedMachine._timedMachine_Other_ = _TimedMachine_Other_::OtherA;
+		variable timedMachine.timedMachine_ = _TimedMachine_::Other;
+		variable timedMachine.timedMachine_Other_ = _TimedMachine_Other_::OtherA;
 	}
 }
 step {
@@ -26,8 +26,8 @@ step {
 		schedule component
 	}
 	assert {
-		variable timedMachine._timedMachine_ = _TimedMachine_::Other;
-		variable timedMachine._timedMachine_Other_ = _TimedMachine_Other_::OtherB;
+		variable timedMachine.timedMachine_ = _TimedMachine_::Other;
+		variable timedMachine.timedMachine_Other_ = _TimedMachine_Other_::OtherB;
 	}
 }
 step {
@@ -36,7 +36,7 @@ step {
 		schedule component
 	}
 	assert {
-		variable timedMachine._timedMachine_ = _TimedMachine_::Other;
-		variable timedMachine._timedMachine_Other_ = _TimedMachine_Other_::OtherA;
+		variable timedMachine.timedMachine_ = _TimedMachine_::Other;
+		variable timedMachine.timedMachine_Other_ = _TimedMachine_Other_::OtherA;
 	}
 }
