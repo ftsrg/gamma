@@ -7,8 +7,8 @@ step {
 		reset
 	}
 	assert {
-		variable structRecieverGuardMachine.posCnt = 0;
 		variable structRecieverGuardMachine.negCnt = 0;
+		variable structRecieverGuardMachine.posCnt = 0;
 	}
 }
 step {
@@ -19,8 +19,8 @@ step {
 		schedule component
 	}
 	assert {
-		variable structRecieverGuardMachine.posCnt = 1;
 		variable structRecieverGuardMachine.negCnt = 0;
+		variable structRecieverGuardMachine.posCnt = 1;
 	}
 }
 step {
@@ -31,8 +31,8 @@ step {
 		schedule component
 	}
 	assert {
-		variable structRecieverGuardMachine.posCnt = 2;
 		variable structRecieverGuardMachine.negCnt = 0;
+		variable structRecieverGuardMachine.posCnt = 2;
 	}
 }
 step {
@@ -43,8 +43,8 @@ step {
 		schedule component
 	}
 	assert {
-		variable structRecieverGuardMachine.posCnt = 2;
 		variable structRecieverGuardMachine.negCnt = 0;
+		variable structRecieverGuardMachine.posCnt = 2;
 	}
 }
 step {
@@ -55,8 +55,8 @@ step {
 		schedule component
 	}
 	assert {
-		variable structRecieverGuardMachine.posCnt = 2;
 		variable structRecieverGuardMachine.negCnt = 1;
+		variable structRecieverGuardMachine.posCnt = 2;
 	}
 }
 step {
@@ -67,7 +67,7 @@ step {
 		schedule component
 	}
 	assert {
-		variable structRecieverGuardMachine.posCnt = 2;
 		variable structRecieverGuardMachine.negCnt = 2;
+		variable structRecieverGuardMachine.posCnt = 2;
 	}
 }
