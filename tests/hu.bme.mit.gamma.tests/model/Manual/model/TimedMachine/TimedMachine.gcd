@@ -5,35 +5,35 @@ import
 statechart TimedMachine [
 	port portA : requires portA
 ] {
-	var timedMachine_ : _TimedMachine_
+	var timedMachineState : _TimedMachine_
 	var timedMachine_Other_ : _TimedMachine_Other_
 	timeout timeout_1971455862
 	timeout timeout_1238298886
 	transition from _initialOfTimedMachine__ to TimedMachine__State
 	transition from TimedMachine__State to TimedMachine__State when portA.message_bool
-		[timedMachine_ = _TimedMachine_::Init] / {
+		[timedMachineState = _TimedMachine_::Init] / {
 		{
-			timedMachine_ := _TimedMachine_::Other; {
+			timedMachineState := _TimedMachine_::Other; {
 				set timeout_1971455862 := 1 ms;
 				timedMachine_Other_ := _TimedMachine_Other_::OtherA;
 			}
 		}
 	}
 	transition from TimedMachine__State to TimedMachine__State when timeout timeout_1971455862
-		[timedMachine_ = _TimedMachine_::Other and timedMachine_Other_ = _TimedMachine_Other_::OtherA]
+		[timedMachineState = _TimedMachine_::Other and timedMachine_Other_ = _TimedMachine_Other_::OtherA]
 		/ {
 		{
-			timedMachine_ := _TimedMachine_::Other; {
+			timedMachineState := _TimedMachine_::Other; {
 				set timeout_1238298886 := 2 ms;
 				timedMachine_Other_ := _TimedMachine_Other_::OtherB;
 			}
 		}
 	}
 	transition from TimedMachine__State to TimedMachine__State when timeout timeout_1238298886
-		[timedMachine_ = _TimedMachine_::Other and timedMachine_Other_ = _TimedMachine_Other_::OtherB]
+		[timedMachineState = _TimedMachine_::Other and timedMachine_Other_ = _TimedMachine_Other_::OtherB]
 		/ {
 		{
-			timedMachine_ := _TimedMachine_::Other; {
+			timedMachineState := _TimedMachine_::Other; {
 				set timeout_1971455862 := 1 ms;
 				timedMachine_Other_ := _TimedMachine_Other_::OtherA;
 			}
