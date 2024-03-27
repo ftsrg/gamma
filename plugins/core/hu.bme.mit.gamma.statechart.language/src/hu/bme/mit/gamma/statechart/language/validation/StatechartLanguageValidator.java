@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,6 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.language.validation;
 
+import java.util.List;
+
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.validation.Check;
 
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
@@ -67,6 +70,20 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	public StatechartLanguageValidator() {
 		super.expressionModelValidator = statechartModelValidator;
 		super.actionModelValidator = statechartModelValidator;
+	}
+	
+	@Check
+	@Override
+	public void checkNameUniqueness(EObject element) {
+		if (element instanceof Interface _interface) {
+			List<Event> events = ecoreUtil.getAllContentsOfType(_interface, Event.class);
+			if (!events.isEmpty()) { // checkNameUniqueness(EObject ) would do this - this way it may be faster
+				handleValidationResultMessage(expressionModelValidator.checkNameUniqueness(events));
+			}
+		}
+		else {
+			super.checkNameUniqueness(element);
+		}
 	}
 	
 	@Check

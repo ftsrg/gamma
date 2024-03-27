@@ -74,9 +74,11 @@ public class TraceUtil extends StatechartUtil {
 		public int compare(Expression lhsAssert, Expression rhsAssert) {
 			Expression lhs = TraceModelDerivedFeatures.getPrimaryAssert(lhsAssert);
 			Expression rhs = TraceModelDerivedFeatures.getPrimaryAssert(rhsAssert);
-			if (lhs instanceof RaiseEventAct) {
-				if (rhs instanceof RaiseEventAct) {
-					return 0;
+			if (lhs instanceof RaiseEventAct lhsAct) {
+				if (rhs instanceof RaiseEventAct rhsAct) {
+					String lhsName = lhsAct.getPort().getName() + lhsAct.getEvent().getName();
+					String rhsName = rhsAct.getPort().getName() + rhsAct.getEvent().getName();
+					return lhsName.compareTo(rhsName);
 				}
 				return -1;
 			}
