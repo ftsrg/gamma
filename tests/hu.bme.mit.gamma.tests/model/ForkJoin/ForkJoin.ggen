@@ -1,0 +1,20 @@
+import "ForkJoinMachine/ForkJoinMachine.gcd"
+
+code {
+	component : ForkJoinMachine
+	language : java
+}
+
+analysis {
+	component : ForkJoinMachine
+	language : XSTS
+	transition-coverage
+}
+
+verification {
+	language : Theta
+	file : "ForkJoinMachine.xsts"
+	property-file : ".ForkJoinMachine.gpd"
+	test-language : java
+	optimize-traces : true
+}

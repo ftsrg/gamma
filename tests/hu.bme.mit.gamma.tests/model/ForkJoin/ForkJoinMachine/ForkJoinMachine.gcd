@@ -1,0 +1,44 @@
+package forkJoin
+
+import "Interfaces/Interfaces.gcd"
+
+@OrthogonalRegionSchedule = sequential
+statechart ForkJoinMachine [
+	port Control : requires Control
+] {
+	region main {
+		initial InitialMain
+		state Start
+		fork Fork
+		state Composite {
+			region A_ {
+				initial InitialA
+				state SimpleA_1
+				state SimpleA_2
+			}
+			region B_ {
+				initial InitialB
+				state SimpleB_1	
+				state SimpleB_2
+			}
+		}
+		join Join
+		state End
+	}
+	
+	transition from InitialMain to Start
+	transition from Start to Fork when Control.a_ 
+	transition from Fork to SimpleA_1
+	transition from Fork to SimpleB_1
+	
+	transition from InitialA to SimpleA_1
+	transition from InitialB to SimpleB_1
+	
+	transition from SimpleA_1 to SimpleA_2 when Control.a_ && !(Control.b_)
+	transition from SimpleB_1 to SimpleB_2 when Control.b_
+	
+	transition from SimpleA_2 to Join when Control.a_ 
+	transition from SimpleB_2 to Join when Control.b_ 
+	
+	transition from Join to End
+}
