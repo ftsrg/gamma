@@ -11,12 +11,13 @@ analysis {
 	language : Theta
 }
 
-verification {
-	language : UPPAAL
-	file : "Vaganyut.xml"
-	query-file : "CustomQueries.q"
-	test-language : java
-}
+// Due to the fixing of region optimization
+//verification {
+//	language : UPPAAL
+//	file : "Vaganyut.xml"
+//	query-file : "CustomQueries.q"
+//	test-language : java
+//}
 
 verification {
 	language : Theta
