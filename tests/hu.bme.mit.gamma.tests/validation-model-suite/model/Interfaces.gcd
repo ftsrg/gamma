@@ -1,0 +1,23 @@
+package interfaces
+
+interface InputEvents {
+	in event e
+	in event f
+	in event g
+	in event ^h
+	in event i
+	in event j
+	in event k
+	in event l
+	in event n
+}
+
+interface OutputEvents {
+	out event a
+	out event b
+	out event c
+	out event d
+	out event x
+	out event y
+	out event z
+}

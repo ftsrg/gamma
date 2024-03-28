@@ -1,0 +1,17 @@
+package package_c_30
+import "Interfaces.gcd"
+
+statechart statemachine [
+	port input : provides InputEvents
+	port output : provides OutputEvents
+] {
+	region Main {
+		initial I1
+		state S0 {
+			entry / raise output.a;
+			exit / raise output.b;
+		}
+	}
+	transition from I1 to S0
+	transition from S0 to S0 when input.e / raise output.x;
+}
