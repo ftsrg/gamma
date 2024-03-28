@@ -1,6 +1,6 @@
 package interfaces
 
-interface Control {
+interface ForkJoinInterface {
 	out event a_
 	out event b_
 }

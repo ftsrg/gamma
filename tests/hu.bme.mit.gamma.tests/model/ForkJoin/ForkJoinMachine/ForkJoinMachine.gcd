@@ -4,7 +4,7 @@ import "Interfaces/Interfaces.gcd"
 
 @OrthogonalRegionSchedule = sequential
 statechart ForkJoinMachine [
-	port Control : requires Control
+	port Control : requires ForkJoinInterface
 ] {
 	region main {
 		initial InitialMain
