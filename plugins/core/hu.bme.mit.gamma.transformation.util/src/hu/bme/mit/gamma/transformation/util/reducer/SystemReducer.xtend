@@ -165,8 +165,8 @@ class SystemReducer implements Reducer {
 	
 	private def void removeUnnecessaryRegion(Region region) {
 		val initialTransition = region.initialTransition
-		val states = region.states
 		val stateNodes = region.stateNodes
+		val states = region.states
 		val pseudoStates = region.pseudoStates // E.g., choice might have an incoming transition from another transition
 		try {
 			if (initialTransition.effects.forall[it.effectlessAction] &&
@@ -175,7 +175,7 @@ class SystemReducer implements Reducer {
 							it.incomingTransitions.forall[states.contains(it.sourceState)] && // Considering transitions via regions
 							it.entryActions.forall[it.effectlessAction] &&
 							it.exitActions.forall[it.effectlessAction]) ||
-							it.allIncomingTransitions.reject[it === initialTransition].empty]) {
+							it.allIncomingTransitions.empty]) { // Never true due to initial transition?
 				// First, removing all related transitions (as otherwise nullptr exceptions are generated in incomingTransitions)
 				val statechart = region.containingStatechart
 				statechart.transitions -= (stateNodes.map[it.allIncomingTransitions].flatten +
