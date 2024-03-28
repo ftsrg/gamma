@@ -1,0 +1,15 @@
+package package_a_3
+import "Interfaces.gcd"
+
+statechart statemachine [
+	port input : provides InputEvents
+] {
+	region Main {
+		initial I1
+		state S0
+		state S1
+	}
+	transition from I1 to S0
+	transition from S0 to S1 when input.e
+	transition from S0 to S1 when input.f
+}

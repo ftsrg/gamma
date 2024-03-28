@@ -1,0 +1,24 @@
+package package_f_28
+import "Interfaces.gcd"
+
+statechart statemachine [
+	port input : provides InputEvents
+] {
+	var i : integer := 0
+	var flag : boolean := true
+	
+	region Main {
+		initial E1
+		state S0
+		state S1 {
+			entry / flag := not flag; i:=i + 1;
+		}
+		state S2 {
+			entry / flag := not flag;
+		}
+	}
+	transition from E1 to S0
+	transition from S0 to S1 when input.e
+	transition from S1 to S1 when input.f [i<60]
+	transition from S1 to S2 when input.g
+}
