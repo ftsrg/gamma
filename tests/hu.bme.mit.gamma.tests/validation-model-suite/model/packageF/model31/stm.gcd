@@ -1,0 +1,22 @@
+package package_f_31
+import "Interfaces.gcd"
+
+statechart statemachine [
+	port input : provides InputEvents
+	port output : provides OutputEvents
+] {
+	var i : integer := 0
+	region Main {
+		initial I1
+		state S0 {
+			entry / raise output.a;
+			exit / i := i+1; raise output.b;
+		}
+		state S1 {
+			entry / i := i*2; raise output.c;
+			exit / raise output.d;
+		}
+	}
+	transition from I1 to S0
+	transition from S0 to S1 when input.e / i := i+1; raise output.x;
+}

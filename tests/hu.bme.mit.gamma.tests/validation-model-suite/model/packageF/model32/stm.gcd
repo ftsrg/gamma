@@ -1,0 +1,37 @@
+package package_f_32
+import "Interfaces.gcd"
+
+statechart statemachine [
+	port input : provides InputEvents
+	port output : provides OutputEvents
+] {
+	var flag1 : boolean := false
+	var flag2 : boolean := false
+	var flag : boolean := false
+	region Main {
+		initial I1
+		state C1 {
+			region R1 {
+				initial I2
+				state S1
+				state S2 {
+					entry / flag := flag1;
+				}
+			}
+			region R2 {
+				initial I3
+				state S3
+				state S4 {
+					entry / flag := flag2;
+				}
+			}
+		}
+	}
+	transition from I1 to C1
+	
+	transition from I2 to S1
+	transition from S1 to S2 when input.f / flag := true;
+
+	transition from I3 to S3
+	transition from S3 to S4 when input.f / flag := false;
+}

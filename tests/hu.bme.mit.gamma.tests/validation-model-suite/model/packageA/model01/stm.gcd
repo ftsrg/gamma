@@ -1,0 +1,9 @@
+package package_a_1
+
+statechart statemachine [] {
+	region Main {
+		initial I1
+		state S1
+	}
+	transition from I1 to S1
+}
