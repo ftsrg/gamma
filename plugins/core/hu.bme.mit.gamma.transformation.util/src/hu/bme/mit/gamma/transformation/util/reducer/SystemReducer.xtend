@@ -109,7 +109,7 @@ class SystemReducer implements Reducer {
 					target.containingStatechart.name
 				} catch (NullPointerException e) {
 					info("Removing transition as source or target is deleted: " + source.name + " -> " + target.name)
-					transition.delete
+					transition.remove
 				}
 			}
 		}
@@ -124,7 +124,7 @@ class SystemReducer implements Reducer {
 		info("Removing transition " + transition.sourceState.name + " -> " + target.name)
 		transition.remove
 		try {
-			if (target.incomingTransitions.size == 0 /* 0 due to transition.remove */) {
+			if (target.allIncomingTransitions.empty /* 0 due to transition.remove */) {
 				for (outgoingTransition : target.outgoingTransitions
 						.reject[it === transition] /* Addressing loops */) {
 					outgoingTransition.removeTransition
@@ -171,22 +171,24 @@ class SystemReducer implements Reducer {
 		try {
 			if (initialTransition.effects.forall[it.effectlessAction] &&
 					pseudoStates.forall[it.precedingStates.empty] &&
-					states.forall[!it.composite && it.outgoingTransitions.empty &&
-						it.entryActions.forall[it.effectlessAction] && it.exitActions.forall[it.effectlessAction] ||
-						it.incomingTransitions.empty]) {
+					states.forall[(!it.composite && it.outgoingTransitions.empty &&
+							it.incomingTransitions.forall[states.contains(it.sourceState)] && // Considering transitions via regions
+							it.entryActions.forall[it.effectlessAction] &&
+							it.exitActions.forall[it.effectlessAction]) ||
+							it.allIncomingTransitions.reject[it === initialTransition].empty]) {
 				// First, removing all related transitions (as otherwise nullptr exceptions are generated in incomingTransitions)
 				val statechart = region.containingStatechart
-				statechart.transitions -= (stateNodes.map[it.incomingTransitions].flatten +
-					stateNodes.map[it.outgoingTransitions].flatten).toList
+				statechart.transitions -= (stateNodes.map[it.allIncomingTransitions].flatten +
+						stateNodes.map[it.allOutgoingTransitions].flatten).toList
 				// Removing region
 				region.remove
 				info("Removing region " + region.name + " of " + statechart.name)
 				// Selecting unreachable states and always active states
-				val unreachableStates = states.filter[it.incomingTransitions.empty].toList
-				val reachedStatesStates = states.filter[it.outgoingTransitions.empty].toList
-				reachedStatesStates -= unreachableStates
+				val unreachableStates = states.filter[it.allIncomingTransitions.empty].toList
+				val reachedStates = states.filter[it.allOutgoingTransitions.empty].toList
+				reachedStates -= unreachableStates
 				removedUnreachableStates += unreachableStates
-				removedInitialStates += reachedStatesStates
+				removedInitialStates += reachedStates
 			}
 		} catch (NullPointerException e) {
 			// An ancestor of a state has already been removed
