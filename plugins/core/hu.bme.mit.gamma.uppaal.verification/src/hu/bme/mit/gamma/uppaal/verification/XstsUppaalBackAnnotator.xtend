@@ -217,13 +217,14 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 				}
 			}
 		}
-		if (sortTrace) {
-			trace.sortInstanceStates
-		}
 		
 		trace.removeInternalEventRaiseActs
 		trace.removeTransientVariableReferences // They always have default values
 		trace.addUnraisedEventNegations
+		
+		if (sortTrace) {
+			trace.sortInstanceStates
+		}
 		
 		return trace
 	}

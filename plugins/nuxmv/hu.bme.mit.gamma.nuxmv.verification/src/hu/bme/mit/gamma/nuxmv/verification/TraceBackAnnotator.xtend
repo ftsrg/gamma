@@ -256,10 +256,6 @@ class TraceBackAnnotator {
 				step.addSchedulingIfNeeded
 			}
 			step.checkStates
-			// Sorting if needed
-			if (sortTrace) {
-				trace.sortInstanceStates
-			}
 		} catch (NoSuchElementException e) {
 			// If there are not enough lines, that means there are no environment actions
 			step.actions += createReset
@@ -268,6 +264,10 @@ class TraceBackAnnotator {
 		trace.removeInternalEventRaiseActs
 		trace.removeTransientVariableReferences // They always have default values
 		trace.addUnraisedEventNegations
+		
+		if (sortTrace) {
+			trace.sortInstanceStates
+		}
 		
 		return trace
 	}
