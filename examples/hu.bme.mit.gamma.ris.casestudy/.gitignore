@@ -13,4 +13,6 @@
 *.gpd
 *.pd
 *.txt
+*.json
 !/measurement-results/*/*.txt
+!/measurement-results/*/*/*/*.txt
