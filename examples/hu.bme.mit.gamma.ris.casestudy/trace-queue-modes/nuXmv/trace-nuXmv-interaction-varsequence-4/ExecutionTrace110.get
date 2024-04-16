@@ -1,0 +1,70 @@
+import "/hu.bme.mit.gamma.ris.casestudy/model/System/Interaction/XS/.RigelSystem.gsm"
+@
+("EF (((__id_first_RigelDiszpecser26__diszpecser_RigelDiszpecser = 27) & (__id_second_RigelDiszpecser27__diszpecser_RigelDiszpecser = 42)))")
+trace RigelSystemTrace of RigelSystem (1, -1)
+step {
+	act {
+		reset
+	}
+	assert {
+		not raise FelugyeloPortOut.message_RigelMsgHeader();
+		not raise ObjektumKezeloPortOut.message_RigelMsgHeader();
+		state
+		diszpecser_RigelDiszpecser.DiszpObjektumNyilvantarto__objektumNyilvantarto.WaitForVK_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.DiszpTeljesAdatLekerdezes__teljesAdatLekerdezes.WaitForQuery_teljesAdatLekerdezes;
+		state
+		objektumKezelo_RigelObjektumKezelo.ObjektumKezeloVezerloKozpontKezeloKepes__objektumKezeloVezerloKozpontKezeloKepes.VkActive_objektumKezeloVezerloKozpontKezeloKepes;
+		state
+		objektumKezelo_RigelObjektumKezelo.ObjektumNyilvantarto__objektumNyilvantarto.NoConnection_objektumNyilvantarto;
+		state vezerloKozpont_RigelVezerloKozpont.VkObjektumKezelo__objektumKezelo1.ObjectInvalid_objektumKezelo1;
+		state
+		vezerloKozpont_RigelVezerloKozpont.VkTeljesAdatLekerdezes__teljesAdatLekerdezes.NoOrionConnected_teljesAdatLekerdezes;
+		variable diszpecser_RigelDiszpecser.isObjOrionConnected = false;
+		variable objektumKezelo_RigelObjektumKezelo.Command_objektumNyilvantarto = RigelObjControl::UV;
+		variable objektumKezelo_RigelObjektumKezelo.LocalTime_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.SessionID_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampObj1_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampObj2_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampVk1_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampVk2_objektumNyilvantarto = 0;
+	}
+}
+step {
+	act {
+		elapse 1
+		raise OrionConn.OrionConn()
+		raise AllObjDataSent.AllObjDataSent()
+		schedule component
+	}
+	assert {
+		not raise FelugyeloPortOut.message_RigelMsgHeader();
+		not raise ObjektumKezeloPortOut.message_RigelMsgHeader();
+		state
+		diszpecser_RigelDiszpecser.DiszpObjektumNyilvantarto__objektumNyilvantarto.VkActive_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.DiszpTeljesAdatLekerdezes__teljesAdatLekerdezes.ProcessQuery_teljesAdatLekerdezes;
+		state
+		diszpecser_RigelDiszpecser.VkActive__objektumNyilvantarto.ObjectConnectionInProgress_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.ObjectConnectionInProgress__objektumNyilvantarto.CollectData_objektumNyilvantarto;
+		state diszpecser_RigelDiszpecser.CollectData__objektumNyilvantarto.WaitObjConnection_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.ObjektumKezeloVezerloKozpontKezeloKepes__objektumKezeloVezerloKozpontKezeloKepes.VkActive_objektumKezeloVezerloKozpontKezeloKepes;
+		state
+		objektumKezelo_RigelObjektumKezelo.ObjektumNyilvantarto__objektumNyilvantarto.NoConnection_objektumNyilvantarto;
+		state vezerloKozpont_RigelVezerloKozpont.VkObjektumKezelo__objektumKezelo1.ObjectInvalid_objektumKezelo1;
+		state
+		vezerloKozpont_RigelVezerloKozpont.VkTeljesAdatLekerdezes__teljesAdatLekerdezes.HasOrionConnected_teljesAdatLekerdezes;
+		state
+		vezerloKozpont_RigelVezerloKozpont.HasOrionConnected__teljesAdatLekerdezes.WaitForConnection_teljesAdatLekerdezes;
+		variable diszpecser_RigelDiszpecser.isObjOrionConnected = true;
+		variable objektumKezelo_RigelObjektumKezelo.Command_objektumNyilvantarto = RigelObjControl::UV;
+		variable objektumKezelo_RigelObjektumKezelo.LocalTime_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.SessionID_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampObj1_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampObj2_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampVk1_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampVk2_objektumNyilvantarto = 0;
+	}
+}

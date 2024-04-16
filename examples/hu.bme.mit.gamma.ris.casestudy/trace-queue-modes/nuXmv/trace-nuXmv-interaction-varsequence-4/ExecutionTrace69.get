@@ -1,0 +1,471 @@
+import "/hu.bme.mit.gamma.ris.casestudy/model/System/Interaction/XS/.RigelSystem.gsm"
+@
+("EF (((__id_first_RigelObjektumKezelo4__objektumKezelo_RigelObjektumKezelo = 4) & (__id_second_RigelObjektumKezelo5__objektumKezelo_RigelObjektumKezelo = 15)))")
+trace RigelSystemTrace of RigelSystem (1, -1)
+step {
+	act {
+		reset
+	}
+	assert {
+		not raise FelugyeloPortOut.message_RigelMsgHeader();
+		not raise ObjektumKezeloPortOut.message_RigelMsgHeader();
+		state
+		diszpecser_RigelDiszpecser.DiszpObjektumNyilvantarto__objektumNyilvantarto.WaitForVK_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.DiszpTeljesAdatLekerdezes__teljesAdatLekerdezes.WaitForQuery_teljesAdatLekerdezes;
+		state
+		objektumKezelo_RigelObjektumKezelo.ObjektumKezeloVezerloKozpontKezeloKepes__objektumKezeloVezerloKozpontKezeloKepes.VkActive_objektumKezeloVezerloKozpontKezeloKepes;
+		state
+		objektumKezelo_RigelObjektumKezelo.ObjektumNyilvantarto__objektumNyilvantarto.NoConnection_objektumNyilvantarto;
+		state vezerloKozpont_RigelVezerloKozpont.VkObjektumKezelo__objektumKezelo1.ObjectInvalid_objektumKezelo1;
+		state
+		vezerloKozpont_RigelVezerloKozpont.VkTeljesAdatLekerdezes__teljesAdatLekerdezes.NoOrionConnected_teljesAdatLekerdezes;
+		variable diszpecser_RigelDiszpecser.isObjOrionConnected = false;
+		variable objektumKezelo_RigelObjektumKezelo.Command_objektumNyilvantarto = RigelObjControl::UV;
+		variable objektumKezelo_RigelObjektumKezelo.LocalTime_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.SessionID_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampObj1_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampObj2_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampVk1_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampVk2_objektumNyilvantarto = 0;
+	}
+}
+step {
+	act {
+		elapse 1
+		raise OrionConn.OrionConn()
+		schedule component
+	}
+	assert {
+		not raise FelugyeloPortOut.message_RigelMsgHeader();
+		not raise ObjektumKezeloPortOut.message_RigelMsgHeader();
+		state
+		diszpecser_RigelDiszpecser.DiszpObjektumNyilvantarto__objektumNyilvantarto.VkActive_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.DiszpTeljesAdatLekerdezes__teljesAdatLekerdezes.ProcessQuery_teljesAdatLekerdezes;
+		state
+		diszpecser_RigelDiszpecser.VkActive__objektumNyilvantarto.ObjectConnectionInProgress_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.ObjectConnectionInProgress__objektumNyilvantarto.CollectData_objektumNyilvantarto;
+		state diszpecser_RigelDiszpecser.CollectData__objektumNyilvantarto.WaitObjConnection_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.ObjektumKezeloVezerloKozpontKezeloKepes__objektumKezeloVezerloKozpontKezeloKepes.VkActive_objektumKezeloVezerloKozpontKezeloKepes;
+		state
+		objektumKezelo_RigelObjektumKezelo.ObjektumNyilvantarto__objektumNyilvantarto.NoConnection_objektumNyilvantarto;
+		state vezerloKozpont_RigelVezerloKozpont.VkObjektumKezelo__objektumKezelo1.ObjectInvalid_objektumKezelo1;
+		state
+		vezerloKozpont_RigelVezerloKozpont.VkTeljesAdatLekerdezes__teljesAdatLekerdezes.HasOrionConnected_teljesAdatLekerdezes;
+		state
+		vezerloKozpont_RigelVezerloKozpont.HasOrionConnected__teljesAdatLekerdezes.WaitForConnection_teljesAdatLekerdezes;
+		variable diszpecser_RigelDiszpecser.isObjOrionConnected = true;
+		variable objektumKezelo_RigelObjektumKezelo.Command_objektumNyilvantarto = RigelObjControl::UV;
+		variable objektumKezelo_RigelObjektumKezelo.LocalTime_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.SessionID_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampObj1_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampObj2_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampVk1_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampVk2_objektumNyilvantarto = 0;
+	}
+}
+step {
+	act {
+		elapse 1
+		schedule component
+	}
+	assert {
+		not raise FelugyeloPortOut.message_RigelMsgHeader();
+		not raise ObjektumKezeloPortOut.message_RigelMsgHeader();
+		state
+		diszpecser_RigelDiszpecser.DiszpObjektumNyilvantarto__objektumNyilvantarto.VkActive_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.DiszpTeljesAdatLekerdezes__teljesAdatLekerdezes.ProcessQuery_teljesAdatLekerdezes;
+		state
+		diszpecser_RigelDiszpecser.VkActive__objektumNyilvantarto.ObjectConnectionInProgress_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.ObjectConnectionInProgress__objektumNyilvantarto.CollectData_objektumNyilvantarto;
+		state diszpecser_RigelDiszpecser.CollectData__objektumNyilvantarto.WaitObjConnection_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.ObjektumKezeloVezerloKozpontKezeloKepes__objektumKezeloVezerloKozpontKezeloKepes.VkActive_objektumKezeloVezerloKozpontKezeloKepes;
+		state
+		objektumKezelo_RigelObjektumKezelo.ObjektumNyilvantarto__objektumNyilvantarto.NoConnection_objektumNyilvantarto;
+		state vezerloKozpont_RigelVezerloKozpont.VkObjektumKezelo__objektumKezelo1.ObjectInvalid_objektumKezelo1;
+		state
+		vezerloKozpont_RigelVezerloKozpont.VkTeljesAdatLekerdezes__teljesAdatLekerdezes.HasOrionConnected_teljesAdatLekerdezes;
+		state
+		vezerloKozpont_RigelVezerloKozpont.HasOrionConnected__teljesAdatLekerdezes.ProcessQuery_teljesAdatLekerdezes;
+		state vezerloKozpont_RigelVezerloKozpont.ProcessQuery__teljesAdatLekerdezes.Receive_teljesAdatLekerdezes;
+		variable diszpecser_RigelDiszpecser.isObjOrionConnected = true;
+		variable objektumKezelo_RigelObjektumKezelo.Command_objektumNyilvantarto = RigelObjControl::UV;
+		variable objektumKezelo_RigelObjektumKezelo.LocalTime_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.SessionID_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampObj1_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampObj2_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampVk1_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampVk2_objektumNyilvantarto = 0;
+	}
+}
+step {
+	act {
+		elapse 1
+		raise FelugyeloPortIn.message_RigelMsgHeader(#RigelMsgHeader {
+			Length := 0, Generation := 0, MessageType := RigelMsgType::RigelMsgReqTs1, ObjType :=
+			RigelObjType::Invalid, ObjId := 0, SafetyCode := 0, SQCause := RigelSQCause::NormalRequest, DataCause :=
+			RigelDataCause::NormalAnswer, Command := RigelObjControl::UV, CommandResult := RigelCommandStatus::OK,
+			Timestamp := 0, ConfirmedTimestamp := 0, SessionId := 0
+		})
+		raise AllObjDataSent.AllObjDataSent()
+		schedule component
+	}
+	assert {
+		not raise FelugyeloPortOut.message_RigelMsgHeader();
+		not raise ObjektumKezeloPortOut.message_RigelMsgHeader();
+		state
+		diszpecser_RigelDiszpecser.DiszpObjektumNyilvantarto__objektumNyilvantarto.VkActive_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.DiszpTeljesAdatLekerdezes__teljesAdatLekerdezes.Connected_teljesAdatLekerdezes;
+		state
+		diszpecser_RigelDiszpecser.VkActive__objektumNyilvantarto.ObjectConnectionInProgress_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.ObjectConnectionInProgress__objektumNyilvantarto.CollectData_objektumNyilvantarto;
+		state diszpecser_RigelDiszpecser.CollectData__objektumNyilvantarto.WaitData_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.ObjektumKezeloVezerloKozpontKezeloKepes__objektumKezeloVezerloKozpontKezeloKepes.VkActive_objektumKezeloVezerloKozpontKezeloKepes;
+		state
+		objektumKezelo_RigelObjektumKezelo.ObjektumNyilvantarto__objektumNyilvantarto.Connected_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.CommandProcessMachine__commandProcessMachine_objektumNyilvantarto.WaitTS1Req_commandProcessMachine_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.Idozito__idozito_objektumNyilvantarto.Idozito__State_idozito_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.SendDataChangeMachine__sendDataChangeMachine_objektumNyilvantarto.SendDataChange_sendDataChangeMachine_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.SendDataPeriodicMachine__sendDataPeriodicMachine_objektumNyilvantarto.SendDataPeriodic_sendDataPeriodicMachine_objektumNyilvantarto;
+		state vezerloKozpont_RigelVezerloKozpont.VkObjektumKezelo__objektumKezelo1.ObjectInvalid_objektumKezelo1;
+		state
+		vezerloKozpont_RigelVezerloKozpont.VkTeljesAdatLekerdezes__teljesAdatLekerdezes.HasOrionConnected_teljesAdatLekerdezes;
+		state
+		vezerloKozpont_RigelVezerloKozpont.HasOrionConnected__teljesAdatLekerdezes.ProcessQuery_teljesAdatLekerdezes;
+		state vezerloKozpont_RigelVezerloKozpont.ProcessQuery__teljesAdatLekerdezes.Receive_teljesAdatLekerdezes;
+		variable diszpecser_RigelDiszpecser.isObjOrionConnected = true;
+		variable objektumKezelo_RigelObjektumKezelo.Command_objektumNyilvantarto = RigelObjControl::UV;
+		variable objektumKezelo_RigelObjektumKezelo.LocalTime_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.SessionID_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampObj1_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampObj2_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampVk1_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampVk2_objektumNyilvantarto = 0;
+	}
+}
+step {
+	act {
+		elapse 1
+		schedule component
+	}
+	assert {
+		not raise FelugyeloPortOut.message_RigelMsgHeader();
+		not raise ObjektumKezeloPortOut.message_RigelMsgHeader();
+		state
+		diszpecser_RigelDiszpecser.DiszpObjektumNyilvantarto__objektumNyilvantarto.VkActive_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.DiszpTeljesAdatLekerdezes__teljesAdatLekerdezes.Connected_teljesAdatLekerdezes;
+		state
+		diszpecser_RigelDiszpecser.VkActive__objektumNyilvantarto.ObjectConnectionInProgress_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.ObjectConnectionInProgress__objektumNyilvantarto.CollectDataRepeat_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.CollectDataRepeat__objektumNyilvantarto.WaitObjConnectionRepeat_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.ObjektumKezeloVezerloKozpontKezeloKepes__objektumKezeloVezerloKozpontKezeloKepes.VkActive_objektumKezeloVezerloKozpontKezeloKepes;
+		state
+		objektumKezelo_RigelObjektumKezelo.ObjektumNyilvantarto__objektumNyilvantarto.Connected_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.CommandProcessMachine__commandProcessMachine_objektumNyilvantarto.WaitTS1Req_commandProcessMachine_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.Idozito__idozito_objektumNyilvantarto.Idozito__State_idozito_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.SendDataChangeMachine__sendDataChangeMachine_objektumNyilvantarto.SendDataChange_sendDataChangeMachine_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.SendDataPeriodicMachine__sendDataPeriodicMachine_objektumNyilvantarto.SendDataPeriodic_sendDataPeriodicMachine_objektumNyilvantarto;
+		state vezerloKozpont_RigelVezerloKozpont.VkObjektumKezelo__objektumKezelo1.ObjectInvalid_objektumKezelo1;
+		state
+		vezerloKozpont_RigelVezerloKozpont.VkTeljesAdatLekerdezes__teljesAdatLekerdezes.HasOrionConnected_teljesAdatLekerdezes;
+		state
+		vezerloKozpont_RigelVezerloKozpont.HasOrionConnected__teljesAdatLekerdezes.Connected_teljesAdatLekerdezes;
+		state
+		vezerloKozpont_RigelVezerloKozpont.ReceiveMachine__receiveMachine_teljesAdatLekerdezes.Receive_receiveMachine_teljesAdatLekerdezes;
+		state
+		vezerloKozpont_RigelVezerloKozpont.SendMachine__sendMachine_teljesAdatLekerdezes.Send_sendMachine_teljesAdatLekerdezes;
+		variable diszpecser_RigelDiszpecser.isObjOrionConnected = true;
+		variable objektumKezelo_RigelObjektumKezelo.Command_objektumNyilvantarto = RigelObjControl::UV;
+		variable objektumKezelo_RigelObjektumKezelo.LocalTime_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.SessionID_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampObj1_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampObj2_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampVk1_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampVk2_objektumNyilvantarto = 0;
+	}
+}
+step {
+	act {
+		elapse 1
+		schedule component
+	}
+	assert {
+		raise FelugyeloPortOut.message_RigelMsgHeader(#RigelMsgHeader {
+			Length := 10, Generation := 4, MessageType := RigelMsgType::RigelMsgInvalidateObj, ObjType :=
+			RigelObjType::Jelzo, ObjId := 7317, SafetyCode := 0, SQCause := RigelSQCause::NormalRequest, DataCause :=
+			RigelDataCause::NormalAnswer, Command := RigelObjControl::UV, CommandResult := RigelCommandStatus::OK,
+			Timestamp := 0, ConfirmedTimestamp := 0, SessionId := 0
+		});
+		not raise ObjektumKezeloPortOut.message_RigelMsgHeader();
+		state
+		diszpecser_RigelDiszpecser.DiszpObjektumNyilvantarto__objektumNyilvantarto.VkActive_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.DiszpTeljesAdatLekerdezes__teljesAdatLekerdezes.Connected_teljesAdatLekerdezes;
+		state diszpecser_RigelDiszpecser.VkActive__objektumNyilvantarto.Connected_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.ObjVkTransmissionMachine__objVkTransmission_objektumNyilvantarto.ObjVkTransmission_objVkTransmission_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.PeriodicQueryMachine__periodicQuery_objektumNyilvantarto.PeriodicQuery_periodicQuery_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.VkObjTransmissionMachine__vkObjTransmission_objektumNyilvantarto.VkObjTransmission_vkObjTransmission_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.ObjektumKezeloVezerloKozpontKezeloKepes__objektumKezeloVezerloKozpontKezeloKepes.VkActive_objektumKezeloVezerloKozpontKezeloKepes;
+		state
+		objektumKezelo_RigelObjektumKezelo.ObjektumNyilvantarto__objektumNyilvantarto.Connected_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.CommandProcessMachine__commandProcessMachine_objektumNyilvantarto.WaitTS1Req_commandProcessMachine_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.Idozito__idozito_objektumNyilvantarto.Idozito__State_idozito_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.SendDataChangeMachine__sendDataChangeMachine_objektumNyilvantarto.SendDataChange_sendDataChangeMachine_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.SendDataPeriodicMachine__sendDataPeriodicMachine_objektumNyilvantarto.SendDataPeriodic_sendDataPeriodicMachine_objektumNyilvantarto;
+		state vezerloKozpont_RigelVezerloKozpont.VkObjektumKezelo__objektumKezelo1.ObjectInvalid_objektumKezelo1;
+		state
+		vezerloKozpont_RigelVezerloKozpont.VkTeljesAdatLekerdezes__teljesAdatLekerdezes.HasOrionConnected_teljesAdatLekerdezes;
+		state
+		vezerloKozpont_RigelVezerloKozpont.HasOrionConnected__teljesAdatLekerdezes.Connected_teljesAdatLekerdezes;
+		state
+		vezerloKozpont_RigelVezerloKozpont.ReceiveMachine__receiveMachine_teljesAdatLekerdezes.Receive_receiveMachine_teljesAdatLekerdezes;
+		state
+		vezerloKozpont_RigelVezerloKozpont.SendMachine__sendMachine_teljesAdatLekerdezes.Send_sendMachine_teljesAdatLekerdezes;
+		variable diszpecser_RigelDiszpecser.isObjOrionConnected = true;
+		variable objektumKezelo_RigelObjektumKezelo.Command_objektumNyilvantarto = RigelObjControl::UV;
+		variable objektumKezelo_RigelObjektumKezelo.LocalTime_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.SessionID_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampObj1_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampObj2_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampVk1_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampVk2_objektumNyilvantarto = 0;
+	}
+}
+step {
+	act {
+		elapse 1
+		raise AllObjDataSent.AllObjDataSent()
+		schedule component
+	}
+	assert {
+		raise FelugyeloPortOut.message_RigelMsgHeader(#RigelMsgHeader {
+			Length := 10, Generation := 4, MessageType := RigelMsgType::RigelMsgData, ObjType := RigelObjType::Jelzo,
+			ObjId := 7317, SafetyCode := 0, SQCause := RigelSQCause::NormalRequest, DataCause :=
+			RigelDataCause::NormalAnswer, Command := RigelObjControl::UV, CommandResult := RigelCommandStatus::OK,
+			Timestamp := 0, ConfirmedTimestamp := 0, SessionId := 0
+		});
+		not raise ObjektumKezeloPortOut.message_RigelMsgHeader();
+		state
+		diszpecser_RigelDiszpecser.DiszpObjektumNyilvantarto__objektumNyilvantarto.VkActive_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.DiszpTeljesAdatLekerdezes__teljesAdatLekerdezes.Connected_teljesAdatLekerdezes;
+		state diszpecser_RigelDiszpecser.VkActive__objektumNyilvantarto.Connected_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.ObjVkTransmissionMachine__objVkTransmission_objektumNyilvantarto.ObjVkTransmission_objVkTransmission_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.PeriodicQueryMachine__periodicQuery_objektumNyilvantarto.PeriodicQuery_periodicQuery_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.VkObjTransmissionMachine__vkObjTransmission_objektumNyilvantarto.VkObjTransmission_vkObjTransmission_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.ObjektumKezeloVezerloKozpontKezeloKepes__objektumKezeloVezerloKozpontKezeloKepes.VkActive_objektumKezeloVezerloKozpontKezeloKepes;
+		state
+		objektumKezelo_RigelObjektumKezelo.ObjektumNyilvantarto__objektumNyilvantarto.Connected_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.CommandProcessMachine__commandProcessMachine_objektumNyilvantarto.WaitTS1Req_commandProcessMachine_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.Idozito__idozito_objektumNyilvantarto.Idozito__State_idozito_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.SendDataChangeMachine__sendDataChangeMachine_objektumNyilvantarto.SendDataChange_sendDataChangeMachine_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.SendDataPeriodicMachine__sendDataPeriodicMachine_objektumNyilvantarto.SendDataPeriodic_sendDataPeriodicMachine_objektumNyilvantarto;
+		state vezerloKozpont_RigelVezerloKozpont.VkObjektumKezelo__objektumKezelo1.ObjectValid_objektumKezelo1;
+		state
+		vezerloKozpont_RigelVezerloKozpont.VkTeljesAdatLekerdezes__teljesAdatLekerdezes.HasOrionConnected_teljesAdatLekerdezes;
+		state
+		vezerloKozpont_RigelVezerloKozpont.HasOrionConnected__teljesAdatLekerdezes.Connected_teljesAdatLekerdezes;
+		state
+		vezerloKozpont_RigelVezerloKozpont.ReceiveMachine__receiveMachine_teljesAdatLekerdezes.Receive_receiveMachine_teljesAdatLekerdezes;
+		state
+		vezerloKozpont_RigelVezerloKozpont.SendMachine__sendMachine_teljesAdatLekerdezes.Send_sendMachine_teljesAdatLekerdezes;
+		variable diszpecser_RigelDiszpecser.isObjOrionConnected = true;
+		variable objektumKezelo_RigelObjektumKezelo.Command_objektumNyilvantarto = RigelObjControl::UV;
+		variable objektumKezelo_RigelObjektumKezelo.LocalTime_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.SessionID_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampObj1_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampObj2_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampVk1_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampVk2_objektumNyilvantarto = 0;
+	}
+}
+step {
+	act {
+		elapse 1
+		raise FelugyeloPortIn.message_RigelMsgHeader(#RigelMsgHeader {
+			Length := 0, Generation := 0, MessageType := RigelMsgType::RigelMsgCommandConfirm, ObjType :=
+			RigelObjType::Invalid, ObjId := 0, SafetyCode := 0, SQCause := RigelSQCause::NormalRequest, DataCause :=
+			RigelDataCause::NormalAnswer, Command := RigelObjControl::UV, CommandResult := RigelCommandStatus::OK,
+			Timestamp := 0, ConfirmedTimestamp := 1, SessionId := 0
+		})
+		schedule component
+	}
+	assert {
+		not raise FelugyeloPortOut.message_RigelMsgHeader();
+		not raise ObjektumKezeloPortOut.message_RigelMsgHeader();
+		state
+		diszpecser_RigelDiszpecser.DiszpObjektumNyilvantarto__objektumNyilvantarto.VkActive_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.DiszpTeljesAdatLekerdezes__teljesAdatLekerdezes.Connected_teljesAdatLekerdezes;
+		state diszpecser_RigelDiszpecser.VkActive__objektumNyilvantarto.Connected_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.ObjVkTransmissionMachine__objVkTransmission_objektumNyilvantarto.ObjVkTransmission_objVkTransmission_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.PeriodicQueryMachine__periodicQuery_objektumNyilvantarto.PeriodicQuery_periodicQuery_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.VkObjTransmissionMachine__vkObjTransmission_objektumNyilvantarto.VkObjTransmission_vkObjTransmission_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.ObjektumKezeloVezerloKozpontKezeloKepes__objektumKezeloVezerloKozpontKezeloKepes.VkActive_objektumKezeloVezerloKozpontKezeloKepes;
+		state
+		objektumKezelo_RigelObjektumKezelo.ObjektumNyilvantarto__objektumNyilvantarto.NoConnection_objektumNyilvantarto;
+		state vezerloKozpont_RigelVezerloKozpont.VkObjektumKezelo__objektumKezelo1.ObjectValid_objektumKezelo1;
+		state
+		vezerloKozpont_RigelVezerloKozpont.VkTeljesAdatLekerdezes__teljesAdatLekerdezes.HasOrionConnected_teljesAdatLekerdezes;
+		state
+		vezerloKozpont_RigelVezerloKozpont.HasOrionConnected__teljesAdatLekerdezes.Connected_teljesAdatLekerdezes;
+		state
+		vezerloKozpont_RigelVezerloKozpont.ReceiveMachine__receiveMachine_teljesAdatLekerdezes.Receive_receiveMachine_teljesAdatLekerdezes;
+		state
+		vezerloKozpont_RigelVezerloKozpont.SendMachine__sendMachine_teljesAdatLekerdezes.Send_sendMachine_teljesAdatLekerdezes;
+		variable diszpecser_RigelDiszpecser.isObjOrionConnected = true;
+		variable objektumKezelo_RigelObjektumKezelo.Command_objektumNyilvantarto = RigelObjControl::UV;
+		variable objektumKezelo_RigelObjektumKezelo.LocalTime_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.SessionID_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampObj1_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampObj2_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampVk1_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampVk2_objektumNyilvantarto = 0;
+	}
+}
+step {
+	act {
+		elapse 1
+		raise FelugyeloPortIn.message_RigelMsgHeader(#RigelMsgHeader {
+			Length := 0, Generation := 0, MessageType := RigelMsgType::RigelMsgCommandConfirm, ObjType :=
+			RigelObjType::Invalid, ObjId := 0, SafetyCode := 0, SQCause := RigelSQCause::NormalRequest, DataCause :=
+			RigelDataCause::NormalAnswer, Command := RigelObjControl::UV, CommandResult := RigelCommandStatus::OK,
+			Timestamp := 1, ConfirmedTimestamp := 1, SessionId := 0
+		})
+		schedule component
+	}
+	assert {
+		not raise FelugyeloPortOut.message_RigelMsgHeader();
+		not raise ObjektumKezeloPortOut.message_RigelMsgHeader();
+		state
+		diszpecser_RigelDiszpecser.DiszpObjektumNyilvantarto__objektumNyilvantarto.VkActive_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.DiszpTeljesAdatLekerdezes__teljesAdatLekerdezes.Connected_teljesAdatLekerdezes;
+		state diszpecser_RigelDiszpecser.VkActive__objektumNyilvantarto.Connected_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.ObjVkTransmissionMachine__objVkTransmission_objektumNyilvantarto.ObjVkTransmission_objVkTransmission_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.PeriodicQueryMachine__periodicQuery_objektumNyilvantarto.PeriodicQuery_periodicQuery_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.VkObjTransmissionMachine__vkObjTransmission_objektumNyilvantarto.VkObjTransmission_vkObjTransmission_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.ObjektumKezeloVezerloKozpontKezeloKepes__objektumKezeloVezerloKozpontKezeloKepes.VkActive_objektumKezeloVezerloKozpontKezeloKepes;
+		state
+		objektumKezelo_RigelObjektumKezelo.ObjektumNyilvantarto__objektumNyilvantarto.NoConnection_objektumNyilvantarto;
+		state vezerloKozpont_RigelVezerloKozpont.VkObjektumKezelo__objektumKezelo1.ObjectValid_objektumKezelo1;
+		state
+		vezerloKozpont_RigelVezerloKozpont.VkTeljesAdatLekerdezes__teljesAdatLekerdezes.HasOrionConnected_teljesAdatLekerdezes;
+		state
+		vezerloKozpont_RigelVezerloKozpont.HasOrionConnected__teljesAdatLekerdezes.Connected_teljesAdatLekerdezes;
+		state
+		vezerloKozpont_RigelVezerloKozpont.ReceiveMachine__receiveMachine_teljesAdatLekerdezes.Receive_receiveMachine_teljesAdatLekerdezes;
+		state
+		vezerloKozpont_RigelVezerloKozpont.SendMachine__sendMachine_teljesAdatLekerdezes.Send_sendMachine_teljesAdatLekerdezes;
+		variable diszpecser_RigelDiszpecser.isObjOrionConnected = true;
+		variable objektumKezelo_RigelObjektumKezelo.Command_objektumNyilvantarto = RigelObjControl::UV;
+		variable objektumKezelo_RigelObjektumKezelo.LocalTime_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.SessionID_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampObj1_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampObj2_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampVk1_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampVk2_objektumNyilvantarto = 0;
+	}
+}
+step {
+	act {
+		elapse 1
+		raise FelugyeloPortIn.message_RigelMsgHeader(#RigelMsgHeader {
+			Length := 0, Generation := 0, MessageType := RigelMsgType::RigelMsgCommandConfirm, ObjType :=
+			RigelObjType::Invalid, ObjId := 0, SafetyCode := 0, SQCause := RigelSQCause::NormalRequest, DataCause :=
+			RigelDataCause::NormalAnswer, Command := RigelObjControl::UV, CommandResult := RigelCommandStatus::OK,
+			Timestamp := 0, ConfirmedTimestamp := 0, SessionId := 0
+		})
+		raise AllObjDataSent.AllObjDataSent()
+		schedule component
+	}
+	assert {
+		not raise FelugyeloPortOut.message_RigelMsgHeader();
+		not raise ObjektumKezeloPortOut.message_RigelMsgHeader();
+		state
+		diszpecser_RigelDiszpecser.DiszpObjektumNyilvantarto__objektumNyilvantarto.VkActive_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.DiszpTeljesAdatLekerdezes__teljesAdatLekerdezes.Connected_teljesAdatLekerdezes;
+		state diszpecser_RigelDiszpecser.VkActive__objektumNyilvantarto.Connected_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.ObjVkTransmissionMachine__objVkTransmission_objektumNyilvantarto.ObjVkTransmission_objVkTransmission_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.PeriodicQueryMachine__periodicQuery_objektumNyilvantarto.PeriodicQuery_periodicQuery_objektumNyilvantarto;
+		state
+		diszpecser_RigelDiszpecser.VkObjTransmissionMachine__vkObjTransmission_objektumNyilvantarto.VkObjTransmission_vkObjTransmission_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.ObjektumKezeloVezerloKozpontKezeloKepes__objektumKezeloVezerloKozpontKezeloKepes.VkActive_objektumKezeloVezerloKozpontKezeloKepes;
+		state
+		objektumKezelo_RigelObjektumKezelo.ObjektumNyilvantarto__objektumNyilvantarto.Connected_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.CommandProcessMachine__commandProcessMachine_objektumNyilvantarto.WaitTS1Req_commandProcessMachine_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.Idozito__idozito_objektumNyilvantarto.Idozito__State_idozito_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.SendDataChangeMachine__sendDataChangeMachine_objektumNyilvantarto.SendDataChange_sendDataChangeMachine_objektumNyilvantarto;
+		state
+		objektumKezelo_RigelObjektumKezelo.SendDataPeriodicMachine__sendDataPeriodicMachine_objektumNyilvantarto.SendDataPeriodic_sendDataPeriodicMachine_objektumNyilvantarto;
+		state vezerloKozpont_RigelVezerloKozpont.VkObjektumKezelo__objektumKezelo1.ObjectValid_objektumKezelo1;
+		state
+		vezerloKozpont_RigelVezerloKozpont.VkTeljesAdatLekerdezes__teljesAdatLekerdezes.HasOrionConnected_teljesAdatLekerdezes;
+		state
+		vezerloKozpont_RigelVezerloKozpont.HasOrionConnected__teljesAdatLekerdezes.Connected_teljesAdatLekerdezes;
+		state
+		vezerloKozpont_RigelVezerloKozpont.ReceiveMachine__receiveMachine_teljesAdatLekerdezes.Receive_receiveMachine_teljesAdatLekerdezes;
+		state
+		vezerloKozpont_RigelVezerloKozpont.SendMachine__sendMachine_teljesAdatLekerdezes.Send_sendMachine_teljesAdatLekerdezes;
+		variable diszpecser_RigelDiszpecser.isObjOrionConnected = true;
+		variable objektumKezelo_RigelObjektumKezelo.Command_objektumNyilvantarto = RigelObjControl::UV;
+		variable objektumKezelo_RigelObjektumKezelo.LocalTime_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.SessionID_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampObj1_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampObj2_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampVk1_objektumNyilvantarto = 0;
+		variable objektumKezelo_RigelObjektumKezelo.TimestampVk2_objektumNyilvantarto = 0;
+	}
+}
