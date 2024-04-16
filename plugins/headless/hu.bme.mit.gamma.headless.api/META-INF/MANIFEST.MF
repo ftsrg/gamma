@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Headless
 Bundle-SymbolicName: hu.bme.mit.gamma.headless.api;singleton:=true
-Bundle-Version: 2.10.0.qualifier
+Bundle-Version: 2.11.0.qualifier
 Automatic-Module-Name: hui.bme.mit.gamma.api.headless
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: org.eclipse.equinox.app;bundle-version="1.5.0",

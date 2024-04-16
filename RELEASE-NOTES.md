@@ -277,3 +277,20 @@
 * Bugs related to system reset and time-dependent behavior have been fixed in the Java code generator.
 * Optimization regarding variable assignments and boolean expressions has been introduced in the XSTS mapping.
 * Optimization regarding semantic variation points in statecharts has been introduced in the statechart optimizer.
+
+## 2024.04.16. - Version 2.11.0
+
+### What is New
+
+* Gamma now supports an automated model-mutation based approach for test generation.
+* GSL and GCL support state and environment invariants.
+* Gamma now supports the automated checking of trace equivalence.
+* The Spin back-end now can be used in the context of a BMC approach.
+
+### Improvements
+
+* Bugs have been fixed related to handling internal event transmission as some events in statecharts contained by cascade composite components were not transmitted.
+* Bugs have been fixed related to initializing clock variables in asynchronous adapters as clock variables were not initialized to 0 in the initialization transition of XSTS.
+* Bugs related to optimizations in regard to removing unreachable states and subregions have been fixed.
+* Bugs been fixed related to the Theta back-annotator component of the framework as it contained faults that affected the parsing of "default" values in array literals.
+* Bugs been fixed related to the SSA conversion as it contained a fault in regard to assigning values to elements of array variables in different branches of an if-else statement.

@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Graphical User Interface
 Bundle-SymbolicName: hu.bme.mit.gamma.gui;singleton:=true
-Bundle-Version: 2.10.0.qualifier
+Bundle-Version: 2.11.0.qualifier
 Export-Package: hu.bme.mit.gamma.gui.perspectives,
  hu.bme.mit.gamma.gui.wizards
 Require-Bundle: org.eclipse.jface,

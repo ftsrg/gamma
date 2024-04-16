@@ -1,6 +1,6 @@
 # The Gamma Statechart Composition Framework
 
-*Version 2.10.0* - For the latest version, check out the [dev](https://github.com/ftsrg/gamma/tree/dev) branch.
+*Version 2.11.0* - For the latest version, check out the [dev](https://github.com/ftsrg/gamma/tree/dev) branch.
 
 The Gamma Statechart Composition Framework is a toolset to model, verify and generate code for component-based reactive systems. The framework builds on Yakindu, an open source statechart modeling tool and provides an additional modeling layer to instatiate a communicating network of statecharts. Compositionality is hierarchical, which facilitates the creation of reusable component libraries. Individual statecharts, as well as composite statechart networks can be validated and verified by an automated translation to
 - [UPPAAL](http://www.uppaal.org/), a model checker for timed automata,
