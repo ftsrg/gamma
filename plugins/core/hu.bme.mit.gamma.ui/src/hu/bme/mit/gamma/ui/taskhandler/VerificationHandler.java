@@ -387,6 +387,8 @@ public class VerificationHandler extends TaskHandler {
 				}
 			}
 		}
+		// Note that variable references cannot be handled like this, as they can be (and are) removed  if their value
+		// is known every time they are references (but this value can change), e.g., a:= 1; b := a + 2; a := 3; b := a + 4;
 	}
 	
 	protected void removeCoveredProperties2(Collection<? extends CommentableStateFormula> formulas) {
