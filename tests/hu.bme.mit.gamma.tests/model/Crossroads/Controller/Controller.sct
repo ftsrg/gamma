@@ -11,7 +11,7 @@
               <vertices xsi:type="sgraph:Entry" xmi:id="_CoEyEERrEeqeOYp1qFQ-cA">
                 <outgoingTransitions xmi:id="_DDydsERrEeqeOYp1qFQ-cA" specification="" target="_DDpTwERrEeqeOYp1qFQ-cA"/>
               </vertices>
-              <vertices xsi:type="sgraph:State" xmi:id="_DDpTwERrEeqeOYp1qFQ-cA" name="G" incomingTransitions="_DDydsERrEeqeOYp1qFQ-cA"/>
+              <vertices xsi:type="sgraph:State" xmi:id="_DDpTwERrEeqeOYp1qFQ-cA" name="G_" incomingTransitions="_DDydsERrEeqeOYp1qFQ-cA"/>
             </regions>
           </vertices>
           <vertices xsi:type="sgraph:State" xmi:id="_aLVA4F1SEeeQSrn72MQqaA" specification="entry / raise PriorityControl.toggle" name="PriorityPrepares" incomingTransitions="_aLjDUF1SEeeQSrn72MQqaA _03nA0F1TEeeQSrn72MQqaA">
