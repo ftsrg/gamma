@@ -449,12 +449,29 @@ public class StatechartUtil extends ActionUtil {
 		int value = evaluator.evaluateInteger(time.getValue());
 		TimeUnit unit = time.getUnit();
 		switch (unit) {
-		case MILLISECOND:
-			return value;
-		case SECOND:
-			return value * 1000;
-		default:
-			throw new IllegalArgumentException("Not known unit: " + unit);
+			case MILLISECOND:
+				return value;
+			case SECOND:
+				return value * 1000;
+			default:
+				throw new IllegalArgumentException("Not known unit: " + unit);
+		}
+	}
+	
+	public long evaluateNanoseconds(TimeSpecification time) {
+		long value = evaluator.evaluateInteger(time.getValue());
+		TimeUnit unit = time.getUnit();
+		switch (unit) {
+			case NANOSECOND:
+				return value;
+			case MICROSECOND:
+				return value * 1000;
+			case MILLISECOND:
+				return value * 1000000;
+			case SECOND:
+				return value * 1000000000;
+			default:
+				throw new IllegalArgumentException("Not known unit: " + unit);
 		}
 	}
 	

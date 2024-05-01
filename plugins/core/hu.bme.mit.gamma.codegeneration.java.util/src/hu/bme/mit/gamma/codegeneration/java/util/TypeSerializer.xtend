@@ -32,7 +32,7 @@ class TypeSerializer {
 		throw new IllegalArgumentException("Not supported expression: " + type)
 	}
 	
-	def dispatch String serialize(TypeReference type) '''«IF type.reference.type.isPrimitive»«type.reference.type.serialize»«ELSE»«type.reference.name»«ENDIF»'''
+	def dispatch String serialize(TypeReference type) '''«IF type.reference.type.primitive»«type.reference.type.serialize»«ELSE»«type.reference.name»«ENDIF»'''
 	
 	def dispatch String serialize(BooleanTypeDefinition type) '''boolean'''
 	

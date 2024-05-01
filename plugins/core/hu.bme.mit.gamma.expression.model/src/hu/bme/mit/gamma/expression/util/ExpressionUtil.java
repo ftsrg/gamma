@@ -274,7 +274,7 @@ public class ExpressionUtil {
 		return subtractExpression;
 	}
 	
-	public Expression wrapIntoMultiply(Expression expression, int value) {
+	public Expression wrapIntoMultiply(Expression expression, long value) {
 		MultiplyExpression multiplyExpression = factory.createMultiplyExpression();
 		multiplyExpression.getOperands().add(expression);
 		multiplyExpression.getOperands().add(

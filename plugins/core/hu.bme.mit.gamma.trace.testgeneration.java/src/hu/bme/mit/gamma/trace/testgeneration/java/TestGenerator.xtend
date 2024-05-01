@@ -223,14 +223,15 @@ class TestGenerator {
 			if (cycle !== null) {
 				// Cycle steps are not handled differently: we unfold the steps
 				for (var i = 0; i < cycleIterationCount; i++) {
-					steps += cycle.steps.map[it.clone]
+					steps += cycle.steps //.map[it.clone] - cloning not needed as 'steps' is a basic list
 				}
 			}
 			
+			var i = 0
 			for (step : steps) {
 				val testMethod = '''
-					public void «IF steps.indexOf(step) == steps.size - 1»«FINAL_TEST_PREFIX»«TEST_NAME.toFirstUpper»«traceId++»()«ELSE»«TEST_NAME + stepId++»()«ENDIF» {
-						«IF step !== steps.head»«TEST_NAME»«IF step === steps.last»«stepId - 1»«ELSE»«stepId - 2»«ENDIF»();«ENDIF»
+					public void «IF i == steps.size - 1»«FINAL_TEST_PREFIX»«TEST_NAME.toFirstUpper»«traceId++»()«ELSE»«TEST_NAME + stepId++»()«ENDIF» {
+						«IF i !== 0»«TEST_NAME»«IF i == steps.size - 1»«stepId - 1»«ELSE»«stepId - 2»«ENDIF»();«ENDIF»
 						// Act
 						«FOR act : step.actions»
 							«actAndAssertSerializer.serialize(act)»
@@ -245,6 +246,7 @@ class TestGenerator {
 				'''
 				
 				builder.append(testMethod) // Test method is always appended
+				i++
 			}
 		}
 		return builder.toString

@@ -13,22 +13,27 @@ package hu.bme.mit.gamma.trace.testgeneration.java
 import hu.bme.mit.gamma.codegeneration.java.util.TypeSerializer
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.TimeUnit
 import hu.bme.mit.gamma.trace.model.AssignmentAct
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.InstanceSchedule
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Reset
 import hu.bme.mit.gamma.trace.model.TimeElapse
+import hu.bme.mit.gamma.trace.model.TimeUnitAnnotation
 import hu.bme.mit.gamma.trace.util.ExpressionTypeDeterminator
 import hu.bme.mit.gamma.trace.util.TraceUtil
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
 
 class ActAndAssertSerializer {
 	
 	protected final String TEST_INSTANCE_NAME
 	protected final String TIMER_OBJECT_NAME
 	
+	protected final TimeUnit IMPLEMENTATION_TIME_UNIT = TimeUnit.NANOSECOND
+		
 	protected final Component component
 	
 	protected final extension ExpressionSerializer expressionSerializer
@@ -85,9 +90,20 @@ class ActAndAssertSerializer {
 				!raiseEvent.arguments.empty», new Object[] {«FOR param : raiseEvent.arguments BEFORE " " SEPARATOR ", " AFTER " "»«param.serialize»«ENDFOR»}«ENDIF»);
 	'''
 
-	def dispatch String serialize(TimeElapse elapse) '''
-		«IF component.timed»«TIMER_OBJECT_NAME».elapse(«elapse.elapsedTime.serialize»);«ENDIF»
-	'''
+	def dispatch String serialize(TimeElapse elapse) {
+		val trace = elapse.containingExecutionTrace
+		var timeUnit = TimeUnit.MILLISECOND // Default model time unit
+		
+		if (trace.hasAnnotation(TimeUnitAnnotation)) {
+			val timeUnitAnnotation = trace.timeUnitAnnotation
+			timeUnit = timeUnitAnnotation.timeUnit
+		}
+		
+		val multplicator = timeUnit.getMultiplicator(IMPLEMENTATION_TIME_UNIT)
+		val multiplicatorString = (multplicator == 1) ? "" : ''' * «multplicator»l'''
+		
+		return '''«IF component.timed»«TIMER_OBJECT_NAME».elapse(«elapse.elapsedTime.serialize»«multiplicatorString»);«ENDIF»'''
+	}
 	
 	def dispatch String serialize(AssignmentAct assignment) '''
 		«assignment.lhs.serialize» = («assignment.lhs.type.serialize») «assignment.rhs.serialize»;

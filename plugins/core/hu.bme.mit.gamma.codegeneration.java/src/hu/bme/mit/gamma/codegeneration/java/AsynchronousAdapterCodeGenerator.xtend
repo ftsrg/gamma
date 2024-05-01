@@ -123,7 +123,7 @@ class AsynchronousAdapterCodeGenerator {
 					if (timerService != null) {
 						«FOR match : QueuesOfClocks.Matcher.on(engine).getAllMatches(component, null, null)»
 							timerService.unsetTimer(createTimerCallback(), «match.clock.name»);
-							timerService.setTimer(createTimerCallback(), «match.clock.name», «match.clock.timeSpecification.valueInMs», true);
+							timerService.setTimer(createTimerCallback(), «match.clock.name», «match.clock.timeSpecification.valueInNanoseconds», true);
 						«ENDFOR»
 					}
 				«ENDIF»
@@ -496,14 +496,25 @@ class AsynchronousAdapterCodeGenerator {
 	/**
 	 * Serializes the value of the given time specification with respect to the time unit. 
 	 */
-	protected def getValueInMs(TimeSpecification specification) {
-		if (specification.unit == TimeUnit.SECOND) {
-			return "(" + specification.value.serialize + ") * 1000";
+	protected def getValueInNanoseconds(TimeSpecification specification) {
+		val unit = specification.unit
+		val value = specification.value
+		if (unit == TimeUnit.NANOSECOND) {
+			return value.serialize
 		}
-		if (specification.unit == TimeUnit.HOUR) {
-			return "(" + specification.value.serialize + ") * 60 * 60 * 1000";
+		if (unit == TimeUnit.MICROSECOND) {
+			return "(" + value.serialize + ") * 1000l";
 		}
-		return specification.value.serialize
+		if (unit == TimeUnit.MILLISECOND) {
+			return "(" + value.serialize + ") * 1000000l";
+		}
+		if (unit == TimeUnit.SECOND) {
+			return "(" + value.serialize + ") * 1000000000l";
+		}
+		if (unit == TimeUnit.HOUR) {
+			return "(" + value.serialize + ") * 60 * 60 * 1000000000l";
+		}
+		return value.serialize
 	}
 	
 }

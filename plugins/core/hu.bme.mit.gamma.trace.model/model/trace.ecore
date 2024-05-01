@@ -59,4 +59,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="ExecutionTraceCommentAnnotation" eSuperTypes="#//ExecutionTraceAnnotation">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="comment" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TimeUnitAnnotation" eSuperTypes="#//ExecutionTraceAnnotation">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="timeUnit" eType="ecore:EEnum ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//TimeUnit"/>
+  </eClassifiers>
 </ecore:EPackage>

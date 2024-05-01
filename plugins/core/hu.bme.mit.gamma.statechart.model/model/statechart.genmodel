@@ -179,6 +179,8 @@
       <genEnumLiterals ecoreEnumLiteral="interface.ecore#//TimeUnit/MILLISECOND"/>
       <genEnumLiterals ecoreEnumLiteral="interface.ecore#//TimeUnit/SECOND"/>
       <genEnumLiterals ecoreEnumLiteral="interface.ecore#//TimeUnit/HOUR"/>
+      <genEnumLiterals ecoreEnumLiteral="interface.ecore#//TimeUnit/MICROSECOND"/>
+      <genEnumLiterals ecoreEnumLiteral="interface.ecore#//TimeUnit/NANOSECOND"/>
     </genEnums>
     <genClasses ecoreClass="interface.ecore#//Interface">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference interface.ecore#//Interface/parents"/>

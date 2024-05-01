@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -118,6 +118,27 @@ class VirtualTimerServiceCodeGenerator {
 				}
 			}
 			
+			public void elapse(long amount, TimeUnit timeUnit) {
+				long adjustedAmount = amount;
+				switch (timeUnit) {
+					case NANOSECOND:
+						// No operation;
+						break;
+					case MICROSECOND:
+						adjustedAmount *= 1000;
+						break;
+					case MILLISECOND:
+						adjustedAmount *= 1000000;
+						break;
+					case SECOND:
+						adjustedAmount *= 1000000000;
+						break;
+					default:
+						throw new IllegalArgumentException("Not supported time unit: " + timeUnit);
+				}
+				this.elapse(adjustedAmount);
+			}
+			
 			public void saveTime(Object object) {
 				elapsedTime.put(object, Long.valueOf(0));
 			}
@@ -125,8 +146,14 @@ class VirtualTimerServiceCodeGenerator {
 			public long getElapsedTime(Object object, TimeUnit timeUnit) {
 				long elapsedTime = this.elapsedTime.get(object);
 				switch (timeUnit) {
-					case MILLISECOND:
+					case NANOSECOND:
 						return elapsedTime;
+					case MICROSECOND:
+						return elapsedTime / 1000;
+					case MILLISECOND:
+						return elapsedTime / 1000000;
+					case SECOND:
+						return elapsedTime / 1000000000;
 					default:
 						throw new IllegalArgumentException("Not supported time unit: " + timeUnit);
 				}

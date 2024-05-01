@@ -101,6 +101,7 @@ class TraceBackAnnotator {
 			it.import = this.gammaPackage
 			it.name = this.component.name + "Trace"
 		]
+		trace.addTimeUnitAnnotation
 		val topComponentArguments = gammaPackage.topComponentArguments
 		// Note that the top component does not contain parameter declarations anymore due to the preprocessing
 		checkState(topComponentArguments.size == component.parameterDeclarations.size, 

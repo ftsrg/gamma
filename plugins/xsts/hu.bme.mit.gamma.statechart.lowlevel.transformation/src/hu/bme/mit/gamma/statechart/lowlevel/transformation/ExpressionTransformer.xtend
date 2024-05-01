@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -74,6 +74,7 @@ class ExpressionTransformer {
 	protected final Trace trace
 	protected final boolean FUNCTION_INLINING
 	protected final int MAX_RECURSION_DEPTH
+	protected final TimeUnit BASE_TIME_UNIT
 	
 	protected int currentRecursionDepth // For lambdas
 	
@@ -82,13 +83,18 @@ class ExpressionTransformer {
 	}
 	
 	new(Trace trace) {
-		this(trace, true, 10)
+		this(trace, true, 10, null)
 	}
 	
 	new(Trace trace, boolean functionInlining, int maxRecursionDepth) {
+		this(trace, functionInlining, maxRecursionDepth, null)
+	}
+	
+	new(Trace trace, boolean functionInlining, int maxRecursionDepth, TimeUnit baseTimeUnit) {
 		this.trace = trace
 		this.FUNCTION_INLINING = functionInlining
 		this.MAX_RECURSION_DEPTH = maxRecursionDepth
+		this.BASE_TIME_UNIT = baseTimeUnit
 		this.currentRecursionDepth = maxRecursionDepth
 		this.typeTransformer = new TypeTransformer(trace)
 	}
@@ -402,32 +408,32 @@ class ExpressionTransformer {
 		}
 		
 		checkState(times.allHelperEquals || // Exactly the same (e.g., with variables)
-			times.map[it.evaluateMilliseconds.toIntegerLiteral].allHelperEquals, // Same value
+			times.map[it.evaluateNanoseconds.toIntegerLiteral].allHelperEquals, // Same value
 			"Not one setting to the same timeout declaration: " + correctTimeoutSetting)
 		// Single assignment, expected branch
 		return times.head.transform
 	}
 	
 	protected def Expression transform(TimeSpecification time) {
-		return time.value.transform(time.unit)
+		var smallestTimeUnit = BASE_TIME_UNIT // If null (unset), the caller doesn't care - we try to find the smallest unit
+		if (smallestTimeUnit === null) {
+			try {
+				val _package = time.containingPackage // "Package" and not "component" - to support joint time lapse 
+				smallestTimeUnit = _package.smallestTimeUnit // MILLISEC by default in a model
+			} catch (Exception e) {}
+		}
+		return time.value.transform(time.unit, smallestTimeUnit)
 	}
 
-	protected def Expression transform(Expression timeValue, TimeUnit timeUnit) {
+	protected def Expression transform(Expression timeValue, TimeUnit timeUnit, TimeUnit base) {
 		val plainValue = timeValue.transformSimpleExpression
-		switch (timeUnit) {
-			case TimeUnit.SECOND: {
-				// S = 1000 MS
-				return plainValue.wrapIntoMultiply(1000)
-			}
-			case TimeUnit.HOUR: {
-				// H = 60 * 60 * 1000 MS
-				return plainValue.wrapIntoMultiply(60 * 60 * 1000)
-			}
-			default: {
-				// MS is base
-				return plainValue
-			}
+		val multiplicator = timeUnit.getMultiplicator(base)
+		checkState(0 < multiplicator)
+		
+		if (multiplicator == 1) {
+			return plainValue
 		}
+		return plainValue.wrapIntoMultiply(multiplicator)
 	}
 	
 	//

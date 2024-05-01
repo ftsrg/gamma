@@ -28,7 +28,8 @@ ExecutionTrace returns ExecutionTrace:
 ;
 
 ExecutionTraceAnnotations returns ExecutionTraceAnnotation:
-	AllowedWaitingAnnotation | NegativeTestAnnotation | ExecutionTraceCommentAnnotation
+	AllowedWaitingAnnotation | NegativeTestAnnotation | ExecutionTraceCommentAnnotation |
+			TimeUnitAnnotation
 ;
 
 NegativeTestAnnotation returns NegativeTestAnnotation:
@@ -42,6 +43,14 @@ AllowedWaitingAnnotation returns ExecutionTraceAllowedWaitingAnnotation:
 
 ExecutionTraceCommentAnnotation returns ExecutionTraceCommentAnnotation:
 	'@' '(' comment=STRING ')'
+;
+
+TimeUnitAnnotation returns TimeUnitAnnotation:
+	'@TimeUnit' '=' timeUnit=TimeUnit
+;
+
+enum TimeUnit returns InterfaceModel::TimeUnit:
+	NANOSECOND = 'ns' | MICROSECOND = 'μs' | MILLISECOND = 'ms' | SECOND = 's' | HOUR = 'h'
 ;
 
 Cycle returns Cycle:

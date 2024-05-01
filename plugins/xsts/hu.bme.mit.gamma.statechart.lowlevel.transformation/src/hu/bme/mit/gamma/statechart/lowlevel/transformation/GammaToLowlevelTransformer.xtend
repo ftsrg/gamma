@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,7 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
-import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.interface_.TimeUnit
+import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 
 import static com.google.common.base.Preconditions.checkState
@@ -19,9 +20,21 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 
 class GammaToLowlevelTransformer {
 	
-	protected final extension StatechartToLowlevelTransformer transformer = new StatechartToLowlevelTransformer
+	protected final extension StatechartToLowlevelTransformer transformer
 	
-	def hu.bme.mit.gamma.statechart.lowlevel.model.Package execute(Package _package) {
+	//
+	
+	new() {
+		this(null)
+	}
+	
+	new(TimeUnit baseTimeUnit) {
+		transformer = new StatechartToLowlevelTransformer(baseTimeUnit)
+	}
+	
+	//
+	
+	def Package execute(hu.bme.mit.gamma.statechart.interface_.Package _package) {
 		checkState(!_package.name.nullOrEmpty)
 		
 		val lowlevelPackage = _package.transform // This does not transform components anymore
@@ -33,7 +46,7 @@ class GammaToLowlevelTransformer {
 		return lowlevelPackage
 	}
 	
-	def hu.bme.mit.gamma.statechart.lowlevel.model.Package transform(Package _package) {
+	def Package transform(hu.bme.mit.gamma.statechart.interface_.Package _package) {
 		return transformer.execute(_package)
 	}
 	
@@ -41,7 +54,7 @@ class GammaToLowlevelTransformer {
 		return statechart.execute
 	}
 	
-	def hu.bme.mit.gamma.statechart.lowlevel.model.Package transformAndWrap(StatechartDefinition statechart) {
+	def Package transformAndWrap(StatechartDefinition statechart) {
 		val gammaPackage = statechart.containingPackage
 		
 		// Always a new Package (traced because of potential type declaration transformations)

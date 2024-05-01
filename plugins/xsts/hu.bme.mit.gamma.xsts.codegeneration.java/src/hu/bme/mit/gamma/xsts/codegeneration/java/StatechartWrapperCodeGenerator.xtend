@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -227,7 +227,7 @@ class StatechartWrapperCodeGenerator {
 			}
 			
 			private void executeStep() {
-				«IF xSts.hasClockVariable»int elapsedTime = (int) timer.getElapsedTime(this, TimeUnit.MILLISECOND);«ENDIF»
+				«IF xSts.hasClockVariable»long elapsedTime = timer.getElapsedTime(this, TimeUnit.NANOSECOND);«ENDIF»
 				«FOR timeout : xSts.clockVariables»
 					«CLASS_NAME.toFirstLower».set«timeout.name.toFirstUpper»(«CLASS_NAME.toFirstLower».get«timeout.name.toFirstUpper»() + elapsedTime);
 				«ENDFOR»

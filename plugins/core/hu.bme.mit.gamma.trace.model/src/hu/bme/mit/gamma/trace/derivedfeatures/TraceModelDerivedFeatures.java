@@ -48,6 +48,7 @@ import hu.bme.mit.gamma.trace.model.NegativeTestAnnotation;
 import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Step;
 import hu.bme.mit.gamma.trace.model.TimeElapse;
+import hu.bme.mit.gamma.trace.model.TimeUnitAnnotation;
 
 public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	//
@@ -62,6 +63,11 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 			return trace.getComponent().getParameterDeclarations();
 		}
 		throw new IllegalArgumentException("Not supported element: " + element);
+	}
+	
+	public static ExecutionTrace getContainingExecutionTrace(EObject object) {
+		ExecutionTrace trace = ecoreUtil.getContainerOfType(object, ExecutionTrace.class);
+		return trace;
 	}
 	
 	// Annotations
@@ -90,6 +96,11 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		List<ExecutionTraceAnnotation> annotations = trace.getAnnotations();
 		return javaUtil.filterIntoList(annotations,
 				ExecutionTraceAllowedWaitingAnnotation.class).get(0);
+	}
+	
+	public static TimeUnitAnnotation getTimeUnitAnnotation(ExecutionTrace trace) {
+		List<ExecutionTraceAnnotation> annotations = trace.getAnnotations();
+		return javaUtil.filterIntoList(annotations, TimeUnitAnnotation.class).get(0);
 	}
 	
 	public static boolean isNegativeTest(ExecutionTrace trace) {

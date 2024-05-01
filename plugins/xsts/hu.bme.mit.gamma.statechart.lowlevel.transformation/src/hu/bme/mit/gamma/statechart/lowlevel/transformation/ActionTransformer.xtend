@@ -30,6 +30,7 @@ import hu.bme.mit.gamma.action.util.ActionUtil
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.InitializableElement
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
+import hu.bme.mit.gamma.statechart.interface_.TimeUnit
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.statechart.DeactivateTimeoutAction
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
@@ -54,13 +55,13 @@ class ActionTransformer {
 	protected final Trace trace
 	
 	new(Trace trace) {
-		this(trace, true, 10)
+		this(trace, true, 10, null)
 	}
 	
-	new(Trace trace, boolean functionInlining, int maxRecursionDepth) {
+	new(Trace trace, boolean functionInlining, int maxRecursionDepth, TimeUnit baseTimeUnit) {
 		this.trace = trace
 		this.expressionTransformer = new ExpressionTransformer(this.trace,
-				functionInlining, maxRecursionDepth)
+				functionInlining, maxRecursionDepth, baseTimeUnit)
 		this.preconditionTransformer = new ExpressionPreconditionTransformer(
 			this.trace, this, functionInlining, maxRecursionDepth)
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)

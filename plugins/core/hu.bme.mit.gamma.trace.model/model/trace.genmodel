@@ -49,5 +49,8 @@
     <genClasses ecoreClass="trace.ecore#//ExecutionTraceCommentAnnotation">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute trace.ecore#//ExecutionTraceCommentAnnotation/comment"/>
     </genClasses>
+    <genClasses ecoreClass="trace.ecore#//TimeUnitAnnotation">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute trace.ecore#//TimeUnitAnnotation/timeUnit"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -65,7 +65,7 @@ class StatechartCodeGenerator {
 			«ENDFOR»
 «««			Timeout variables		
 			«FOR variableDeclaration : xSts.retrieveTimeouts»
-				private «variableDeclaration.type.serialize» «variableDeclaration.name»;
+				private long «variableDeclaration.name»;
 			«ENDFOR»
 			
 			public «CLASS_NAME»(«FOR parameter : xSts.retrieveComponentParameters SEPARATOR ', '»«parameter.type.serialize» «parameter.name»«ENDFOR») {
@@ -110,15 +110,15 @@ class StatechartCodeGenerator {
 			}
 			//
 			
-«««			No separation of variables on this level
+«««			No separation of variables on this level (apart from type)
 			«FOR variable : xSts.variableGroups
 					.map[it.variables]
 					.flatten SEPARATOR System.lineSeparator»
-				public void set«variable.name.toFirstUpper»(«variable.type.serialize» «variable.name») {
+				public void set«variable.name.toFirstUpper»(«IF variable.clock»long«ELSE»«variable.type.serialize»«ENDIF» «variable.name») {
 					this.«variable.name» = «variable.name»;
 				}
 				
-				public «variable.type.serialize» get«variable.name.toFirstUpper»() {
+				public «IF variable.clock»long«ELSE»«variable.type.serialize»«ENDIF» get«variable.name.toFirstUpper»() {
 					return «variable.name»;
 				}
 			«ENDFOR»
@@ -129,15 +129,7 @@ class StatechartCodeGenerator {
 				changeState();
 				clearInEvents();
 			}
-«««			
-«««			private void signalTimePassing() {
-«««				«FOR timeout : xSts.retrieveTimeouts»
-«««					if («timeout.name» == 0) {
-«««						«timeout.name» = -1;
-«««					}
-«««				«ENDFOR»
-«««			}
-
+			
 			«xSts.serializeChangeState»
 			
 			private void clearOutEvents() {

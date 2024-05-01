@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -35,6 +35,7 @@ import hu.bme.mit.gamma.expression.model.ModExpression
 import hu.bme.mit.gamma.expression.model.MultiplyExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
 import hu.bme.mit.gamma.expression.model.OrExpression
+import hu.bme.mit.gamma.expression.model.PredicateExpression
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
@@ -42,9 +43,11 @@ import hu.bme.mit.gamma.expression.model.SubtractExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.model.XorExpression
 import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
@@ -53,6 +56,7 @@ class ExpressionSerializer {
 	public static final ExpressionSerializer INSTANCE = new ExpressionSerializer
 	protected new() {}
 	//
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
 	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	protected final extension ExpressionTypeDeterminator2 expressionTypeDeterminator3 = ExpressionTypeDeterminator2.INSTANCE
@@ -85,7 +89,28 @@ class ExpressionSerializer {
 	}
 	
 	def dispatch String serialize(IntegerLiteralExpression expression) {
-		return expression.value.toString
+		val value = expression.value
+		val casting = (expression.needsLongCast) ? "l" : ""
+		return value.toString + casting
+	}
+	
+	protected def needsLongCast(IntegerLiteralExpression expression) {
+		val value = expression.value
+		if (Integer.MAX_VALUE < value.longValue) {
+			return true
+		}
+		
+		val predicate = ecoreUtil.getContainerOfType(expression, PredicateExpression)
+		if (predicate !== null) { // 30 * 1000000000 <= timeout
+			if (predicate.getSelfAndAllContentsOfType(DirectReferenceExpression)
+					.map[it.declaration].filter(VariableDeclaration).exists[it.clock || it.scheduledClock]) {
+				return true
+			}
+		}
+		
+		// It seems, assignments do not have to be handled
+		
+		return false
 	}
 	
 	def dispatch String serialize(DecimalLiteralExpression expression) {
@@ -105,11 +130,11 @@ class ExpressionSerializer {
 	}
 	
 	def dispatch String serialize(DirectReferenceExpression expression) {		
-		if (expression.declaration instanceof ConstantDeclaration) {
-			val constant = expression.declaration as ConstantDeclaration
-			return constant.expression.serialize	
+		val declaration = expression.declaration
+		if (declaration instanceof ConstantDeclaration) {
+			return declaration.expression.serialize	
 		}
-		return expression.declaration.name
+		return declaration.name
 	}
 	
 	def dispatch String serialize(ArrayAccessExpression expression) {

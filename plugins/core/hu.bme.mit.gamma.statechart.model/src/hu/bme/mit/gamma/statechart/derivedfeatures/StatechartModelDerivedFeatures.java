@@ -41,6 +41,7 @@ import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
+import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Type;
@@ -380,6 +381,81 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static boolean hasAnnotation(StatechartDefinition statechart,
 			Class<? extends StatechartAnnotation> annotation) {
 		return statechart.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
+	}
+	
+	public static TimeUnit getSmallestTimeUnit(NamedElement element) {
+		List<TimeSpecification> timeUnits = ecoreUtil.getAllContentsOfType(
+				element, TimeSpecification.class);
+		if (timeUnits.stream().anyMatch(it -> it.getUnit() == TimeUnit.NANOSECOND)) {
+			return TimeUnit.NANOSECOND;
+		}
+		if (timeUnits.stream().anyMatch(it -> it.getUnit() == TimeUnit.MICROSECOND)) {
+			return TimeUnit.MICROSECOND;
+		}
+		if (timeUnits.stream().anyMatch(it -> it.getUnit() == TimeUnit.MILLISECOND)) {
+			return TimeUnit.MILLISECOND;
+		}
+		if (timeUnits.stream().anyMatch(it -> it.getUnit() == TimeUnit.SECOND)) {
+			return TimeUnit.SECOND;
+		}
+		if (timeUnits.stream().anyMatch(it -> it.getUnit() == TimeUnit.HOUR)) {
+			return TimeUnit.HOUR;
+		}
+		// If none of the above: ms is default
+		return TimeUnit.MILLISECOND;
+	}
+	
+	public static long getMultiplicator(TimeUnit unit, TimeUnit base) {
+		long value = 1;
+		switch (unit) {
+			case NANOSECOND: {
+				break;
+			}
+			case MICROSECOND: {
+				value *= 1000;
+				break;
+			}
+			case MILLISECOND: {
+				value *= 1000000;
+				break;
+			}
+			case SECOND: {
+				value *= 1000000000;
+				break;
+			}
+			case HOUR: {
+				value *= 1000000000 * 60 * 60;
+				break;
+			}
+			default:
+				throw new IllegalArgumentException("Unexpected value: " + unit);
+		}
+		// Value is now in nanoseconds
+		switch (base) {
+			case NANOSECOND: {
+				break;
+			}
+			case MICROSECOND: {
+				value /= 1000;
+				break;
+			}
+			case MILLISECOND: {
+				value /= 1000000;
+				break;
+			}
+			case SECOND: {
+				value /= 1000000000;
+				break;
+			}
+			case HOUR: {
+				value /= 1000000000 * 60 * 60;
+				break;
+			}
+			default:
+				throw new IllegalArgumentException("Unexpected value: " + unit);
+		}
+		
+		return value;
 	}
 	
 	public static Set<Package> getImportableInterfacePackages(Component component) {

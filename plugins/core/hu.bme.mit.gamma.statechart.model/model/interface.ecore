@@ -93,6 +93,8 @@
     <eLiterals name="MILLISECOND"/>
     <eLiterals name="SECOND" value="1"/>
     <eLiterals name="HOUR" value="2"/>
+    <eLiterals name="MICROSECOND" value="4"/>
+    <eLiterals name="NANOSECOND" value="8"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentAnnotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="WrapperComponentAnnotation" eSuperTypes="#//ComponentAnnotation"/>

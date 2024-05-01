@@ -64,6 +64,19 @@ class TraceBuilder {
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE // For component instance reference
 	
+	// Add annotation
+	
+	def void addTimeUnitAnnotation(ExecutionTrace trace) {
+		val component = trace.component
+		val _package = component.containingPackage
+		val smallestTimeUnit = _package.smallestTimeUnit
+		
+		val timeUnitAnnotation = createTimeUnitAnnotation => [
+			it.timeUnit = smallestTimeUnit
+		]
+		trace.annotations += timeUnitAnnotation
+	}
+	
 	// Add unraised event negations
 	
 	def addUnraisedEventNegations(ExecutionTrace trace) {

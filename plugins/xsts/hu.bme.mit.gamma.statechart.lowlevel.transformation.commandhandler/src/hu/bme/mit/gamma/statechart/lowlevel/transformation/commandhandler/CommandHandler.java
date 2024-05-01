@@ -36,6 +36,7 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer.ChoiceInliner;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer.VariableCommonizer;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.L2STrace;
 import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.GammaToLowlevelTransformer;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
@@ -91,7 +92,7 @@ public class CommandHandler extends AbstractHandler {
 		
 		String fileNameWithoutExtenstion = gammaStatechart.getName();
 		
-		GammaToLowlevelTransformer transformer = new GammaToLowlevelTransformer();
+		GammaToLowlevelTransformer transformer = new GammaToLowlevelTransformer(TimeUnit.NANOSECOND); // Explicitly for code generation
 		// Transforming only a single statechart
 		hu.bme.mit.gamma.statechart.lowlevel.model.Package lowlevelPackage = transformer.transformAndWrap(gammaStatechart);
 		ecoreUtil.normalSave(lowlevelPackage, modelFolderUri, fileNameWithoutExtenstion + ".lgsm");
