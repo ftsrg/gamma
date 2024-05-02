@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -839,11 +839,15 @@ class YakinduToGammaTransformer {
 			it.timeoutDeclaration = gammaTimeoutVariable
 			it.createChild(setTimeoutAction_Time, timeSpecification) as TimeSpecification => [
 				it.transform(timeSpecification_Value, yExpression)
-				it.unit = switch(timeUnit) {
+				it.unit = switch (timeUnit) {
 					case SECOND:
 						hu.bme.mit.gamma.statechart.interface_.TimeUnit.SECOND
 					case MILLISECOND:
 						hu.bme.mit.gamma.statechart.interface_.TimeUnit.MILLISECOND
+					case MICROSECOND:
+						hu.bme.mit.gamma.statechart.interface_.TimeUnit.MICROSECOND
+					case NANOSECOND:
+						hu.bme.mit.gamma.statechart.interface_.TimeUnit.NANOSECOND
 					default: 
 						throw new IllegalArgumentException("Only second and millisecond are supported!")
 				}

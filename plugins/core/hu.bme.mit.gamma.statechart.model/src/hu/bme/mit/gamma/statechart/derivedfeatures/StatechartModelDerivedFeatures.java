@@ -384,22 +384,15 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static TimeUnit getSmallestTimeUnit(NamedElement element) {
+		TimeUnit[] supportedTimeUnits = new TimeUnit[] { TimeUnit.NANOSECOND, // Order is important
+				TimeUnit.MICROSECOND, TimeUnit.MILLISECOND, TimeUnit.SECOND, TimeUnit.HOUR };
+		//
 		List<TimeSpecification> timeUnits = ecoreUtil.getAllContentsOfType(
 				element, TimeSpecification.class);
-		if (timeUnits.stream().anyMatch(it -> it.getUnit() == TimeUnit.NANOSECOND)) {
-			return TimeUnit.NANOSECOND;
-		}
-		if (timeUnits.stream().anyMatch(it -> it.getUnit() == TimeUnit.MICROSECOND)) {
-			return TimeUnit.MICROSECOND;
-		}
-		if (timeUnits.stream().anyMatch(it -> it.getUnit() == TimeUnit.MILLISECOND)) {
-			return TimeUnit.MILLISECOND;
-		}
-		if (timeUnits.stream().anyMatch(it -> it.getUnit() == TimeUnit.SECOND)) {
-			return TimeUnit.SECOND;
-		}
-		if (timeUnits.stream().anyMatch(it -> it.getUnit() == TimeUnit.HOUR)) {
-			return TimeUnit.HOUR;
+		for (TimeUnit timeUnit : supportedTimeUnits) {
+			if (timeUnits.stream().anyMatch(it -> it.getUnit() == timeUnit)) {
+				return timeUnit;
+			}
 		}
 		// If none of the above: ms is default
 		return TimeUnit.MILLISECOND;
@@ -3459,6 +3452,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				return clonedTime;
 			case SECOND: {
 				return statechartUtil.wrapIntoMultiply(clonedTime, 1000);
+			}
+			case HOUR: {
+				return statechartUtil.wrapIntoMultiply(clonedTime, 1000 * 60 * 60);
 			}
 		default:
 			throw new IllegalArgumentException("Unexpected value: " + unit);

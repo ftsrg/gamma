@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -33,14 +33,7 @@ public class ActionSerializer extends hu.bme.mit.gamma.action.util.ActionSeriali
 	}
 
 	protected String serialize(TimeUnit timeUnit) {
-		switch (timeUnit) {
-		case SECOND:
-			return "s";
-		case MILLISECOND:
-			return "ms";
-		default:
-			throw new IllegalArgumentException("Not known time unit: " + timeUnit);
-		}
+		return ((ExpressionSerializer) expressionSerializer)._serialize(timeUnit);
 	}
 
 	protected String _serialize(RaiseEventAction raiseEventAction) {

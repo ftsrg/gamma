@@ -453,6 +453,8 @@ public class StatechartUtil extends ActionUtil {
 				return value;
 			case SECOND:
 				return value * 1000;
+			case HOUR:
+				return value * 1000 * 60 * 60;
 			default:
 				throw new IllegalArgumentException("Not known unit: " + unit);
 		}
@@ -470,6 +472,8 @@ public class StatechartUtil extends ActionUtil {
 				return value * 1000000;
 			case SECOND:
 				return value * 1000000000;
+			case HOUR:
+				return value * 1000000000 * 60 * 60;
 			default:
 				throw new IllegalArgumentException("Not known unit: " + unit);
 		}

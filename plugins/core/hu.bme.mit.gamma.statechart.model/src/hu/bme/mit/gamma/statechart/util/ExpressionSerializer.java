@@ -67,12 +67,18 @@ public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.Expre
 	
 	protected String _serialize(TimeUnit timeUnit) {
 		switch (timeUnit) {
-		case SECOND:
-			return "s";
-		case MILLISECOND:
-			return "ms";
-		default:
-			throw new IllegalArgumentException("Not known time unit: " + timeUnit);
+			case HOUR:
+				return "h";
+			case SECOND:
+				return "s";
+			case MILLISECOND:
+				return "ms";
+			case MICROSECOND:
+				return "µs";
+			case NANOSECOND:
+				return "ns";
+			default:
+				throw new IllegalArgumentException("Not known time unit: " + timeUnit);
 		}
 	}
 	
