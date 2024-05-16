@@ -67,11 +67,10 @@ public class CommandHandler extends AbstractHandler {
 	protected void start(ExecutionEvent event) {
 		try {
 			ISelection sel = HandlerUtil.getActiveMenuSelection(event);
-			if (sel instanceof IStructuredSelection) {
-				IStructuredSelection selection = (IStructuredSelection) sel;
-				if (selection.getFirstElement() != null) {
-					if (selection.getFirstElement() instanceof IFile) {
-						IFile file = (IFile) selection.getFirstElement();
+			if (sel instanceof IStructuredSelection selection) {
+				Object firstElement = selection.getFirstElement();
+				if (firstElement != null) {
+					if (firstElement instanceof IFile file) {
 						GammaApi gammaApi = new GammaApi();
 						gammaApi.run(
 								file.getFullPath().toString());
