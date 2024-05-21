@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2023-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,9 +10,11 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.fei.util;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map.Entry;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.Expression;
@@ -31,6 +33,11 @@ import hu.bme.mit.gamma.fei.model.FeiModelPackage;
 import hu.bme.mit.gamma.fei.model.GlobalDynamics;
 import hu.bme.mit.gamma.fei.model.LocalDynamics;
 import hu.bme.mit.gamma.fei.model.SelfFixTemplate;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.interface_.Event;
+import hu.bme.mit.gamma.statechart.interface_.Port;
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.util.StatechartModelValidator;
 
 public class FaultExtensionModelValidator extends StatechartModelValidator {
@@ -58,7 +65,7 @@ public class FaultExtensionModelValidator extends StatechartModelValidator {
 				ValidationResult.ERROR,
 					"If the local dynamics is set to 'permanent', then the self-fix template must not be instantiated",
 						new ReferenceInfo(FeiModelPackage.Literals.FAULT_MODE__LOCAL_DYNAMICS)));
-	}
+		}
 	
 		return validationResultMessages;
 	}
@@ -71,7 +78,7 @@ public class FaultExtensionModelValidator extends StatechartModelValidator {
 		if (faultModes.size() > 1 && globalDynamics == null) {
 			validationResultMessages.add(new ValidationResultMessage(
 				ValidationResult.ERROR,
-					"If  multiple fault effects are specified, then global dynamics must also be defined",
+					"If multiple fault effects are specified, then global dynamics must also be defined",
 						new ReferenceInfo(FeiModelPackage.Literals.FAULT_SLICE__FAULT_MODES)));
 		}
 		
@@ -82,6 +89,29 @@ public class FaultExtensionModelValidator extends StatechartModelValidator {
 						new ReferenceInfo(FeiModelPackage.Literals.FAULT_SLICE__GLOBAL_DYNAMICS)));
 		}
 	
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkEffect(Effect effect) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		ComponentInstanceEventReferenceExpression failureEvent = effect.getFailureEvent();
+		if (failureEvent != null) {
+			Port port = failureEvent.getPort();
+			Event event = failureEvent.getEvent();
+			
+			StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(port);
+			if (statechart != null) {
+				List<Entry<Port, Event>> triggeringInputEvents = StatechartModelDerivedFeatures.getTriggeringInputEvents(statechart);
+				if (!triggeringInputEvents.contains(new SimpleEntry<Port, Event>(port, event))) {
+					validationResultMessages.add(new ValidationResultMessage(
+							ValidationResult.ERROR,
+								"The referenced event is not used in the model",
+									new ReferenceInfo(FeiModelPackage.Literals.EFFECT__FAILURE_EVENT)));
+				}
+			}
+		}
+		
 		return validationResultMessages;
 	}
 			

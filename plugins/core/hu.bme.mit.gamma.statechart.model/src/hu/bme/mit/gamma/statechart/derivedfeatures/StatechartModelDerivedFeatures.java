@@ -1783,6 +1783,32 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return events;
 	}
 	
+	public static List<Entry<Port, Event>> getTriggeringInputEvents(StatechartDefinition statechart) {
+		List<Entry<Port, Event>> events = new ArrayList<Entry<Port, Event>>();
+		
+		for (Transition transition : statechart.getTransitions()) {
+			events.addAll(
+					getTriggeringInputEvents(transition));
+		}
+		
+		return events;
+	}
+
+	private static List<Entry<Port, Event>> getTriggeringInputEvents(Transition transition) {
+		List<Entry<Port, Event>> events = new ArrayList<Entry<Port, Event>>();
+		
+		Trigger trigger = transition.getTrigger();
+		if (trigger != null) {
+			List<EventReference> eventReferences = ecoreUtil.getSelfAndAllContentsOfType(trigger, EventReference.class);
+			for (EventReference eventReference : eventReferences) {
+				events.addAll(
+						getInputEvents(eventReference));
+			}
+		}
+		
+		return events;
+	}
+	
 	public static List<Event> getInputEvents(Component component) {
 		return getInputEvents(
 				getAllPorts(component));

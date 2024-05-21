@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Gamma project
+ * Copyright (c) 2023-2024 Contributors to the Gamma project
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.fei.language.validation
 
 import hu.bme.mit.gamma.fei.model.CommonCauseMode
 import hu.bme.mit.gamma.fei.model.CommonCauseProbability
+import hu.bme.mit.gamma.fei.model.Effect
 import hu.bme.mit.gamma.fei.model.FaultMode
 import hu.bme.mit.gamma.fei.model.FaultSlice
 import hu.bme.mit.gamma.fei.model.FaultTransition
@@ -36,6 +37,11 @@ class FaultExtensionLanguageValidator extends AbstractFaultExtensionLanguageVali
 	@Check
 	def checkGlobalDynamics(FaultSlice faultSlice) {
 		handleValidationResultMessage(feiModelValidator.checkGlobalDynamics(faultSlice))
+	}
+	
+	@Check
+	def checkEffect(Effect effect) {
+		handleValidationResultMessage(feiModelValidator.checkEffect(effect))
 	}
 	
 	@Check
