@@ -779,6 +779,7 @@ class ModelMutator {
 			filteredObjects += objects
 			filteredObjects.retainAll(matchedObjects)
 			logger.info("Filtered unmatched elements")
+			matchedObjects.clear // Clearing the matches
 			
 			return filteredObjects
 		}
