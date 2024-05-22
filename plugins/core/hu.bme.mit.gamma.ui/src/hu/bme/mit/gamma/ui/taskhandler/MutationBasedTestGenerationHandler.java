@@ -46,7 +46,6 @@ import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
 import hu.bme.mit.gamma.mutation.ModelMutator.MutationHeuristics;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.StateFormula;
-import hu.bme.mit.gamma.property.util.PropertyUtil;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression;
@@ -68,6 +67,7 @@ import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Step;
+import hu.bme.mit.gamma.trace.util.TraceUtil;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.ui.taskhandler.VerificationHandler.ExecutionTraceSerializer;
 import hu.bme.mit.gamma.util.ScannerLogger;
@@ -84,8 +84,12 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 	//
 	protected final String ENVIRONMENT_VARIABLE_FOR_JUNIT_JAR = "JUNIT";
 	protected final int MAX_TEST_RUN = 10;
+	protected final boolean optimizeTraces = true;
+	
+	protected final List<ExecutionTrace> generatedTraces = new ArrayList<ExecutionTrace>();
+	
 	//
-	protected final PropertyUtil propertyUtil = PropertyUtil.INSTANCE;
+	protected final TraceUtil traceUtil = TraceUtil.INSTANCE;
 	protected final ExecutionTraceSerializer traceSerializer = ExecutionTraceSerializer.INSTANCE;
 	//
 	
@@ -174,8 +178,13 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 			// End of mutant check based on already generated tests
 			//
 		
-			// Generating test based on the newly generated mutant
+			// Generating a test based on the newly generated mutant
 			Package mutatedModel = javaUtil.getLast(mutatedModels);
+			if (mutatedModel == null) {
+				logger.info("Could not generate a concrete test passing mutant in iteration " + i);
+				continue; // We continue with the next iteration (which will probably also 'fail' as there are many equivalent mutants)
+			}
+			
 			// Handling these packages as if they were not unfolded (as the original component is not) 
 			mutatedModel.getAnnotations().removeIf(it -> it instanceof UnfoldedPackageAnnotation);
 			ecoreUtil.save(mutatedModel);
@@ -343,15 +352,24 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 				trace.setImport(
 						StatechartModelDerivedFeatures.getContainingPackage(trace.getComponent()));
 				
-				// Traces and tests are not serialized
-				traceSerializer.serialize(traceFolderUri, traceFileName, null, testFolderUri,
-						testFileName, packageName, trace, file, programmingLanguage);
+				generatedTraces.add(trace);
 				
 				// Extend trace metrics - used when another mutation is conducted
 				extendTraceMetrics(stateFrequency, trace);
 			}
 		}
 		
+		// Removing covered traces
+		if (optimizeTraces) {
+			// Optimization again on the retrieved tests (front to back and vice versa)
+			traceUtil.removeCoveredExecutionTraces(generatedTraces);
+		}
+		
+		// Serializing and concretizing the generated traces
+		for (ExecutionTrace trace : generatedTraces) {
+			traceSerializer.serialize(traceFolderUri, traceFileName, null, testFolderUri,
+					testFileName, packageName, trace, file, programmingLanguage);
+		}
 	}
 	
 	//
@@ -374,6 +392,7 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 				List<Component> components = mutatedModel.getComponents();
 				Component mutatedComponent = components.stream().filter(it ->
 						StatechartModelDerivedFeatures.isMutant(it)).findFirst().get();
+				String mutatedComponentName = mutatedComponent.getName();
 				//
 				Component originalComponent = null;
 				if (mutatedComponent == StatechartModelDerivedFeatures.getFirstComponent(mutatedModel)) {
@@ -390,6 +409,7 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 						}
 					}
 				}
+				String originalComponentName = originalComponent.getName();
 				//
 				Package originalComponentPackage = StatechartModelDerivedFeatures.getContainingPackage(originalComponent);
 				String originalComponentPackageName = originalComponentPackage.getName();
@@ -397,8 +417,10 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 				
 				// Adjusting mutation model
 				mutatedModel.setName(originalComponentPackageName);
+				mutatedComponent.setName(originalComponentName);
 				mutatedModel.getImports().clear();
 				mutatedModel.getImports().addAll(originalImports);
+				ecoreUtil.save(mutatedModel); // Needed for code generation
 				
 				// Generate code for component
 				codeGeneration.setComponent(mutatedComponent);
@@ -410,8 +432,10 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 				
 				// Reinstating original mutation model
 				mutatedModel.setName(mutatedPackageName);
+				mutatedComponent.setName(mutatedComponentName);
 				mutatedModel.getImports().clear();
 				mutatedModel.getImports().addAll(mutantImports);
+				ecoreUtil.save(mutatedModel); //
 				
 				// Running tests to see if mutant can be killed
 				// java -jar C:\Users\grben\git\gamma\plugins\mutation\mutation-bin\junit-platform-console-standalone-1.9.3.jar -cp bin -c hu.bme.mit.gamma.tutorial.finish.tutorial.ExecutionTraceSimulation5 -c hu.bme.mit.gamma.tutorial.finish.tutorial.ExecutionTraceSimulation7
