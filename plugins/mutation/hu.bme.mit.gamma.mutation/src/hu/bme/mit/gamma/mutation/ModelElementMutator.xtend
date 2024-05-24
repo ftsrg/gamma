@@ -700,8 +700,11 @@ class ModelElementMutator {
 	
 	protected def addInto(BinaryExpression pivot, List<? extends Expression> expressions) {
 		checkState(expressions.size == 2)
-		pivot.leftOperand = expressions.head
-		pivot.rightOperand = expressions.get(1)
+		
+		val lhs = expressions.head
+		val rhs = expressions.get(1)
+		pivot.leftOperand = lhs
+		pivot.rightOperand = rhs
 		
 		return pivot
 	}
