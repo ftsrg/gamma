@@ -2121,6 +2121,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			return List.of(
 					adapter.getWrappedComponent());
 		}
+		if (component instanceof StatechartDefinition) {
+			return List.of();
+		}
 		throw new IllegalArgumentException("Not known type: " + component);
 	}
 	

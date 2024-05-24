@@ -51,6 +51,7 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterRefe
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
 import hu.bme.mit.gamma.statechart.composite.SchedulableCompositeComponent;
@@ -415,11 +416,18 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 				String originalComponentPackageName = originalComponentPackage.getName();
 				List<Package> originalImports = new ArrayList<Package>(originalComponentPackage.getImports());
 				
+				// Saving mutant component instances
+				List<? extends ComponentInstance> mutatedInstances = StatechartModelDerivedFeatures.getContainedComponents(mutatedComponent);
+				List<? extends ComponentInstance> clonedMutatedInstances = ecoreUtil.clone(mutatedInstances);
 				// Adjusting mutation model
 				mutatedModel.setName(originalComponentPackageName);
 				mutatedComponent.setName(originalComponentName);
 				mutatedModel.getImports().clear();
 				mutatedModel.getImports().addAll(originalImports);
+				if (mutatedComponent instanceof CompositeComponent mutatedCompositeComponent) {
+					CompositeComponent originalCompositeComponent = (CompositeComponent) originalComponent;
+					traceUtil.setInstanceTypes(mutatedCompositeComponent, originalCompositeComponent);
+				}
 				ecoreUtil.save(mutatedModel); // Needed for code generation
 				
 				// Generate code for component
@@ -435,6 +443,9 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 				mutatedComponent.setName(mutatedComponentName);
 				mutatedModel.getImports().clear();
 				mutatedModel.getImports().addAll(mutantImports);
+				if (mutatedComponent instanceof CompositeComponent mutatedCompositeComponent) {
+					traceUtil.setInstanceTypes(mutatedInstances, clonedMutatedInstances);
+				}
 				ecoreUtil.save(mutatedModel); //
 				
 				// Running tests to see if mutant can be killed
