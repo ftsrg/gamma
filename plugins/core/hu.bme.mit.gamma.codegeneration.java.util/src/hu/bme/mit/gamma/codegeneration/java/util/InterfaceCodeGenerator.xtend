@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,17 +10,15 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegeneration.java.util
 
-import java.util.Set
-import java.util.Collections
-import java.util.HashSet
-
+import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.interface_.Interface
-import hu.bme.mit.gamma.statechart.interface_.Event
+import java.util.Collections
+import java.util.HashSet
+import java.util.Set
 
 import static extension hu.bme.mit.gamma.codegeneration.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-
 
 class InterfaceCodeGenerator {
 	
@@ -39,6 +37,9 @@ class InterfaceCodeGenerator {
 		
 		import java.util.List;
 		import «BASE_PACKAGE_NAME».*;
+		«FOR importedPackage : _interface.containingPackage.imports»
+			import «importedPackage.getPackageString(BASE_PACKAGE_NAME)».*;
+		«ENDFOR»
 		
 		public interface «_interface.implementationName» {
 		
