@@ -31,6 +31,14 @@ path_to_your_java_insallation/Java/jdk-version/bin/javaw.exe
 	
 Furthermore, it is *necessary* to setup the environment for the *PlantUML* visualization plugins located in the [`vis`](vis) folder. The instructions are described in the [`README`](vis/README.md) file of the folder.
 
+Make sure to set the text file encoding of your Eclipse workspace to **UTF-8**: _Window > Preferences..._ Start typing `workspace` in the left upper textfield (in the place of `type filter text`). Select _General > Workspace_ from the filtered item list and check the `Text file encoding` setting at the bottom of the window.
+
+Make sure to set the Java compiler compliance level to **17**: _Window > Preferences..._ Start typing `compiler` in the left upper textfield (in the place of `type filter text`). Select _Java > Compiler_ from the filtered item list and set the `Compiler compliance level` to **17** at the top of the window.
+
+_Tip: It is advised to turn on automatic refreshing for the _runtime workspace_: _Window > Preferences..._ Start typing `hooks` in the left upper textfield (in the place of `type filter text`). Select _General > Workspace_ from the filtered item list and check the `Refresh using native hooks and polling` setting at the top of the window. The other option is to refresh it manually with F5 after every Gamma command if the generated files do not appear._
+
+## Verification backends
+
 If you want to use the *XSTS* formalism for formal verification (via *Theta*) and code generation for standalone statecharts, you will have to setup the plugins located in the [`xsts`](xsts) folder. The instructions are described in the [`README`](xsts/README.md) file of the folder.
 
 If you want to use *UPPAAL* for formal verification, download and extract *UPPAAL 4.1.26*. In order to let Gamma find the UPPAAL executables, add the `bin-Win32` or `bin-Linux` folder to the path environment variable (depending on the operating system being used).
@@ -41,12 +49,6 @@ If you want to use *Spin* for formal verification, download and extract *Spin 6.
 If you want to use *nuXmv* for formal verification, download and extract *nuXmv 2.0.0* or higher version. In order to let Gamma find the nuXmv executable, add the `nuXmv.exe` or `nuXmv` to the path environment variable (depending on the operating system being used). The instructions are described in the [`README`](nuxmv/README.md) file of the folder.
 
 If you want to use *xSAP* for safety assessment, download and extract *xSAP 1.4.0* or higher version. In order to let Gamma find the xSAP executable, create an environment variable named `XSAP_HOME` that points to the extracted xSAP root folder (absolute path) and add the `xSAP/bin` folder to the PATH environment or default search path (depending on your OS). The instructions are described in the [`README`](safety/README.md) file of the folder.
-
-Make sure to set the text file encoding of your Eclipse workspace to **UTF-8**: _Window > Preferences..._ Start typing `workspace` in the left upper textfield (in the place of `type filter text`). Select _General > Workspace_ from the filtered item list and check the `Text file encoding` setting at the bottom of the window.
-
-Make sure to set the Java compiler compliance level to **17**: _Window > Preferences..._ Start typing `compiler` in the left upper textfield (in the place of `type filter text`). Select _Java > Compiler_ from the filtered item list and set the `Compiler compliance level` to **17** at the top of the window.
-
-_Tip: It is advised to turn on automatic refreshing for the _runtime workspace_: _Window > Preferences..._ Start typing `hooks` in the left upper textfield (in the place of `type filter text`). Select _General > Workspace_ from the filtered item list and check the `Refresh using native hooks and polling` setting at the top of the window. The other option is to refresh it manually with F5 after every Gamma command if the generated files do not appear._
 
 ## Plugin setup
 
