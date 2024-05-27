@@ -2,6 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: C test generator
 Bundle-SymbolicName: hu.bme.mit.gamma.trace.testgeneration.c
+Bundle-Vendor: BME-FTSRG
 Bundle-Version: 2.11.0.qualifier
 Automatic-Module-Name: hu.bme.mit.gamma.trace.testgeneration.c
 Bundle-RequiredExecutionEnvironment: JavaSE-17

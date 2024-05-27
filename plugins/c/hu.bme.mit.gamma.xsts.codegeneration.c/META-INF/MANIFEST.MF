@@ -2,6 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: C Code Generator
 Bundle-SymbolicName: hu.bme.mit.gamma.xsts.codegeneration.c;singleton:=true
+Bundle-Vendor: BME-FTSRG
 Bundle-Version: 2.11.0.qualifier
 Automatic-Module-Name: hu.bme.mit.gamma.xsts.codegeneration.c
 Bundle-ActivationPolicy: lazy
