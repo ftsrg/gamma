@@ -38,7 +38,11 @@ abstract class AbstractVerification {
 	//
 	
 	def isBackendAvailable() {
-		return createVerifier.isBackendAvailable
+		return createVerifier.backendAvailable
+	}
+	
+	def getUnavailableBackendMessage() {
+		return createVerifier.unavailableBackendMessage
 	}
 	
 	//

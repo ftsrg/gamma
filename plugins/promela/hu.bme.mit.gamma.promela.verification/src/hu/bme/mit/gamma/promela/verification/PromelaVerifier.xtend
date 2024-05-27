@@ -250,6 +250,13 @@ class PromelaVerifier extends AbstractVerifier {
 		return #["spin", "--help"]
 	}
 	
+	override getUnavailableBackendMessage() {
+		return "The command line tool of Spin ('spin') cannot be found. " +
+				"Spin can be downloaded from 'https://spinroot.com/spin/Src/index.html'. " +
+				"Make sure to add the containing folder of the 'spin' bin to your path environment variable and have an adequate C compiler (gcc) installed " +
+					"(for details, see 'https://github.com/ftsrg/gamma/blob/master/plugins/promela/README.md')."
+	}
+	
 	//
 	
 	static class BmcData {
@@ -323,7 +330,5 @@ class PromelaVerifier extends AbstractVerifier {
 		}
 		
 	}
-	
-	//
 	
 }

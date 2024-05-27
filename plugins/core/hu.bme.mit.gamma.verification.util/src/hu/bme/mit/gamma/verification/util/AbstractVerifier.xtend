@@ -62,6 +62,8 @@ abstract class AbstractVerifier {
 	
 	protected abstract def List<String> getHelpCommand()
 	
+	protected abstract def String getUnavailableBackendMessage()
+	
 	//
 	
 	def Result verifyQuery(Object traceability, String parameters, File modelFile, String query) {

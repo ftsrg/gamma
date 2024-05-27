@@ -143,6 +143,11 @@ public class VerificationHandler extends TaskHandler {
 		return verificationInstance.isBackendAvailable();
 	}
 	
+	public String getUnavailableBackendMessage(AnalysisLanguage language) {
+		AbstractVerification verificationInstance = getVerification(language);
+		return verificationInstance.getUnavailableBackendMessage();
+	}
+	
 	//
 	
 	public void execute(Verification verification) throws IOException, InterruptedException {

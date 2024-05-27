@@ -116,4 +116,10 @@ class UppaalVerifier extends AbstractVerifier {
 		return #["verifyta", "-h"]
 	}
 	
+	override getUnavailableBackendMessage() {
+		return "The command line tool of UPPAAL ('verifyta') cannot be found. " +
+				"UPPAAL can be downloaded from 'https://uppaal.org/downloads/'. " +
+				"Make sure to add the containing folder of the 'verifyta' bin to your path environment variable."
+	}
+	
 }

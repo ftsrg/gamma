@@ -155,6 +155,14 @@ class ThetaVerifier extends AbstractVerifier {
 		return #["java", "-jar", jar, "-h"]
 	}
 	
+	override getUnavailableBackendMessage() {
+		return "The command line tool of Theta ('theta-xsts-cli') cannot be found. " +
+				"Theta can be downloaded from 'https://github.com/ftsrg/theta/releases'. " +
+				"Make sure to create an environmental variable under the name 'THETA_XSTS_CLI_PATH' that " +
+					"points to the dowloaded Theta jar and also have the Z3 lib downloaded and installed" +
+						"(for detailed instructions, see 'https://github.com/ftsrg/gamma/blob/master/plugins/xsts/README.md')."
+	}
+	
 }
 
 class ThetaQueryAdapter {
