@@ -246,6 +246,10 @@ class PromelaVerifier extends AbstractVerifier {
 		return modelFile.parent + File.separator + "pan"
 	}
 	
+	override getHelpCommand() {
+		return #["spin", "--help"]
+	}
+	
 	//
 	
 	static class BmcData {

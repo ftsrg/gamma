@@ -287,4 +287,8 @@ class NuxmvVerifier extends AbstractVerifier {
 		return firstLine.startsWith("@TIME_DOMAIN") && firstLine.endsWith("continuous")
 	}
 	
+	override getHelpCommand() {
+		return #["nuXmv", "-h"]
+	}
+	
 }

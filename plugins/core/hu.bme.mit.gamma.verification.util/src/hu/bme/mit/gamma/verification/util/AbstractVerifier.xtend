@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.util.PathEscaper
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import java.io.File
+import java.util.List
 import java.util.logging.Logger
 import org.eclipse.xtend.lib.annotations.Data
 
@@ -35,6 +36,31 @@ abstract class AbstractVerifier {
 	protected extension PathEscaper pathEscaper = PathEscaper.INSTANCE
 	protected extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
+	
+	//
+	
+	def isBackendAvailable() {
+		try {
+			helpCommand.startBackend
+		}
+		catch (Throwable t) {
+			if (t.isUnstartableProcessException) {
+				return false
+			}
+		}
+		return true
+	}
+	
+	def void startBackend(List<String> command) {
+		var Process process = null
+		try {
+			process = Runtime.getRuntime().exec(command)
+		} finally {
+			process?.destroyForcibly
+		}
+	}
+	
+	protected abstract def List<String> getHelpCommand()
 	
 	//
 	

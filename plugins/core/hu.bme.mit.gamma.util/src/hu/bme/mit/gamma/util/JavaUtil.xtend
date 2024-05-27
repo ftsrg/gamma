@@ -269,4 +269,12 @@ class JavaUtil {
 		return string.simplifyCharacterPairs('!')
 	}
 	
+	def boolean isUnstartableProcessException(Throwable throwable) {
+		val message = throwable.message
+		val cause = throwable.cause
+		val causeMessage = cause.message
+		return message.startsWith("Cannot run program") &&
+			causeMessage.startsWith("CreateProcess error=") // CreateProcess error=2, but not sure about the literal in other OS
+	}
+	
 }

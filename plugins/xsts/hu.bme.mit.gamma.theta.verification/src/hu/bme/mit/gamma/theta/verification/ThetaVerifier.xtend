@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -148,6 +148,11 @@ class ThetaVerifier extends AbstractVerifier {
 		// Thread.currentThread.name is needed to prevent race conditions
 		return modelFile.parent + File.separator + modelFile.extensionlessName.toHiddenFileName +
 			"-" + Thread.currentThread.name + ".cex"
+	}
+	
+	override getHelpCommand() {
+		val jar = System.getenv(ENVIRONMENT_VARIABLE_FOR_THETA_JAR)
+		return #["java", "-jar", jar, "-h"]
 	}
 	
 }

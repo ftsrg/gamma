@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
 import java.io.File
 import java.util.concurrent.TimeUnit
+import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.regex.Pattern
 
@@ -33,6 +34,12 @@ abstract class AbstractVerification {
 	protected final extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
 
 	protected final Logger logger = Logger.getLogger("GammaLogger")
+	
+	//
+	
+	def isBackendAvailable() {
+		return createVerifier.isBackendAvailable
+	}
 	
 	//
 	
@@ -66,6 +73,10 @@ abstract class AbstractVerification {
 	
 	def Result execute(File modelFile, File queryFile, String[] arguments,
 			long timeout, TimeUnit unit) throws InterruptedException {
+		//
+		val isBackendAvailable = isBackendAvailable
+		val level = (isBackendAvailable) ? Level.INFO : Level.SEVERE
+		logger.log(level, "The selected verification back-end is " + ((!isBackendAvailable) ? "un" : "") + "available")
 		// Racer callable(s)
 		val callables = modelFile.loadModelAndCreateVerificationCallables(queryFile, arguments)
 		// Racer, but for only one thread

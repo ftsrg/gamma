@@ -34,7 +34,7 @@ class UppaalVerifier extends AbstractVerifier {
 			
 			// Executing the command
 			logger.info("Executing command: " + command.join(" "))
-			process =  Runtime.getRuntime().exec(command)
+			process = Runtime.getRuntime().exec(command)
 			val outputStream = process.inputStream
 			val errorStream = process.errorStream
 			
@@ -108,8 +108,12 @@ class UppaalVerifier extends AbstractVerifier {
 	}
 	
 	override cancel() {
-		resultLogger.cancel
+		resultLogger?.cancel
 		super.cancel
+	}
+	
+	override getHelpCommand() {
+		return #["verifyta", "-h"]
 	}
 	
 }
