@@ -89,5 +89,5 @@ public class GenmodelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	public static boolean isNegativeContractGeneration(StatechartContractGeneration statechartGeneration) {
 		return statechartGeneration.getTestType() == TestAutomatonType.NEGATIVE;
 	}
-
+	
 }

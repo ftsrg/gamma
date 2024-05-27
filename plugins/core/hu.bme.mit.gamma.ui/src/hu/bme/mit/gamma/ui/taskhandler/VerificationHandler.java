@@ -133,6 +133,13 @@ public class VerificationHandler extends TaskHandler {
 	
 	//
 	
+	public boolean isExecutable(Verification verification) {
+		AbstractVerification verificationInstance = getVerification(verification);
+		return verificationInstance.isBackendAvailable();
+	}
+	
+	//
+	
 	public void execute(Verification verification) throws IOException, InterruptedException {
 		// Setting target folder
 		setProjectLocation(verification); // Before the target folder
@@ -507,6 +514,26 @@ public class VerificationHandler extends TaskHandler {
 		verification.getQueryFiles().replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
 		// Setting the timeout
 		this.timeout = verification.getTimeout();
+	}
+	
+	protected AbstractVerification getVerification(Verification verification) {
+		Set<AnalysisLanguage> languagesSet = new LinkedHashSet<AnalysisLanguage>(
+				verification.getAnalysisLanguages());
+		AnalysisLanguage analysisLanguage = javaUtil.getLast(languagesSet);
+		switch (analysisLanguage) {
+			case UPPAAL:
+				return UppaalVerification.INSTANCE;
+			case THETA:
+				return ThetaVerification.INSTANCE;
+			case XSTS_UPPAAL:
+				return XstsUppaalVerification.INSTANCE;
+			case PROMELA:
+				return PromelaVerification.INSTANCE;
+			case NUXMV:
+				return NuxmvVerification.INSTANCE;
+			default:
+				throw new IllegalArgumentException(analysisLanguage + " is not supported");
+		}
 	}
 	
 	//
