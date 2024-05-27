@@ -138,6 +138,11 @@ public class VerificationHandler extends TaskHandler {
 		return verificationInstance.isBackendAvailable();
 	}
 	
+	public boolean isExecutable(AnalysisLanguage language) {
+		AbstractVerification verificationInstance = getVerification(language);
+		return verificationInstance.isBackendAvailable();
+	}
+	
 	//
 	
 	public void execute(Verification verification) throws IOException, InterruptedException {
@@ -520,6 +525,10 @@ public class VerificationHandler extends TaskHandler {
 		Set<AnalysisLanguage> languagesSet = new LinkedHashSet<AnalysisLanguage>(
 				verification.getAnalysisLanguages());
 		AnalysisLanguage analysisLanguage = javaUtil.getLast(languagesSet);
+		return getVerification(analysisLanguage);
+	}
+
+	protected AbstractVerification getVerification(AnalysisLanguage analysisLanguage) {
 		switch (analysisLanguage) {
 			case UPPAAL:
 				return UppaalVerification.INSTANCE;
