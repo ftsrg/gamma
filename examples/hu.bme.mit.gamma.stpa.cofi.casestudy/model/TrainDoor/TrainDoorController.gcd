@@ -1,0 +1,13 @@
+package traindoorcontrol
+
+import "Interface/Interface.gcd"
+
+statechart TrainDoorController [
+	port Control : provides DoorControl
+] {
+	region main {
+		initial Initial
+		state Idle
+	}
+	transition from Initial to Idle
+}

@@ -1,0 +1,6 @@
+package interfaces
+
+interface DoorControl {
+	out event open
+	out event close
+}
