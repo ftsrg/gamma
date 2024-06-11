@@ -1,0 +1,6 @@
+import "TrainDoorController"
+
+analysis-model {
+	component : TrainDoorController
+	language : nuXmv
+}

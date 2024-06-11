@@ -1,6 +1,29 @@
 package interfaces
 
-interface DoorControl {
+// TODO refactor into disjoint events
+
+interface ControlActions {
+	out event openDoor
+	out event closeDoor
+}
+
+interface FeedbackDoorState {
+	out event opening
 	out event open
-	out event close
+	out event closing
+	out event closed
+}
+
+interface FeedbackPresence {
+	out event presence
+	out event none
+}
+
+interface ExternalCommunication {
+	out event emergency
+	out event noEmergency
+	out event alignment
+	out event noAlignment
+	out event movement
+	out event noMovement
 }
