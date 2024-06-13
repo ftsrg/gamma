@@ -99,6 +99,8 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AbstractAssignmentAction/lhs"/>
     </genClasses>
     <genClasses image="false" ecoreClass="model.ecore#//XstsAnnotation"/>
+    <genClasses ecoreClass="model.ecore#//SynchronousSystemAnnotation"/>
+    <genClasses ecoreClass="model.ecore#//AsynchronousSystemAnnotation"/>
     <genClasses image="false" ecoreClass="model.ecore#//ActionAnnotation"/>
     <genClasses ecoreClass="model.ecore#//InvariantAnnotation"/>
     <genClasses ecoreClass="model.ecore#//EnvironmentalInvariantAnnotation"/>

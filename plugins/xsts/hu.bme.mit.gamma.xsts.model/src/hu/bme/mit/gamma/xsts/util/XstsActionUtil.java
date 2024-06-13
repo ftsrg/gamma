@@ -67,6 +67,7 @@ import hu.bme.mit.gamma.xsts.model.VariableGroup;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory;
 import hu.bme.mit.gamma.xsts.model.XTransition;
+import hu.bme.mit.gamma.xsts.model.XstsAnnotation;
 
 public class XstsActionUtil extends ExpressionUtil {
 	// Singleton
@@ -85,6 +86,19 @@ public class XstsActionUtil extends ExpressionUtil {
 		xSts.setName(name);
 		fillNullTransitions(xSts);
 		return xSts;
+	}
+	
+	public void addSynchronousAnnotation(XSTS xSts) {
+		addAnnotation(xSts, xStsFactory.createSynchronousSystemAnnotation());
+	}
+	
+	public void addAsynchronousAnnotation(XSTS xSts) {
+		addAnnotation(xSts, xStsFactory.createAsynchronousSystemAnnotation());
+	}
+	
+	protected void addAnnotation(XSTS xSts, XstsAnnotation annotation) {
+		List<XstsAnnotation> annotations = xSts.getAnnotations();
+		annotations.add(annotation);
 	}
 	
 	public void unrollLoopActions(XSTS xSts) {

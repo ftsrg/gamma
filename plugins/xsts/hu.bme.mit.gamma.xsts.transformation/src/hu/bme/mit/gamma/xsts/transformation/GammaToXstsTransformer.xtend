@@ -46,6 +46,7 @@ import java.util.Collections
 import java.util.List
 import java.util.logging.Logger
 
+import static com.google.common.base.Preconditions.checkState
 import static hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
@@ -156,6 +157,15 @@ class GammaToXstsTransformer {
 		val lowlevelPackage = gammaToLowlevelTransformer.transform(_package)
 		// Serializing the xSTS
 		val xSts = gammaComponent.transform(lowlevelPackage) // Transforming the Gamma component
+		
+		// Adding metadata
+		if (gammaComponent.synchronous) {
+			xSts.addSynchronousAnnotation
+		}
+		else {
+			checkState(gammaComponent.asynchronous)
+			xSts.addAsynchronousAnnotation
+		}
 		
 		// Creating system event groups for traceability purposes
 		logger.info("Creating system event groups for " + gammaComponent.name)

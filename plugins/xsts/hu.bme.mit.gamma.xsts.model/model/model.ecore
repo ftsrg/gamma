@@ -136,6 +136,8 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="XstsAnnotation" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="SynchronousSystemAnnotation" eSuperTypes="#//XstsAnnotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="AsynchronousSystemAnnotation" eSuperTypes="#//XstsAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="ActionAnnotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="InvariantAnnotation" abstract="true"
       eSuperTypes="#//ActionAnnotation"/>

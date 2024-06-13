@@ -34,6 +34,8 @@ import java.util.Scanner
 import java.util.Set
 import org.eclipse.emf.ecore.EObject
 
+import static com.google.common.base.Preconditions.checkState
+
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
@@ -73,7 +75,7 @@ class ModelSerializer {
 		
 		val primedVariables = xSts.variableDeclarations.filter(PrimedVariable)
 		
-		if (xSts.messageQueueGroup.variables.empty) { // If XSTS is synchronous
+		if (xSts.messageQueueGroup.variables.empty) { // If XSTS is synchronous or AA is simplifiable
 			iVariables += inputVariable
 			iVariables += inputParameterVariable.filter[it.isEnvironmentResettable] // Only the transient parameters
 			// Persistent parameters may not change if the input event does not change - this is handled in finalizeTrans 
