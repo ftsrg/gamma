@@ -18,6 +18,14 @@
       </wizard>
       <wizard
             category="hu.bme.mit.gamma.ui"
+            class="hu.bme.mit.gamma.gui.wizards.NewGammaAsynchronousAdapterWizard"
+            icon="icons/gamma-icon-16.png"
+            id="hu.bme.mit.gamma.ui.wizards.NewGammaAsynchronousAdapterWizard"
+            name="Gamma Asynchronous Adapter"
+            project="false">
+      </wizard>
+      <wizard
+            category="hu.bme.mit.gamma.ui"
             class="hu.bme.mit.gamma.gui.wizards.NewGclStatechartWizard"
             icon="icons/gamma-icon-16.png"
             id="hu.bme.mit.gamma.ui.wizards.NewGclStatechartWizard"
@@ -54,6 +62,9 @@
              id="hu.bme.mit.gamma.ui.wizards.NewGclStatechartWizard">
        </newWizardShortcut>
        <newWizardShortcut
+             id="hu.bme.mit.gamma.ui.wizards.NewGammaAsynchronousAdapterWizard">
+       </newWizardShortcut>
+       <newWizardShortcut
              id="hu.bme.mit.gamma.ui.wizards.NewGclInterfaceWizard">
        </newWizardShortcut>
        <newWizardShortcut
@@ -67,6 +78,27 @@
           menuGroupId="hu.bme.mit.gamma"
           type="new"
           wizardId="hu.bme.mit.gamma.ui.wizards.NewGclWizard">
+       <enablement>
+          <or>
+             <adapt
+                   type="org.eclipse.core.resources.IFile">
+             </adapt>
+             <adapt
+                   type="org.eclipse.core.resources.IFolder">
+             </adapt>
+             <adapt
+                   type="org.eclipse.core.resources.IProject">
+             </adapt>
+          </or>
+       </enablement>
+    </commonWizard>
+ </extension>
+ <extension
+       point="org.eclipse.ui.navigator.navigatorContent">
+    <commonWizard
+          menuGroupId="hu.bme.mit.gamma"
+          type="new"
+          wizardId="hu.bme.mit.gamma.ui.wizards.NewGammaAsynchronousAdapterWizard">
        <enablement>
           <or>
              <adapt
@@ -108,7 +140,7 @@
     <commonWizard
           menuGroupId="hu.bme.mit.gamma"
           type="new"
-          wizardId="hu.bme.mit.gamma.ui.wizards.NewGclInterfacesWizard">
+          wizardId="hu.bme.mit.gamma.ui.wizards.NewGclInterfaceWizard">
        <enablement>
           <or>
              <adapt

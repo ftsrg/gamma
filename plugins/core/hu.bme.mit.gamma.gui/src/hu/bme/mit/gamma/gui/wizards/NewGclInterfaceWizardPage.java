@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Gamma project
+ * Copyright (c) 2023-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -48,7 +48,7 @@ public class NewGclInterfaceWizardPage extends WizardPage {
 	public NewGclInterfaceWizardPage(ISelection selection) {
 		super("New Gamma Interface Model Wizard");
 		setTitle("Create New Gamma Interface Model");
-		setDescription("This wizard creates a new New Gamma Interface Model with *.gcd extension.");
+		setDescription("This wizard creates a new Gamma Interface Model with *.gcd extension.");
 		this.selection = selection;
 	}
 
