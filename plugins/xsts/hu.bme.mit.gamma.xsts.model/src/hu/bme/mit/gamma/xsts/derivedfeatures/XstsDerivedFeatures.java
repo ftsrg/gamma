@@ -50,6 +50,7 @@ import hu.bme.mit.gamma.xsts.model.IfAction;
 import hu.bme.mit.gamma.xsts.model.InternalInvariantAnnotation;
 import hu.bme.mit.gamma.xsts.model.InvariantAnnotation;
 import hu.bme.mit.gamma.xsts.model.LoopAction;
+import hu.bme.mit.gamma.xsts.model.MessageQueueGroup;
 import hu.bme.mit.gamma.xsts.model.MultiaryAction;
 import hu.bme.mit.gamma.xsts.model.PrimedVariable;
 import hu.bme.mit.gamma.xsts.model.SequentialAction;
@@ -82,6 +83,12 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static boolean isAsynchronous(XSTS xSts) {
 		return hasAnnotation(xSts, AsynchronousSystemAnnotation.class);
+	}
+	
+	public static boolean isSimplifiedAsynchronousAdapter(XSTS xSts) {
+		return isAsynchronous(xSts) && xSts.getVariableGroups().stream()
+				.noneMatch(it -> it.getAnnotation() instanceof MessageQueueGroup &&
+						!it.getVariables().isEmpty());
 	}
 	
 	public static boolean hasAnnotation(XSTS xSts, Class<? extends XstsAnnotation> annotation) {

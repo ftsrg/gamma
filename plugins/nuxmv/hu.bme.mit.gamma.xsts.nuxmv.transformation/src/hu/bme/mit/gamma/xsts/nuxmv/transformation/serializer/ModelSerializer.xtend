@@ -34,8 +34,6 @@ import java.util.Scanner
 import java.util.Set
 import org.eclipse.emf.ecore.EObject
 
-import static com.google.common.base.Preconditions.checkState
-
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
@@ -286,6 +284,16 @@ class ModelSerializer {
 	
 	//
 	
+	protected def String serializeInEventConstraint(XSTS xSts) {
+		if (xSts.simplifiedAsynchronousAdapter) { // Needed only in SMV, as in other languages, in-events keep their false values between steps
+			val inEventVariables = xSts.inEventVariableGroup.variables
+			val oneInNConstraint = inEventVariables.createOneInNExpression
+			return System.lineSeparator + " & " + oneInNConstraint.serialize
+		}
+		
+		return ""
+	}
+	
 	protected def String serializeInEventTrans(XSTS xSts) {
 		val inEventAction = xSts.inEventTransition.action
 		
@@ -311,6 +319,8 @@ class ModelSerializer {
 			}
 		}
 		
+		// Simplified AA constraint (1 in-event in N)
+		serializedInAction += xSts.serializeInEventConstraint
 		///
 		
 		return serializedInAction

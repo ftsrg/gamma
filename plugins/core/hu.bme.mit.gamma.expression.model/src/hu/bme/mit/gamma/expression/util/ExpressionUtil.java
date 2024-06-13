@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -84,6 +84,7 @@ import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclarationAnnotation;
+import hu.bme.mit.gamma.expression.model.XorExpression;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.util.JavaUtil;
 
@@ -946,6 +947,53 @@ public class ExpressionUtil {
 		variableDeclaration.setName(name);
 		variableDeclaration.setExpression(expression);
 		return variableDeclaration;
+	}
+	
+	public Expression createOneInNExpression(List<? extends Declaration> declarations) {
+		return create1InNExpression(
+				declarations.stream().map(it -> createReferenceExpression(it))
+				.toList());
+	}
+	
+	public Expression create1InNExpression(List<? extends Expression> expressions) {
+		int size = expressions.size();
+		
+		if (size == 0) {
+			return factory.createFalseExpression();
+		}
+		if (size == 1) {
+			return expressions.get(0);
+		}
+		if (size == 2) {
+			XorExpression xor = factory.createXorExpression();
+			for (Expression expression : expressions) {
+				xor.getOperands().add(expression);
+			}
+			return xor;
+		}
+		
+		// Not efficient...
+		AndExpression and = factory.createAndExpression();
+		XorExpression xor = factory.createXorExpression(); // Same result as Or (but more restrictive when checking values?)
+		for (int i = 0; i < size - 1; i++) {
+			Expression lhs = expressions.get(i);
+			xor.getOperands().add(
+					ecoreUtil.clone(lhs));
+			for (int j = i + 1; j < size; j++) {
+				Expression rhs = expressions.get(j);
+				Expression notLhs = createNotExpression(
+						ecoreUtil.clone(lhs));
+				Expression notRhs = createNotExpression(
+						ecoreUtil.clone(rhs));
+				
+				Expression or = wrapIntoOrExpression(notLhs, notRhs);
+				
+				and.getOperands().add(or);
+			}
+		}
+		and.getOperands().add(xor);
+		
+		return and;
 	}
 	
 	public IntegerRangeLiteralExpression createIntegerRangeLiteralExpression(
