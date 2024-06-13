@@ -2,6 +2,8 @@ package traindoorcontrol
 
 import "Interface/Interface.gcd"
 
+//const TOO_LATE_CLOSED_WHEN_UNALIGNED : integer := 5
+
 @OrthogonalRegionSchedule = sequential
 @TransitionPriority = order-based
 statechart TrainDoorController [
@@ -10,6 +12,10 @@ statechart TrainDoorController [
 	port FeedbackPresence : requires FeedbackPresence
 	port ExternalCommunication : requires ExternalCommunication
 ] {
+//	timeout tooLateCloseWhenUnaligned
+//	var tooLateClosedWhenUnaligned : boolean := false
+//	var closedSentWhenUnaligned : boolean := false
+	
 	region DoorStateRegion {
 		initial InitialDoorState
 		state Closing
@@ -47,10 +53,14 @@ statechart TrainDoorController [
 		initial InitialAlignment
 		state Aligned
 		state Unaligned
+//		{
+//			entry / set tooLateCloseWhenUnaligned := TOO_LATE_CLOSED_WHEN_UNALIGNED s;
+//		}
 	}
 	transition from InitialAlignment to Aligned
 	transition from Aligned to Unaligned when ExternalCommunication.alignment [!ExternalCommunication.alignment::isAligned]
 	transition from Unaligned to Aligned when ExternalCommunication.alignment [ExternalCommunication.alignment::isAligned]
+//	transition from Unaligned to Unaligned when timeout tooLateCloseWhenUnaligned / if (!closedSentWhenUnaligned) tooLateClosedWhenUnaligned := true;
 	
 	region MovementRegion {
 		initial InitialMovement
