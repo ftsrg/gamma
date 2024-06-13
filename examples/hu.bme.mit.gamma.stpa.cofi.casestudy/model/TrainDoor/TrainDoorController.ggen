@@ -1,6 +1,12 @@
-import "TrainDoorController"
+import "TrainDoorControllerAdapter"
 
 analysis-model {
-	component : TrainDoorController
+	component : TrainDoorControllerAdapter
+	language : SMV
+}
+
+verification {
+	file : "TrainDoorControllerAdapter.smv"
+	property-file : "TrainDoorController.gpd"
 	language : nuXmv
 }

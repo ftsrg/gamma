@@ -1,29 +1,23 @@
 package interfaces
 
-// TODO refactor into disjoint events
+type ControlAction : enum { OPEN, CLOSE}
 
 interface ControlActions {
-	out event openDoor
-	out event closeDoor
+	out event controlDoor(action : ControlAction)
 }
 
+type DoorState : enum { OPENING, OPEN, CLOSING, CLOSED }
+
 interface FeedbackDoorState {
-	out event opening
-	out event open
-	out event closing
-	out event closed
+	out event feedback(doorState : DoorState)
 }
 
 interface FeedbackPresence {
-	out event presence
-	out event none
+	out event feedback(isPresent : boolean)
 }
 
 interface ExternalCommunication {
-	out event emergency
-	out event noEmergency
-	out event alignment
-	out event noAlignment
-	out event movement
-	out event noMovement
+	out event emergency(isOccurred : boolean)
+	out event alignment(isAligned : boolean)
+	out event movement(isMoving : boolean)
 }

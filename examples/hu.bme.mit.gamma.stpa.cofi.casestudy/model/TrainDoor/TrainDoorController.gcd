@@ -18,87 +18,87 @@ statechart TrainDoorController [
 		state Open
 	}
 	transition from InitialDoorState to Closed
-	transition from Closed to Opening when FeedbackDoorState.opening
-	transition from Opening to Open when FeedbackDoorState.open
-	transition from Opening to Closing when FeedbackDoorState.closing
-	transition from Open to Closing when FeedbackDoorState.closing
-	transition from Closing to Closed when FeedbackDoorState.closed
-	transition from Closing to Opening when FeedbackDoorState.opening
-//	// Need these to allow for measuring time since state change
-//	region PresenceRegion {
-//		initial InitialPresence
-//		state NoneInDoorway
-//		state PersonInDoorway
-//	}
-//	transition from InitialPresence to NoneInDoorway
-//	transition from NoneInDoorway to PersonInDoorway when FeedbackPresence.presence
-//	transition from PersonInDoorway to NoneInDoorway when FeedbackPresence.none
-//	
-//	region EmergencyRegion {
-//		initial InitialEmergency
-//		state NoEmergency
-//		state Emergency
-//	}
-//	transition from InitialEmergency to NoEmergency
-//	transition from NoEmergency to Emergency when ExternalCommunication.emergency
-//	transition from Emergency to NoEmergency when ExternalCommunication.noEmergency
-//	
-//	region AlignmentRegion {
-//		initial InitialAlignment
-//		state Alignment
-//		state NoAlignment
-//	}
-//	transition from InitialAlignment to Alignment
-//	transition from Alignment to NoAlignment when ExternalCommunication.noAlignment
-//	transition from NoAlignment to Alignment when ExternalCommunication.alignment
-//	
-//	region MovementRegion {
-//		initial InitialMovement
-//		state NoMovement
-//		state Movement
-//	}
-//	transition from InitialMovement to NoMovement
-//	transition from NoMovement to Movement when ExternalCommunication.movement
-//	transition from Movement to NoMovement when ExternalCommunication.noMovement
-//	
-//	region ControlRegion {
-//		initial InitialControl
-//		state Control
-//		merge OpenDoor
-//		merge CloseDoor
-//	}
-//	transition from InitialControl to Control
-//	
-//	transition from Control to OpenDoor when cycle [
-//			!(in-state(DoorStateRegion.Opening) or in-state(DoorStateRegion.Open)) and // Needed?
-//			in-state(EmergencyRegion.Emergency)]
-//	transition from Control to OpenDoor when cycle [
-//			!(in-state(DoorStateRegion.Opening) or in-state(DoorStateRegion.Open)) and // Needed?
-//			in-state(PresenceRegion.PersonInDoorway)]
-//	transition from Control to Control when cycle [  // Self-loop: needed?
-//			in-state(MovementRegion.Movement)]
-//	transition from Control to Control when cycle [  // Self-loop: needed?
-//			in-state(AlignmentRegion.NoAlignment)]
-//	
-//	transition from OpenDoor to Control / raise ControlActions.openDoor;
-//	
-//	transition from Control to Control when cycle [ // Self-loop: conflict with open
-//			in-state(PresenceRegion.PersonInDoorway)] 
-//	transition from Control to Control when cycle [ // Self-loop: conflict with open
-//			in-state(EmergencyRegion.Emergency)]
-//	transition from Control to CloseDoor when cycle [ // Else we close
-//			!(in-state(DoorStateRegion.Closing) or in-state(DoorStateRegion.Closed))] // Needed?
-//	
-//	transition from CloseDoor to Control / raise ControlActions.closeDoor;
+	transition from Closed to Opening when FeedbackDoorState.feedback [FeedbackDoorState.feedback::doorState == DoorState::OPENING]
+	transition from Opening to Open when FeedbackDoorState.feedback [FeedbackDoorState.feedback::doorState == DoorState::OPEN]
+	transition from Opening to Closing when FeedbackDoorState.feedback [FeedbackDoorState.feedback::doorState == DoorState::CLOSING]
+	transition from Open to Closing when FeedbackDoorState.feedback [FeedbackDoorState.feedback::doorState == DoorState::CLOSING]
+	transition from Closing to Closed when FeedbackDoorState.feedback [FeedbackDoorState.feedback::doorState == DoorState::CLOSED]
+	transition from Closing to Opening when FeedbackDoorState.feedback [FeedbackDoorState.feedback::doorState == DoorState::OPENING]
+	// Need these to allow for measuring time since state change
+	region PresenceRegion {
+		initial InitialPresence
+		state NoneInDoorway
+		state PersonInDoorway
+	}
+	transition from InitialPresence to NoneInDoorway
+	transition from NoneInDoorway to PersonInDoorway when FeedbackPresence.feedback [FeedbackPresence.feedback::isPresent]
+	transition from PersonInDoorway to NoneInDoorway when FeedbackPresence.feedback [!FeedbackPresence.feedback::isPresent]
 	
+	region EmergencyRegion {
+		initial InitialEmergency
+		state NoEmergency
+		state Emergency
+	}
+	transition from InitialEmergency to NoEmergency
+	transition from NoEmergency to Emergency when ExternalCommunication.emergency [ExternalCommunication.emergency::isOccurred]
+	transition from Emergency to NoEmergency when ExternalCommunication.emergency [!ExternalCommunication.emergency::isOccurred]
+	
+	region AlignmentRegion {
+		initial InitialAlignment
+		state Aligned
+		state Unaligned
+	}
+	transition from InitialAlignment to Aligned
+	transition from Aligned to Unaligned when ExternalCommunication.alignment [!ExternalCommunication.alignment::isAligned]
+	transition from Unaligned to Aligned when ExternalCommunication.alignment [ExternalCommunication.alignment::isAligned]
+	
+	region MovementRegion {
+		initial InitialMovement
+		state Still
+		state InMotion
+	}
+	transition from InitialMovement to Still
+	transition from Still to InMotion when ExternalCommunication.movement [ExternalCommunication.movement::isMoving]
+	transition from InMotion to Still when ExternalCommunication.movement [!ExternalCommunication.movement::isMoving]
+	
+	region ControlRegion {
+		initial InitialControl
+		state Control
+		merge OpenDoor
+		merge CloseDoor
+	}
+	transition from InitialControl to Control
+	// Consider priority between these transitions
+	
+	transition from Control to OpenDoor when cycle [
+			!(in-state(DoorStateRegion.Opening) or in-state(DoorStateRegion.Open)) and // Needed?
+			in-state(EmergencyRegion.Emergency)]
+	transition from Control to OpenDoor when cycle [
+			!(in-state(DoorStateRegion.Opening) or in-state(DoorStateRegion.Open)) and // Needed?
+			in-state(PresenceRegion.PersonInDoorway)]
+	transition from Control to Control when cycle [  // Self-loop: needed? (check closing logic)
+			in-state(MovementRegion.InMotion)]
+	transition from Control to Control when cycle [  // Self-loop: needed? (check closing logic)
+			in-state(AlignmentRegion.Unaligned)]
+	
+	transition from OpenDoor to Control / raise ControlActions.controlDoor(ControlAction::OPEN);
+	
+	transition from Control to Control when cycle [ // Self-loop: conflict with open
+			in-state(PresenceRegion.PersonInDoorway)] 
+	transition from Control to Control when cycle [ // Self-loop: conflict with open
+			in-state(EmergencyRegion.Emergency)]
+	transition from Control to CloseDoor when cycle [ // Else we close
+			!(in-state(DoorStateRegion.Closing) or in-state(DoorStateRegion.Closed))] // Needed?
+	
+	transition from CloseDoor to Control / raise ControlActions.controlDoor(ControlAction::CLOSE);
+	
+//////////////////////////
 //	region DoorActuatorRegion {
 //		initial InitialDoorActuator
 //		state IdleDoorActuator
 //	}
 //	transition from InitialDoorActuator to IdleDoorActuator
 //	
-//////////////////////////
-//
 //	region DoorStateSensorRegion {
 //		initial InitialDoorStateSensor
 //		state IdleDoorStateSensor

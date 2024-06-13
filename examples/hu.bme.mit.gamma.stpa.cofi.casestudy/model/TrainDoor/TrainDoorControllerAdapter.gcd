@@ -1,0 +1,13 @@
+package traindoorcontrol
+
+import "TrainDoorController.gcd"
+
+adapter TrainDoorControllerAdapter of component controller : TrainDoorController {
+
+	when any / run
+
+	queue messageQueue(priority = 1, capacity = 4) {
+		ExternalCommunication.any, FeedbackDoorState.any, FeedbackPresence.any
+	}
+
+}
