@@ -1087,6 +1087,8 @@ class ComponentTransformer {
 			val storedEvents = messageQueue.storedEvents
 			val min = messageQueue.minEventId
 			val max = messageQueue.maxEventId
+			val allXStsInputEventVariables = storedEvents
+					.map[it.value.getInputEventVariables(it.key)].flatten.toList
 			
 			val randomActions = createChoiceActionForRandomValues(
 					messageQueue.name + "_" + messageQueue.hashCode.abs, min, max + 1 /* exclusive */)
@@ -1110,11 +1112,16 @@ class ComponentTransformer {
 					removableBranchActions += branchAction // The input event is unused
 				}
 				else {
-					// Can be more than one - one port can be mapped to multiple instance ports
+					// Setting the "unselected" events to false; needed to make it explicit for SMV iVARs
+					branchAction.appendToAction(
+						allXStsInputEventVariables
+							.reject[xStsInputEventVariables.contains(it)].toList
+							.createVariableResetActions)
+					// Maybe more than one event variable - one port can be mapped to multiple instance ports
 					// Can be empty if it is a control port
 					for (xStsInputEventVariable : xStsInputEventVariables) {
 						branchAction.appendToAction(xStsInputEventVariable
-							.createAssignmentAction(createTrueExpression))
+								.createAssignmentAction(createTrueExpression))
 					}
 				}
 			}

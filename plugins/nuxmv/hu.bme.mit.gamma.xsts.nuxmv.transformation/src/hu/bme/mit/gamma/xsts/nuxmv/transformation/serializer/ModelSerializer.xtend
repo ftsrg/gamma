@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Gamma project
+ * Copyright (c) 2023-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -284,15 +284,15 @@ class ModelSerializer {
 	
 	//
 	
-	protected def String serializeInEventConstraint(XSTS xSts) {
-		if (xSts.simplifiedAsynchronousAdapter) { // Needed only in SMV, as in other languages, in-events keep their false values between steps
-			val inEventVariables = xSts.inEventVariableGroup.variables
-			val oneInNConstraint = inEventVariables.createOneInNExpression
-			return System.lineSeparator + " & " + oneInNConstraint.serialize
-		}
-		
-		return ""
-	}
+//	protected def String serializeInEventConstraint(XSTS xSts) {
+//		if (xSts.simplifiedAsynchronousAdapter) { // Needed only in SMV, as in other languages, in-events keep their false values between steps
+//			val inEventVariables = xSts.inEventVariableGroup.variables
+//			val oneInNConstraint = inEventVariables.createOneInNExpression
+//			return System.lineSeparator + " & " + oneInNConstraint.serialize
+//		}
+//		
+//		return ""
+//	}
 	
 	protected def String serializeInEventTrans(XSTS xSts) {
 		val inEventAction = xSts.inEventTransition.action
@@ -319,9 +319,9 @@ class ModelSerializer {
 			}
 		}
 		
-		// Simplified AA constraint (1 in-event in N)
-		serializedInAction += xSts.serializeInEventConstraint
-		///
+//		// Simplified AA constraint (1 in-event in N) // Taken care of by the XSTS mapping
+//		serializedInAction += xSts.serializeInEventConstraint
+//		///
 		
 		return serializedInAction
 	}
