@@ -32,9 +32,6 @@ abstract class PropertyExpressionSerializer extends ExpressionSerializer {
 	}
 	
 	override String serialize(Expression expression) {
-		if (expression instanceof ImplyExpression) {
-			return '''(!(«expression.leftOperand.serialize») || («expression.rightOperand.serialize»))'''
-		}
 		if (expression instanceof IfThenElseExpression) {
 			return expression.serializeIfThenElseExpression
 		}
@@ -45,6 +42,8 @@ abstract class PropertyExpressionSerializer extends ExpressionSerializer {
 	}
 	
 	//
+	
+	override _serialize(ImplyExpression expression) '''(!(«expression.leftOperand.serialize») || («expression.rightOperand.serialize»))'''
 	
 	protected def serializeIfThenElseExpression(IfThenElseExpression expression) {
 		return super.serialize(expression)

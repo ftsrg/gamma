@@ -41,7 +41,7 @@ class NuxmvPropertyExpressionSerializer extends ThetaPropertyExpressionSerialize
 
 	override String _serialize(AndExpression expression) '''(«FOR operand : expression.operands SEPARATOR ' & '»«operand.serialize»«ENDFOR»)'''
 
-	override String _serialize(ImplyExpression expression) '''(«expression.leftOperand.serialize» -> «expression.rightOperand.serialize»)'''
+	override String _serialize(ImplyExpression expression) '''((«expression.leftOperand.serialize») -> («expression.rightOperand.serialize»))'''
 
 	override String _serialize(EqualityExpression expression) '''(«expression.leftOperand.serialize» = «expression.rightOperand.serialize»)'''
 
