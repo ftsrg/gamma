@@ -1,0 +1,14 @@
+package packagename
+
+import "Environment.gcd"
+
+
+adapter EnvironmentAdapter of component environment : Environment [] {
+	
+	when any / run
+
+	queue messageQueue(priority = 1, capacity = 4) {
+		ControlActions.any
+	}
+
+}

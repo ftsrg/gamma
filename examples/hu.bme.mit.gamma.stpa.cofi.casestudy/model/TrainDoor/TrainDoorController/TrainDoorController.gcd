@@ -30,7 +30,7 @@ statechart TrainDoorController [
 	transition from Open to Closing when FeedbackDoorState.feedback [FeedbackDoorState.feedback::doorState == DoorState::CLOSING]
 	transition from Closing to Closed when FeedbackDoorState.feedback [FeedbackDoorState.feedback::doorState == DoorState::CLOSED]
 	transition from Closing to Opening when FeedbackDoorState.feedback [FeedbackDoorState.feedback::doorState == DoorState::OPENING]
-	// Need these to allow for measuring time since state change
+	// Need these to allow for measuring time upon state change
 	region PresenceRegion {
 		initial InitialPresence
 		state NoneInDoorway
@@ -79,25 +79,33 @@ statechart TrainDoorController [
 	}
 	transition from InitialControl to Control
 	// Consider priority between these transitions
-	
+	// Open
+	// SC-1
 	transition from Control to OpenDoor when cycle [
 			!(in-state(DoorStateRegion.Opening) or in-state(DoorStateRegion.Open)) and // Needed?
 			in-state(EmergencyRegion.Emergency)]
+	// SC-3
+	transition from Control to Control when cycle [ // Self-loop: needed? (check closing logic)
+			in-state(MovementRegion.InMotion)]
+	// SC-4
+	transition from Control to Control when cycle [ // Self-loop: needed? (check closing logic)
+			in-state(AlignmentRegion.Unaligned)]
+	// SC-2
 	transition from Control to OpenDoor when cycle [
 			!(in-state(DoorStateRegion.Opening) or in-state(DoorStateRegion.Open)) and // Needed?
 			in-state(PresenceRegion.PersonInDoorway)]
-	transition from Control to Control when cycle [  // Self-loop: needed? (check closing logic)
-			in-state(MovementRegion.InMotion)]
-	transition from Control to Control when cycle [  // Self-loop: needed? (check closing logic)
-			in-state(AlignmentRegion.Unaligned)]
 	
 	transition from OpenDoor to Control / raise ControlActions.controlDoor(ControlAction::OPEN);
 	
+	// Close
+	// SC-7
 	transition from Control to Control when cycle [ // Self-loop: conflict with open
-			in-state(PresenceRegion.PersonInDoorway)] 
+			in-state(PresenceRegion.PersonInDoorway)]
+	// SC-8
 	transition from Control to Control when cycle [ // Self-loop: conflict with open
 			in-state(EmergencyRegion.Emergency)]
-	transition from Control to CloseDoor when cycle [ // Else we close
+	 // SC-* Else we close
+	transition from Control to CloseDoor when cycle [
 			!(in-state(DoorStateRegion.Closing) or in-state(DoorStateRegion.Closed))] // Needed?
 	
 	transition from CloseDoor to Control / raise ControlActions.controlDoor(ControlAction::CLOSE);

@@ -1,0 +1,44 @@
+package traindoorcontrol
+
+import "Interface/Interface.gcd"
+
+const OPENING_TIME : integer := 2
+const OPEN_TIME : integer := 10
+
+const CLOSING_TIME : integer := 2
+
+statechart Environment [
+	port ControlActions : requires ControlActions
+	port FeedbackDoorState : provides FeedbackDoorState
+] {
+	timeout openingTime
+	timeout openTime
+	timeout closingTime
+	
+	region DoorStateRegion {
+		initial InitialDoorState
+		state Closing {
+			entry / raise FeedbackDoorState.feedback(DoorState::CLOSING);
+				set closingTime := CLOSING_TIME s;
+		}
+		state Closed {
+			entry / raise FeedbackDoorState.feedback(DoorState::CLOSED);
+		}
+		state Opening {
+			entry / raise FeedbackDoorState.feedback(DoorState::OPENING);
+				set openingTime := OPENING_TIME s;
+		}
+		state Open {
+			entry / raise FeedbackDoorState.feedback(DoorState::OPEN);
+				set openTime := OPEN_TIME s;
+		}
+	}
+	transition from InitialDoorState to Closed
+	transition from Closed to Opening when ControlActions.controlDoor [ControlActions.controlDoor::action == ControlAction::OPEN]
+	transition from Opening to Open when timeout openingTime
+	transition from Opening to Closing when ControlActions.controlDoor [ControlActions.controlDoor::action == ControlAction::CLOSE]
+	transition from Open to Closing when ControlActions.controlDoor [ControlActions.controlDoor::action == ControlAction::CLOSE]
+	transition from Open to Closing when timeout openTime
+	transition from Closing to Closed when timeout closingTime
+	transition from Closing to Opening when ControlActions.controlDoor [ControlActions.controlDoor::action == ControlAction::OPEN]
+}
