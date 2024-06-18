@@ -14,5 +14,6 @@
 *.pd
 *.txt
 *.json
-!/measurement-results/*/*.txt
-!/measurement-results/*/*/*/*.txt
+*.cmd
+*.smv
+!System.gpd

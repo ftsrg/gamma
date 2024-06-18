@@ -3,6 +3,7 @@ package traindoorcontrol
 import "Interface/Interface.gcd"
 
 //const TOO_LATE_CLOSED_WHEN_UNALIGNED : integer := 5
+const OPEN_TIME : integer := 10
 
 @OrthogonalRegionSchedule = sequential
 @TransitionPriority = order-based
@@ -15,13 +16,16 @@ statechart TrainDoorController [
 //	timeout tooLateCloseWhenUnaligned
 //	var tooLateClosedWhenUnaligned : boolean := false
 //	var closedSentWhenUnaligned : boolean := false
+	timeout openTime
 	
 	region DoorStateRegion {
 		initial InitialDoorState
 		state Closing
 		state Closed
 		state Opening
-		state Open
+		state Open {
+			entry / set openTime := OPEN_TIME s;
+		}
 	}
 	transition from InitialDoorState to Closed
 	transition from Closed to Opening when FeedbackDoorState.feedback [FeedbackDoorState.feedback::doorState == DoorState::OPENING]
@@ -82,17 +86,17 @@ statechart TrainDoorController [
 	// Open
 	// SC-1
 	transition from Control to OpenDoor when cycle [
-			!(in-state(DoorStateRegion.Opening) or in-state(DoorStateRegion.Open)) and // Needed?
+//			!(in-state(DoorStateRegion.Opening) or in-state(DoorStateRegion.Open)) and // Needed? // Discarded for continuous communication with the environment statechart (event-driven execution)
 			in-state(EmergencyRegion.Emergency)]
 	// SC-3
-	transition from Control to Control when cycle [ // Self-loop: needed? (check closing logic)
+	transition from Control to CloseDoor when cycle [ // Self-loop: needed? (check closing logic) -- Set to close
 			in-state(MovementRegion.InMotion)]
-	// SC-4
-	transition from Control to Control when cycle [ // Self-loop: needed? (check closing logic)
+//	// SC-4
+	transition from Control to CloseDoor when cycle [ // Self-loop: needed? (check closing logic) -- Set to close
 			in-state(AlignmentRegion.Unaligned)]
 	// SC-2
 	transition from Control to OpenDoor when cycle [
-			!(in-state(DoorStateRegion.Opening) or in-state(DoorStateRegion.Open)) and // Needed?
+//			!(in-state(DoorStateRegion.Opening) or in-state(DoorStateRegion.Open)) and // Needed?
 			in-state(PresenceRegion.PersonInDoorway)]
 	
 	transition from OpenDoor to Control / raise ControlActions.controlDoor(ControlAction::OPEN);
@@ -104,9 +108,11 @@ statechart TrainDoorController [
 	// SC-8
 	transition from Control to Control when cycle [ // Self-loop: conflict with open
 			in-state(EmergencyRegion.Emergency)]
+	// SC-* We close after a timeout
+	transition from Control to CloseDoor when timeout openTime [in-state(DoorStateRegion.Open)]
 	 // SC-* Else we close
-	transition from Control to CloseDoor when cycle [
-			!(in-state(DoorStateRegion.Closing) or in-state(DoorStateRegion.Closed))] // Needed?
+	transition from Control to CloseDoor when cycle
+//			[!(in-state(DoorStateRegion.Closing) or in-state(DoorStateRegion.Closed))] // Needed?
 	
 	transition from CloseDoor to Control / raise ControlActions.controlDoor(ControlAction::CLOSE);
 	

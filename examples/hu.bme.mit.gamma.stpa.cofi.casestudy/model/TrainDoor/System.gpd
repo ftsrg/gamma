@@ -1,0 +1,11 @@
+import "System.gcd"
+
+component TrainDoor
+
+//E F [ { state environment -> environment.DoorStateRegion.Open } ]
+//E F [ { state environment -> environment.DoorStateRegion.Closing } ]
+E (F ([ { state environment -> environment.DoorStateRegion.Opening } ] &&
+	X ( [ { state environment -> environment.DoorStateRegion.Closing } ] )))
+E F [{variable environment -> environment.a}]
+//A G ( [ { state controller -> controller.EmergencyRegion.Emergency } ] -> F
+//	[ { event controller -> controller.ControlActions.controlDoor } ] )
