@@ -9,6 +9,10 @@ scheduled-async TrainDoor [
 	port FeedbackPresence : requires FeedbackPresence
 	port ExternalCommunication : requires ExternalCommunication
 	port ControlActions : provides ControlActions
+	
+	port OpenTimeout : requires Timeout
+	port OpeningTimeout : requires Timeout
+	port ClosingTimeout : requires Timeout
 ] {
 	component controller : TrainDoorControllerAdapter
 	component environment : EnvironmentAdapter
@@ -16,6 +20,10 @@ scheduled-async TrainDoor [
 	bind FeedbackPresence -> controller.FeedbackPresence
 	bind ExternalCommunication -> controller.ExternalCommunication
 	bind ControlActions -> controller.ControlActions
+	
+	bind OpenTimeout -> controller.OpenTimeout
+	bind OpeningTimeout -> environment.OpeningTimeout
+	bind ClosingTimeout -> environment.ClosingTimeout
 	
 	channel [ controller.ControlActions ] -o)- [ environment.ControlActions]
 	channel [ environment.FeedbackDoorState ] -o)- [ controller.FeedbackDoorState]

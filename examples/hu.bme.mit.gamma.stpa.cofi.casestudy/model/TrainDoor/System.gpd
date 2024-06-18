@@ -4,8 +4,7 @@ component TrainDoor
 
 //E F [ { state environment -> environment.DoorStateRegion.Open } ]
 //E F [ { state environment -> environment.DoorStateRegion.Closing } ]
-E (F ([ { state environment -> environment.DoorStateRegion.Opening } ] &&
-	X ( [ { state environment -> environment.DoorStateRegion.Closing } ] )))
-E F [{variable environment -> environment.a}]
+E F ([ { state environment -> environment.DoorStateRegion.Closing } ] &&
+	X ( [ { state environment -> environment.DoorStateRegion.Opening } ] ))
 //A G ( [ { state controller -> controller.EmergencyRegion.Emergency } ] -> F
 //	[ { event controller -> controller.ControlActions.controlDoor } ] )

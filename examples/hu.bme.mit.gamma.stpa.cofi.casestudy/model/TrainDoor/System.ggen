@@ -3,12 +3,6 @@ import "System.gcd"
 analysis-model {
 	component : TrainDoor
 	language : SMV
-	constraint : {
-		top : {
-			minimum-orchestrating-period : 1 s
-			maximum-orchestrating-period : 1 s
-		}
-	}
 }
 
 verification {

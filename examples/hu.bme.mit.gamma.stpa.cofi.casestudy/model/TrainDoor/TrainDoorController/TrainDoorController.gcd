@@ -2,9 +2,6 @@ package traindoorcontrol
 
 import "Interface/Interface.gcd"
 
-//const TOO_LATE_CLOSED_WHEN_UNALIGNED : integer := 5
-const OPEN_TIME : integer := 10
-
 @OrthogonalRegionSchedule = sequential
 @TransitionPriority = order-based
 statechart TrainDoorController [
@@ -12,20 +9,15 @@ statechart TrainDoorController [
 	port FeedbackDoorState : requires FeedbackDoorState
 	port FeedbackPresence : requires FeedbackPresence
 	port ExternalCommunication : requires ExternalCommunication
+	port OpenTimeout : requires Timeout // { invariant OpenTimeout.^timeout:: imply in-state(DoorStateRegion.Open) }
 ] {
-//	timeout tooLateCloseWhenUnaligned
-//	var tooLateClosedWhenUnaligned : boolean := false
-//	var closedSentWhenUnaligned : boolean := false
-	timeout openTime
-	
+	invariant OpenTimeout.^timeout:: imply in-state(DoorStateRegion.Open)
 	region DoorStateRegion {
 		initial InitialDoorState
 		state Closing
 		state Closed
 		state Opening
-		state Open {
-			entry / set openTime := OPEN_TIME s;
-		}
+		state Open
 	}
 	transition from InitialDoorState to Closed
 	transition from Closed to Opening when FeedbackDoorState.feedback [FeedbackDoorState.feedback::doorState == DoorState::OPENING]
@@ -57,14 +49,10 @@ statechart TrainDoorController [
 		initial InitialAlignment
 		state Aligned
 		state Unaligned
-//		{
-//			entry / set tooLateCloseWhenUnaligned := TOO_LATE_CLOSED_WHEN_UNALIGNED s;
-//		}
 	}
 	transition from InitialAlignment to Aligned
 	transition from Aligned to Unaligned when ExternalCommunication.alignment [!ExternalCommunication.alignment::isAligned]
 	transition from Unaligned to Aligned when ExternalCommunication.alignment [ExternalCommunication.alignment::isAligned]
-//	transition from Unaligned to Unaligned when timeout tooLateCloseWhenUnaligned / if (!closedSentWhenUnaligned) tooLateClosedWhenUnaligned := true;
 	
 	region MovementRegion {
 		initial InitialMovement
@@ -86,17 +74,17 @@ statechart TrainDoorController [
 	// Open
 	// SC-1
 	transition from Control to OpenDoor when cycle [
-//			!(in-state(DoorStateRegion.Opening) or in-state(DoorStateRegion.Open)) and // Needed? // Discarded for continuous communication with the environment statechart (event-driven execution)
+			!(in-state(DoorStateRegion.Opening) or in-state(DoorStateRegion.Open)) and // Needed?
 			in-state(EmergencyRegion.Emergency)]
 	// SC-3
-	transition from Control to CloseDoor when cycle [ // Self-loop: needed? (check closing logic) -- Set to close
+	transition from Control to Control when cycle [ // Self-loop: needed?
 			in-state(MovementRegion.InMotion)]
 //	// SC-4
-	transition from Control to CloseDoor when cycle [ // Self-loop: needed? (check closing logic) -- Set to close
+	transition from Control to Control when cycle [ // Self-loop: needed?
 			in-state(AlignmentRegion.Unaligned)]
 	// SC-2
 	transition from Control to OpenDoor when cycle [
-//			!(in-state(DoorStateRegion.Opening) or in-state(DoorStateRegion.Open)) and // Needed?
+			!(in-state(DoorStateRegion.Opening) or in-state(DoorStateRegion.Open)) and // Needed?
 			in-state(PresenceRegion.PersonInDoorway)]
 	
 	transition from OpenDoor to Control / raise ControlActions.controlDoor(ControlAction::OPEN);
@@ -109,36 +97,11 @@ statechart TrainDoorController [
 	transition from Control to Control when cycle [ // Self-loop: conflict with open
 			in-state(EmergencyRegion.Emergency)]
 	// SC-* We close after a timeout
-	transition from Control to CloseDoor when timeout openTime [in-state(DoorStateRegion.Open)]
+	transition from Control to CloseDoor when OpenTimeout.^timeout [in-state(DoorStateRegion.Open)]
 	 // SC-* Else we close
-	transition from Control to CloseDoor when cycle
+//	transition from Control to CloseDoor when cycle
 //			[!(in-state(DoorStateRegion.Closing) or in-state(DoorStateRegion.Closed))] // Needed?
 	
 	transition from CloseDoor to Control / raise ControlActions.controlDoor(ControlAction::CLOSE);
-	
-//////////////////////////
-//	region DoorActuatorRegion {
-//		initial InitialDoorActuator
-//		state IdleDoorActuator
-//	}
-//	transition from InitialDoorActuator to IdleDoorActuator
-//	
-//	region DoorStateSensorRegion {
-//		initial InitialDoorStateSensor
-//		state IdleDoorStateSensor
-//	}
-//	transition from InitialDoorStateSensor to IdleDoorStateSensor
-//	
-//	region PresenceSensorRegion {
-//		initial InitialPresenceSensor
-//		state IdlePresenceSensor
-//	}
-//	transition from InitialPresenceSensor to IdlePresenceSensor
-//	
-//	region DoorRegion {
-//		initial InitialDoor
-//		state IdleDoor
-//	}
-//	transition from InitialDoor to IdleDoor
-	
+
 }

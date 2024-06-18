@@ -21,3 +21,7 @@ interface ExternalCommunication {
 	out event alignment(isAligned : boolean)
 	out event movement(isMoving : boolean)
 }
+
+interface Timeout {
+	out event ^timeout
+}
