@@ -662,7 +662,7 @@ PrimaryExpression returns ExpressionModel::Expression:
 	EventParameterReferenceExpression |
 	InterfaceParameterReferenceExpression |
 	TimeoutReferenceExpression |
-	( EventReference '::' ) | // Now this are not usable only in triggers
+	( EventReference '::' ) | // Now these event references are not usable only in triggers
 	StateReferenceExpression
 ;
 
