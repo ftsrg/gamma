@@ -779,12 +779,14 @@ class ComponentTransformer {
 		mergedClockAction.actions += mergedAction
 		
 		// Replacing invariants if any (otherwise, they remain in the body of the if, not affecting the state if there are no input messages)
+		// Modification: not for environmental ones, as the replacement of these invariants would not affect variable (event) values in the correct place!
+		// Not a restrictive-enough solution for AA though as input events can be sent this way if there is an event in a prioritized queue
 		val assumeActions = mergedAction.getSelfAndAllContentsOfType(AssumeAction)
-		val environmentalInvariants = assumeActions.filter[it.environmentalInvariant]
-		for (environmentalInvariant : environmentalInvariants) {
-			createEmptyAction.replace(environmentalInvariant)
-			mergedClockAction.actions.add(0, environmentalInvariant)
-		}
+//		val environmentalInvariants = assumeActions.filter[it.environmentalInvariant]
+//		for (environmentalInvariant : environmentalInvariants) {
+//			createEmptyAction.replace(environmentalInvariant)
+//			mergedClockAction.actions.add(0, environmentalInvariant)
+//		}
 		val internalInvariants = assumeActions.filter[it.internalInvariant]
 		for (internalInvariant : internalInvariants) {
 			createEmptyAction.replace(internalInvariant)
