@@ -407,9 +407,9 @@ class ComponentTransformer {
 						val inputPorts = adapterComponentType.allPortsWithInput
 						for (inputPort : inputPorts) {
 							for (inputEvent : inputPort.inputEvents) {
-								val xStsFalseInEventVariable = eventReferenceMapper.getInputEventVariables(inputEvent, inputPort)
+								val xStsFalseInEventVariables = eventReferenceMapper.getInputEventVariables(inputEvent, inputPort)
 										.reject[xStsInEventVariables.contains(it)]
-								thenAction.actions += xStsFalseInEventVariable.map[it.createVariableResetAction] // 'Assume' would be better?
+								thenAction.actions += xStsFalseInEventVariables.map[it.createVariableResetAction] // 'Assume' would be better?
 							}
 						}
 					}
