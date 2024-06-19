@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.expression.model.AndExpression
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FalseExpression
+import hu.bme.mit.gamma.expression.model.ImplyExpression
 import hu.bme.mit.gamma.expression.model.LogicExpression
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.OrExpression
@@ -880,6 +881,13 @@ class ActionOptimizer {
 				}
 				else if (booleanExpression instanceof AndExpression) {
 					booleanExpression.operands.removeIf[it instanceof TrueExpression]
+				}
+				else if (booleanExpression instanceof ImplyExpression) {
+					val left = booleanExpression.leftOperand
+					val right = booleanExpression.rightOperand
+					if (left.definitelyTrueExpression) {
+						right.replace(booleanExpression)
+					}
 				}
 			}
 		}
