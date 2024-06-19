@@ -9,4 +9,5 @@ verification {
 	file : "System.smv"
 	property-file : "System.gpd"
 	language : nuXmv
+	test-language : java
 }
