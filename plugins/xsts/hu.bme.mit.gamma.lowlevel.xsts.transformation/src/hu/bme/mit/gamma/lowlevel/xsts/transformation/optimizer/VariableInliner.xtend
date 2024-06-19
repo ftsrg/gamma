@@ -186,6 +186,7 @@ class VariableInliner {
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		val assumption = action.assumption
 		assumption.inlineExpression(concreteValues, symbolicValues)
+		// TODO 'assume (a = 10)' like actions could be handled like assignments (see next dispatch)
 	}
 	
 	protected def dispatch void inline(AssignmentAction action,

@@ -402,6 +402,18 @@ class ComponentTransformer {
 						thenAction.actions += xStsInEventVariable.createAssignmentAction(
 								createTrueExpression)
 					}
+					//// Optimization: if the control specification is 'when any / run' then all other inputs are known to be false
+					if (adapterComponentType.whenAnyRunOnce) {
+						val inputPorts = adapterComponentType.allPortsWithInput
+						for (inputPort : inputPorts) {
+							for (inputEvent : inputPort.inputEvents) {
+								val xStsFalseInEventVariable = eventReferenceMapper.getInputEventVariables(inputEvent, inputPort)
+										.reject[xStsInEventVariables.contains(it)]
+								thenAction.actions += xStsFalseInEventVariable.map[it.createVariableResetAction] // 'Assume' would be better?
+							}
+						}
+					}
+					////
 					// Setting the parameter variables with values stored in slave queues
 					val slaveQueueStructs = if (eventReference instanceof Entry<?, ?>) {
 						val portEvent = eventReference as Entry<Port, Event>
