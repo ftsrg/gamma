@@ -6,11 +6,9 @@ import "Interface/Interface.gcd"
 statechart Environment [
 	port ControlActions : requires ControlActions
 	port FeedbackDoorState : provides FeedbackDoorState
-	port OpeningTimeout : requires Timeout // { invariant OpeningTimeout.^timeout:: imply in-state(DoorStateRegion.Opening) }
-	port ClosingTimeout : requires Timeout // { invariant ClosingTimeout.^timeout:: imply in-state(DoorStateRegion.Closing) }
+	port OpeningTimeout : requires Timeout { invariant OpeningTimeout.^timeout:: imply in-state(DoorStateRegion.Opening) }
+	port ClosingTimeout : requires Timeout { invariant ClosingTimeout.^timeout:: imply in-state(DoorStateRegion.Closing) }
 ] {
-	invariant OpeningTimeout.^timeout:: imply in-state(DoorStateRegion.Opening)
-	invariant ClosingTimeout.^timeout:: imply in-state(DoorStateRegion.Closing)
 	region DoorStateRegion {
 		initial InitialDoorState
 		state Closing {
