@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -285,16 +285,6 @@ class StatechartToLowlevelTransformer {
 					lowlevelStatechart.internalEventDeclarations += lowlevelEventDeclarations
 				}
 			}
-			// Mapping port and interface invariants
-			// First the interface invariants muist be mapped to the ports realizing the interface
-			val mappedInvariants = port.mapInterfaceInvariantsToPort
-			if (!mappedInvariants.empty) {
-				lowlevelStatechart.environmentalInvariants += mappedInvariants.map[it.transformSimpleExpression]
-			}
-			val invariants = port.invariants
-			if (!invariants.empty) {
-				lowlevelStatechart.environmentalInvariants += invariants.map[it.transformSimpleExpression]
-			}
 		}
 		for (region : statechart.regions) {
 			lowlevelStatechart.regions += region.transform
@@ -304,11 +294,26 @@ class StatechartToLowlevelTransformer {
 			val lowlevelTransition = transition.transform
 			lowlevelStatechart.transitions += lowlevelTransition
 		}
+		
+		// Mapping port and interface invariants (now, not before, because we want to refer to e.g., state nodes and variables)
+		// First the interface invariants must be mapped to the ports realizing the interface
+		for (port : statechart.ports) {
+			val mappedInvariants = port.mapInterfaceInvariantsToPort
+			if (!mappedInvariants.empty) {
+				lowlevelStatechart.environmentalInvariants += mappedInvariants.map[it.transformSimpleExpression]
+			}
+			val invariants = port.invariants
+			if (!invariants.empty) {
+				lowlevelStatechart.environmentalInvariants += invariants.map[it.transformSimpleExpression]
+			}
+		}
+		
 		// Mapping statechart invariants
 		val statechartInvariants = statechart.invariants
 		if (!statechartInvariants.empty) {
 			lowlevelStatechart.invariants += statechartInvariants.map[it.transformSimpleExpression]
-		}	
+		}
+		
 		return lowlevelStatechart
 	}
 
