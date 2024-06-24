@@ -1,4 +1,5 @@
 /bin/*
+/trace/
 *.gsm
 *.uppaal
 *.g2u

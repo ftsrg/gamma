@@ -75,7 +75,7 @@ statechart TrainDoorController [
 	transition from Control to OpenDoor when cycle [
 			!(in-state(DoorStateRegion.Opening) or in-state(DoorStateRegion.Open)) and // Needed?
 			in-state(EmergencyRegion.Emergency)]
-	//// Close - SC-* We close the door if the train sets out and there is no one in the door
+	//// Close - SC-A We close the door if the train sets out and there is no one in the door
 	transition from Control to CloseDoor when cycle [
 			!(in-state(DoorStateRegion.Closing) or in-state(DoorStateRegion.Closed)) and
 			!in-state(PresenceRegion.PersonInDoorway) and
@@ -90,6 +90,10 @@ statechart TrainDoorController [
 	transition from Control to OpenDoor when cycle [
 			!(in-state(DoorStateRegion.Opening) or in-state(DoorStateRegion.Open)) and // Needed?
 			in-state(PresenceRegion.PersonInDoorway)]
+	// SC-C
+	transition from Control to OpenDoor when cycle [
+			!(in-state(DoorStateRegion.Opening) or in-state(DoorStateRegion.Open)) and // Needed?
+			in-state(MovementRegion.Still) and in-state(AlignmentRegion.Aligned)]
 	
 	transition from OpenDoor to Control / raise ControlActions.controlDoor(ControlAction::OPEN);
 	
@@ -100,7 +104,7 @@ statechart TrainDoorController [
 	// SC-8
 	transition from Control to Control when cycle [ // Self-loop: conflict with open
 			in-state(EmergencyRegion.Emergency)]
-	// SC-* We close after a timeout
+	// SC-B We close after a timeout
 	transition from Control to CloseDoor when OpenTimeout.^timeout [in-state(DoorStateRegion.Open)]
 	// SC-* Else we close
 //	transition from Control to CloseDoor when cycle
