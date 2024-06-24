@@ -56,11 +56,27 @@ statechart TrainDoorController [
 	region MovementRegion {
 		initial InitialMovement
 		state Still
-		state InMotion
+		state InMotion {
+//			region MotionRegion {
+//				initial InitialMotion
+//				state Accelerating
+//				state ConstantSpeed
+//				state Decelerating
+//			}
+		}
 	}
 	transition from InitialMovement to Still
 	transition from Still to InMotion when ExternalCommunication.movement [ExternalCommunication.movement::isMoving]
 	transition from InMotion to Still when ExternalCommunication.movement [!ExternalCommunication.movement::isMoving]
+	//
+//	transition from InitialMotion to Accelerating
+//	transition from Accelerating to ConstantSpeed when ExternalCommunication.movement [false]
+//	transition from Accelerating to Decelerating when ExternalCommunication.movement [false]
+//	transition from Decelerating to ConstantSpeed when ExternalCommunication.movement [false]
+//	transition from Decelerating to Accelerating when ExternalCommunication.movement [false]
+//	transition from ConstantSpeed to Accelerating when ExternalCommunication.movement [false]
+//	transition from ConstantSpeed to Decelerating when ExternalCommunication.movement [false]
+	//
 	
 	region ControlRegion {
 		initial InitialControl
