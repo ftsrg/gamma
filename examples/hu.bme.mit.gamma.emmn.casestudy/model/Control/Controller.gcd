@@ -1,0 +1,8 @@
+package control
+
+import "Interfaces/Interfaces.gcd"
+
+statechart Controller() [
+	port Input : requires Input
+	port Output : provides Output
+] {}

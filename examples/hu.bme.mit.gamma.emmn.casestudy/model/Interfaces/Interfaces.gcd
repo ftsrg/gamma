@@ -1,0 +1,11 @@
+package interfaces
+
+interface Input {
+	out event a
+	out event b
+}
+
+interface Output {
+	out event x
+	out event y
+}
