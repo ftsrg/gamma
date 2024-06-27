@@ -3300,7 +3300,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static Set<State> getPrecedingStates(StateNode node) {
-		Set<State> precedingStates = new HashSet<State>();
+		Set<State> precedingStates = new LinkedHashSet<State>();
 		for (Transition incomingTransition : getIncomingTransitions(node)) {
 			StateNode source = incomingTransition.getSourceState();
 			if (source instanceof State state) {
@@ -3315,7 +3315,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static Set<State> getReachableStates(StateNode node) { // Same level
-		Set<State> reachableStates = new HashSet<State>();
+		Set<State> reachableStates = new LinkedHashSet<State>();
 		for (Transition outgoingTransition : getOutgoingTransitions(node)) {
 			StateNode target = outgoingTransition.getTargetState();
 			if (target instanceof State state) {
