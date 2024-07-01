@@ -57,26 +57,31 @@ statechart TrainDoorController [
 		initial InitialMovement
 		state Still
 		state InMotion {
-//			region MotionRegion {
-//				initial InitialMotion
-//				state Accelerating
-//				state ConstantSpeed
-//				state Decelerating
-//			}
+			region MotionRegion {
+				initial InitialMotion
+				choice InitialChoice
+				state UncategorizedMotion
+				state Arriving
+				state Departing
+			}
 		}
 	}
 	transition from InitialMovement to Still
-	transition from Still to InMotion when ExternalCommunication.movement [ExternalCommunication.movement::isMoving]
-	transition from InMotion to Still when ExternalCommunication.movement [!ExternalCommunication.movement::isMoving]
+	transition from Still to InMotion when ExternalCommunication.movement [ExternalCommunication.movement::motionState != MotionState::STILL]
+	transition from InMotion to Still when ExternalCommunication.movement [ExternalCommunication.movement::motionState == MotionState::STILL]
 	//
-//	transition from InitialMotion to Accelerating
-//	transition from Accelerating to ConstantSpeed when ExternalCommunication.movement [false]
-//	transition from Accelerating to Decelerating when ExternalCommunication.movement [false]
-//	transition from Decelerating to ConstantSpeed when ExternalCommunication.movement [false]
-//	transition from Decelerating to Accelerating when ExternalCommunication.movement [false]
-//	transition from ConstantSpeed to Accelerating when ExternalCommunication.movement [false]
-//	transition from ConstantSpeed to Decelerating when ExternalCommunication.movement [false]
-	//
+	transition from InitialMotion to InitialChoice
+	
+	transition from InitialChoice to UncategorizedMotion [ExternalCommunication.movement::motionState == MotionState::UNCATEGORIZED_MOTION]
+	transition from InitialChoice to Arriving [ExternalCommunication.movement::motionState == MotionState::ARRIVING]
+	transition from InitialChoice to Departing [ExternalCommunication.movement::motionState == MotionState::DEPARTING]
+	
+	transition from UncategorizedMotion to Departing when ExternalCommunication.movement [ExternalCommunication.movement::motionState == MotionState::DEPARTING]
+	transition from UncategorizedMotion to Arriving when ExternalCommunication.movement [ExternalCommunication.movement::motionState == MotionState::ARRIVING]
+	transition from Arriving to UncategorizedMotion when ExternalCommunication.movement [ExternalCommunication.movement::motionState == MotionState::UNCATEGORIZED_MOTION]
+	transition from Arriving to Departing when ExternalCommunication.movement [ExternalCommunication.movement::motionState == MotionState::DEPARTING]
+	transition from Departing to UncategorizedMotion when ExternalCommunication.movement [ExternalCommunication.movement::motionState == MotionState::UNCATEGORIZED_MOTION]
+	transition from Departing to Arriving when ExternalCommunication.movement [ExternalCommunication.movement::motionState == MotionState::ARRIVING]
 	
 	region ControlRegion {
 		initial InitialControl

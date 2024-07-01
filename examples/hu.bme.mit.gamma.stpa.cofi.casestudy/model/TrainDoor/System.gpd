@@ -1,12 +1,33 @@
 import "System.gcd"
+import "Interface/Interface.gcd"
 
 component TrainDoor
 
-E F [ { state environment -> environment.DoorStateRegion.Open } ]
-E F [ { state environment -> environment.DoorStateRegion.Closing } ]
-E F ([ { state environment -> environment.DoorStateRegion.Closing } ] &&
-	X ( [ { state environment -> environment.DoorStateRegion.Opening } ] ))
-E F ([ { state environment -> environment.DoorStateRegion.Opening } ] &&
-	X ( [ { state environment -> environment.DoorStateRegion.Closing } ] ))
-//A G ( [ { state controller -> controller.EmergencyRegion.Emergency } ] -> F
-//	[ { event controller -> controller.ControlActions.controlDoor } ] )
+// Liveness properties
+
+//E F [ { state environment -> environment.DoorStateRegion.Open } ]
+//E F [ { state environment -> environment.DoorStateRegion.Closing } ]
+//E F ( [ { state environment -> environment.DoorStateRegion.Closing } ] &&
+//	X ( [ { state environment -> environment.DoorStateRegion.Opening } ] ) )
+//E F ( [ { state environment -> environment.DoorStateRegion.Opening } ] &&
+//	X ( [ { state environment -> environment.DoorStateRegion.Closing } ] ) )
+
+//A G ( [ { state controller -> controller.EmergencyRegion.Emergency and state controller -> controller.DoorStateRegion.Closed} ] -> 
+//	F [ { event controller -> controller.ControlActions.controlDoor } ] )
+
+// Safety properties
+
+// SC-5
+A G [ { ( event controller -> controller.ControlActions.controlDoor and
+		parameter controller -> controller.ControlActions.controlDoor::action == ControlAction::OPEN) imply
+	( state controller -> controller.MovementRegion.Still or state controller -> controller.EmergencyRegion.Emergency ) } ]
+// SC-5-variant with X: interesting to check but trivially untrue
+//A G ( X ( [ { ( event controller -> controller.ControlActions.controlDoor and
+//		parameter controller -> controller.ControlActions.controlDoor::action == ControlAction::OPEN) } ] ) ->
+//	[ { state controller -> controller.MovementRegion.Still or state controller -> controller.EmergencyRegion.Emergency } ] )
+	
+// SC-9
+A G ( ( [ { ( state controller -> controller.MovementRegion.Still and state controller -> controller.EmergencyRegion.NoEmergency and state controller -> controller.PresenceRegion.NoneInDoorway and !(state controller -> controller.DoorStateRegion.Closed) and !(state controller -> controller.DoorStateRegion.Closing) ) } ] &&
+		X ( [ { ( !(state controller -> controller.MovementRegion.Still) and state controller -> controller.EmergencyRegion.NoEmergency and state controller -> controller.PresenceRegion.NoneInDoorway ) } ] ) ) -> 
+	X ( [ { ( event controller -> controller.ControlActions.controlDoor and parameter controller -> controller.ControlActions.controlDoor::action == ControlAction::CLOSE) } ] ) )
+	

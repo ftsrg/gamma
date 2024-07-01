@@ -16,10 +16,15 @@ interface FeedbackPresence {
 	out event feedback(isPresent : boolean)
 }
 
+type MotionState : enum { STILL, // Everything, that is not still, represents motion
+		UNCATEGORIZED_MOTION, // Abstract state
+		ARRIVING, DEPARTING // Both refinement of UNCATEGORIZED_MOTION
+}
+
 interface ExternalCommunication {
 	out event emergency(isOccurred : boolean)
 	out event alignment(isAligned : boolean)
-	out event movement(isMoving : boolean)
+	out event movement(motionState : MotionState)
 }
 
 interface Timeout {
