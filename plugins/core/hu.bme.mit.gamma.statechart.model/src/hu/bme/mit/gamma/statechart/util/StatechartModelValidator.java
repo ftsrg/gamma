@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -794,7 +794,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (transition.getSourceState() instanceof InitialState && transition.getTargetState() instanceof PseudoState) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
-					"If a transition from an initial state goes into pseudostate, then it might cause an error during XSTS transformation.",
+					"If a transition from an initial state enters a pseudostate, then it might cause an error during XSTS transformation",
 						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TARGET_STATE)));
 		}
 		return validationResultMessages;
