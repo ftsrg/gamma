@@ -154,8 +154,8 @@ class EntryActionRetriever {
 		val xStsSubstateEntryActions = createRegionAction
 		// Recursion for the entry action of contained states
 		for (lowlevelSubregion : lowlevelState.regions) {
-			// Actions on initial transitions
-			val xStsInitialTransitionAction = lowlevelSubregion.createInitialXStsTransitionAction
+			// Actions on initial transitions: unnecessary, see 12 lines below
+//			val xStsInitialTransitionAction = lowlevelSubregion.createInitialXStsTransitionAction
 			//
 			val xStsEntryActions = newArrayList
 			for (lowlevelSubstate : lowlevelSubregion.states) {
