@@ -1,0 +1,20 @@
+import "ChoiceMergeMachine/ChoiceMergeMachine.gcd"
+
+code {
+	component : ChoiceMergeMachine
+	language : java
+}
+
+analysis {
+	component : ChoiceMergeMachine
+	language : SMV
+	transition-coverage
+}
+
+verification {
+	language : nuXmv
+	file : "ChoiceMergeMachine.smv"
+	property-file : ".ChoiceMergeMachine.gpd"
+	test-language : java
+	optimize-traces : true
+}

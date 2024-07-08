@@ -1,0 +1,16 @@
+import "ChoiceMergeMachine/ChoiceMergeMachine.gcd"
+
+analysis {
+	component : ChoiceMergeMachine
+	language : XSTS-UPPAAL
+	transition-coverage
+}
+
+verification {
+	file : "ChoiceMergeMachine.xml"
+	property-file : ".ChoiceMergeMachine.gpd"
+	language : XSTS-UPPAAL
+	back-annotate-to-original : false // Statechart 
+	optimize-traces : true // To avoid checking the same prefixes
+	trace-folder : "trace-conformance-src"
+}

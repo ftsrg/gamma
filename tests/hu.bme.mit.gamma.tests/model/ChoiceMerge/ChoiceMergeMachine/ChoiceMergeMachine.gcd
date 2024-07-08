@@ -1,0 +1,37 @@
+package choiceMerge
+
+import "Interfaces/Interfaces.gcd"
+
+@TransitionPriority = order-based
+statechart ChoiceMergeMachine [
+	port Control : requires ChoiceMergeInterface
+] {
+	var count : integer := 0
+	
+	region main {
+		initial InitialMain
+		state Start
+		merge Merge_1
+		state MiddleState_1
+		choice Choice_1
+		merge Merge_2
+		state MiddleState_2
+		choice Choice_2
+		state End
+	}
+	
+	transition from InitialMain to Start
+	
+	transition from Start to Merge_1 when Control.any
+	transition from Merge_1 to MiddleState_1 / count := count + 1;
+	transition from MiddleState_1 to Choice_1 when Control.any
+	transition from Choice_1 to Merge_1 [Control.b_::]
+	transition from Choice_1 to Merge_2 [Control.a_::]
+	
+	transition from Merge_2 to MiddleState_2 / count := count + 1;
+	transition from MiddleState_2 to Choice_2 when any
+	transition from Choice_2 to Merge_1 [Control.a_:: and Control.b_::]
+	transition from Choice_2 to Merge_2 [Control.b_::]
+	transition from Choice_2 to End [Control.a_::]
+	
+}

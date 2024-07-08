@@ -1,4 +1,5 @@
 include "Asynchronous/System/AsynchronousSystem.ggen"
+include "ChoiceMerge/ChoiceMerge.ggen"
 include "Clock/System/ClockSystem.ggen"
 include "LoopAction/LoopActionStatechart.ggen"
 include "EventPassing/EventPassing.ggen"

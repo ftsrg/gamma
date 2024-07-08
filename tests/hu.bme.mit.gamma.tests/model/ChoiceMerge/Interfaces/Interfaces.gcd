@@ -1,0 +1,6 @@
+package interfaces
+
+interface ChoiceMergeInterface {
+	out event a_
+	out event b_
+}
