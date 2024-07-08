@@ -6,9 +6,11 @@ include "/model/Crossroads/System/Monitored/MonitoredCrossroad-ConformanceCheck-
 include "/model/Crossroads/System/Cascade/Crossroad-ConformanceCheck-TraceGeneration.ggen"
 include "/model/Crossroads/System/ScheduledAsynchronous/Crossroad-ConformanceCheck-TraceGeneration.ggen"
 include "/model/EventPassing/System/AdapterSystem-ConformanceCheck-TraceGeneration.ggen"
+include "/model/ForkJoin/ForkJoin-ConformanceCheck-TraceGeneration.ggen"
 include "/model/INPE/System/Mission-ConformanceCheck-TraceGeneration.ggen"
 include "/model/InternalEvents/System/InternalEvents-ConformanceCheck-TraceGeneration.ggen"
 include "/model/LoopAction/LoopAction-ConformanceCheck-TraceGeneration.ggen"
+include "/model/ParallelRegion/ParallelRegion-ConformanceCheck-TraceGeneration.ggen"
 // Manually written tests are run directly based on the trace (.get) files
 include "/model/PIL/System/Oldalvedelem/Oldalvedelem-ConformanceCheck-TraceGeneration.ggen"
 include "/model/PIL/System/Vaganyut/Cascade/Vaganyut-ConformanceCheck-TraceGeneration.ggen"
