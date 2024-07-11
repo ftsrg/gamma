@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020-2022 Contributors to the Gamma project
+ * Copyright (c) 2020-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
+import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XTransition
 import java.util.Comparator
 import java.util.List
@@ -39,6 +40,7 @@ import static extension java.lang.Math.abs
 
 class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 	
+	protected List<VariableDeclarationAction> extractedXStsGuardVariables = newArrayList
 	protected Set<NonDeterministicAction> choicesWithDefaultBranch = newHashSet
 	
 	new(ViatraQueryEngine engine, Trace trace) {
@@ -47,8 +49,9 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 	}
 	
 	override mergeTransitions() {
+		extractGuardEvaluations // Only for BEGINNING_OF_STEP annotation (executed here as the next method breaks the tracing of the guards)
 		internalMergeTransitions
-		handleGuardEvaluations
+		prependSavedGuardEvaluations // Only for BEGINNING_OF_STEP annotation
 	}
 	
 	private def internalMergeTransitions() {
@@ -310,26 +313,35 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		}
 	}
 	
-	private def handleGuardEvaluations() {
+	private def extractGuardEvaluations() {
 		val statecharts = Statecharts.Matcher.on(engine).allValuesOfstatechart
 		checkState(statecharts.size == 1)
 		val statechart = statecharts.head
 		val guardEvaluation = statechart.guardEvaluation
 		if (guardEvaluation == GuardEvaluation.BEGINNING_OF_STEP) {
-			val xStsNewMergedAction = createSequentialAction
-			
 			val extractableExpressions = trace.getGuards.values.flatten
 			// trace.getGuards does not contain choice guards
 			
 			for (extractableExpression : extractableExpressions) {
-				val name = "_" + extractableExpression.hashCode.abs
-				xStsNewMergedAction.actions += createBooleanTypeDefinition
+				val name = "_guard_" + extractableExpression.hashCode.abs
+				val extractedXStsGuardVariable = createBooleanTypeDefinition
 						.extractExpression(name, extractableExpression)
+				extractedXStsGuardVariables += extractedXStsGuardVariable
 			}
+		}
+	}
+	
+	private def prependSavedGuardEvaluations() {
+		val statecharts = Statecharts.Matcher.on(engine).allValuesOfstatechart
+		checkState(statecharts.size == 1)
+		val statechart = statecharts.head
+		val guardEvaluation = statechart.guardEvaluation
+		if (guardEvaluation == GuardEvaluation.BEGINNING_OF_STEP) {
+			val xStsMergedAction = xSts.mergedAction
 			
-			xStsNewMergedAction.actions += xSts.mergedAction
-			
-			xSts.changeTransitions(xStsNewMergedAction.wrap)
+			for (extractedXStsGuardVariable : extractedXStsGuardVariables) {
+				extractedXStsGuardVariable.prependToAction(xStsMergedAction)
+			}
 		}
 	}
 	
