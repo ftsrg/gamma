@@ -1,11 +1,19 @@
 package interfaces
 
-interface Input {
-	out event a
-	out event b
+interface OperationsManager {
+	out event initTracking
 }
 
-interface Output {
-	out event x
-	out event y
+interface SatelliteManager {
+	out event getDataSat
+	in event getDataSatReturn
+}
+
+interface MQTT {
+	out event trackingActivation
+	out event radioActivation
+	out event remoteActivation
+	in event trackingActivationReturn
+	in event radioActivationReturn
+	in event remoteActivationReturn
 }

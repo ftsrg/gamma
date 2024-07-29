@@ -3,6 +3,7 @@ package control
 import "Interfaces/Interfaces.gcd"
 
 statechart Controller() [
-	port Input : requires Input
-	port Output : provides Output
+	port OperationsManager : requires OperationsManager
+	port SatelliteManager : provides SatelliteManager
+	port MQTT : provides MQTT
 ] {}

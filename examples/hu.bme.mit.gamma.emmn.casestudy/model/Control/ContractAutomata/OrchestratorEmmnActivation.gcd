@@ -1,0 +1,124 @@
+package orchestratoremmnactivation
+import "/hu.bme.mit.gamma.emmn.casestudy/model/Interfaces/Interfaces.gcd"
+import "/hu.bme.mit.gamma.emmn.casestudy/model/Control/Controller.gcd"
+@TransitionPriority = value-based
+@ScenarioContractStatechart = Controller (permissive)
+statechart OrchestratorEmmnActivation [
+	port OperationsManager : requires OperationsManager
+	port OperationsManagerReversed : provides OperationsManager
+	port SatelliteManager : provides SatelliteManager
+	port SatelliteManagerReversed : requires SatelliteManager
+	port MQTT : provides MQTT
+	port MQTTReversed : requires MQTT
+] {
+	region ^region {
+		initial Initial
+		state state0
+		state hotComponentViolation
+		state state1
+		state state2
+		state state3
+		state state4
+		state state5
+		state state6
+		state state7
+		state state8
+	}
+	transition from Initial to state0
+	transition (3) from state0 to state1 when OperationsManager.initTracking &&
+		!(SatelliteManager.getDataSatReturn || MQTT.trackingActivationReturn ||
+		MQTT.radioActivationReturn || MQTT.remoteActivationReturn)
+	transition (1) from state0 to state0 when OperationsManager.initTracking ||
+		SatelliteManager.getDataSatReturn || MQTT.trackingActivationReturn || MQTT.radioActivationReturn
+		|| MQTT.remoteActivationReturn
+	transition from state0 to state0 when SatelliteManagerReversed.getDataSat ||
+		MQTTReversed.trackingActivation || MQTTReversed.radioActivation || MQTTReversed.remoteActivation
+	transition (4) from state1 to state2 when SatelliteManagerReversed.getDataSat &&
+		!(MQTTReversed.trackingActivation || MQTTReversed.radioActivation ||
+		MQTTReversed.remoteActivation)
+	transition (1) from state1 to hotComponentViolation when SatelliteManagerReversed.getDataSat ||
+		MQTTReversed.trackingActivation || MQTTReversed.radioActivation || MQTTReversed.remoteActivation
+	transition from state1 to state0 when OperationsManager.initTracking ||
+		SatelliteManager.getDataSatReturn || MQTT.trackingActivationReturn || MQTT.radioActivationReturn
+		|| MQTT.remoteActivationReturn
+	transition (3) from state1 to state1 when OperationsManager.initTracking &&
+		!(SatelliteManager.getDataSatReturn || MQTT.trackingActivationReturn ||
+		MQTT.radioActivationReturn || MQTT.remoteActivationReturn)
+	transition (4) from state2 to state3 when SatelliteManager.getDataSatReturn &&
+		!(OperationsManager.initTracking || MQTT.trackingActivationReturn || MQTT.radioActivationReturn
+		|| MQTT.remoteActivationReturn)
+	transition (1) from state2 to state0 when OperationsManager.initTracking ||
+		SatelliteManager.getDataSatReturn || MQTT.trackingActivationReturn || MQTT.radioActivationReturn
+		|| MQTT.remoteActivationReturn
+	transition from state2 to state0 when SatelliteManagerReversed.getDataSat ||
+		MQTTReversed.trackingActivation || MQTTReversed.radioActivation || MQTTReversed.remoteActivation
+	transition (3) from state2 to state1 when OperationsManager.initTracking &&
+		!(SatelliteManager.getDataSatReturn || MQTT.trackingActivationReturn ||
+		MQTT.radioActivationReturn || MQTT.remoteActivationReturn)
+	transition (4) from state3 to state4 when MQTTReversed.trackingActivation &&
+		!(SatelliteManagerReversed.getDataSat || MQTTReversed.radioActivation ||
+		MQTTReversed.remoteActivation)
+	transition (1) from state3 to hotComponentViolation when SatelliteManagerReversed.getDataSat ||
+		MQTTReversed.trackingActivation || MQTTReversed.radioActivation || MQTTReversed.remoteActivation
+	transition from state3 to state0 when OperationsManager.initTracking ||
+		SatelliteManager.getDataSatReturn || MQTT.trackingActivationReturn || MQTT.radioActivationReturn
+		|| MQTT.remoteActivationReturn
+	transition (3) from state3 to state1 when OperationsManager.initTracking &&
+		!(SatelliteManager.getDataSatReturn || MQTT.trackingActivationReturn ||
+		MQTT.radioActivationReturn || MQTT.remoteActivationReturn)
+	transition (4) from state4 to state5 when MQTT.trackingActivationReturn &&
+		!(OperationsManager.initTracking || SatelliteManager.getDataSatReturn ||
+		MQTT.radioActivationReturn || MQTT.remoteActivationReturn)
+	transition (1) from state4 to state0 when OperationsManager.initTracking ||
+		SatelliteManager.getDataSatReturn || MQTT.trackingActivationReturn || MQTT.radioActivationReturn
+		|| MQTT.remoteActivationReturn
+	transition from state4 to state0 when SatelliteManagerReversed.getDataSat ||
+		MQTTReversed.trackingActivation || MQTTReversed.radioActivation || MQTTReversed.remoteActivation
+	transition (3) from state4 to state1 when OperationsManager.initTracking &&
+		!(SatelliteManager.getDataSatReturn || MQTT.trackingActivationReturn ||
+		MQTT.radioActivationReturn || MQTT.remoteActivationReturn)
+	transition (4) from state5 to state6 when MQTTReversed.radioActivation &&
+		!(SatelliteManagerReversed.getDataSat || MQTTReversed.trackingActivation ||
+		MQTTReversed.remoteActivation)
+	transition (1) from state5 to hotComponentViolation when SatelliteManagerReversed.getDataSat ||
+		MQTTReversed.trackingActivation || MQTTReversed.radioActivation || MQTTReversed.remoteActivation
+	transition from state5 to state0 when OperationsManager.initTracking ||
+		SatelliteManager.getDataSatReturn || MQTT.trackingActivationReturn || MQTT.radioActivationReturn
+		|| MQTT.remoteActivationReturn
+	transition (3) from state5 to state1 when OperationsManager.initTracking &&
+		!(SatelliteManager.getDataSatReturn || MQTT.trackingActivationReturn ||
+		MQTT.radioActivationReturn || MQTT.remoteActivationReturn)
+	transition (4) from state6 to state7 when MQTT.radioActivationReturn &&
+		!(OperationsManager.initTracking || SatelliteManager.getDataSatReturn ||
+		MQTT.trackingActivationReturn || MQTT.remoteActivationReturn)
+	transition (1) from state6 to state0 when OperationsManager.initTracking ||
+		SatelliteManager.getDataSatReturn || MQTT.trackingActivationReturn || MQTT.radioActivationReturn
+		|| MQTT.remoteActivationReturn
+	transition from state6 to state0 when SatelliteManagerReversed.getDataSat ||
+		MQTTReversed.trackingActivation || MQTTReversed.radioActivation || MQTTReversed.remoteActivation
+	transition (3) from state6 to state1 when OperationsManager.initTracking &&
+		!(SatelliteManager.getDataSatReturn || MQTT.trackingActivationReturn ||
+		MQTT.radioActivationReturn || MQTT.remoteActivationReturn)
+	transition (4) from state7 to state8 when MQTTReversed.remoteActivation &&
+		!(SatelliteManagerReversed.getDataSat || MQTTReversed.trackingActivation ||
+		MQTTReversed.radioActivation)
+	transition (1) from state7 to hotComponentViolation when SatelliteManagerReversed.getDataSat ||
+		MQTTReversed.trackingActivation || MQTTReversed.radioActivation || MQTTReversed.remoteActivation
+	transition from state7 to state0 when OperationsManager.initTracking ||
+		SatelliteManager.getDataSatReturn || MQTT.trackingActivationReturn || MQTT.radioActivationReturn
+		|| MQTT.remoteActivationReturn
+	transition (3) from state7 to state1 when OperationsManager.initTracking &&
+		!(SatelliteManager.getDataSatReturn || MQTT.trackingActivationReturn ||
+		MQTT.radioActivationReturn || MQTT.remoteActivationReturn)
+	transition (4) from state8 to state0 when MQTT.remoteActivationReturn &&
+		!(OperationsManager.initTracking || SatelliteManager.getDataSatReturn ||
+		MQTT.trackingActivationReturn || MQTT.radioActivationReturn)
+	transition (1) from state8 to state0 when OperationsManager.initTracking ||
+		SatelliteManager.getDataSatReturn || MQTT.trackingActivationReturn || MQTT.radioActivationReturn
+		|| MQTT.remoteActivationReturn
+	transition from state8 to state0 when SatelliteManagerReversed.getDataSat ||
+		MQTTReversed.trackingActivation || MQTTReversed.radioActivation || MQTTReversed.remoteActivation
+	transition (3) from state8 to state1 when OperationsManager.initTracking &&
+		!(SatelliteManager.getDataSatReturn || MQTT.trackingActivationReturn ||
+		MQTT.radioActivationReturn || MQTT.remoteActivationReturn)
+}

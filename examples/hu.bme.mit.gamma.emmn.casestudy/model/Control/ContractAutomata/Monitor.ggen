@@ -1,7 +1,7 @@
 import scenario "Contracts/Control.gsc"
 
 statechart-contract {
-	scenario : S1
+	scenario : OrchestratorEmmnActivation
 	restart-on-cold-violation : true
 	restart-on-accept : true
 	automaton-type : monitor
