@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -260,11 +260,13 @@ abstract class AbstractContractStatechartGeneration {
 			ref.port = ports.get(i)
 			var trigger = createEventTrigger
 			trigger.eventReference = ref
-			if (runningbin.leftOperand === null)
+			if (runningbin.leftOperand === null) {
 				runningbin.leftOperand = trigger
+			}
 			else if (signalCount == size) {
 				runningbin.rightOperand = trigger
-			} else {
+			}
+			else {
 				var newbin = createBinaryTrigger
 				runningbin.rightOperand = newbin
 				newbin.type = type
@@ -279,7 +281,7 @@ abstract class AbstractContractStatechartGeneration {
 		val triggers = <Trigger>newArrayList
 		val portsAndEvents = <Port,List<Event>>newHashMap
 		val allPorts = 
-		if(onlySend) {
+		if (onlySend) {
 			statechart.allPorts.filter[!it.inputEvents.empty].filter[it.isTurnedOut]
 		} else {
 			statechart.allPorts.filter[!it.inputEvents.empty]
@@ -288,7 +290,8 @@ abstract class AbstractContractStatechartGeneration {
 			var Interaction signal = null
 			if (modalInteraction instanceof Interaction) {
 				signal = modalInteraction
-			} else if (modalInteraction instanceof NegatedDeterministicOccurrence) {
+			}
+			else if (modalInteraction instanceof NegatedDeterministicOccurrence) {
 				val innerModalInteraction = modalInteraction.deterministicOccurrence
 				if (innerModalInteraction instanceof Interaction) {
 					signal = innerModalInteraction
@@ -300,9 +303,10 @@ abstract class AbstractContractStatechartGeneration {
 						signal.getPort.name
 				val port = getPort(portName)
 				val event = getEvent(signal.getEvent.name, port)
-				if(portsAndEvents.containsKey(port)) {
+				if (portsAndEvents.containsKey(port)) {
 					portsAndEvents.get(port).add(event)
-				} else {
+				}
+				else {
 					portsAndEvents.put(port, <Event>newArrayList(Arrays.asList(event)))
 				}
 			}
@@ -314,17 +318,18 @@ abstract class AbstractContractStatechartGeneration {
 				val trigger = createEventTrigger
 				trigger.eventReference = anyPortEvent
 				triggers += trigger
-			} else {
-				val concrateEvents = 
-					if(portsAndEvents.containsKey(port)) {
+			}
+			else {
+				val concreteEvents = 
+					if (portsAndEvents.containsKey(port)) {
 						port.inputEvents.filter[!(portsAndEvents.get(port).contains(it))]
 					} else {
 						port.inputEvents
 					}
-				for (concrateEvent : concrateEvents) {
+				for (concreteEvent : concreteEvents) {
 					val trigger = createEventTrigger
 					val portEventReference = createPortEventReference
-					portEventReference.event = concrateEvent
+					portEventReference.event = concreteEvent
 					portEventReference.port = port
 					trigger.eventReference = portEventReference
 					triggers += trigger
@@ -334,8 +339,6 @@ abstract class AbstractContractStatechartGeneration {
 		return triggers
 	}
 	
-	
-
 	protected def List<Trigger> createOtherNegatedTriggers(DeterministicOccurrenceSet set, boolean combineEvents) {
 		return createOtherTriggers(set,combineEvents, false).map[it.negateTrigger]
 	}
@@ -356,16 +359,16 @@ abstract class AbstractContractStatechartGeneration {
 	// /////////////// Event triggers based on Interactions	
 	def protected dispatch Trigger getEventTrigger(Interaction signal, boolean reversed) {
 		val trigger = createEventTrigger
-		val eventref = createPortEventReference
+		val eventRef = createPortEventReference
 		val port = reversed ?
 				getPort(scenarioStatechartUtil.getTurnedOutPortName(signal.getPort)) :
 				getPort(signal.getPort.name)
 		if (port.isInternal) {
 			return null
 		}
-		eventref.event = getEvent(signal.getEvent.name, port)
-		eventref.port = port
-		trigger.eventReference = eventref
+		eventRef.event = getEvent(signal.getEvent.name, port)
+		eventRef.port = port
+		trigger.eventReference = eventRef
 		return trigger
 	}
 	
@@ -552,12 +555,15 @@ abstract class AbstractContractStatechartGeneration {
 			val andExpression = createAndExpression
 			andExpression.operands += checks.map[it.expression.clone]
 			newGuard = andExpression
-		} else if (checks.size == 1) {
+		}
+		else if (checks.size == 1) {
 			newGuard = checks.head.expression.clone
 		}
+		
 		if (transition.guard === null) {
 			transition.guard = newGuard
-		} else {
+		}
+		else {
 			val and = createAndExpression
 			and.operands += newGuard
 			and.operands += transition.guard
@@ -572,7 +578,7 @@ abstract class AbstractContractStatechartGeneration {
 		val checks = set.deterministicOccurrences.filter(ScenarioCheckExpression)
 		val assignments = set.deterministicOccurrences.filter(ScenarioAssignmentStatement)
 		val nonCheckOrAssignmentInteractitons = set.deterministicOccurrences.filter [
-			!(it instanceof ScenarioCheckExpression) && ! (it instanceof ScenarioAssignmentStatement)
+			!(it instanceof ScenarioCheckExpression) && !(it instanceof ScenarioAssignmentStatement)
 		].toList
 		if (nonCheckOrAssignmentInteractitons.size > 1) {
 			trigger = getBinaryTrigger(nonCheckOrAssignmentInteractitons, BinaryType.AND, reversed)
@@ -586,7 +592,7 @@ abstract class AbstractContractStatechartGeneration {
 			forwardTransition.setOrExtendTrigger(negateTrigger(trigger), BinaryType.AND)
 		} else {
 			forwardTransition.setOrExtendTrigger(trigger, BinaryType.AND)
-			//Uncomment these lines to allow effects on the reversed ports
+			// Uncomment these lines to allow effects on the reversed ports
 //			for (modalInteraction : nonCheckOrAssignmentInteractitons) {
 //				val effect = getRaiseEventAction(modalInteraction, !reversed)
 //				if (effect !== null) {
@@ -675,9 +681,11 @@ abstract class AbstractContractStatechartGeneration {
 			val container = trigger.eContainer
 			if (container instanceof Transition) {
 				ecoreUtil.replace(createOnCycleTrigger, trigger)
-			} else if (container instanceof UnaryTrigger) {
+			}
+			else if (container instanceof UnaryTrigger) {
 				ecoreUtil.replace(createOnCycleTrigger, trigger)
-			} else if (container instanceof BinaryTrigger) {
+			}
+			else if (container instanceof BinaryTrigger) {
 				val otherSide = container.rightOperand == trigger ? container.leftOperand : container.rightOperand
 				ecoreUtil.replace(otherSide, container)
 			}

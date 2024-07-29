@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020-2022 Contributors to the Gamma project
+ * Copyright (c) 2020-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -31,49 +31,31 @@ import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class ScenarioStatechartUtil {
-
+	// Singleton
 	public static final ScenarioStatechartUtil INSTANCE = new ScenarioStatechartUtil();
-
-	protected ScenarioStatechartUtil() {
-	}
-
+	protected ScenarioStatechartUtil() {}
+	//
 	protected final String hotComponentViolation = "hotComponentViolation";
-
 	protected final String hotEnvironmentViolation = "hotEnvironmentViolation";
-
-	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
-
-	protected final StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE;
-
-	protected final InterfaceModelFactory interfaceFactory = InterfaceModelFactory.eINSTANCE;
-
+	
 	private final String stateName = "state";
-
 	private final String choiceName = "Choice";
-
 	private final String reversed = "Reversed";
-
 	private final String coldViolation = "coldViolation";
-
 	private final String hotViolation = "hotViolation";
-
 	private final String Accepting = "AcceptingState";
-
 	private final String initial = "Initial";
-
 	private final String LoopVariable = "LoopIteratingVariable";
-
 	private final String result = "result";
-
 	private final String IteratingVariable = "IteratingVariable";
-
 	private final String firstRegionName = "region";
-
 	private final String firstStateName = "initialState";
-
 	private final String mergeName = "merge";
-
 	private final String delayName = "delay";
+	
+	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected final StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE;
+	protected final InterfaceModelFactory interfaceFactory = InterfaceModelFactory.eINSTANCE;
 
 	public String getDelayName(int delayCount) {
 		return delayName + delayCount;
@@ -158,15 +140,15 @@ public class ScenarioStatechartUtil {
 		return isSend ? getTurnedOutPortName(port) : port.getName();
 	}
 
-	public List<EventReference> getAllEventReferencesForDirection(Component automaton, boolean isSentByComponent) {
+	public List<EventReference> getAllInputEventReferencesForDirection(Component automaton, boolean isSentByComponent) {
 		List<EventReference> eventRefs = new LinkedList<EventReference>();
 		List<Port> correctPorts = automaton.getPorts().stream()
-				.filter((it) -> (!((StatechartModelDerivedFeatures.getInputEvents(it)).isEmpty())))
-				.filter((it) -> !StatechartModelDerivedFeatures.isInternal(it)) 
+				.filter(it -> !StatechartModelDerivedFeatures.isInternal(it)) 
+				.filter(it -> !StatechartModelDerivedFeatures.getInputEvents(it).isEmpty())
 				.collect(Collectors.toList());
 		for (Port port : correctPorts) {
 			if ((isTurnedOut(port) && isSentByComponent) || (!isTurnedOut(port) && !isSentByComponent)) {
-				for (Event event : StatechartModelDerivedFeatures.getAllEvents(port)) {
+				for (Event event : StatechartModelDerivedFeatures.getInputEvents(port)) { // Changed from getAllEvents
 					PortEventReference eventRef = statechartFactory.createPortEventReference();
 					eventRef.setEvent(event);
 					eventRef.setPort(port);
@@ -178,13 +160,15 @@ public class ScenarioStatechartUtil {
 	}
 
 	public List<Trigger> getAllTriggersForDirection(Component automaton, boolean isSentByComponent) {
-		List<EventReference> eventRefs = getAllEventReferencesForDirection(automaton, isSentByComponent);
 		List<Trigger> triggers = new LinkedList<Trigger>();
+		
+		List<EventReference> eventRefs = getAllInputEventReferencesForDirection(automaton, isSentByComponent);
 		for (EventReference ref : eventRefs) {
 			EventTrigger eventTrigger = interfaceFactory.createEventTrigger();
 			eventTrigger.setEventReference(ref);
 			triggers.add(eventTrigger);
 		}
+		
 		return triggers;
 	}
 
@@ -195,10 +179,12 @@ public class ScenarioStatechartUtil {
 		if (!optionalTrigger.isPresent()) {
 			return InteractionDirection.RECEIVE;
 		}
-		PortEventReference portEventReference = (PortEventReference) optionalTrigger.get().getEventReference();
+		EventTrigger eventTrigger = optionalTrigger.get();
+		PortEventReference portEventReference = (PortEventReference) eventTrigger.getEventReference();
 		if (isTurnedOut(portEventReference.getPort())) {
 			return InteractionDirection.SEND;
-		} else {
+		}
+		else {
 			return InteractionDirection.RECEIVE;
 		}
 	}

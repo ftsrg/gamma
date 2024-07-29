@@ -351,8 +351,9 @@ class MonitorStatechartGenerator extends AbstractContractStatechartGeneration {
 		}
 		
 		if (otherTriggersWithCorrectDir.size > 0) {
-			val othersNegated = getBinaryTriggerFromTriggersIfPossible(otherTriggersWithCorrectDir, BinaryType.OR).
-				negateTrigger
+			val othersNegated = getBinaryTriggerFromTriggersIfPossible(
+				otherTriggersWithCorrectDir, BinaryType.OR)
+				.negateTrigger
 			if (forwardTransition.trigger instanceof OnCycleTrigger) {
 				forwardTransition.trigger = othersNegated
 			}
