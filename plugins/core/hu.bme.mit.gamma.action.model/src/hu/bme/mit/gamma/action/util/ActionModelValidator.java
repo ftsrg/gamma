@@ -17,6 +17,7 @@ import java.util.List;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures;
+import hu.bme.mit.gamma.action.model.AbstractAssignmentStatement;
 import hu.bme.mit.gamma.action.model.ActionModelPackage;
 import hu.bme.mit.gamma.action.model.AssertionStatement;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
@@ -24,6 +25,7 @@ import hu.bme.mit.gamma.action.model.Block;
 import hu.bme.mit.gamma.action.model.Branch;
 import hu.bme.mit.gamma.action.model.ExpressionStatement;
 import hu.bme.mit.gamma.action.model.ForStatement;
+import hu.bme.mit.gamma.action.model.HavocStatement;
 import hu.bme.mit.gamma.action.model.ProcedureDeclaration;
 import hu.bme.mit.gamma.action.model.ReturnStatement;
 import hu.bme.mit.gamma.action.model.Statement;
@@ -50,7 +52,7 @@ public class ActionModelValidator extends ExpressionModelValidator {
 	public static final ActionModelValidator INSTANCE = new ActionModelValidator();
 	protected ActionModelValidator() {}
 	
-	public Collection<ValidationResultMessage> checkAssignmentActions(AssignmentStatement assignment) {
+	public Collection<ValidationResultMessage> checkAssignmentActions(AbstractAssignmentStatement assignment) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
 		ReferenceExpression lhs = assignment.getLhs();
@@ -58,16 +60,27 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		if (declaration instanceof ConstantDeclaration) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 				"Constants cannot be assigned new values",
-					new ReferenceInfo(ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__LHS)));
+					new ReferenceInfo(ActionModelPackage.Literals.ABSTRACT_ASSIGNMENT_STATEMENT__LHS)));
 			return validationResultMessages;
 		}
 		// Other assignment type checking
-		try {
-			Expression rhs = assignment.getRhs();
-			validationResultMessages.addAll(checkExpressionConformance(lhs, rhs,
-				new ReferenceInfo(ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__RHS)));
-		} catch (Exception exception) {
-			// There is a type error on a lower level, no need to display the error message on this level too
+		if (assignment instanceof AssignmentStatement assignmentStatement) {
+			try {
+				Expression rhs = assignmentStatement.getRhs();
+				validationResultMessages.addAll(checkExpressionConformance(lhs, rhs,
+					new ReferenceInfo(ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__RHS)));
+			} catch (Exception exception) {
+				// There is a type error on a lower level, no need to display the error message on this level too
+			}
+		}
+		else if (assignment instanceof HavocStatement havoc) {
+			Expression constraint = havoc.getConstraint();
+			if (!typeDeterminator.isBoolean(constraint)) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+					"This constraint is not a boolean expression",
+						new ReferenceInfo(ActionModelPackage.Literals.HAVOC_STATEMENT__CONSTRAINT)));
+				return validationResultMessages;
+			}
 		}
 		
 		return validationResultMessages;

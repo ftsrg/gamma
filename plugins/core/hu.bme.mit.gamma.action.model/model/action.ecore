@@ -59,10 +59,17 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="branches" lowerBound="1"
         upperBound="-1" eType="#//Branch" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="AssignmentStatement" eSuperTypes="#//Statement">
+  <eClassifiers xsi:type="ecore:EClass" name="AbstractAssignmentStatement" abstract="true"
+      eSuperTypes="#//Statement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="lhs" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression"
         containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AssignmentStatement" eSuperTypes="#//AbstractAssignmentStatement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="rhs" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="HavocStatement" eSuperTypes="#//AbstractAssignmentStatement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="constraint" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AssertionStatement" eSuperTypes="#//Statement">

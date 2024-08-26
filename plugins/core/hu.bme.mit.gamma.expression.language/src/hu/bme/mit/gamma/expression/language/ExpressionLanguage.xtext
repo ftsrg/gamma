@@ -102,8 +102,7 @@ TypeDefinition returns TypeDefinition:
 	IntegerRangeTypeDefinition |
 	EnumerationTypeDefinition |
 	RecordTypeDefinition |
-	SubrangeTypeDefinition |
-	FunctionTypeDefinition
+	SubrangeTypeDefinition
 ;
 
 VoidTypeDefinition returns VoidTypeDefinition:
@@ -148,10 +147,6 @@ RecordTypeDefinition returns RecordTypeDefinition:
 
 SubrangeTypeDefinition returns SubrangeTypeDefinition:
 	{SubrangeTypeDefinition} '#[' ('-' 'inf' | lowerBound=Expression) 'to' ('inf' | upperBound=Expression) ']'
-;
-
-FunctionTypeDefinition returns FunctionTypeDefinition:
-	'function' '(' ((parameterTypes+=Type)(',' parameterTypes+=Type)*)? ')' ':' returnType=Type
 ;
 
 ////////////////////////////////////////

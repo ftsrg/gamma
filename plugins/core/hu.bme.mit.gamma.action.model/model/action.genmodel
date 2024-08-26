@@ -4,7 +4,7 @@
     editorDirectory="/hu.bme.mit.gamma.action.model.editor/src-gen" modelPluginID="hu.bme.mit.gamma.action.model"
     modelName="Action" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
     testsDirectory="/hu.bme.mit.gamma.action.model.tests/src" importerID="org.eclipse.emf.importer.ecore"
-    complianceLevel="8.0" copyrightFields="false" usedGenPackages="../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model"
+    complianceLevel="17.0" copyrightFields="false" usedGenPackages="../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model"
     operationReflection="true" importOrganizing="true">
   <foreignModel>action.ecore</foreignModel>
   <genPackages prefix="ActionModel" basePackage="hu.bme.mit.gamma.action" disposableProviderFactory="true"
@@ -50,9 +50,14 @@
     <genClasses ecoreClass="action.ecore#//ChoiceStatement">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference action.ecore#//ChoiceStatement/branches"/>
     </genClasses>
+    <genClasses image="false" ecoreClass="action.ecore#//AbstractAssignmentStatement">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference action.ecore#//AbstractAssignmentStatement/lhs"/>
+    </genClasses>
     <genClasses ecoreClass="action.ecore#//AssignmentStatement">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference action.ecore#//AssignmentStatement/lhs"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference action.ecore#//AssignmentStatement/rhs"/>
+    </genClasses>
+    <genClasses ecoreClass="action.ecore#//HavocStatement">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference action.ecore#//HavocStatement/constraint"/>
     </genClasses>
     <genClasses ecoreClass="action.ecore#//AssertionStatement">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference action.ecore#//AssertionStatement/assertion"/>

@@ -84,12 +84,6 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="IntegerRangeTypeDefinition" eSuperTypes="#//EnumerableTypeDefinition"/>
-  <eClassifiers xsi:type="ecore:EClass" name="FunctionTypeDefinition" eSuperTypes="#//CompositeTypeDefinition">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="parameterTypes" upperBound="-1"
-        eType="#//Type" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="returnType" lowerBound="1"
-        eType="#//Type" containment="true"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RecordTypeDefinition" eSuperTypes="#//CompositeTypeDefinition">
     <eStructuralFeatures xsi:type="ecore:EReference" name="fieldDeclarations" upperBound="-1"
         eType="#//FieldDeclaration" containment="true"/>

@@ -51,6 +51,7 @@ InlineStatement returns ActionModel::Statement:
 	BreakStatement |
 	
 	=>AssignmentStatement |
+	=>HavocStatement |
 	 
 	AssertionStatement |
 	ExpressionStatement |
@@ -152,6 +153,10 @@ ChoiceStatement returns ActionModel::ChoiceStatement:
 
 AssignmentStatement returns ActionModel::AssignmentStatement:
 	lhs=AssignableAccessExpression ':=' rhs=Expression
+;
+
+HavocStatement returns ActionModel::HavocStatement:
+	'havoc' lhs=AssignableAccessExpression ('constraint' constraint=Expression)?
 ;
 
 AssertionStatement returns ActionModel::AssertionStatement: 

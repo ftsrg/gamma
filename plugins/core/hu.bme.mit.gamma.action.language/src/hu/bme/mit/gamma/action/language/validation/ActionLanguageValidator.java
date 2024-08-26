@@ -12,8 +12,8 @@ package hu.bme.mit.gamma.action.language.validation;
 
 import org.eclipse.xtext.validation.Check;
 
+import hu.bme.mit.gamma.action.model.AbstractAssignmentStatement;
 import hu.bme.mit.gamma.action.model.AssertionStatement;
-import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
 import hu.bme.mit.gamma.action.model.Branch;
 import hu.bme.mit.gamma.action.model.ExpressionStatement;
@@ -33,7 +33,7 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 	}
 	
 	@Check
-	public void checkAssignmentActions(AssignmentStatement assignment) {
+	public void checkAssignmentActions(AbstractAssignmentStatement assignment) {
 		handleValidationResultMessage(actionModelValidator.checkAssignmentActions(assignment));
 	}
 	

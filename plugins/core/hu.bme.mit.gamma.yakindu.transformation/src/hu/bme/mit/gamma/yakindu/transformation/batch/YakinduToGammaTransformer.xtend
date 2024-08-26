@@ -503,7 +503,7 @@ class YakinduToGammaTransformer {
 			// Creating and entry event of the Gamma final state that sets the "end" variable to false
 			val variableDeclaration = endVariable
 			gammaFinalState.createChild(state_EntryActions, assignmentStatement) as AssignmentStatement => [
-				it.createChild(assignmentStatement_Lhs, directReferenceExpression) as DirectReferenceExpression => [
+				it.createChild(abstractAssignmentStatement_Lhs, directReferenceExpression) as DirectReferenceExpression => [
 					it.declaration = variableDeclaration
 				]
 				it.createChild(assignmentStatement_Rhs, trueExpression)

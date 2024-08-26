@@ -330,7 +330,7 @@ class ExpressionTransformer {
 		val assignmentExpression = switch (expression.operator) {
 			case DECREMENT: {
 				container.createChild(reference, assignmentStatement) as AssignmentStatement => [
-					it.transform(assignmentStatement_Lhs, expression.operand)
+					it.transform(abstractAssignmentStatement_Lhs, expression.operand)
 					it.createChild(assignmentStatement_Rhs, subtractExpression) as SubtractExpression => [
 						it.createChild(binaryExpression_LeftOperand, directReferenceExpression) as DirectReferenceExpression => [
 							it.declaration = gammaVariable
@@ -343,7 +343,7 @@ class ExpressionTransformer {
 			}
 			case INCREMENT: {
 				container.createChild(reference, assignmentStatement) as AssignmentStatement => [
-					it.transform(assignmentStatement_Lhs, expression.operand)
+					it.transform(abstractAssignmentStatement_Lhs, expression.operand)
 					it.createChild(assignmentStatement_Rhs, addExpression) as AddExpression => [
 						it.createChild(multiaryExpression_Operands, directReferenceExpression) as DirectReferenceExpression => [
 							it.declaration = gammaVariable
@@ -515,12 +515,12 @@ class ExpressionTransformer {
 		switch (expression.operator.literal) {
 			case "=":
 				assExp = container.createChild(reference, assignmentStatement) as AssignmentStatement => [
-					it.transform(assignmentStatement_Lhs, expression.varRef)
+					it.transform(abstractAssignmentStatement_Lhs, expression.varRef)
 					it.transform(assignmentStatement_Rhs, expression.expression)
 				]
 			case "+=":
 				assExp = container.createChild(reference, assignmentStatement) as AssignmentStatement => [
-					it.transform(assignmentStatement_Lhs, expression.varRef)
+					it.transform(abstractAssignmentStatement_Lhs, expression.varRef)
 					it.createChild(assignmentStatement_Rhs, addExpression) as ArithmeticExpression => [
 						it.transformBinaryExpression(multiaryExpression_Operands, multiaryExpression_Operands,
 							expression.varRef, expression.expression)
@@ -528,7 +528,7 @@ class ExpressionTransformer {
 				]
 			case "*=":
 				assExp = container.createChild(reference, assignmentStatement) as AssignmentStatement => [
-					it.transform(assignmentStatement_Lhs, expression.varRef)
+					it.transform(abstractAssignmentStatement_Lhs, expression.varRef)
 					it.createChild(assignmentStatement_Rhs, multiplyExpression) as ArithmeticExpression => [
 						it.transformBinaryExpression(multiaryExpression_Operands, multiaryExpression_Operands,
 							expression.varRef, expression.expression)
@@ -536,7 +536,7 @@ class ExpressionTransformer {
 				]
 			case "-=":
 				assExp = container.createChild(reference, assignmentStatement) as AssignmentStatement => [
-					it.transform(assignmentStatement_Lhs, expression.varRef)
+					it.transform(abstractAssignmentStatement_Lhs, expression.varRef)
 					it.createChild(assignmentStatement_Rhs, subtractExpression) as ArithmeticExpression => [
 						it.transformBinaryExpression(binaryExpression_LeftOperand, binaryExpression_RightOperand,
 							expression.varRef, expression.expression)
@@ -544,7 +544,7 @@ class ExpressionTransformer {
 				]
 			case "/=":
 				assExp = container.createChild(reference, assignmentStatement) as AssignmentStatement => [
-					it.transform(assignmentStatement_Lhs, expression.varRef)
+					it.transform(abstractAssignmentStatement_Lhs, expression.varRef)
 					it.createChild(assignmentStatement_Rhs, divideExpression) as ArithmeticExpression => [
 						it.transformBinaryExpression(binaryExpression_LeftOperand, binaryExpression_RightOperand,
 							expression.varRef, expression.expression)

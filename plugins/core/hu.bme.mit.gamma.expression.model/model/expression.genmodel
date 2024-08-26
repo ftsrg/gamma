@@ -74,10 +74,6 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//ArrayTypeDefinition/size"/>
     </genClasses>
     <genClasses ecoreClass="expression.ecore#//IntegerRangeTypeDefinition"/>
-    <genClasses ecoreClass="expression.ecore#//FunctionTypeDefinition">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//FunctionTypeDefinition/parameterTypes"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//FunctionTypeDefinition/returnType"/>
-    </genClasses>
     <genClasses ecoreClass="expression.ecore#//RecordTypeDefinition">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//RecordTypeDefinition/fieldDeclarations"/>
     </genClasses>
