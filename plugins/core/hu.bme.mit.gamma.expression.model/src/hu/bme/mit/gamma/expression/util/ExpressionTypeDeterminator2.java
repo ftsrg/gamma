@@ -76,6 +76,7 @@ public class ExpressionTypeDeterminator2 {
 	
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
+	//
 	
 	public Type getType(Expression expression) {
 		if (expression instanceof BooleanExpression) { // BooleanLiteralExpression is a BooleanExpression

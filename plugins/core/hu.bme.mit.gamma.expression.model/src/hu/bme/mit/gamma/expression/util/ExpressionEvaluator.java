@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.expression.util;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -26,8 +28,10 @@ import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
+import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression;
+import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.DivideExpression;
@@ -37,6 +41,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.EquivalenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.FalseExpression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.GreaterEqualExpression;
@@ -46,6 +51,7 @@ import hu.bme.mit.gamma.expression.model.ImplyExpression;
 import hu.bme.mit.gamma.expression.model.InequalityExpression;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
+import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.LessEqualExpression;
 import hu.bme.mit.gamma.expression.model.LessExpression;
 import hu.bme.mit.gamma.expression.model.MultiplyExpression;
@@ -53,9 +59,11 @@ import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
+import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SubtractExpression;
 import hu.bme.mit.gamma.expression.model.TrueExpression;
+import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression;
 import hu.bme.mit.gamma.expression.model.XorExpression;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
@@ -67,7 +75,37 @@ public class ExpressionEvaluator {
 	//
 
 	protected final ArgumentInliner argumentInliner = ArgumentInliner.INSTANCE;
+	protected final ExpressionTypeDeterminator2 typeDeterminator = ExpressionTypeDeterminator2.INSTANCE;
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
+	//
+	
+	public Expression evaluateExpression(Expression expression) {
+		TypeDefinition type = typeDeterminator.getTypeDefinition(expression);
+		if (type instanceof BooleanTypeDefinition) {
+			boolean value = evaluateBoolean(expression);
+			return (value) ? factory.createTrueExpression() : factory.createFalseExpression();
+		}
+		if (type instanceof IntegerTypeDefinition) {
+			int value = evaluateInteger(expression);
+			IntegerLiteralExpression literal = factory.createIntegerLiteralExpression();
+			BigInteger bigIntegerValue = BigInteger.valueOf(value);
+			literal.setValue(bigIntegerValue);
+			return literal;
+		}
+		if (type instanceof RationalTypeDefinition || type instanceof DecimalTypeDefinition) {
+			double value = evaluateDecimal(expression);
+			DecimalLiteralExpression literal = factory.createDecimalLiteralExpression();
+			BigDecimal bigDecimalValue = BigDecimal.valueOf(value);
+			literal.setValue(bigDecimalValue);
+			return literal;
+		}
+		
+		// None of the above
+		return expression;
+	}
+	
+	//
 	
 	public int evaluate(Expression expression) {
 		try {
