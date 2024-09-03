@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.expression.model.DeclarationReferenceAnnotation
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EqualityExpression
@@ -22,11 +23,13 @@ import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.GreaterExpression
 import hu.bme.mit.gamma.expression.model.InequalityExpression
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
+import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.LessEqualExpression
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
@@ -47,8 +50,9 @@ class MessageQueueUtil {
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE
 	
-	
+	//
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	
 	// Declaration -> message queues new type - chan q = [8] of { byte };
 	
@@ -72,6 +76,32 @@ class MessageQueueUtil {
 			return queueVariables.contains(variable)
 		}
 		return false
+	}
+	
+	def isQueueSizeVariable(Declaration variable) {
+		val type = variable.typeDefinition
+		if (type instanceof IntegerTypeDefinition) {
+			val xSts = variable.containingXsts
+			val sizeVariables = xSts.messageQueueSizeGroup.variables
+			
+			return sizeVariables.contains(variable)
+		}
+		return false
+	}
+	
+	def getQueueOfQueueSizeVariable(Declaration variable) {
+		if (variable.queueSizeVariable) {
+			val _variable = variable as VariableDeclaration
+			val annotation = _variable.annotations.filter(DeclarationReferenceAnnotation).onlyElement
+			val declaration = annotation.declarations.head // Can be null
+			
+			return declaration
+		}
+		return null
+	}
+	
+	def hasQueueOfQueueSizeVariable(Declaration variable) {
+		return variable.queueOfQueueSizeVariable !== null
 	}
 	
 	// Entry point for queue expression handling

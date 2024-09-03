@@ -717,7 +717,25 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 				getReadVariables(action));
 		return writtenOnlyVariables;
 	}
-
+	
+	public static Set<VariableDeclaration> getWrittenAndLocalVariables(Action action) {
+		Set<VariableDeclaration> writtenAndLocalVariables =
+				new HashSet<VariableDeclaration>(
+						getWrittenVariables(action));
+		writtenAndLocalVariables.addAll(
+					ecoreUtil.getSelfAndAllContentsOfType(action, VariableDeclaration.class));
+		return writtenAndLocalVariables;
+	}
+	
+	public static Set<VariableDeclaration> getReferredAndLocalVariables(Action action) {
+		Set<VariableDeclaration> referredAndLocalVariables =
+				new HashSet<VariableDeclaration>(
+						getReferredVariables(action));
+		referredAndLocalVariables.addAll(
+					ecoreUtil.getSelfAndAllContentsOfType(action, VariableDeclaration.class));
+		return referredAndLocalVariables;
+	}
+	
 	public static Set<VariableDeclaration> getWrittenOnlyVariables(
 			Collection<? extends Action> actions) {
 		Set<VariableDeclaration> writtenOnlyVariables = new LinkedHashSet<VariableDeclaration>(

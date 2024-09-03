@@ -258,9 +258,11 @@ class SystemReducer implements Reducer {
 				statechart.orthogonalRegionSchedulingOrder = OrthogonalRegionSchedulingOrder.SEQUENTIAL
 				info("Setting guard evaluation to on-the-fly and orthogonal region scheduling order to sequential")
 			}
-			//
-			if (statechart.hasContainerOfType(AsynchronousAdapter)) {
-				val adapter = statechart.getContainerOfType(AsynchronousAdapter)
+			
+			val _package = statechart.containingPackage
+			val adapters = _package.components.filter(AsynchronousAdapter)
+			val adapter = adapters.filter[it.wrappedComponent.type === statechart].head
+			if (adapter !== null) {
 				if (adapter.whenAnyRunOnce) { // A single event/trigger a time
 					// Transition priority if outgoing transitions are always disjoint
 					var areTriggersDisjoint = true
@@ -295,6 +297,12 @@ class SystemReducer implements Reducer {
 						info("Setting region scheduling order to top-down")
 					}
 				}
+			}
+			
+			if (statechart.transitionPriority != TransitionPriority.ORDER_BASED &&
+					statechart.allStateNodes.forall[it.outgoingTransitions.size < 2]) { // Every state has at most one outgoing transition
+				statechart.transitionPriority = TransitionPriority.ORDER_BASED
+				info("Setting transition priority to order-based")
 			}
 		}
 	}
