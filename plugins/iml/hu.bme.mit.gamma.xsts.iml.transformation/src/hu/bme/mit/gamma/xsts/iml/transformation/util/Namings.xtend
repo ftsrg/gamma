@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.xsts.model.HavocAction
+import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 
 class Namings {
@@ -47,4 +48,5 @@ class Namings {
 	
 	def static customizeHavocField(HavocAction havoc) '''«havoc.lhs.declaration.customizeName»_«havoc.hashCode.toString.replaceAll("-", "_")»'''
 	
+	def static customizeChoice(NonDeterministicAction choice) '''choice_«choice.hashCode.toString.replaceAll("-", "_")»'''
 }

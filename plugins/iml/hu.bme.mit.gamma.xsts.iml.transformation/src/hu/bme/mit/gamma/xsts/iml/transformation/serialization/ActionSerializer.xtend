@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.IfAction
+import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.transformation.util.MessageQueueUtil
@@ -34,6 +35,7 @@ import static com.google.common.base.Preconditions.checkArgument
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.iml.transformation.util.Namings.*
 
 class ActionSerializer {
 	// Singleton
@@ -188,6 +190,16 @@ class ActionSerializer {
 		'''
 	}
 	
+	protected def dispatch String serializeAction(NonDeterministicAction choice) '''
+		«localVariableDeclarations»
+		«FOR branch : choice.actions SEPARATOR " else "»
+			if («IF branch.isFirstActionAssume»«branch.getFirstActionAssume.assumption.serialize» && «ENDIF»«globalVariableName».«choice.customizeChoice» = «branch.index») then
+				«branch.serialize»
+		«ENDFOR»
+		else «localVariableNames /* Necessary in IML */» in
+		«globalVariableDeclaration»{ «globalVariableName» with «choice.customizeChoice» = 0; } in
+	'''
+		
 	protected def dispatch serializeAction(VariableDeclarationAction action) {
 		return #[action].serializeAssignmentActions
 	}
@@ -240,10 +252,16 @@ class ActionSerializer {
 	
 	//
 	
-	protected def initVariablesIfNotEmpty(Iterable<? extends VariableDeclaration> variables, String id) '''
-		«IF variables.empty»let «id» = true in (* Placeholder *)«ELSE»«variables.initVariables(id)»«ENDIF»'''
+	protected def initVariablesIfNotEmpty(Iterable<? extends VariableDeclaration> variables, String id) {
+		return variables.initVariablesIfNotEmpty(#[], id)
+	}
 	
-	protected def initVariables(Iterable<? extends VariableDeclaration> variables, String id) '''
+	protected def initVariablesIfNotEmpty(Iterable<? extends VariableDeclaration> variables,
+			Iterable<? extends NonDeterministicAction> choices, String id) '''
+		«IF variables.empty && choices.empty»let «id» = true in (* Placeholder *)«ELSE»«variables.initVariables(choices, id)»«ENDIF»'''
+	
+	protected def initVariables(Iterable<? extends VariableDeclaration> variables,
+			Iterable<? extends NonDeterministicAction> choices, String id) '''
 		let «id» = {
 			«FOR variable : variables
 					.reject[it.queueVariable]
@@ -251,7 +269,12 @@ class ActionSerializer {
 				variable.serializeName» = «variable.defaultExpression.serialize»;«ENDFOR»
 			«FOR variable : variables
 					.filter[it.queueVariable] SEPARATOR System.lineSeparator»«
-				variable.serializeName» = [];«ENDFOR» } in'''
+				variable.serializeName» = [];«ENDFOR»
+			«FOR choice : choices»
+				«choice.customizeChoice» = 0;
+			«ENDFOR» 
+		} in
+	'''
 	
 	//
 	
