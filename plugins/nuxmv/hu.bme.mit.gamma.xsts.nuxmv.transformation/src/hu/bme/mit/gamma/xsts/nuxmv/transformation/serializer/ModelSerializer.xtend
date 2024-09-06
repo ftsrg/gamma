@@ -202,7 +202,8 @@ class ModelSerializer {
 			val arrayWriteExpression = new StringBuilder
 			arrayWriteExpression.append(oldArray.name)
 			
-			//a[i][j][k] := 69 -> a2 = W(a, i, W(a, j, W(R(R(a, i), j), k, 69)))
+			// a[i][j][k] := 69 -> a2 = W(a, i, W(a, j, W(R(R(a, i), j), k, 69)))
+			// Not 'W(a, i, W(R(a,i), j, W(R(R(a, i), j), k, 69)))'?
 			
 			// READ part
 			for (index : indexes) {
