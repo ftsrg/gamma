@@ -91,7 +91,7 @@ class ActionSerializer {
 	
 	// Not the same, but a good run-time check
 	protected def dispatch serializeAction(AssumeAction action) '''
-		(* let () = assert «action.assumption.serialize» in *)
+		(* «action.assumption.serialize» *)
 	'''
 	
 	protected def dispatch serializeAction(HavocAction action) {
@@ -192,12 +192,14 @@ class ActionSerializer {
 	
 	protected def dispatch String serializeAction(NonDeterministicAction choice) '''
 		«localVariableDeclarations»
-		«FOR branch : choice.actions SEPARATOR " else "»
-			if («IF branch.isFirstActionAssume»«branch.getFirstActionAssume.assumption.serialize» && «ENDIF»«globalVariableName».«choice.customizeChoice» = «branch.index») then
-				«branch.serialize»
-		«ENDFOR»
-		else «localVariableNames /* Necessary in IML */» in
-		«globalVariableDeclaration»{ «globalVariableName» with «choice.customizeChoice» = 0; } in
+			«FOR branch : choice.actions SEPARATOR " else "»
+				«IF !branch.last /* By construction, XSTS choices coming from the Gamma mapping are complete, so we do not have to serialize the last condition */»
+					if («IF branch.isFirstActionAssume»«branch.getFirstActionAssume.assumption.serialize» && «ENDIF»«globalVariableName».«choice.customizeChoice» = «branch.index») then
+				«ENDIF»
+					«branch.serialize»
+			«ENDFOR»
+		in
+		«globalVariableDeclaration»{ «globalVariableName» with «choice.customizeChoice» = 0; } (* Optimization *) in
 	'''
 		
 	protected def dispatch serializeAction(VariableDeclarationAction action) {
@@ -223,7 +225,6 @@ class ActionSerializer {
 			val writtenVariables = newHashSet
 			while (j < actions.size - 1 &&
 					actions.get(j).id == actions.get(j + 1).id &&
-//					!(actions.get(j).queuePeekAction || actions.get(j).queuePopAction) &&
 					(actions.get(j) instanceof AssignmentAction || actions.get(j) instanceof VariableDeclarationAction) &&
 					(actions.get(j + 1) instanceof AssignmentAction || actions.get(j + 1) instanceof VariableDeclarationAction) &&
 						writtenVariables.containsNone(actions.get(j + 1).referredAndLocalVariables) &&
