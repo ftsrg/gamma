@@ -110,7 +110,7 @@ class ModelSerializer {
 				}
 			«ENDIF»
 			
-			let init =
+			let «INIT_FUNCTION_IDENTIFIER» =
 				«globalVariables.initVariables(choices, globalVariableName)»
 				«initLocalVariables.initVariablesIfNotEmpty(LOCAL_RECORD_IDENTIFIER)»
 				«xSts.initializingAction.optimizeAction.serializeActionGlobally»
@@ -134,7 +134,7 @@ class ModelSerializer {
 				«ENDIF»
 				«globalVariableName»
 				
-			let rec run («globalVariableName» : «GLOBAL_RECORD_TYPE_NAME») («ENV_HAVOC_RECORD_IDENTIFIER» : «ENV_HAVOC_RECORD_TYPE_NAME» list) =
+			let rec «RUN_FUNCTION_IDENTIFIER» («globalVariableName» : «GLOBAL_RECORD_TYPE_NAME») («ENV_HAVOC_RECORD_IDENTIFIER» : «ENV_HAVOC_RECORD_TYPE_NAME» list) =
 				match «ENV_HAVOC_RECORD_IDENTIFIER» with
 					| [] -> «globalVariableName»
 					| hd :: tl ->

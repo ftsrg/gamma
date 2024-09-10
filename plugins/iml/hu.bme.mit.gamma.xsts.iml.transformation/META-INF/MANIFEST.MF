@@ -3,7 +3,9 @@ Bundle-ManifestVersion: 2
 Bundle-Name: XSTS to IML Transformation
 Bundle-SymbolicName: hu.bme.mit.gamma.xsts.iml.transformation
 Bundle-Version: 2.11.0.qualifier
-Export-Package: hu.bme.mit.gamma.xsts.iml.transformation
+Export-Package: hu.bme.mit.gamma.xsts.iml.transformation,
+ hu.bme.mit.gamma.xsts.iml.transformation.serialization,
+ hu.bme.mit.gamma.xsts.iml.transformation.util
 Automatic-Module-Name: hu.bme.mit.gamma.xsts.iml.transformation
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: BME-FTSRG

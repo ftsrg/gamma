@@ -53,6 +53,7 @@ import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.StateFormula;
 import hu.bme.mit.gamma.property.util.PropertyUtil;
 import hu.bme.mit.gamma.querygenerator.serializer.AbstractReferenceSerializer;
+import hu.bme.mit.gamma.querygenerator.serializer.ImlPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.NuxmvPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.PromelaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
@@ -187,6 +188,10 @@ public class VerificationHandler extends TaskHandler {
 				case NUXMV:
 					verificationTask = NuxmvVerification.INSTANCE;
 					propertySerializer = NuxmvPropertySerializer.INSTANCE;
+					break;
+				case IML:
+					verificationTask = NuxmvVerification.INSTANCE; // TODO
+					propertySerializer = ImlPropertySerializer.INSTANCE;
 					break;
 				default:
 					throw new IllegalArgumentException(analysisLanguage + " is not supported");

@@ -28,7 +28,7 @@ class GammaFileNamer {
 	
 	public static final String PROPERTY_XTEXT_EXTENSION = "gpd";
 	public static final String PROPERTY_EMF_EXTENSION = "gpm";
-	public static final String PROPERTY_SERIALIZED_EXTENSION = "pd"; // Both UPPAAL and Theta
+	public static final String PROPERTY_SERIALIZED_EXTENSION = "pd"; // For every backend
 	
 	public static final String EXECUTION_XTEXT_EXTENSION = "get";
 	public static final String EXECUTION_EMF_EXTENSION = "gtr";

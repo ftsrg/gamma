@@ -35,6 +35,9 @@ class Namings {
 	public static final String ENV_HAVOC_RECORD_TYPE_NAME = "e"
 	public static final String ENV_HAVOC_RECORD_IDENTIFIER = "e"
 	
+	public static final String INIT_FUNCTION_IDENTIFIER = "init"
+	public static final String RUN_FUNCTION_IDENTIFIER = "run"
+	
 	//
 	
 	public static final String DECLARATION_NAME_PREFIX = "_"
