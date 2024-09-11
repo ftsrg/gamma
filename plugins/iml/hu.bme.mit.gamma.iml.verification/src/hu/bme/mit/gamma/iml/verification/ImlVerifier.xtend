@@ -79,7 +79,7 @@ class ImlVerifier extends AbstractVerifier {
 			errorReader = new ScannerLogger(new Scanner(process.errorReader), false)
 			errorReader.start
 			
-			val resultPattern = '''(.*Refuted.*)|(.*Proved.*)|(.*Instance (not)? found.*)'''
+			val resultPattern = '''(.*Refuted.*)|(.*Proved.*)|(.*Instance (not )?found.*)'''
 			var resultFound = false
 			result = ThreeStateBoolean.UNDEF
 			while (!resultFound && resultReader.hasNextLine) {
