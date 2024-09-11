@@ -204,8 +204,8 @@ class MessageQueueHandler {
 		
 		if (isArray) {
 			return switch (functionName) {
-				case "empty" : '''(List.length «messageQueue.serializeAsRhs» <= 0)'''
-				case "nempty" : '''(List.length «messageQueue.serializeAsRhs» > 0)'''
+				case "empty" : '''(match «messageQueue.serializeAsRhs» with | hd::tl -> false | _ -> true)''' // (List.length «messageQueue.serializeAsRhs» <= 0)
+				case "nempty" : '''(match «messageQueue.serializeAsRhs» with | hd::tl -> true | _ -> false)''' // (List.length «messageQueue.serializeAsRhs» > 0)
 				case "full" : '''(List.length «messageQueue.serializeAsRhs» >= «capacity.serialize»)'''
 				case "nfull" : '''(List.length «messageQueue.serializeAsRhs» < «capacity.serialize»)'''
 				default : throw new IllegalArgumentException("Not known function: " + functionName)
