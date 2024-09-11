@@ -43,6 +43,7 @@ import hu.bme.mit.gamma.genmodel.model.GenmodelModelFactory;
 import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
 import hu.bme.mit.gamma.genmodel.model.Verification;
+import hu.bme.mit.gamma.iml.verification.ImlVerification;
 import hu.bme.mit.gamma.nuxmv.verification.NuxmvVerification;
 import hu.bme.mit.gamma.plantuml.serialization.SvgSerializer;
 import hu.bme.mit.gamma.plantuml.transformation.TraceToPlantUmlTransformer;
@@ -190,7 +191,7 @@ public class VerificationHandler extends TaskHandler {
 					propertySerializer = NuxmvPropertySerializer.INSTANCE;
 					break;
 				case IML:
-					verificationTask = NuxmvVerification.INSTANCE; // TODO
+					verificationTask = ImlVerification.INSTANCE;
 					propertySerializer = ImlPropertySerializer.INSTANCE;
 					break;
 				default:
@@ -550,6 +551,8 @@ public class VerificationHandler extends TaskHandler {
 				return PromelaVerification.INSTANCE;
 			case NUXMV:
 				return NuxmvVerification.INSTANCE;
+			case IML:
+				return ImlVerification.INSTANCE;
 			default:
 				throw new IllegalArgumentException(analysisLanguage + " is not supported");
 		}

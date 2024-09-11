@@ -58,8 +58,8 @@ class ImlPropertySerializer extends ThetaPropertySerializer {
 		
 		val pathFormula = formula.formula
 		
-		return '''«imandraCall»(fun «inputId» -> let «recordId» = «RUN_FUNCTION_IDENTIFIER» «INIT_FUNCTION_IDENTIFIER» «inputId» in
-				«pathFormula.serializeFormula»)'''
+		return '''«imandraCall»(fun «inputId» -> let «recordId» = «RUN_FUNCTION_IDENTIFIER» «
+				INIT_FUNCTION_IDENTIFIER» «inputId» in «pathFormula.serializeFormula»)'''
 	}
 	
 	protected override dispatch String serializeFormula(UnaryOperandPathFormula formula) {

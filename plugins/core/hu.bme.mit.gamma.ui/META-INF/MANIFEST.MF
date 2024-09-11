@@ -53,6 +53,7 @@ Require-Bundle: com.google.gson,
  hu.bme.mit.gamma.xsts.codegeneration.c,
  hu.bme.mit.gamma.ocra.transformation,
  hu.bme.mit.gamma.xsts.iml.transformation,
+ hu.bme.mit.gamma.iml.verification,
  hu.bme.mit.gamma.mutation,
  hu.bme.mit.gamma.trace.testgeneration.c
 Export-Package: hu.bme.mit.gamma.ui,
