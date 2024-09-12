@@ -50,6 +50,8 @@ If you want to use *nuXmv* for formal verification, download and extract *nuXmv 
 
 If you want to use *xSAP* for safety assessment, download and extract *xSAP 1.4.0* or higher version. In order to let Gamma find the xSAP executable, create an environment variable named `XSAP_HOME` that points to the extracted xSAP root folder (absolute path) and add the `xSAP/bin` folder to the PATH environment or default search path (depending on your OS). The instructions are described in the [`README`](safety/README.md) file of the folder.
 
+If you want to use *Imandra* for formal verification, download Python 3, install Imandra using *pip*, and use the corresponding script to download *imandra-cli* and authenticate yourself to the Imandra server. The instructions are described in the [`README`](iml/README.md) file of the folder.
+
 ## Plugin setup
 
 If you have Git installed, it is recommended to clone the [Gamma repository](https://github.com/ftsrg/gamma) to your local machine by clicking on the green `Code` button of the front page and using the appearing URL: open a command line and navigate into the folder where you want to clone the repository, then run the `git clone https://github.com/ftsrg/gamma.git` command. After this, make sure to checkout the branch of your choice, e.g., `master` if you want to use the latest release, or `dev` if you want to use also the functionalities implemented since the latest release.

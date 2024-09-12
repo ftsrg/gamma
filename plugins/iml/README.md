@@ -1,4 +1,4 @@
-# Integration to IML
+# Integration to Imandra
 
 This folder contains plugins for the mapping of high-level Gamma (composite) models into IML through a symbolic transition systems formalism (xSTS). The plugins provide support for the integration of Gamma and Imandra, that is, the mapping of Gamma models into IML, mapping reachability/invariant properties to Imandra verify/instance calls, and using Imandra instances hosted in the cloud to carry out verification via Imandra's Python API.
 
