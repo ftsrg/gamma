@@ -10,4 +10,4 @@ This folder contains plugins for the mapping of high-level Gamma (composite) mod
    - Extract the downloaded zip file.
    - Add the `nuXmv/bin` folder to the `PATH` environment or default search path (depending on your OS).
 3. Set up the plugins in this folder.
-   - Import all Eclipse projects from the the `nuxmv` folder.
+   - Import all Eclipse projects from this `nuxmv` folder.

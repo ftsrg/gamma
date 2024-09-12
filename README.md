@@ -8,6 +8,7 @@ The Gamma Statechart Composition Framework is a toolset to model, verify and gen
 - [Spin](https://spinroot.com/), a tool for the formal verification of multi-threaded software applications,
 - [nuXmv](https://nuxmv.fbk.eu/), a symbolic model checker for the analysis of synchronous finite-state and infinite-state systems, or
 - [Imandra](https://imandra.ai/), a programming language and an automated reasoning engine to create models/programs and reason about them.
+
 Once a complete model is built, designers can use the code generation functionality of the framework, which can generate Java or C code for the whole system.
 
 Check out http://gamma.inf.mit.bme.hu for more resources about Gamma. A good starting point is our [tool paper](https://inf.mit.bme.hu/sites/default/files/publications/icse18.pdf), [slides](https://www.slideshare.net/VinMol/icse2018-the-gamma-statechart-composition-framework-design-verification-and-code-generation-for-componentbased-reactive-systems) and [demo video](https://youtu.be/ng7lKd1wlDo) presented at [ICSE 2018](https://www.icse2018.org/event/icse-2018-demonstrations-the-gamma-statechart-composition-framework-design-verification-and-code-generation-for-component-based-reactive-systems) as well as our [journal paper](https://link.springer.com/article/10.1007/s10270-020-00806-5).

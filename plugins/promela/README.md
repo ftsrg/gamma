@@ -19,6 +19,6 @@ This folder contains plugins for the mapping of high-level Gamma (composite) mod
         - `make`
      3. Add `spin` to the `PATH` environment.
 3. Set up the plugins in this folder.
-   - Import all Eclipse projects from the the `promela` folder. 
+   - Import all Eclipse projects from this `promela` folder. 
 
 *Note: Spin relies on GCC for model checking. In Unix/Linux systems, you probably have GCC or an equivalent tool installed. In Windows, you need to install GCC manually: you should download 32-bit Cygwin (even if your system is 64-bit as Spin depends on the 32-bit version) from [here](https://www.cygwin.com/index.html). After downloading Cygwin, run the* `setup-x86.exe` *, then add the* `cygwin/bin` * folder to the path. The following packages should be selected and installed in the installer:* `gcc-core`*,* `gcc-g++`*,* `libgcc1`*.*
