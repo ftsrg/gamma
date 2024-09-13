@@ -11,7 +11,7 @@ The processes and steps described in this document were executed on Ubuntu, vers
  - Eclipse - this document uses the required plugins and Eclipse version detailed in the Gamma setup tutorial, which can be found [here](https://github.com/ftsrg/gamma). Please note that installing Gamma is also required. The installation is detailed in the aformentioned link.
  - Docker - a tutorial can be found [here](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04).
 
-Additionally, Postman can be installed to test requests to the webserver.
+Additionally, Postman can be installed to test sending requests to the webserver.
 
 **Required packages**
 
@@ -21,7 +21,7 @@ These can be installed using the `apt-get install <package>` command.
  - SWT - `libswt-gtk*`
  - Maven - `maven`
 
-Additionally, cURL can be installed to test requests to the webserver, using the `curl` package.
+Additionally, cURL can be installed to test sending requests to the webserver, using the `curl` package.
 
 ## Step 2 - Importing projects
 
@@ -30,7 +30,7 @@ Import the `hu.bme.mit.gamma.headless.api` project to your workspace, which alre
 The `hu.bme.mit.gamma.headless.api` creates the headless version of Gamma. This application can be exported using the product file found in the `product` folder of the plugin, named `gamma.api.headless.product`.
 
 ## Step 3 - Setting Target Platform
-Open the target platform via Window -> Preferences -> Plug-in Development -> Target Platform.
+Open the target platform via `Window -> Preferences -> Plug-in Development -> Target Platform`.
 
 We have created target platforms for Windows and Linux operating systems (see the `target-platform` folder in `hu.bme.mit.gamma.headless.api`) that can be used to properly export and run the headless version of Gamma. **We recommend using these as target platforms. Be aware that we have primarily used the linux target platform, therefore it might be more up to date.** Nevertheless, if you wish to create your own target platform, the necessary modifications are elaborated in the following paragraphs.
 
@@ -73,7 +73,7 @@ To summarize, the selection of options in the `Exporting` tab should look like t
  - [ ] Generate p2 repository
  - [x] Allow for binary cycles in target platform
 
-Finally, select Finish, and the exporting process should begin.
+Finally, select `Finish`, and the exporting process should begin.
 
 ## Notable errors
 
@@ -81,7 +81,7 @@ The following paragraphs include some notable errors users tend to stumble upon 
 
 **Unresolved requirement**
 
-After exporting and running the Headless Eclipse, it is possible that an error will occur stating "An error has occured. See the log file [...]". After inspecting the log file, it is possible that the exported Eclipse can't resolve the module, because some bundles are missing ("Unresolved requirement: Require-Bundle: [...]").
+After exporting and running the Headless Eclipse, it is possible that an error will occur stating "*An error has occured. See the log file [...]*". After inspecting the log file, it is possible that the exported Eclipse can't resolve the module, because some bundles are missing ("*Unresolved requirement: Require-Bundle: [...]*").
 
 To resolve this, add the missing plugin(s) to the contents of the product file, in the Contents tab.
 
@@ -89,39 +89,39 @@ To resolve this, add the missing plugin(s) to the contents of the product file, 
 
 This error can occur upon launching the headless Eclipse.
 
-In the workspace, select the product file which was exported. Under "Product Definition", check if the Application is corresponding to the product. After selecting the corresponding application, export again, and the headless Eclipse should run the correct application now.
+In the workspace, select the product file which was exported. Under `Product Definition`, check if the Application is corresponding to the product. After selecting the corresponding application, export again, and the headless Eclipse should run the correct application now.
 
 Alternatively, check if all required plug-ins are listed in the `gamma.api.headless.product` product definition.
 
 **The product's defining plug-in could not be found**
 
-This error occurs when the "Synchronise before exporting" option remains checked when exporting. Uncheck this option, and export again.
+This error occurs when the `Synchronise before exporting` option remains checked when exporting. Uncheck this option, and export again.
 
 **"Export product" has encountered a problem**
 
-This error occurs when the "Generate p2 repository" option remains checked when exporting. Uncheck this option, and export again.
+This error occurs when the `Generate p2 repository` option remains checked when exporting. Uncheck this option, and export again.
 
 **Problems with SWT**
 
 This problem can occur mainly in the Docker version of Gamma. The two parts that make up the headless version of Gamma, the generator and the API can run into errors with SWT in a new Linux environment. These errors prevent normal functioning.
 
-The first notable thing about SWT is that it is platform dependent. This means that in the product file, the platform specific SWT plugins have to be imported (and possibly removed) according to the platform. For example, when moving from Windows to Linux, on the Content tab of the products, the Windows specific plugins will be missing, which is indicated with an error icon. These have to be replaced with the Linux specific plugins, which have the same name, with the operating system being a difference (instead of "win32", "linux" is in the name).
+The first notable thing about SWT is that it is platform-dependent. This means that in the product file, the platform-specific SWT plugins have to be imported (and possibly removed) according to the platform. For example, when moving from Windows to Linux, on the Content tab of the products, the Windows-specific plugins will be missing, which is indicated with an error icon. These have to be replaced with the Linux-specific plugins, which have the same name, with the operating system being a difference (instead of "*win32*", "*linux*" is in the name).
 
 The following solutions resolved these issues:
 
- - API
-		 - Adding `org.eclipse.swt.browser.chromium.gtk.linux.x86_64.source` and `org.eclipse.swt.gtk.linux.x86_64.source` (or equivalent, in the case of a 32 bit system) fixed SWT related issues. These plugins have to be imported manually, after importing the required plugins with the "Add Required Plug-Ins" button.
-		 - Some SWT errors can still persist even after removing the `hu.bme.mit.gamma.dialog` project. The following steps provided solution for this problem.
-		 - Adding `org.eclipse.swt.browser.chromium.gtk.linux.x86_64.source` and `org.eclipse.swt.gtk.linux.x86_64.source` (or equivalent, in the case of a 32 bit system) fixed SWT related issues. These plugins have to be imported manually, after importing the reuqired plugins with the "Add Required Plug-Ins" button.
-		 - In the Docker container, `libswt-gtk*` has to be installed, even with Java 11 installed in the container. This can be done with the `apt-get install libswt-gtk` command. This fixed the Docker specific SWT errors.
-		 
+- API
+	- Adding `org.eclipse.swt.browser.chromium.gtk.linux.x86_64.source` and `org.eclipse.swt.gtk.linux.x86_64.source` (or equivalent, in the case of a 32-bit system) fixed SWT-related issues. These plugins have to be imported manually, after importing the required plugins with the `Add Required Plug-Ins` button.
+	- Some SWT errors can still persist even after removing the `hu.bme.mit.gamma.dialog` project. The following steps provided solution for this problem.
+	- Adding `org.eclipse.swt.browser.chromium.gtk.linux.x86_64.source` and `org.eclipse.swt.gtk.linux.x86_64.source` (or equivalent, in the case of a 32-bit system) fixed SWT-related issues. These plugins have to be imported manually, after importing the reuqired plugins with the `Add Required Plug-Ins` button.
+	- In the Docker container, `libswt-gtk*` has to be installed, even with Java 11 installed in the container. This can be done with the `apt-get install libswt-gtk` command. This fixed the Docker-specific SWT errors.
+
 **The exported plug-in jars do not contain any .class file**
 
 Check if there is a `logs.zip` file generated next to the target root directory folder. If there is, then refer to the section `Java compiler compliance level`.
 
 **Java compiler compliance level**
 
-This error can occur after exporting the Headless Gamma. A "logs.zip" archive is created next to the exported plug-ins. Inside the archive, one or more (depending on the exported product) folders can be found named after exported plugins. The logs found inside these folders contain text similar to this:
+This error can occur after exporting the Headless Gamma. A `logs.zip` archive is created next to the exported plug-ins. Inside the archive, one or more (depending on the exported product) folders can be found named after exported plugins. The logs found inside these folders contain text similar to this:
 
 ```
 5/10/21, 2:32:41 PM CEST 
@@ -129,4 +129,4 @@ Eclipse Compiler for Java(TM) v20210223-0522, 3.25.0, Copyright IBM Corp 2000, 2
 Compliance level '11' is incompatible with target level '15'. A compliance level '15' or better is required
 ``` 
 
-This means that the compiler compliance level is set too high. Open the Eclipse IDE, select `Window -> Preferences -> Java -> Compiler`, and under `JDK Compliance`, set the `Compiler compliance level` to 11. After this, export the products again, and the problem should resolve.
+This means that the compiler compliance level is set too high. Open the Eclipse IDE, select `Window -> Preferences -> Java -> Compiler`, and under `JDK Compliance`, set the `Compiler compliance level` to 11. After this, export the products again, and the problem should be resolved.
