@@ -1,7 +1,6 @@
 package hu.bme.mit.gamma.api.headless;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -31,8 +30,7 @@ public class ProjectImporter extends HeadlessApplicationCommandHandler {
 
 	@Override
 	public void execute() throws Exception {
-		IWorkspace workspace = ResourcesPlugin.getWorkspace(); // Workspace will be created where the -data argument
-																// specifies it
+		IWorkspace workspace = ResourcesPlugin.getWorkspace(); // Workspace will be created where the -data argument specifies it
 		// All "-etc" arguments will be handled like regular arguments
 
 		String projectName = appArgs[2];

@@ -55,10 +55,10 @@ class CompositeToPlantUmlTransformer {
 	) '''
 		skinparam shadowing false
 		!theme plain
-		«IF lineStyle==LineStyle.Orthogonal»
+		«IF lineStyle == LineStyle.Orthogonal»
 			skinparam linetype ortho
 		«ENDIF»
-		«IF lineStyle==LineStyle.Polyline»
+		«IF lineStyle == LineStyle.Polyline»
 			skinparam linetype polyline
 		«ENDIF»
 		«IF leftToRightDirection»

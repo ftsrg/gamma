@@ -1,6 +1,6 @@
 FROM ubuntu
 
-#First, the OS is updated, and then the necessary tools and packages are installed
+# First, the OS is updated, and then the necessary tools and packages are installed
 
 RUN apt-get update
 RUN apt-get install -y default-jre
@@ -10,14 +10,12 @@ RUN apt-get install -y default-jdk
 RUN apt-get install -y libswt-gtk*
 RUN apt-get install wget
 
-#Second, the UPPAAL and Theta verification tools are added, with their environmental variables
+# Second, the UPPAAL and Theta verification tools are added, with their environmental variables
 
 WORKDIR "/home"
 RUN mkdir uppaal
 ADD uppaal /home/uppaal
 ENV PATH="/home/uppaal/bin-Linux:${PATH}"
-
-
 
 ENV THETA_FOLDER="/home/theta"
 ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$THETA_FOLDER"
@@ -30,7 +28,7 @@ WORKDIR "/home/theta"
 
 RUN ./get-theta.sh
 
-#Finally, the headless Gamma and generator is added, along with the webserver
+# Finally, the headless Gamma and generator is added, along with the webserver
 
 WORKDIR "/home"
 RUN mkdir project

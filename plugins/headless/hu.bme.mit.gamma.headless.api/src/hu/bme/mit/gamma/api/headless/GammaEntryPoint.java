@@ -53,8 +53,7 @@ public class GammaEntryPoint extends HeadlessApplicationCommandHandler {
 
 	@Override
 	public void execute() throws Exception {
-		
-		//necessary setups
+		// Necessary setup of Xtext parsers
 		ExpressionLanguageStandaloneSetup.doSetup();
 		ActionLanguageStandaloneSetup.doSetup();
 		StatechartLanguageStandaloneSetup.doSetup();
@@ -119,8 +118,7 @@ public class GammaEntryPoint extends HeadlessApplicationCommandHandler {
 					return resourceSet;
 				}
 			});
-			// Commented due to repeatedly throwing exceptions. The application works
-			// without it.
+			// Commented due to repeatedly throwing exceptions. The application works without it.
 			// workspace.save(true, progressMonitor);
 
 			beforeExitOperation(projectDescriptorPath);
@@ -174,7 +172,7 @@ public class GammaEntryPoint extends HeadlessApplicationCommandHandler {
 		File descriptor = new File(projectDescriptorPath);
 		if (descriptor != null) {
 			try {
-				logger.log(Level.INFO, "ENDING");
+				logger.info("ENDING");
 				updateUnderOperationStatus(descriptor.getPath());
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -194,9 +192,7 @@ public class GammaEntryPoint extends HeadlessApplicationCommandHandler {
 			Gson gson = new Gson();
 			String resultingJson = gson.toJson(jElement);
 			FileUtil.INSTANCE.saveString(jsonFile, resultingJson);
-
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

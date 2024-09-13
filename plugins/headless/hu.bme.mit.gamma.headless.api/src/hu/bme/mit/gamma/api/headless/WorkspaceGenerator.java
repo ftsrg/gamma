@@ -15,11 +15,8 @@ public class WorkspaceGenerator extends HeadlessApplicationCommandHandler {
 	}
 
 	public void execute() throws Exception {
-		// The workspace will be generated at the destination specified after the -data
-		// argument
-
+		// The workspace will be generated at the destination specified after the -data argument
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
-
-		logger.log(Level.INFO, "Workspace generated successfully!");
+		logger.info("Workspace generated successfully");
 	}
 }

@@ -23,7 +23,6 @@ Require-Bundle: hu.bme.mit.gamma.statechart.language,
  org.eclipse.xtend.lib,
  org.eclipse.core.runtime,
  org.eclipse.core.resources,
- org.eclipse.pde.core,
  org.eclipse.ui.forms
 Import-Package: org.apache.log4j
 Bundle-RequiredExecutionEnvironment: JavaSE-17
