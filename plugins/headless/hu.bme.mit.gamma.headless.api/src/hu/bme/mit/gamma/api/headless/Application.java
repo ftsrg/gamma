@@ -15,62 +15,66 @@ public class Application implements IApplication {
 	private WorkspaceGenerator workspaceGenerator;
 	//
 	protected Logger logger = Logger.getLogger("GammaLogger");
-
+	
 	@Override
 	public Object start(final IApplicationContext context) throws Exception {
 		final Map<?, ?> args = context.getArguments();
 		final String[] appArgs = (String[]) args.get(IApplicationContext.APPLICATION_ARGS);
-
+		
 		Level level = Level.INFO;
-		/*
-		 * Checks the number of arguments, which decide the operation the Headless Gamma
-		 * executes Note that these arguments are passed through the web server, not by
-		 * the user, so this error should not appear, as the server always passes these arguments.
-		 */
-		if (appArgs.length == 0) {
-			logger.warning("No argument given. Either a \"workspace\", \"import\" or \"gamma\" argument is expected.");
-		}
-		else {
-			// The second argument is the log level. This is INFO by default. This can be
-			// modified through the web server. Throws and exception if the setting is incorrect.
-			if (appArgs.length > 1) {
-				switch (appArgs[1]) {
-					case "info":
-						level = Level.INFO;
+		try {
+			/*
+			 * Checks the number of arguments, which decide the operation the Headless Gamma
+			 * executes Note that these arguments are passed through the web server, not by
+			 * the user, so this error should not appear, as the server always passes these arguments.
+			 */
+			if (appArgs.length == 0) {
+				logger.warning("No argument given. Either a \"workspace\", \"import\" or \"gamma\" argument is expected.");
+			}
+			else {
+				// The second argument is the log level. This is INFO by default. This can be
+				// modified through the web server. Throws and exception if the setting is incorrect.
+				if (appArgs.length > 1) {
+					switch (appArgs[1]) {
+						case "info":
+							level = Level.INFO;
+							break;
+						case "warning":
+							level = Level.WARNING;
+							break;
+						case "severe":
+							level = Level.SEVERE;
+							break;
+						case "off":
+							level = Level.OFF;
+							break;
+						default:
+							logger.warning("Invalid argument for setting log level: " + appArgs[1]);
+					}
+				}
+				// The first argument is the operation type: creating workspace, importing
+				// project or executing Gamma .ggen file
+				switch (appArgs[0]) {
+					case "workspace":
+						workspaceGenerator = new WorkspaceGenerator(context, appArgs, level);
+						workspaceGenerator.execute();
 						break;
-					case "warning":
-						level = Level.WARNING;
+					case "import":
+						projectImporter = new ProjectImporter(context, appArgs, level);
+						projectImporter.execute();
 						break;
-					case "severe":
-						level = Level.SEVERE;
-						break;
-					case "off":
-						level = Level.OFF;
+					case "gamma":
+						gammaEntryPoint = new GammaEntryPoint(context, appArgs, level);
+						gammaEntryPoint.execute();
 						break;
 					default:
-						logger.warning("Invalid argument for setting log level: " + appArgs[1]);
+						logger.warning("Invalid argument for operation type: " + appArgs[0] + ". Use \"workspace\", \"import\" or \"gamma\".");
 				}
 			}
-			// The first argument is the operation type: creating workspace, importing
-			// project or executing Gamma .ggen file
-			switch (appArgs[0]) {
-				case "workspace":
-					workspaceGenerator = new WorkspaceGenerator(context, appArgs, level);
-					workspaceGenerator.execute();
-					break;
-				case "import":
-					projectImporter = new ProjectImporter(context, appArgs, level);
-					projectImporter.execute();
-					break;
-				case "gamma":
-					gammaEntryPoint = new GammaEntryPoint(context, appArgs, level);
-					gammaEntryPoint.execute();
-					break;
-				default:
-					logger.warning("Invalid argument for operation type: " + appArgs[0] + ". Use \"workspace\", \"import\" or \"gamma\".");
-			}
+		} catch (Throwable t) {
+			logger.severe(t.getMessage());
+			t.printStackTrace();
 		}
-
 		return IApplication.EXIT_OK;
 	}
 

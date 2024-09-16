@@ -32,8 +32,10 @@ import com.google.inject.Injector;
 
 import hu.bme.mit.gamma.action.language.ActionLanguageStandaloneSetup;
 import hu.bme.mit.gamma.expression.language.ExpressionLanguageStandaloneSetup;
+import hu.bme.mit.gamma.fei.language.FaultExtensionLanguageStandaloneSetup;
 import hu.bme.mit.gamma.genmodel.language.GenModelStandaloneSetup;
 import hu.bme.mit.gamma.property.language.PropertyLanguageStandaloneSetup;
+import hu.bme.mit.gamma.scenario.language.ScenarioLanguageStandaloneSetup;
 import hu.bme.mit.gamma.statechart.language.StatechartLanguageStandaloneSetup;
 import hu.bme.mit.gamma.statechart.language.StatechartLanguageStandaloneSetupGenerated;
 import hu.bme.mit.gamma.trace.language.TraceLanguageStandaloneSetup;
@@ -59,12 +61,14 @@ public class GammaEntryPoint extends HeadlessApplicationCommandHandler {
 		StatechartLanguageStandaloneSetup.doSetup();
 		TraceLanguageStandaloneSetup.doSetup();
 		PropertyLanguageStandaloneSetup.doSetup();
+		ScenarioLanguageStandaloneSetup.doSetup();
+		FaultExtensionLanguageStandaloneSetup.doSetup();
 		GenModelStandaloneSetup.doSetup();
-
+		
 		if (appArgs.length >= 1) { // Checking the length of arguments. These are passed by the web server.
 			String ggenFilePath = URI.decode(appArgs[2]); // Path of the .ggen file to be executed
 			File ggenFile = new File(ggenFilePath);
-			String projectDescriptorPath = URI.decode(appArgs[3]); // Path of the projectDescriptor.json
+			String projectDescriptorPath = (appArgs.length >= 4) ? URI.decode(appArgs[3]) : null; // Path of the projectDescriptor.json
 			File projectFolder = getContainingProject(ggenFile);
 			String projectName = projectFolder.getName();
 			String fileWorkspaceRelativePath = ggenFilePath.substring(projectFolder.getParent().length());
@@ -169,13 +173,15 @@ public class GammaEntryPoint extends HeadlessApplicationCommandHandler {
 	}
 
 	private void beforeExitOperation(String projectDescriptorPath) {
-		File descriptor = new File(projectDescriptorPath);
-		if (descriptor != null) {
-			try {
-				logger.info("ENDING");
-				updateUnderOperationStatus(descriptor.getPath());
-			} catch (IOException e) {
-				e.printStackTrace();
+		if (projectDescriptorPath != null) {
+			File descriptor = new File(projectDescriptorPath);
+			if (descriptor.exists()) {
+				try {
+					logger.info("Updating project status");
+					updateUnderOperationStatus(descriptor.getPath());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}

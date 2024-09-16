@@ -6,16 +6,17 @@ Bundle-Vendor: BME-FTSRG
 Bundle-Version: 2.11.0.qualifier
 Automatic-Module-Name: hui.bme.mit.gamma.api.headless
 Bundle-RequiredExecutionEnvironment: JavaSE-17
-Require-Bundle: org.eclipse.equinox.app;bundle-version="1.5.0",
- org.eclipse.core.resources;bundle-version="3.13.900",
- org.eclipse.core.runtime;bundle-version="3.20.0",
- org.eclipse.emf.common;bundle-version="2.20.0",
- com.google.inject;bundle-version="3.0.0",
- org.eclipse.xtext;bundle-version="2.23.0",
- org.eclipse.xtext.ui.shared;bundle-version="2.23.0",
- com.google.gson;bundle-version="2.8.2",
- org.apache.commons.io;bundle-version="2.6.0",
- org.eclipse.xtext.ui;bundle-version="2.23.0",
+Require-Bundle: org.eclipse.equinox.app,
+ org.eclipse.core.resources,
+ org.eclipse.core.runtime,
+ org.eclipse.emf.common,
+ com.google.inject,
+ org.eclipse.xtext,
+ org.eclipse.xtext.ui.shared,
+ com.google.gson,
+ org.apache.commons.io,
+ org.eclipse.search,
+ org.eclipse.xtext.ui,
  hu.bme.mit.gamma.action.language,
  hu.bme.mit.gamma.expression.language,
  hu.bme.mit.gamma.genmodel.language,
@@ -49,6 +50,8 @@ Require-Bundle: org.eclipse.equinox.app;bundle-version="1.5.0",
  hu.bme.mit.gamma.trace.environment.transformation,
  hu.bme.mit.gamma.theta.verification,
  hu.bme.mit.gamma.uppaal.verification,
- hu.bme.mit.gamma.codegeneration.java
+ hu.bme.mit.gamma.codegeneration.java,
+ hu.bme.mit.gamma.scenario.language,
+ hu.bme.mit.gamma.fei.language
 Bundle-ActivationPolicy: lazy
 Import-Package: org.eclipse.ui.wizards.datatransfer
