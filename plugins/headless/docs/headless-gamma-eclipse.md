@@ -4,7 +4,7 @@ This document describes how to export Gamma as a headless Eclipse application.
 
 ## Step 1 - Setting up the environment
 
-The processes and steps described in this document were executed on Ubuntu, version 20.04.
+The processes and steps described in this document were executed on Windows 10 and Ubuntu, version 20.04.
 
 **Required applications**
 
@@ -27,7 +27,7 @@ Import the `hu.bme.mit.gamma.headless.api` project to your workspace, which alre
 ## Step 3 - Setting the content of exported plugins
 
 The `hu.bme.mit.gamma.headless.api` creates the headless version of Gamma. This application can be exported using the product file found in the `product` folder of the plugin, named `gamma.api.headless.product`. Make sure that the `Contents` page contains every
- - **Gamma** plugin (imported from the official Gamma repository), and
+ - **Gamma** plugin (imported to the current workspace from the official Gamma repository), and
  - **Xtext** plugin (installed via the official update site of Xtext).
  
 That is, click on the `Add` button on the right, start typing _*gamma_ and later again, _*xtext_ in the search field and make sure no plugin pops up in the *Plug-in Selection* window.
