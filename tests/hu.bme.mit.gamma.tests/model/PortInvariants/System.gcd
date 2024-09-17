@@ -3,11 +3,13 @@ package port_invariant_system
 import "Interfaces"
 import "portinvariants"
 
-sync System [
+async System [
 	port system_trigger1 : requires Trigger
 	port system_trigger2 : requires Trigger
 ] {
 	component statechartWithPortInvariants : StatechartWithPortinvariants
 	bind system_trigger1 -> statechartWithPortInvariants.trigger1
 	bind system_trigger2 -> statechartWithPortInvariants.trigger2
+	
+	one-event-must-be-raised { system_trigger1.trigger, system_trigger2.trigger }
 }

@@ -72,9 +72,17 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SynchronousComponent" abstract="true"
-      eSuperTypes="interface.ecore#//Component"/>
+      eSuperTypes="interface.ecore#//Component">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eventMustBeRaisedList"
+        upperBound="-1" eType="ecore:EClass interface.ecore#//EventMustBeRaisedExpression"
+        containment="true"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AsynchronousComponent" abstract="true"
-      eSuperTypes="interface.ecore#//Component"/>
+      eSuperTypes="interface.ecore#//Component">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eventMustBeRaisedList"
+        upperBound="-1" eType="ecore:EClass interface.ecore#//EventMustBeRaisedExpression"
+        containment="true"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SynchronousComponentInstance" eSuperTypes="#//ComponentInstance">
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" lowerBound="1" eType="#//SynchronousComponent"/>
   </eClassifiers>

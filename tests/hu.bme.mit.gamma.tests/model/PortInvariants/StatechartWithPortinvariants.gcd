@@ -2,6 +2,7 @@ package portinvariants
 
 import "Interfaces"
 
+@Asynchronous
 statechart StatechartWithPortinvariants [
 	port trigger1 : requires Trigger {invariant trigger1.trigger::value > 10}
 	port trigger2 : requires Trigger {invariant trigger2.trigger::value > 20}

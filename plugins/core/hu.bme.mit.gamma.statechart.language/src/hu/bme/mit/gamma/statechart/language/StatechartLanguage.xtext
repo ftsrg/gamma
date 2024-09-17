@@ -458,7 +458,8 @@ CascadeCompositeComponent returns CompositeModel::CascadeCompositeComponent:
 			(
 				components+=SynchronousComponentInstance |
 				portBindings+=PortBinding |
-				channels+=Channel
+				channels+=Channel |
+				eventMustBeRaisedList+=EventMustBeRaisedExpression
 			)*
 			('initial' 'execute' initialExecutionList+=AtomicComponentInstanceReferenceExpression
 					(',' initialExecutionList+=AtomicComponentInstanceReferenceExpression)*)?
@@ -476,7 +477,8 @@ SynchronousCompositeComponent returns CompositeModel::SynchronousCompositeCompon
 			(
 				components+=SynchronousComponentInstance |
 				portBindings+=PortBinding |
-				channels+=Channel
+				channels+=Channel |
+				eventMustBeRaisedList+=EventMustBeRaisedExpression
 			)*
 		'}'
 ;
@@ -502,7 +504,8 @@ AsynchronousCompositeComponent returns CompositeModel::AsynchronousCompositeComp
 			(
 				components+=AsynchronousComponentInstance |
 				portBindings+=PortBinding |
-				channels+=Channel
+				channels+=Channel |
+				eventMustBeRaisedList+=EventMustBeRaisedExpression
 			)*
 		'}'
 ;
@@ -516,7 +519,8 @@ ScheduledAsynchronousCompositeComponent returns CompositeModel::ScheduledAsynchr
 			(
 				components+=AsynchronousComponentInstance |
 				portBindings+=PortBinding |
-				channels+=Channel
+				channels+=Channel |
+				eventMustBeRaisedList+=EventMustBeRaisedExpression
 			)*
 			('initial' 'execute' initialExecutionList+=AtomicComponentInstanceReferenceExpression
 					(',' initialExecutionList+=AtomicComponentInstanceReferenceExpression)*)?
@@ -680,6 +684,15 @@ InterfaceParameterReferenceExpression returns InterfaceModel::InterfaceParameter
 TimeoutReferenceExpression returns TimeoutReferenceExpression:
 	'time-elapsed' '(' timeout=[TimeoutDeclaration] ')'
 ;
+
+PortReferenceExpression returns InterfaceModel::PortReferenceExpression:
+	port=[InterfaceModel::Port]	
+;
+
+EventMustBeRaisedExpression returns InterfaceModel::EventMustBeRaisedExpression: 
+	'one-event-must-be-raised' '{' eventReferences+=EventReference (',' eventReferences+=EventReference)* '}'
+;
+
 
 // Action Language Extensions
 

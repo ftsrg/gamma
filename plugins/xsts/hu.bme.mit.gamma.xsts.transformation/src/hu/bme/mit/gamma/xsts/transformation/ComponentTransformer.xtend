@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXstsTransformer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging
@@ -31,11 +32,14 @@ import hu.bme.mit.gamma.statechart.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
+import hu.bme.mit.gamma.statechart.interface_.EventMustBeRaisedExpression
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.GammaToLowlevelTransformer
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.Trace
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.ValueDeclarationTransformer
+import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
+import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
@@ -55,6 +59,7 @@ import java.util.List
 import java.util.Map
 import java.util.Map.Entry
 import java.util.logging.Logger
+import org.eclipse.emf.common.util.EList
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -64,6 +69,11 @@ import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeature
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.QueueNamings.*
 import static extension java.lang.Math.*
+import hu.bme.mit.gamma.xsts.model.HavocAction
+import static extension hu.bme.mit.gamma.statechart.util.StatechartUtil.*
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
+import hu.bme.mit.gamma.expression.model.TrueExpression
+import hu.bme.mit.gamma.xsts.model.SequentialAction
 
 class ComponentTransformer {
 	// This gammaToLowlevelTransformer must be the same during this transformation cycle due to tracing
@@ -139,6 +149,28 @@ class ComponentTransformer {
 		
 		val mergedSynchronousActions = newHashMap
 		val mergedSynchronousInitActions = newHashMap
+		
+		val eventMustBeRaisedMap = newHashMap
+		
+//		var flagId = 0
+//		for (expression : component.eventMustBeRaisedList) {
+//			// minden expression 1 vagy több portra vonatkozik
+//			val eventMustBeRaisedFlag = createBooleanTypeDefinition.createVariableDeclarationWithDefaultInitialValue('''eventMustBeRaisedFlag«flagId++»''')
+//			xSts.variableDeclarations.add(eventMustBeRaisedFlag)
+//			inEventAction.actions.add(0, createAssignmentAction(eventMustBeRaisedFlag, expressionModelFactory.createFalseExpression))
+//			eventMustBeRaisedMap += expression -> eventMustBeRaisedFlag
+//
+////			val eventMustBeRaisedEqualityExpression = createEqualityExpression(eventMustBeRaisedFlag, expressionModelFactory.createTrueExpression)
+////			inEventAction.actions += createAssumeAction(eventMustBeRaisedEqualityExpression)
+//
+//		}
+		
+		component.eventMustBeRaisedList.forEach[expression, flagId2 | 
+			val eventMustBeRaisedFlag = createBooleanTypeDefinition.createVariableDeclarationWithDefaultInitialValue('''eventMustBeRaisedFlag«flagId2»''')
+			xSts.variableDeclarations.add(eventMustBeRaisedFlag)
+			inEventAction.actions.add(0, createAssignmentAction(eventMustBeRaisedFlag, expressionModelFactory.createFalseExpression))
+			eventMustBeRaisedMap += expression -> eventMustBeRaisedFlag
+		]
 		
 		for (adapterInstance : adapterInstances) {
 			val adapterComponentType = adapterInstance.type as AsynchronousAdapter
@@ -763,10 +795,20 @@ class ComponentTransformer {
 						}
 						xStsSlaveQueueSetting.actions += xStsSlaveQueues
 								.addAllAndPotentiallyIncrement(xStsSlaveSizeVariable, xStsRandomValues)
+						if (portEvent.isInEventMustBeRaisedList(component.eventMustBeRaisedList)) {
+							val eventMustBeRaisedFlag = portEvent.getEventMustBeRaisedFlag(eventMustBeRaisedMap)
+							val eventMustBeRaisedFlagSetAction = createAssignmentAction(eventMustBeRaisedFlag, expressionModelFactory.createTrueExpression)
+							xStsSlaveQueueSetting.actions += eventMustBeRaisedFlagSetAction
+						}
 					}
 				}
 				xStsSetQueuesAction.actions += branchExpressions.createChoiceAction(xStsBranchActions)
 			}
+		}
+		
+		for (eventMustBeRaisedFlag : eventMustBeRaisedMap.values) {
+			val eventMustBeRaisedEqualityExpression = createEqualityExpression(eventMustBeRaisedFlag, expressionModelFactory.createTrueExpression)
+			inEventAction.actions += createAssumeAction(eventMustBeRaisedEqualityExpression)
 		}
 		
 		xSts.inEventTransition = inEventAction.wrap
@@ -791,7 +833,7 @@ class ComponentTransformer {
 			mergedClockAction.actions += internalInvariant
 		}
 		//
-		
+
 		xSts.changeTransitions(mergedClockAction.wrap)
 		
 		// Deleting environmental slave queues for internal parameters;
@@ -801,6 +843,122 @@ class ComponentTransformer {
 		//
 		
 		return xSts
+	}
+	
+	protected def boolean isInEventMustBeRaisedList(Entry<Port,Event> portEvent, EList<EventMustBeRaisedExpression> eventMustBeRaisedList) {
+	
+		for (expression : eventMustBeRaisedList) {
+			for (eventReference : expression.eventReferences) {
+				if (eventReference instanceof PortEventReference) {
+					if (eventReference.port == portEvent.key && eventReference.event == portEvent.value) {
+						return true
+					} else if (eventReference.port == portEvent.key.boundCompositePort && eventReference.event == portEvent.value) {
+						return true
+					}
+				} else if (eventReference instanceof AnyPortEventReference) {
+					if (eventReference.port == portEvent.key) {
+						return true
+					} else if (eventReference.port == portEvent.key.boundCompositePort) {
+						return true
+					}
+				}
+			}
+		}
+
+		return false
+	}
+	
+	protected def boolean isInEventMustBeRaisedList(Port port, Event event, Map<EventMustBeRaisedExpression, VariableDeclaration> eventMustBeRaisedMap) {
+	
+		for (expression : eventMustBeRaisedMap.keySet) {
+			for (eventReference : expression.eventReferences) {
+				if (eventReference instanceof PortEventReference) {
+					if (eventReference.port == port && eventReference.event == event) {
+						return true
+					} else if (eventReference.port == port.boundCompositePort && eventReference.event == event) {
+						return true
+					}
+				} else if (eventReference instanceof AnyPortEventReference) {
+					if (eventReference.port == port) {
+						return true
+					} else if (eventReference.port == port) {
+						return true
+					}
+				}
+			}
+		}
+
+		return false
+	}
+	
+	protected def VariableDeclaration getEventMustBeRaisedFlag(Entry<Port,Event> portEvent, Map<EventMustBeRaisedExpression, VariableDeclaration> eventMustBeRaisedMap) {
+		
+		for (expression : eventMustBeRaisedMap.keySet) {
+			for (eventReference : expression.eventReferences) {
+				if (eventReference instanceof PortEventReference) {
+					if (eventReference.port == portEvent.key && eventReference.event == portEvent.value) {
+						return eventMustBeRaisedMap.get(expression)
+					} else if (eventReference.port == portEvent.key.boundCompositePort && eventReference.event == portEvent.value) {
+						return eventMustBeRaisedMap.get(expression)
+					}
+				} else if (eventReference instanceof AnyPortEventReference) {
+					if (eventReference.port == portEvent.key) {
+						return eventMustBeRaisedMap.get(expression)
+					} else if (eventReference.port == portEvent.key.boundCompositePort) {
+						return eventMustBeRaisedMap.get(expression)
+					}
+				}
+			}
+		}
+		
+		return null
+	}
+	
+	protected def VariableDeclaration getEventMustBeRaisedFlag(Port port, Event event, Map<EventMustBeRaisedExpression, VariableDeclaration> eventMustBeRaisedMap
+	) {
+		
+		for (expression : eventMustBeRaisedMap.keySet) {
+			for (eventReference : expression.eventReferences) {
+				if (eventReference instanceof PortEventReference) {
+					if (eventReference.port == port && eventReference.event == event) {
+						return eventMustBeRaisedMap.get(expression)
+					} else if (eventReference.port == port.boundCompositePort && eventReference.event == event) {
+						return eventMustBeRaisedMap.get(expression)
+					}
+				} else if (eventReference instanceof AnyPortEventReference) {
+					if (eventReference.port == port) {
+						return eventMustBeRaisedMap.get(expression)
+					} else if (eventReference.port == port.boundCompositePort) {
+						return eventMustBeRaisedMap.get(expression)
+					}
+				}
+			}
+		}
+		
+		return null
+	}
+	
+	protected def mapEventsMustBeRaisedToEnvironmentalActions(Map<EventMustBeRaisedExpression, VariableDeclaration> eventMustBeRaisedMap, XSTS xSts, Component component, SequentialAction inputActions) {
+		val extension ReferenceToXstsVariableMapper mapper = new ReferenceToXstsVariableMapper(xSts)
+		
+		for (systemPort : component.allPorts) {
+			for (inEvent : systemPort.inputEvents) {
+				if (isInEventMustBeRaisedList(systemPort, inEvent, eventMustBeRaisedMap)) {
+					print(systemPort.name + " ")
+					print(inEvent.name + " ")
+					println(inEvent.getInputEventVariable(systemPort).name)
+					
+					val xStsInEventVariable = inEvent.getInputEventVariable(systemPort)
+					val eventMustBeRaisedFlagSetAction = createIfAction(
+						// if
+						xStsInEventVariable.createEqualityExpression(createTrueExpression), 
+						//then
+						createAssignmentAction(getEventMustBeRaisedFlag(systemPort, inEvent, eventMustBeRaisedMap), createTrueExpression)
+					)
+					inputActions.actions += eventMustBeRaisedFlagSetAction
+				}
+			}
+		}
 	}
 	
 	//
@@ -1150,6 +1308,15 @@ class ComponentTransformer {
 			return xSts
 		}
 		
+		val eventMustBeRaisedMap = newHashMap
+		
+		component.eventMustBeRaisedList.forEach[expression, flagId2 | 
+			val eventMustBeRaisedFlag = createBooleanTypeDefinition.createVariableDeclarationWithDefaultInitialValue('''eventMustBeRaisedFlag«flagId2»''')
+			xSts.variableDeclarations.add(eventMustBeRaisedFlag)
+			//newInEventAction.actions.add(0, createAssignmentAction(eventMustBeRaisedFlag, expressionModelFactory.createFalseExpression))
+			eventMustBeRaisedMap += expression -> eventMustBeRaisedFlag
+		]
+		
 		// Input, output and tracing merged actions
 		for (var i = 0; i < components.size; i++) {
 			val subcomponent = components.get(i)
@@ -1275,6 +1442,14 @@ class ComponentTransformer {
 			// Bind together ports connected to the same system port
 			it.actions += bindingAssignments
 		]
+
+		mapEventsMustBeRaisedToEnvironmentalActions(eventMustBeRaisedMap, xSts, component, newInEventAction)
+		
+		for (eventMustBeRaisedFlag : eventMustBeRaisedMap.values) {
+			newInEventAction.actions.add(0, createAssignmentAction(eventMustBeRaisedFlag, expressionModelFactory.createFalseExpression))
+			val eventMustBeRaisedEqualityExpression = createEqualityExpression(eventMustBeRaisedFlag, expressionModelFactory.createTrueExpression)
+			newInEventAction.actions += createAssumeAction(eventMustBeRaisedEqualityExpression)
+		}
 		
 		xSts.inEventTransition = newInEventAction.wrap
 		
