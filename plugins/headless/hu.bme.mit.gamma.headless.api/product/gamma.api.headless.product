@@ -3,6 +3,7 @@
 
 <product name="Gamma Api Headless" uid="gamma.api.headless.product" id="hu.bme.mit.gamma.headless.api.product" application="gamma.api.headless.application" version="1.0.0" type="bundles" includeLaunchers="true" autoIncludeRequirements="true">
 
+
    <configIni use="default">
    </configIni>
 
@@ -13,14 +14,17 @@
 
    <windowImages/>
 
+
    <launcher>
       <win useIco="false">
          <bmp/>
       </win>
    </launcher>
 
+
    <vm>
    </vm>
+
 
    <plugins>
       <plugin id="bcpg"/>
@@ -157,6 +161,7 @@
       <plugin id="org.apache.batik.i18n"/>
       <plugin id="org.apache.batik.util"/>
       <plugin id="org.apache.commons.cli"/>
+      <plugin id="org.apache.commons.commons-io"/>
       <plugin id="org.apache.commons.io"/>
       <plugin id="org.apache.commons.jxpath"/>
       <plugin id="org.apache.commons.lang"/>
@@ -249,12 +254,27 @@
       <plugin id="org.eclipse.equinox.registry"/>
       <plugin id="org.eclipse.equinox.security"/>
       <plugin id="org.eclipse.equinox.security.win32.x86_64" fragment="true"/>
+      <plugin id="org.eclipse.gef"/>
       <plugin id="org.eclipse.gmf.runtime.common.core"/>
+      <plugin id="org.eclipse.gmf.runtime.common.ui"/>
+      <plugin id="org.eclipse.gmf.runtime.common.ui.action"/>
+      <plugin id="org.eclipse.gmf.runtime.common.ui.services"/>
+      <plugin id="org.eclipse.gmf.runtime.common.ui.services.action"/>
+      <plugin id="org.eclipse.gmf.runtime.common.ui.services.properties"/>
       <plugin id="org.eclipse.gmf.runtime.diagram.core"/>
+      <plugin id="org.eclipse.gmf.runtime.diagram.ui"/>
+      <plugin id="org.eclipse.gmf.runtime.diagram.ui.properties"/>
+      <plugin id="org.eclipse.gmf.runtime.diagram.ui.resources.editor"/>
+      <plugin id="org.eclipse.gmf.runtime.diagram.ui.resources.editor.ide"/>
+      <plugin id="org.eclipse.gmf.runtime.draw2d.ui"/>
+      <plugin id="org.eclipse.gmf.runtime.draw2d.ui.render"/>
       <plugin id="org.eclipse.gmf.runtime.emf.clipboard.core"/>
       <plugin id="org.eclipse.gmf.runtime.emf.commands.core"/>
       <plugin id="org.eclipse.gmf.runtime.emf.core"/>
       <plugin id="org.eclipse.gmf.runtime.emf.type.core"/>
+      <plugin id="org.eclipse.gmf.runtime.emf.ui"/>
+      <plugin id="org.eclipse.gmf.runtime.emf.ui.properties"/>
+      <plugin id="org.eclipse.gmf.runtime.gef.ui"/>
       <plugin id="org.eclipse.gmf.runtime.notation"/>
       <plugin id="org.eclipse.help"/>
       <plugin id="org.eclipse.jdt.core"/>
@@ -272,7 +292,6 @@
       <plugin id="org.eclipse.osgi"/>
       <plugin id="org.eclipse.osgi.compatibility.state" fragment="true"/>
       <plugin id="org.eclipse.search"/>
-      <plugin id="org.eclipse.search.source"/>
       <plugin id="org.eclipse.swt"/>
       <plugin id="org.eclipse.swt.win32.win32.x86_64" fragment="true"/>
       <plugin id="org.eclipse.team.core"/>
@@ -406,6 +425,8 @@
       <plugin id="org.w3c.dom.svg"/>
       <plugin id="org.yakindu.base.expressions"/>
       <plugin id="org.yakindu.base.types"/>
+      <plugin id="org.yakindu.base.xtext.utils.gmf"/>
+      <plugin id="org.yakindu.base.xtext.utils.jface"/>
       <plugin id="org.yakindu.sct.commons"/>
       <plugin id="org.yakindu.sct.domain"/>
       <plugin id="org.yakindu.sct.model.sgraph"/>
@@ -414,10 +435,11 @@
    </plugins>
 
    <configurations>
-      <plugin id="org.apache.felix.scr" autoStart="true" startLevel="1" />
-      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
-      <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
-      <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
+      <plugin id="org.apache.felix.scr" autoStart="true" startLevel="3" />
+      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="4" />
+      <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="3" />
+      <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="3" />
    </configurations>
 
    <preferencesInfo>
