@@ -92,7 +92,7 @@ Finally, select `Finish`, and the exporting process should begin.
 The following paragraphs include some notable errors users tend to stumble upon and the methods to resolve them. First, we suggest checking whether you have carried out the following crucial steps:
 
  - Make sure that the `Contents` page contains every **Gamma** and **Xtext** plugin, as well as all the required plugins (see corresponding part of Step 2).
- - Make sure that `gamma.api.headless.product` file (on the `Source` page) sets autoStart for the `org.apache.felix.scr` plugin: `<plugin id="org.apache.felix.scr" autoStart="true" startLevel="<N>" />` (see corresponding part of Step 3).
+ - Make sure that the `gamma.api.headless.product` file (on the `Source` page) sets autoStart for the `org.apache.felix.scr` plugin: `<plugin id="org.apache.felix.scr" autoStart="true" startLevel="<N>" />` (see corresponding part of Step 3).
  - Make sure that the target platform contains a *single version* of each referenced plugin (see corresponding part of Step 4).
  
 If the above modifications do not solve the issue, you should move onto the following points.
