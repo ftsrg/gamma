@@ -48,6 +48,8 @@ In the `gamma.api.headless.product` file, it must explicitly be set that the `or
 </configurations>
 ```
 
+This setup is required for the correct functioning of the Eclipse platform including fundamental capabilities, e.g., to create Eclipse workspaces (in the context of which the input models - given via the command line - are processed).
+
 ## Step 5 - Setting the target platform
 
 Open the target platform via `Window > Preferences > Plug-in Development > Target Platform`.
