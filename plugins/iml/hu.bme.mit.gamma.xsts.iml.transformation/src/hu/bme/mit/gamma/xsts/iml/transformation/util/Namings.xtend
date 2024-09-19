@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.xsts.iml.transformation.util
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
+import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
@@ -43,6 +44,10 @@ class Namings {
 	public static final String DECLARATION_NAME_PREFIX = "_"
 	def static customizeName(Declaration variable) { variable.name.customizeDeclarationName }
 	def static customizeDeclarationName(String name) { DECLARATION_NAME_PREFIX + name }
+	
+	public static final String TYPE_DECLARATION_NAME_PREFIX = "M_"
+	def static customizeName(TypeDeclaration type) { type.name.customizeTypeDeclarationName }
+	def static customizeTypeDeclarationName(String name) { TYPE_DECLARATION_NAME_PREFIX + name }
 	
 	public static final String ENUM_LITERAL_PREFIX = "L_"
 	def static customizeName(EnumerationLiteralExpression literal) { literal.reference.customizeName }

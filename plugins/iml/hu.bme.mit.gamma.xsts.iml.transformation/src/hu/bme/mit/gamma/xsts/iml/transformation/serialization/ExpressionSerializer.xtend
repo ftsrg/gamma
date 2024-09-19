@@ -25,6 +25,7 @@ import hu.bme.mit.gamma.expression.model.ImplyExpression
 import hu.bme.mit.gamma.expression.model.InequalityExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
+import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -80,7 +81,7 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	
 	override String _serialize(IfThenElseExpression expression) '''(if «expression.condition.serialize» then «expression.then.serialize» else «expression.^else.serialize»)'''
 
-	override String _serialize(EnumerationLiteralExpression expression) '''«expression.serializeName»'''
+	override String _serialize(EnumerationLiteralExpression expression) '''«expression.typeReference.reference.serializeName».«expression.serializeName»''' // See module elements when serializing type declarations
 	
 	override String _serialize(DirectReferenceExpression expression) {
 		val declaration = expression.declaration
@@ -129,6 +130,11 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	 * Punctuation is excluded, except for _ and ', and variables must start with a lowercase letter or an underscore.
 	 */
 	def String serializeName(Declaration declaration) {
+		val customizedName = declaration.customizeName
+		return customizedName
+	}
+	
+	def String serializeName(TypeDeclaration declaration) {
 		val customizedName = declaration.customizeName
 		return customizedName
 	}

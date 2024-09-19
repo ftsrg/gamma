@@ -35,7 +35,7 @@ class TypeSerializer {
 		throw new IllegalArgumentException("Not known type: " + type)
 	}
 	
-	def dispatch String serializeType(TypeReference type) '''«type.reference.serializeName»'''
+	def dispatch String serializeType(TypeReference type) '''«type.reference.serializeName».t''' // See module elements when serializing type declarations
 	
 	def dispatch String serializeType(BooleanTypeDefinition type) '''bool'''
 	
