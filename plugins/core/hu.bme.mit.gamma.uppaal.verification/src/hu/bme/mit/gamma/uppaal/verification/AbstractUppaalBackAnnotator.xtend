@@ -31,7 +31,7 @@ abstract class AbstractUppaalBackAnnotator {
 	
 	protected final String STATE_CONST_PREFIX = "State"
 	protected final String STATE_CONST = "State:"
-	protected final String TRANSITIONS_CONST = "Transitions:"
+	protected final String TRANSITIONS_CONST = "Transition:"
 	protected final String DELAY_CONST = "Delay:"
 	
 	protected final Scanner traceScanner
@@ -47,6 +47,8 @@ abstract class AbstractUppaalBackAnnotator {
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension TraceBuilder traceBuilder = TraceBuilder.INSTANCE
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	
+	protected final StringBuilder resultText = new StringBuilder
 	
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
@@ -82,8 +84,12 @@ abstract class AbstractUppaalBackAnnotator {
 	
 	def ExecutionTrace execute() throws EmptyTraceException
 	
+	def getResultText() {
+		return resultText.toString
+	}
+	
 }
 
-enum BackAnnotatorState {INITIAL, STATE_LOCATIONS, STATE_VARIABLES, TRANSITIONS, DELAY}
+enum BackAnnotatorState {INFO, INITIAL, STATE_LOCATIONS, STATE_VARIABLES, TRANSITIONS, DELAY}
 
 class EmptyTraceException extends Exception {}

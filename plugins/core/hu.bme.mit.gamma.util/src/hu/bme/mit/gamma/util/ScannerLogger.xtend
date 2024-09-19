@@ -123,7 +123,7 @@ class ScannerLogger implements Runnable {
 	}
 	
 	def concatenateLines() {
-		return lines.reduce[p1, p2| p1 + p2]
+		return lines.reduce[p1, p2 | p1 + p2]
 	}
 	
 	// 
