@@ -82,7 +82,7 @@ class ActionSerializer {
 				(action instanceof IfAction || action instanceof NonDeterministicAction)) {
 			val functionName = action.customizeHoistedFunctionName
 			val functionBody = (action instanceof IfAction) ?
-					actionCode.replaceFirst(localVariableDeclarations, "").replaceLast("in", "") : actionCode + " " + localVariableNames
+					actionCode.deleteFirst(localVariableDeclarations).deleteLast("in") : actionCode + " " + localVariableNames
 			val functionCode = '''
 				let «functionName» («globalVariableName» : «GLOBAL_RECORD_TYPE_NAME») («localVariableName» : «action.localRecordType») =
 					«functionBody»
@@ -107,9 +107,11 @@ class ActionSerializer {
 		
 		for (action : actions) {
 			var serializedAction = action.serializeAction.toString
-			if (serializedAction.endsWith(localVariableNames)) {
-				serializedAction = serializedAction.substring(0, serializedAction.length - localVariableNames.length)
+			// Deleting the local values at the end
+			if (serializedAction.endsWith(localVariableNames)) { // Make this more flexible
+				serializedAction = serializedAction.deleteLast(localVariableNames)
 			}
+			//
 			builder.append(serializedAction)
 		}
 		builder.append(localVariableNames) // Always?
