@@ -27,9 +27,11 @@ import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
+import hu.bme.mit.gamma.xsts.model.XTransition
 import hu.bme.mit.gamma.xsts.transformation.util.MessageQueueUtil
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.List
+import java.util.Map
 
 import static com.google.common.base.Preconditions.checkArgument
 
@@ -38,9 +40,8 @@ import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeature
 import static extension hu.bme.mit.gamma.xsts.iml.transformation.util.Namings.*
 
 class ActionSerializer {
-	// Singleton
-	public static final ActionSerializer INSTANCE = new ActionSerializer
-	protected new() {}
+	//
+	protected boolean hoistBranches = false
 	//
 	protected final extension MessageQueueHandler queueHandler = MessageQueueHandler.INSTANCE
 	protected final extension MessageQueueUtil queueUtil = MessageQueueUtil.INSTANCE
@@ -48,6 +49,18 @@ class ActionSerializer {
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
+	//
+	protected final Map<Action, String> actions = newLinkedHashMap // Order matters in IML
+	//
+	
+	new() {
+		this(false)
+	}
+	
+	new(boolean hoistBranches) {
+		this.hoistBranches = hoistBranches
+	}
+	
 	//
 	
 	def serializeActionGlobally(Action action) {
@@ -62,9 +75,32 @@ class ActionSerializer {
 	
 	//
 	
-	protected def String serialize(Action action) '''
-		«action.serializeAction»
-		«action.localVariableNamesIfLast»'''
+	protected def String serialize(Action action) {
+		val actionCode = action.serializeAction.toString
+		
+		if (hoistBranches &&
+				(action instanceof IfAction || action instanceof NonDeterministicAction)) {
+			val functionName = action.customizeHoistedFunctionName
+			val functionBody = (action instanceof IfAction) ?
+					actionCode.replaceFirst(localVariableDeclarations, "").replaceLast("in", "") : actionCode + " " + localVariableNames
+			val functionCode = '''
+				let «functionName» («globalVariableName» : «GLOBAL_RECORD_TYPE_NAME») («localVariableName» : «action.localRecordType») =
+					«functionBody»
+			'''
+			actions += action -> functionCode
+			
+			val functionCall = '''
+				«localVariableDeclarations»«functionName» «globalVariableName» «localVariableName» in
+				«action.localVariableNamesIfLast»
+			'''
+			
+			return functionCall
+		}
+		
+		return '''
+			«actionCode»
+			«action.localVariableNamesIfLast»'''
+	}
 	
 	protected def serializeActions(Iterable<? extends Action> actions) {
 		val builder = new StringBuilder
@@ -259,7 +295,7 @@ class ActionSerializer {
 	
 	protected def initVariablesIfNotEmpty(Iterable<? extends VariableDeclaration> variables,
 			Iterable<? extends NonDeterministicAction> choices, String id) '''
-		«IF variables.empty && choices.empty»let «id» = true in (* Placeholder *)«ELSE»«variables.initVariables(choices, id)»«ENDIF»'''
+		«IF variables.empty && choices.empty»let «id» = false in (* Placeholder *)«ELSE»«variables.initVariables(choices, id)»«ENDIF»'''
 	
 	protected def initVariables(Iterable<? extends VariableDeclaration> variables,
 			Iterable<? extends NonDeterministicAction> choices, String id) '''
@@ -287,13 +323,31 @@ class ActionSerializer {
 		return Namings.LOCAL_RECORD_IDENTIFIER
 	}
 	
+	protected def getLocalRecordType(Action action) {
+		val topAction = action.getSelfOrLastContainerOfType(Action)
+		val noLocalVariables = topAction.getSelfAndAllContentsOfType(VariableDeclarationAction).empty
+		if (noLocalVariables) {
+			return "bool" // Placeholder
+		}
+		
+		val transition = topAction.getContainerOfType(XTransition)
+		val xSts = transition.containingXsts
+		
+		if (xSts.transitions.contains(transition)) {
+			return LOCAL_RECORD_TYPE_NAME
+		}
+		throw new IllegalArgumentException("Not known local record type")
+	}
+	
 	protected def String getLocalVariableDeclarations() '''let «localVariableNames» = '''
 	
-	protected def String getLocalVariableNames() '''«globalVariableName», «Namings.LOCAL_RECORD_IDENTIFIER»'''
+	protected def String getLocalVariableNames() '''«globalVariableName», «localVariableName»'''
+	
+	protected def String getLocalVariableName() '''«LOCAL_RECORD_IDENTIFIER»'''
 	
 	protected def String getGlobalVariableDeclaration() '''let «globalVariableName» = '''
 	
-	protected def String getGlobalVariableName() '''«Namings.GLOBAL_RECORD_IDENTIFIER»'''
+	protected def String getGlobalVariableName() '''«GLOBAL_RECORD_IDENTIFIER»'''
 	
 	protected def getLocalVariableNamesIfLast(Action action) {
 		if (action.eContainer === null) {
@@ -307,6 +361,20 @@ class ActionSerializer {
 	
 	protected def changeReturnValue(String action) {
 		return action.replaceFirst(localVariableNames + "$", globalVariableName)
+	}
+	
+	//
+	
+	def clearActions() {
+		actions.clear
+	}
+	
+	def setHoistBranches(boolean hoistBranches) {
+		this.hoistBranches = hoistBranches
+	}
+	
+	def getHoistedFunctions() {
+		return actions.values.join(System.lineSeparator)
 	}
 	
 }

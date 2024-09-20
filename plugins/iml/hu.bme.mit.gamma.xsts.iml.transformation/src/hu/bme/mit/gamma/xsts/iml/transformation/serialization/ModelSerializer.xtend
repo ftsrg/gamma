@@ -17,7 +17,6 @@ import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
-import java.util.Map
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.iml.transformation.util.Namings.*
@@ -28,17 +27,19 @@ class ModelSerializer {
 	protected new() {}
 	//
 	
-	protected final Map<NonDeterministicAction, String> nonDeterministicActionVariables = newHashMap
+	protected final extension ActionSerializer actionSerializer = new ActionSerializer // For code hoisting
 	
 	//
 	protected final extension DeclarationSerializer declarationSerializer = DeclarationSerializer.INSTANCE
-	protected final extension ActionSerializer actionSerializer = ActionSerializer.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension XstsOptimizer xStsOptimizer = XstsOptimizer.INSTANCE
 	//
 	
 	def String serializeIml(XSTS xSts) {
+		actionSerializer.clearActions
+		//
+		
 		val globalVariables = xSts.variableDeclarations
 		
 		val localVariables = xSts.mergedAction
@@ -61,11 +62,12 @@ class ModelSerializer {
 						
 		val choices = xSts.getAllContentsOfType(NonDeterministicAction)
 		
-		val model = '''
-			«FOR typeDeclaration : xSts.typeDeclarations»
+		//
+		
+		val types = '''
+			«FOR typeDeclaration : xSts.typeDeclarations AFTER System.lineSeparator»
 				«typeDeclaration.serializeTypeDeclaration»
 			«ENDFOR»
-		
 			type nonrec «GLOBAL_RECORD_TYPE_NAME» = {
 				«FOR variableDeclaration : globalVariables»
 					«variableDeclaration.serializeFieldDeclaration»
@@ -76,29 +78,29 @@ class ModelSerializer {
 			}
 			
 			«IF !localVariables.empty»
-			type nonrec «LOCAL_RECORD_TYPE_NAME» = {
-				«FOR variableDeclaration : localVariables»
-					«variableDeclaration.serializeFieldDeclaration»
-				«ENDFOR»
-			}
+				type nonrec «LOCAL_RECORD_TYPE_NAME» = {
+					«FOR variableDeclaration : localVariables»
+						«variableDeclaration.serializeFieldDeclaration»
+					«ENDFOR»
+				}
+				
 			«ENDIF»
-			
 			«IF !initLocalVariables.empty»
 				type nonrec «INIT_LOCAL_RECORD_TYPE_NAME» = {
 					«FOR variableDeclaration : initLocalVariables»
 						«variableDeclaration.serializeFieldDeclaration»
 					«ENDFOR»
 				}
+				
 			«ENDIF»
-			
 			«IF !envLocalVariables.empty»
 				type nonrec «ENV_LOCAL_RECORD_TYPE_NAME» = {
 					«FOR variableDeclaration : envLocalVariables»
 						«variableDeclaration.serializeFieldDeclaration»
 					«ENDFOR»
 				}
+				
 			«ENDIF»
-			
 			«IF !envHavocs.empty»
 				type nonrec «ENV_HAVOC_RECORD_TYPE_NAME» = {
 					«FOR envHavoc : envHavocs»
@@ -109,20 +111,31 @@ class ModelSerializer {
 					«ENDFOR»
 				}
 			«ENDIF»
-			
+		'''
+		
+		val init = '''
 			let «INIT_FUNCTION_IDENTIFIER» =
 				«globalVariables.initVariables(choices, globalVariableName)»
 				«initLocalVariables.initVariablesIfNotEmpty(LOCAL_RECORD_IDENTIFIER)»
 				«xSts.initializingAction.optimizeAction.serializeActionGlobally»
-			
+		'''
+		
+		actionSerializer.hoistBranches = true // Hoisting 'trans'
+		val trans = '''
 			let trans («globalVariableName» : «GLOBAL_RECORD_TYPE_NAME») =
 				«localVariables.initVariablesIfNotEmpty(LOCAL_RECORD_IDENTIFIER)»
 				«xSts.mergedAction.serializeActionGlobally»
-				
+		'''
+		val hoistedFunctions = actionSerializer.hoistedFunctions
+		actionSerializer.hoistBranches = false // We do not want to hoist 'env'
+		
+		val env = '''
 			let env («globalVariableName» : «GLOBAL_RECORD_TYPE_NAME») («ENV_HAVOC_RECORD_IDENTIFIER» : «ENV_HAVOC_RECORD_TYPE_NAME») =
 				«envLocalVariables.initVariablesIfNotEmpty(LOCAL_RECORD_IDENTIFIER)»
 				«#[inEventAction, outEventAction].serializeActionsGlobally»
-				
+		'''
+		
+		val run = '''
 			let run_cycle («globalVariableName» : «GLOBAL_RECORD_TYPE_NAME») («ENV_HAVOC_RECORD_IDENTIFIER» : «ENV_HAVOC_RECORD_TYPE_NAME») =
 				«IF !choices.empty»
 					«globalVariableDeclaration»{ «globalVariableName» with «FOR choice : choices»«choice.customizeChoice» = «ENV_HAVOC_RECORD_IDENTIFIER».«choice.customizeChoice»; «ENDFOR»} in
@@ -142,9 +155,19 @@ class ModelSerializer {
 						run «globalVariableName» tl
 		'''
 		
-		return model
+		return '''
+			«types»
+			
+			«init»
+			
+			«hoistedFunctions»
+			
+			«trans»
+			
+			«env»
+			
+			«run»
+		'''
 	}
-	
-	//
 	
 }

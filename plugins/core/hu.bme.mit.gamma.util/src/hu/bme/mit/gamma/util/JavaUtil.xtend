@@ -174,6 +174,10 @@ class JavaUtil {
 	
 	//
 	
+	def String replaceLast(String string, String regex, String replacement) {
+		return string.replaceFirst("(?s)(.*)" + regex, "$1" + replacement);
+	}
+	
 	def matchFirstCharacterCapitalization(String string, String example) {
 		if (example.nullOrEmpty) {
 			return string
