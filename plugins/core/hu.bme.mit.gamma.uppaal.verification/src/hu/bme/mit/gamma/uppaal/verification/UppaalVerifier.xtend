@@ -42,7 +42,7 @@ class UppaalVerifier extends AbstractVerifier {
 			traceReader = new Scanner(outputStream)
 			
 			errorReader = new Scanner(errorStream)
-			errorLogger = new ScannerLogger(errorReader, "Out of memory", 2 /* UPPAAL-specific */)
+			errorLogger = new ScannerLogger(errorReader, "Out of memory", 2 /* UPPAAL-specific */, false)
 			errorLogger.start
 			
 			if (isCancelled || Thread.currentThread.interrupted) {

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -74,6 +74,28 @@ abstract class AbstractUppaalBackAnnotator {
 				topComponentArguments.size + " - " + component.parameterDeclarations.size)
 		trace.arguments += topComponentArguments.map[it.clone]
 		return trace
+	}
+	
+	protected def handleInfoLines(String line, BackAnnotatorState state) {
+		var newState = state
+		if (state == BackAnnotatorState.INFO) {
+			if (line.contains(ERROR_CONST)) { // Comes in the other stream now?
+				// If e.g., the condition is not well formed, an exception is thrown
+				throw new IllegalArgumentException("Error in the trace: " + line)
+			}
+			else if (line.contains(WARNING_CONST)) { // Comes in the other stream now?
+				logger.warning(line)
+			}
+			else if (line == STATE_CONST_PREFIX || line == STATE_CONST) {
+				// We have reached the section of interest
+				newState = BackAnnotatorState.INITIAL
+			}
+			else { // Saving the "info" lines
+				resultText.append(line)
+			}
+		}
+		
+		return newState
 	}
 	
 	def ExecutionTrace synchronizeAndExecute() {

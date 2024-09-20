@@ -60,28 +60,13 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 		while (traceScanner.hasNext) {
 			line = traceScanner.nextLine
 			
-			// The trace starts with an INFO section
-			if (state == BackAnnotatorState.INFO) {
-				if (line == STATE_CONST_PREFIX || line == STATE_CONST) {
-					// We have reached the section of interest
-					state = BackAnnotatorState.INITIAL
-				}
-				else { // Saving the "info" lines
-					resultText.append(line)
-				}
-			}
+			// The trace starts with an INFO section, handled by the following code
+			state = line.handleInfoLines(state)
 			//
 			
 			if (state != BackAnnotatorState.INFO) {
 				switch (line) {
 					case line.empty: {
-						// No operation
-					}
-					case line.contains(ERROR_CONST): {
-						// If the condition is not well formed, an exception is thrown
-						throw new IllegalArgumentException("Error in the trace: " + line)
-					}
-					case line.contains(WARNING_CONST): {
 						// No operation
 					}
 					case TRANSITIONS_CONST: {
