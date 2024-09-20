@@ -4,6 +4,16 @@
   <artifactId>hu.bme.mit.gamma.headless.api</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>Headless Gamma</name>
+  
+  <dependencies>
+	  <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-io -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>1.3.2</version>
+		</dependency>
+  </dependencies>
+  
   <build>
     <sourceDirectory>src</sourceDirectory>
     <plugins>
