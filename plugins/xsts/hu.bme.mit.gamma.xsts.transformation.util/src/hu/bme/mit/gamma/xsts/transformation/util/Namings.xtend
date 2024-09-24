@@ -31,6 +31,7 @@ import java.util.List
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.transformation.util.Namings.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.QueueNamings.*
@@ -108,7 +109,9 @@ class Namings {
 	
 	// Region customization
 	
-	static def String customizeRegionTypeName(TypeDeclaration type, Component component) '''«getName(type).typeName»_«component.name»'''
+	static def String customizeRegionTypeName(Region region) '''«region.regionName.regionTypeName.customizeRegionTypeName(region.containingStatechart.name)»'''
+	static def String customizeRegionTypeName(TypeDeclaration type, Component component) '''«getName(type).typeName.customizeRegionTypeName(component.name)»'''
+	static def String customizeRegionTypeName(String typeName, String componentName) '''«typeName»_«componentName»'''
 	
 	static def String customizeName(State state) '''«state.stateName.stateEnumLiteralName»''' // They are enum literals
 	

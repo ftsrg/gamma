@@ -59,6 +59,8 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		throw new UnsupportedOperationException("TODO: auto-generated method stub")
 	}
 	
+	//
+	
 	override protected getTargetStateName(State state, Region parentRegion, SynchronousComponentInstance instance) {
 		return '''«state.getSingleTargetStateName(parentRegion, instance)»«FOR parent : state.ancestors BEFORE " && " SEPARATOR " && "»«parent.getSingleTargetStateName(parent.parentRegion, instance)»«ENDFOR»'''
 	}

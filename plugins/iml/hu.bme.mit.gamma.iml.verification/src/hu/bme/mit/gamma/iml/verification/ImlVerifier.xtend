@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.iml.verification
 
+import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.ScannerLogger
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
@@ -72,17 +73,17 @@ class ImlVerifier extends AbstractVerifier {
 		var Result traceResult = null
 		
 		try {
-			process = Runtime.getRuntime().exec(imandraCommand)
-			
-			// Reading the result of the command
-			resultReader = new Scanner(process.inputReader)
-			errorReader = new ScannerLogger(new Scanner(process.errorReader), false)
-			errorReader.start
+//			process = Runtime.getRuntime().exec(imandraCommand)
+//			
+//			// Reading the result of the command
+//			resultReader = new Scanner(process.inputReader)
+//			errorReader = new ScannerLogger(new Scanner(process.errorReader), false)
+//			errorReader.start
 			
 			val resultPattern = '''(.*Refuted.*)|(.*Proved.*)|(.*Instance (not )?found.*)'''
 			var resultFound = false
 			result = ThreeStateBoolean.UNDEF
-			while (!resultFound && resultReader.hasNextLine) {
+			while (false && !resultFound && resultReader.hasNextLine) {
 				val line = resultReader.nextLine
 				if (!line.nullOrEmpty) { // No header printing
 					logger.info("Imandra: " + line)
@@ -99,17 +100,13 @@ class ImlVerifier extends AbstractVerifier {
 			}
 			if (!resultFound) {
 				logger.severe("Imandra could not verify the model with the property: " + query)
-				val errorScanner = new Scanner(process.errorReader)
-				while (errorScanner.hasNext) {
-					logger.severe("Imandra: " + errorScanner.nextLine)
-				}
 			}
 			
-//			val gammaPackage = traceability as Package
-//			val backAnnotator = new TraceBackAnnotator(gammaPackage, resultReader)
-//			val trace = backAnnotator.synchronizeAndExecute
+			val gammaPackage = traceability as Package
+			val backAnnotator = new TraceBackAnnotator(gammaPackage, debuggingTrace)
+			val trace = backAnnotator.synchronizeAndExecute
 			
-			traceResult = new Result(result, null)
+			traceResult = new Result(result, trace)
 			
 			logger.info("Quitting Imandra session")
 		} finally {
@@ -135,6 +132,277 @@ class ImlVerifier extends AbstractVerifier {
 	override getUnavailableBackendMessage() {
 		return "The command line tool of Imandra ('Imandra') cannot be found. " +
 				"Imandra can be downloaded from 'https://www.imandra.ai/'. "
+	}
+	
+	//
+	
+	protected def getDebuggingTrace() {
+		return new Scanner('''
+			- : e list -> bool = <fun>
+			trans <--
+			  {_SecondaryPolice_police_Out_controller_control = false;
+			   _PriorityPolice_police_Out_controller_control = false;
+			   _PoliceInterrupt_police_In_controller_control = false;
+			   _PriorityControl_toggle_Out_controller_control = false;
+			   _SecondaryControl_toggle_Out_controller_control = false;
+			   _main_region_controller_control = M_Main_region_Controller.L_Operating;
+			   _operating_controller_control = M_Operating_Controller.L_Init;
+			   _r_controller_control = M_R_Controller.L_G_;
+			   _SecondaryPreparesTimeout3_controller_control = 0;
+			   _LightCommands_displayNone_Out_prior_trafficLightCtrl = false;
+			   _LightCommands_displayYellow_Out_prior_trafficLightCtrl = false;
+			   _LightCommands_displayGreen_Out_prior_trafficLightCtrl = false;
+			   _Control_toggle_In_prior_trafficLightCtrl = false;
+			   _PoliceInterrupt_police_In_prior_trafficLightCtrl = false;
+			   _LightCommands_displayRed_Out_prior_trafficLightCtrl = true;
+			   _main_region_prior_trafficLightCtrl =
+			    M_Main_region_TrafficLightCtrl.L_Normal;
+			   _interrupted_prior_trafficLightCtrl =
+			    M_Interrupted_TrafficLightCtrl.L___Inactive__;
+			   _normal_prior_trafficLightCtrl = M_Normal_TrafficLightCtrl.L_Red;
+			   _c_prior_trafficLightCtrl = 0; _b_prior_trafficLightCtrl = 0;
+			   _a_prior_trafficLightCtrl = false;
+			   _BlinkingYellowTimeout3_prior_trafficLightCtrl = 500;
+			   _Control_toggle_In_second_trafficLightCtrl = false;
+			   _LightCommands_displayNone_Out_second_trafficLightCtrl = false;
+			   _LightCommands_displayYellow_Out_second_trafficLightCtrl = false;
+			   _PoliceInterrupt_police_In_second_trafficLightCtrl = false;
+			   _LightCommands_displayRed_Out_second_trafficLightCtrl = true;
+			   _LightCommands_displayGreen_Out_second_trafficLightCtrl = false;
+			   _main_region_second_trafficLightCtrl =
+			    M_Main_region_TrafficLightCtrl.L_Normal;
+			   _normal_second_trafficLightCtrl = M_Normal_TrafficLightCtrl.L_Red;
+			   _interrupted_second_trafficLightCtrl =
+			    M_Interrupted_TrafficLightCtrl.L___Inactive__;
+			   _a_second_trafficLightCtrl = false; _c_second_trafficLightCtrl = 0;
+			   _b_second_trafficLightCtrl = 0;
+			   _BlinkingYellowTimeout3_second_trafficLightCtrl = 500;
+			   _master_messageQueueOfcontroller =
+			    M_EventIdTypeOfmaster_messageQueueOfcontroller.L__1;
+			   _master_messageQueueOfprior =
+			    [M_EventIdTypeOfmaster_messageQueueOfprior.L__1];
+			   _master_messageQueueOfsecond = []}
+			trans -->
+			  {_SecondaryPolice_police_Out_controller_control = false;
+			   _PriorityPolice_police_Out_controller_control = false;
+			   _PoliceInterrupt_police_In_controller_control = false;
+			   _PriorityControl_toggle_Out_controller_control = false;
+			   _SecondaryControl_toggle_Out_controller_control = false;
+			   _main_region_controller_control = M_Main_region_Controller.L_Operating;
+			   _operating_controller_control = M_Operating_Controller.L_PriorityPrepares;
+			   _r_controller_control = M_R_Controller.L___Inactive__;
+			   _SecondaryPreparesTimeout3_controller_control = 0;
+			   _LightCommands_displayNone_Out_prior_trafficLightCtrl = false;
+			   _LightCommands_displayYellow_Out_prior_trafficLightCtrl = false;
+			   _LightCommands_displayGreen_Out_prior_trafficLightCtrl = true;
+			   _Control_toggle_In_prior_trafficLightCtrl = false;
+			   _PoliceInterrupt_police_In_prior_trafficLightCtrl = false;
+			   _LightCommands_displayRed_Out_prior_trafficLightCtrl = false;
+			   _main_region_prior_trafficLightCtrl =
+			    M_Main_region_TrafficLightCtrl.L_Normal;
+			   _interrupted_prior_trafficLightCtrl =
+			    M_Interrupted_TrafficLightCtrl.L___Inactive__;
+			   _normal_prior_trafficLightCtrl = M_Normal_TrafficLightCtrl.L_Green;
+			   _c_prior_trafficLightCtrl = 0; _b_prior_trafficLightCtrl = 0;
+			   _a_prior_trafficLightCtrl = true;
+			   _BlinkingYellowTimeout3_prior_trafficLightCtrl = 500;
+			   _Control_toggle_In_second_trafficLightCtrl = false;
+			   _LightCommands_displayNone_Out_second_trafficLightCtrl = false;
+			   _LightCommands_displayYellow_Out_second_trafficLightCtrl = false;
+			   _PoliceInterrupt_police_In_second_trafficLightCtrl = false;
+			   _LightCommands_displayRed_Out_second_trafficLightCtrl = true;
+			   _LightCommands_displayGreen_Out_second_trafficLightCtrl = false;
+			   _main_region_second_trafficLightCtrl =
+			    M_Main_region_TrafficLightCtrl.L_Normal;
+			   _normal_second_trafficLightCtrl = M_Normal_TrafficLightCtrl.L_Red;
+			   _interrupted_second_trafficLightCtrl =
+			    M_Interrupted_TrafficLightCtrl.L___Inactive__;
+			   _a_second_trafficLightCtrl = false; _c_second_trafficLightCtrl = 0;
+			   _b_second_trafficLightCtrl = 0;
+			   _BlinkingYellowTimeout3_second_trafficLightCtrl = 500;
+			   _master_messageQueueOfcontroller =
+			    M_EventIdTypeOfmaster_messageQueueOfcontroller.L_EMPTY;
+			   _master_messageQueueOfprior =
+			    [M_EventIdTypeOfmaster_messageQueueOfprior.L__1];
+			   _master_messageQueueOfsecond = []}
+			trans <--
+			  {_SecondaryPolice_police_Out_controller_control = false;
+			   _PriorityPolice_police_Out_controller_control = false;
+			   _PoliceInterrupt_police_In_controller_control = false;
+			   _PriorityControl_toggle_Out_controller_control = false;
+			   _SecondaryControl_toggle_Out_controller_control = false;
+			   _main_region_controller_control = M_Main_region_Controller.L_Operating;
+			   _operating_controller_control = M_Operating_Controller.L_PriorityPrepares;
+			   _r_controller_control = M_R_Controller.L___Inactive__;
+			   _SecondaryPreparesTimeout3_controller_control = 0;
+			   _LightCommands_displayNone_Out_prior_trafficLightCtrl = false;
+			   _LightCommands_displayYellow_Out_prior_trafficLightCtrl = false;
+			   _LightCommands_displayGreen_Out_prior_trafficLightCtrl = true;
+			   _Control_toggle_In_prior_trafficLightCtrl = false;
+			   _PoliceInterrupt_police_In_prior_trafficLightCtrl = false;
+			   _LightCommands_displayRed_Out_prior_trafficLightCtrl = false;
+			   _main_region_prior_trafficLightCtrl =
+			    M_Main_region_TrafficLightCtrl.L_Normal;
+			   _interrupted_prior_trafficLightCtrl =
+			    M_Interrupted_TrafficLightCtrl.L___Inactive__;
+			   _normal_prior_trafficLightCtrl = M_Normal_TrafficLightCtrl.L_Green;
+			   _c_prior_trafficLightCtrl = 0; _b_prior_trafficLightCtrl = 0;
+			   _a_prior_trafficLightCtrl = true;
+			   _BlinkingYellowTimeout3_prior_trafficLightCtrl = 500;
+			   _Control_toggle_In_second_trafficLightCtrl = false;
+			   _LightCommands_displayNone_Out_second_trafficLightCtrl = false;
+			   _LightCommands_displayYellow_Out_second_trafficLightCtrl = false;
+			   _PoliceInterrupt_police_In_second_trafficLightCtrl = false;
+			   _LightCommands_displayRed_Out_second_trafficLightCtrl = true;
+			   _LightCommands_displayGreen_Out_second_trafficLightCtrl = false;
+			   _main_region_second_trafficLightCtrl =
+			    M_Main_region_TrafficLightCtrl.L_Normal;
+			   _normal_second_trafficLightCtrl = M_Normal_TrafficLightCtrl.L_Red;
+			   _interrupted_second_trafficLightCtrl =
+			    M_Interrupted_TrafficLightCtrl.L___Inactive__;
+			   _a_second_trafficLightCtrl = false; _c_second_trafficLightCtrl = 0;
+			   _b_second_trafficLightCtrl = 0;
+			   _BlinkingYellowTimeout3_second_trafficLightCtrl = 500;
+			   _master_messageQueueOfcontroller =
+			    M_EventIdTypeOfmaster_messageQueueOfcontroller.L__1;
+			   _master_messageQueueOfprior =
+			    [M_EventIdTypeOfmaster_messageQueueOfprior.L__1];
+			   _master_messageQueueOfsecond = []}
+			trans -->
+			  {_SecondaryPolice_police_Out_controller_control = false;
+			   _PriorityPolice_police_Out_controller_control = false;
+			   _PoliceInterrupt_police_In_controller_control = false;
+			   _PriorityControl_toggle_Out_controller_control = false;
+			   _SecondaryControl_toggle_Out_controller_control = false;
+			   _main_region_controller_control = M_Main_region_Controller.L_Operating;
+			   _operating_controller_control = M_Operating_Controller.L_Secondary;
+			   _r_controller_control = M_R_Controller.L___Inactive__;
+			   _SecondaryPreparesTimeout3_controller_control = 0;
+			   _LightCommands_displayNone_Out_prior_trafficLightCtrl = false;
+			   _LightCommands_displayYellow_Out_prior_trafficLightCtrl = true;
+			   _LightCommands_displayGreen_Out_prior_trafficLightCtrl = false;
+			   _Control_toggle_In_prior_trafficLightCtrl = false;
+			   _PoliceInterrupt_police_In_prior_trafficLightCtrl = false;
+			   _LightCommands_displayRed_Out_prior_trafficLightCtrl = false;
+			   _main_region_prior_trafficLightCtrl =
+			    M_Main_region_TrafficLightCtrl.L_Normal;
+			   _interrupted_prior_trafficLightCtrl =
+			    M_Interrupted_TrafficLightCtrl.L___Inactive__;
+			   _normal_prior_trafficLightCtrl = M_Normal_TrafficLightCtrl.L_Yellow;
+			   _c_prior_trafficLightCtrl = 0; _b_prior_trafficLightCtrl = 4;
+			   _a_prior_trafficLightCtrl = true;
+			   _BlinkingYellowTimeout3_prior_trafficLightCtrl = 500;
+			   _Control_toggle_In_second_trafficLightCtrl = false;
+			   _LightCommands_displayNone_Out_second_trafficLightCtrl = false;
+			   _LightCommands_displayYellow_Out_second_trafficLightCtrl = false;
+			   _PoliceInterrupt_police_In_second_trafficLightCtrl = false;
+			   _LightCommands_displayRed_Out_second_trafficLightCtrl = false;
+			   _LightCommands_displayGreen_Out_second_trafficLightCtrl = true;
+			   _main_region_second_trafficLightCtrl =
+			    M_Main_region_TrafficLightCtrl.L_Normal;
+			   _normal_second_trafficLightCtrl = M_Normal_TrafficLightCtrl.L_Green;
+			   _interrupted_second_trafficLightCtrl =
+			    M_Interrupted_TrafficLightCtrl.L___Inactive__;
+			   _a_second_trafficLightCtrl = true; _c_second_trafficLightCtrl = 0;
+			   _b_second_trafficLightCtrl = 0;
+			   _BlinkingYellowTimeout3_second_trafficLightCtrl = 500;
+			   _master_messageQueueOfcontroller =
+			    M_EventIdTypeOfmaster_messageQueueOfcontroller.L_EMPTY;
+			   _master_messageQueueOfprior =
+			    [M_EventIdTypeOfmaster_messageQueueOfprior.L__1];
+			   _master_messageQueueOfsecond = []}
+			trans <--
+			  {_SecondaryPolice_police_Out_controller_control = false;
+			   _PriorityPolice_police_Out_controller_control = false;
+			   _PoliceInterrupt_police_In_controller_control = false;
+			   _PriorityControl_toggle_Out_controller_control = false;
+			   _SecondaryControl_toggle_Out_controller_control = false;
+			   _main_region_controller_control = M_Main_region_Controller.L_Operating;
+			   _operating_controller_control = M_Operating_Controller.L_Secondary;
+			   _r_controller_control = M_R_Controller.L___Inactive__;
+			   _SecondaryPreparesTimeout3_controller_control = 0;
+			   _LightCommands_displayNone_Out_prior_trafficLightCtrl = false;
+			   _LightCommands_displayYellow_Out_prior_trafficLightCtrl = true;
+			   _LightCommands_displayGreen_Out_prior_trafficLightCtrl = false;
+			   _Control_toggle_In_prior_trafficLightCtrl = false;
+			   _PoliceInterrupt_police_In_prior_trafficLightCtrl = false;
+			   _LightCommands_displayRed_Out_prior_trafficLightCtrl = false;
+			   _main_region_prior_trafficLightCtrl =
+			    M_Main_region_TrafficLightCtrl.L_Normal;
+			   _interrupted_prior_trafficLightCtrl =
+			    M_Interrupted_TrafficLightCtrl.L___Inactive__;
+			   _normal_prior_trafficLightCtrl = M_Normal_TrafficLightCtrl.L_Yellow;
+			   _c_prior_trafficLightCtrl = 0; _b_prior_trafficLightCtrl = 4;
+			   _a_prior_trafficLightCtrl = true;
+			   _BlinkingYellowTimeout3_prior_trafficLightCtrl = 500;
+			   _Control_toggle_In_second_trafficLightCtrl = false;
+			   _LightCommands_displayNone_Out_second_trafficLightCtrl = false;
+			   _LightCommands_displayYellow_Out_second_trafficLightCtrl = false;
+			   _PoliceInterrupt_police_In_second_trafficLightCtrl = false;
+			   _LightCommands_displayRed_Out_second_trafficLightCtrl = false;
+			   _LightCommands_displayGreen_Out_second_trafficLightCtrl = true;
+			   _main_region_second_trafficLightCtrl =
+			    M_Main_region_TrafficLightCtrl.L_Normal;
+			   _normal_second_trafficLightCtrl = M_Normal_TrafficLightCtrl.L_Green;
+			   _interrupted_second_trafficLightCtrl =
+			    M_Interrupted_TrafficLightCtrl.L___Inactive__;
+			   _a_second_trafficLightCtrl = true; _c_second_trafficLightCtrl = 0;
+			   _b_second_trafficLightCtrl = 0;
+			   _BlinkingYellowTimeout3_second_trafficLightCtrl = 500;
+			   _master_messageQueueOfcontroller =
+			    M_EventIdTypeOfmaster_messageQueueOfcontroller.L__1;
+			   _master_messageQueueOfprior =
+			    [M_EventIdTypeOfmaster_messageQueueOfprior.L__1];
+			   _master_messageQueueOfsecond = []}
+			trans -->
+			  {_SecondaryPolice_police_Out_controller_control = false;
+			   _PriorityPolice_police_Out_controller_control = false;
+			   _PoliceInterrupt_police_In_controller_control = false;
+			   _PriorityControl_toggle_Out_controller_control = false;
+			   _SecondaryControl_toggle_Out_controller_control = false;
+			   _main_region_controller_control = M_Main_region_Controller.L_Operating;
+			   _operating_controller_control = M_Operating_Controller.L_SecondaryPrepares;
+			   _r_controller_control = M_R_Controller.L___Inactive__;
+			   _SecondaryPreparesTimeout3_controller_control = 0;
+			   _LightCommands_displayNone_Out_prior_trafficLightCtrl = false;
+			   _LightCommands_displayYellow_Out_prior_trafficLightCtrl = false;
+			   _LightCommands_displayGreen_Out_prior_trafficLightCtrl = false;
+			   _Control_toggle_In_prior_trafficLightCtrl = false;
+			   _PoliceInterrupt_police_In_prior_trafficLightCtrl = false;
+			   _LightCommands_displayRed_Out_prior_trafficLightCtrl = true;
+			   _main_region_prior_trafficLightCtrl =
+			    M_Main_region_TrafficLightCtrl.L_Normal;
+			   _interrupted_prior_trafficLightCtrl =
+			    M_Interrupted_TrafficLightCtrl.L___Inactive__;
+			   _normal_prior_trafficLightCtrl = M_Normal_TrafficLightCtrl.L_Red;
+			   _c_prior_trafficLightCtrl = 0; _b_prior_trafficLightCtrl = 4;
+			   _a_prior_trafficLightCtrl = true;
+			   _BlinkingYellowTimeout3_prior_trafficLightCtrl = 500;
+			   _Control_toggle_In_second_trafficLightCtrl = false;
+			   _LightCommands_displayNone_Out_second_trafficLightCtrl = false;
+			   _LightCommands_displayYellow_Out_second_trafficLightCtrl = true;
+			   _PoliceInterrupt_police_In_second_trafficLightCtrl = false;
+			   _LightCommands_displayRed_Out_second_trafficLightCtrl = false;
+			   _LightCommands_displayGreen_Out_second_trafficLightCtrl = false;
+			   _main_region_second_trafficLightCtrl =
+			    M_Main_region_TrafficLightCtrl.L_Normal;
+			   _normal_second_trafficLightCtrl = M_Normal_TrafficLightCtrl.L_Yellow;
+			   _interrupted_second_trafficLightCtrl =
+			    M_Interrupted_TrafficLightCtrl.L___Inactive__;
+			   _a_second_trafficLightCtrl = true; _c_second_trafficLightCtrl = 0;
+			   _b_second_trafficLightCtrl = 4;
+			   _BlinkingYellowTimeout3_second_trafficLightCtrl = 500;
+			   _master_messageQueueOfcontroller =
+			    M_EventIdTypeOfmaster_messageQueueOfcontroller.L_EMPTY;
+			   _master_messageQueueOfprior = []; _master_messageQueueOfsecond = []}
+			module CX : sig val e : e list end
+			Instance (after 38 steps, 10.477s):
+			let e : e list =
+			  let (_x_0 : e)
+			      = {_eventId_master_messageQueueOfcontroller_1334575416_1563506344 =
+			         M_EventIdTypeOfmaster_messageQueueOfcontroller.L__1}
+			  in [_x_0; _x_0; _x_0]
+		''')
 	}
 	
 }
