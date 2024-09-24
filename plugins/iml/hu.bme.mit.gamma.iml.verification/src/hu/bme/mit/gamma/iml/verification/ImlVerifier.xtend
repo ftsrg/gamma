@@ -54,14 +54,7 @@ class ImlVerifier extends AbstractVerifier {
 		val pythonFile = new File(parentFile + File.separator + '''.imandra-commands-«Thread.currentThread.name».py''')
 		pythonFile.deleteOnExit
 		
-		val serializedPython = '''
-			import imandra
-			
-			with imandra.session() as session:
-				session.eval("""«System.lineSeparator»«modelString»""")
-				result = session.«command»("«commandelssQuery»")
-				print(result)
-		'''
+		val serializedPython = getTracedCode(modelString, command, commandelssQuery)
 		fileUtil.saveString(pythonFile, serializedPython)
 		
 		// python3 .\imandra-test.py
@@ -73,17 +66,17 @@ class ImlVerifier extends AbstractVerifier {
 		var Result traceResult = null
 		
 		try {
-//			process = Runtime.getRuntime().exec(imandraCommand)
-//			
-//			// Reading the result of the command
-//			resultReader = new Scanner(process.inputReader)
-//			errorReader = new ScannerLogger(new Scanner(process.errorReader), false)
-//			errorReader.start
+			process = Runtime.getRuntime().exec(imandraCommand)
 			
-			val resultPattern = '''(.*Refuted.*)|(.*Proved.*)|(.*Instance (not )?found.*)'''
+			// Reading the result of the command
+			resultReader = new Scanner(process.inputReader)
+			errorReader = new ScannerLogger(new Scanner(process.errorReader), false)
+			errorReader.start
+			
+			val resultPattern = '''(.*Refuted.*)|(.*Proved.*)|(.*Instance (not )?found.*)''' // TODO
 			var resultFound = false
 			result = ThreeStateBoolean.UNDEF
-			while (false && !resultFound && resultReader.hasNextLine) {
+			while (!resultFound && resultReader.hasNextLine) {
 				val line = resultReader.nextLine
 				if (!line.nullOrEmpty) { // No header printing
 					logger.info("Imandra: " + line)
@@ -118,11 +111,70 @@ class ImlVerifier extends AbstractVerifier {
 		return traceResult
 	}
 	
+	protected def String getBasicCode(String modelString, String command, String commandlessQuery) '''
+		import imandra
+		
+		with imandra.session() as session:
+			session.eval("""«System.lineSeparator»«modelString»""")
+			result = session.«command»("«commandlessQuery»")
+			print(result)
+	'''
+	
+	protected def String getTracedCode(String modelString, String command, String commandlessQuery) '''
+		import imandra.auth
+		import imandra.instance
+		import imandra_http_api_client
+		
+		# Starting an Imandra instance
+		
+		auth = imandra.auth.Auth()
+		instance = imandra.instance.create(auth, None, "imandra-http-api")
+		
+		config = imandra_http_api_client.Configuration(
+		    host = instance['new_pod']['url'],
+		    access_token = instance['new_pod']['exchange_token'],
+		)
+		
+		# Doing the low-level call to the API
+		
+		src = """
+			«modelString»;;
+			#trace trans;;
+			«command»(«commandlessQuery»);; # Looks for trace
+		"""
+		# run init CX.e # We do not have to replay this trace (e due to 'fun e')
+		
+		with imandra_http_api_client.ApiClient(config) as api_client:
+		    api_instance = imandra_http_api_client.DefaultApi(api_client)
+		    req = {
+		        "src": src,
+		        "syntax": "iml",
+		        "hints": {
+		            "method": {
+		                "type": "auto"
+		            }
+		        }
+		    }
+		    request_src = imandra_http_api_client.EvalRequestSrc.from_dict(req)
+		    try:
+		        api_response = api_instance.eval_with_http_info(request_src)
+		    except ApiException as e:
+		        print("Exception when calling DefaultApi->eval_with_http_info: %s\n" % e)
+		
+		# json parse the raw_data yourself and take the raw_stdio
+		
+		import json
+		raw_response = json.loads(api_response.raw_data)
+		print(raw_response.get("raw_stdio"))
+		
+		# Delete the Imandra instance
+		
+		imandra.instance.delete(auth, instance['new_pod']['id'])
+	'''
+	
 	override getTemporaryQueryFilename(File modelFile) {
 		return "." + modelFile.extensionlessName + ".i"
 	}
-	
-	//
 	
 	override getHelpCommand() {
 		return #["python3", "-h"]
