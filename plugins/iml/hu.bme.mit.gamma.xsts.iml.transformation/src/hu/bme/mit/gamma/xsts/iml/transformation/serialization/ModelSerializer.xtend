@@ -50,12 +50,13 @@ class ModelSerializer {
 						.getSelfAndAllContentsOfType(VariableDeclarationAction)
 						.map[it.variableDeclaration]
 		
-		val envLocalVariables = xSts.environmentalAction
-						.getSelfAndAllContentsOfType(VariableDeclarationAction)
-						.map[it.variableDeclaration]
-		
 		val inEventAction = xSts.inEventTransition.action // Must match the object of envHavocs in the record and the env func
 		val outEventAction = xSts.outEventTransition.action
+		
+		val envLocalVariables = #[inEventAction, outEventAction].map[
+						it.getSelfAndAllContentsOfType(VariableDeclarationAction)
+						.map[it.variableDeclaration]]
+						.flatten
 		
 		val envHavocs = inEventAction
 						.getSelfAndAllContentsOfType(HavocAction)

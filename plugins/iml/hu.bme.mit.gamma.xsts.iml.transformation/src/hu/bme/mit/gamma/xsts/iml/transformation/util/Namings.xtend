@@ -46,6 +46,8 @@ class Namings {
 	def static customizeName(Declaration variable) { variable.name.customizeDeclarationName }
 	def static customizeDeclarationName(String name) { DECLARATION_NAME_PREFIX + name }
 	
+	def static String customizeLocalDeclarationName(Declaration variable) { '''«variable.name.customizeDeclarationName»_«variable.randomizeName»''' }
+	
 	public static final String TYPE_DECLARATION_NAME_PREFIX = "M_"
 	def static customizeName(TypeDeclaration type) { type.name.customizeTypeDeclarationName }
 	def static customizeTypeDeclarationName(String name) { TYPE_DECLARATION_NAME_PREFIX + name }
@@ -55,10 +57,12 @@ class Namings {
 	def static customizeName(EnumerationLiteralDefinition literal) { literal.name.customizeEnumLiteralName }
 	def static customizeEnumLiteralName(String name) { ENUM_LITERAL_PREFIX + name }
 	
-	def static customizeHavocField(HavocAction havoc) '''«havoc.lhs.declaration.customizeName»_«havoc.hashCode.toString.replaceAll("-", "_")»'''
+	def static customizeHavocField(HavocAction havoc) '''«havoc.lhs.declaration.customizeName»_«havoc.randomizeName»'''
 	
-	def static customizeChoice(NonDeterministicAction choice) '''choice_«choice.hashCode.toString.replaceAll("-", "_")»'''
+	def static customizeChoice(NonDeterministicAction choice) '''choice_«choice.randomizeName»'''
 	
-	def static customizeHoistedFunctionName(Action action) '''h_«action.hashCode.toString.replaceAll("-", "_")»'''
+	def static customizeHoistedFunctionName(Action action) '''h_«action.randomizeName»'''
+	
+	protected def static randomizeName(Object object) { object.hashCode.toString.replaceAll("-", "0") }
 	
 }

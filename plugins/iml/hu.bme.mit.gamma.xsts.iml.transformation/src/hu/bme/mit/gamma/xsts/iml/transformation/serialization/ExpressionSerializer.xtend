@@ -130,7 +130,9 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	 * Punctuation is excluded, except for _ and ', and variables must start with a lowercase letter or an underscore.
 	 */
 	def String serializeName(Declaration declaration) {
-		val customizedName = declaration.customizeName
+		val customizedName = (declaration.local) ?
+			declaration.customizeLocalDeclarationName : // To avoid having the same names in different record types
+			declaration.customizeName
 		return customizedName
 	}
 	

@@ -325,7 +325,7 @@ class ActionSerializer {
 		return Namings.LOCAL_RECORD_IDENTIFIER
 	}
 	
-	protected def getLocalRecordType(Action action) {
+	protected def getLocalRecordType(Action action) { // Not needed now, due to custom local var names; delete this if that helps somehow
 		val topAction = action.getSelfOrLastContainerOfType(Action)
 		val noLocalVariables = topAction.getSelfAndAllContentsOfType(VariableDeclarationAction).empty
 		if (noLocalVariables) {
