@@ -54,7 +54,7 @@ class ImlVerifier extends AbstractVerifier {
 		val pythonFile = new File(parentFile + File.separator + '''.imandra-commands-«Thread.currentThread.name».py''')
 		pythonFile.deleteOnExit
 		
-		val serializedPython = getTracedCode(modelString, command, commandelssQuery)
+		val serializedPython = getTracedCode(modelString, command, parameters, commandelssQuery)
 		fileUtil.saveString(pythonFile, serializedPython)
 		
 		// python3 .\imandra-test.py
@@ -109,7 +109,7 @@ class ImlVerifier extends AbstractVerifier {
 			print(result)
 	'''
 	
-	protected def String getTracedCode(String modelString, String command, String commandlessQuery) '''
+	protected def String getTracedCode(String modelString, String command, String arguments, String commandlessQuery) '''
 		import imandra.auth
 		import imandra.instance
 		import imandra_http_api_client
@@ -129,7 +129,7 @@ class ImlVerifier extends AbstractVerifier {
 		src = """
 			«modelString»;;
 			#trace trans;;
-			«command»(«commandlessQuery»);; (* Looks for trace *)
+			«command»«IF !arguments.nullOrEmpty» «arguments» «ENDIF»(«commandlessQuery»);; (* Looks for trace *)
 		"""
 		# run init CX.e # We do not have to replay this trace (e due to 'fun e')
 		
