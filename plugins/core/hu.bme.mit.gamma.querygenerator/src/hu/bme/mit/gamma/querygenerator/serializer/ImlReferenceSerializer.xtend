@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.xsts.transformation.util.Namings
 
 import static extension hu.bme.mit.gamma.xsts.iml.transformation.util.Namings.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
@@ -38,7 +39,7 @@ class ImlReferenceSerializer extends ThetaReferenceSerializer {
 	}
 	
 	override getSingleTargetStateName(State state, Region parentRegion, ComponentInstanceReferenceExpression instance) {
-		return '''«recordIdentifier».«parentRegion.customizeName(instance).customizeDeclarationName» = «state.XStsId.customizeEnumLiteralName»'''
+		return '''«recordIdentifier».«parentRegion.customizeName(instance).customizeDeclarationName» = «Namings.customizeRegionTypeName(parentRegion).customizeTypeDeclarationName».«state.XStsId.customizeEnumLiteralName»'''
 	}
 	
 	// Needed by the property adjustor to remove nonexisting state references

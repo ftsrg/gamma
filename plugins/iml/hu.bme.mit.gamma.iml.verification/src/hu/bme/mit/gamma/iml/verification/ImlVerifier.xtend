@@ -70,34 +70,23 @@ class ImlVerifier extends AbstractVerifier {
 			
 			// Reading the result of the command
 			resultReader = new Scanner(process.inputReader)
-			errorReader = new ScannerLogger(new Scanner(process.errorReader), false)
+			errorReader = new ScannerLogger(new Scanner(process.errorReader), "ValueError: ",  true)
 			errorReader.start
 			
-			val resultPattern = '''(.*Refuted.*)|(.*Proved.*)|(.*Instance (not )?found.*)''' // TODO
-			var resultFound = false
 			result = ThreeStateBoolean.UNDEF
-			while (!resultFound && resultReader.hasNextLine) {
-				val line = resultReader.nextLine
-				if (!line.nullOrEmpty) { // No header printing
-					logger.info("Imandra: " + line)
-				}
-				if (line.matches(resultPattern)) {
-					resultFound = true
-					if (line.contains("Proved") || line.contains("Instance found")) {
-						result  = ThreeStateBoolean.TRUE
-					}
-					else if (line.contains("Refuted") || line.contains("Instance not found")) {
-						result  = ThreeStateBoolean.FALSE
-					} // In case of any other outcome, the result will remain undef
-				}
-			}
-			if (!resultFound) {
-				logger.severe("Imandra could not verify the model with the property: " + query)
-			}
 			
 			val gammaPackage = traceability as Package
-			val backAnnotator = new TraceBackAnnotator(gammaPackage, debuggingTrace)
+			val backAnnotator = new TraceBackAnnotator(gammaPackage, resultReader)
 			val trace = backAnnotator.synchronizeAndExecute
+			
+			if (!errorReader.error) {
+				if (trace === null && command.contains("verify") || trace !== null && command.contains("instance")) {
+					result = ThreeStateBoolean.TRUE
+				}
+				else if (trace !== null && command.contains("verify") || trace === null && command.contains("instance")) {
+					result = ThreeStateBoolean.FALSE
+				}
+			}
 			
 			traceResult = new Result(result, trace)
 			
@@ -140,7 +129,7 @@ class ImlVerifier extends AbstractVerifier {
 		src = """
 			«modelString»;;
 			#trace trans;;
-			«command»(«commandlessQuery»);; # Looks for trace
+			«command»(«commandlessQuery»);; (* Looks for trace *)
 		"""
 		# run init CX.e # We do not have to replay this trace (e due to 'fun e')
 		

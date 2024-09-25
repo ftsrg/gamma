@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.FalseExpression
@@ -23,10 +24,12 @@ import hu.bme.mit.gamma.expression.model.ImplyExpression
 import hu.bme.mit.gamma.expression.model.InequalityExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
+import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.iml.transformation.util.Namings.*
 
 class ImlPropertyExpressionSerializer extends ThetaPropertyExpressionSerializer {
@@ -53,7 +56,7 @@ class ImlPropertyExpressionSerializer extends ThetaPropertyExpressionSerializer 
 	
 	override String _serialize(IfThenElseExpression expression) '''(if «expression.condition.serialize» then «expression.then.serialize» else «expression.^else.serialize»)'''
 
-	override String _serialize(EnumerationLiteralExpression expression) '''«expression.serializeName»'''
+	override String _serialize(EnumerationLiteralExpression expression) '''«expression.typeReference.reference.serializeName».«expression.serializeName»''' // See module elements when serializing type declarations
 	
 	override String _serialize(DirectReferenceExpression expression) {
 		val declaration = expression.declaration
@@ -89,11 +92,23 @@ class ImlPropertyExpressionSerializer extends ThetaPropertyExpressionSerializer 
 	//
 	
 	def String serializeName(Declaration declaration) {
+		val customizedName = (declaration.local) ?
+			declaration.customizeLocalDeclarationName : // To avoid having the same names in different record types
+			declaration.customizeName
+		return customizedName
+	}
+	
+	def String serializeName(TypeDeclaration declaration) {
 		val customizedName = declaration.customizeName
 		return customizedName
 	}
 	
 	def String serializeName(EnumerationLiteralExpression literal) {
+		val customizedName = literal.customizeName
+		return customizedName
+	}
+	
+	def String serializeName(EnumerationLiteralDefinition literal) {
 		val customizedName = literal.customizeName
 		return customizedName
 	}
