@@ -35,15 +35,14 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 
 class TraceBackAnnotator {
 	//
+	protected final String INFO_END = "is now traced"
 	protected final String ENVIRONMENT = " <--"
 	protected final String STATE = " -->"
 	protected final String LOOP = " loop "
+	protected final String RETURN_VALUE = "- : "
+	protected final String COUNTEREXAMPLE_VAR = "module CX :"
 	//
 	protected final Scanner traceScanner
-	protected final StringBuilder initString = new StringBuilder
-	protected Scanner initScanner
-	boolean saveTrace = false
-	boolean readSavedTrace = false
 	//
 	protected final ThetaQueryGenerator imlQueryGenerator
 	protected final extension XstsBackAnnotator xStsBackAnnotator
@@ -112,15 +111,11 @@ class TraceBackAnnotator {
 		// Parsing
 		var state = BackAnnotatorState.INFO
 		var isInitialized = false
+		var isValidTrace = false
 		try {
 			while (traceScanner.hasNext) {
 				// We have to have two passes for 1) the initial states and 2) first step's actions
-				var currentScanner = (!readSavedTrace) ? traceScanner : initScanner
-				var line = currentScanner.nextLine.trim
-				
-				if (saveTrace) {
-					initString.append(line + System.lineSeparator)
-				}
+				var line = traceScanner.nextLine.trim
 				
 				// The trace starts with an INFO section, handled by the following code
 				state = line.handleInfoLines(state)
@@ -128,12 +123,17 @@ class TraceBackAnnotator {
 				
 				if (state != BackAnnotatorState.INFO) {
 					switch (line) {
+						case line.startsWith(RETURN_VALUE): {
+							// Return value of a call, no operation
+						}
+						case line.contains(COUNTEREXAMPLE_VAR): {
+							isValidTrace = true
+						}
 						case state == BackAnnotatorState.INIT: {
 							step.addReset
 							isInitialized = true
 							
-							saveTrace = true // Saving the init state, for one more pass
-							initString.append(line + System.lineSeparator)
+							traceScanner.nextLine // Removing '- : t =' from the trace
 							
 							state = BackAnnotatorState.STATE_CHECK
 						}
@@ -153,31 +153,21 @@ class TraceBackAnnotator {
 							/// Add static delay every turn (apart from first state)
 							if (schedulingConstraint !== null) {
 								step.addTimeElapse(schedulingConstraint)
-							} // Or actual time delay (TODO later)
+							} // Or actual time delay (later)
 							
 							state = BackAnnotatorState.ENVIRONMENT_CHECK
 						}
 						case line.contains(STATE): {
-							if (saveTrace) {
-								saveTrace = false // We are beyond the init state phase
-								readSavedTrace = true // Time to reread the init actions
-								initScanner = new Scanner(initString.toString)
-							}
-							else if (readSavedTrace) {
-								readSavedTrace = false // We have reread the init actions
-								// Progressing normally, with the main scanner
-							}
-							
 							state = BackAnnotatorState.STATE_CHECK
 						}
-						case line.startsWith(LOOP): { // TODO
+						case line.startsWith(LOOP): { // (Potentially later)
 							val cycle = createCycle
 							trace.cycle = cycle
 							stepContainer = cycle
 						}
 						default: {
 							// Parsing variables
-							val handledLines = line.handleImandraLines(currentScanner)
+							val handledLines = line.handleImandraLines(traceScanner)
 							// There can be multiple lines with variable valuations in the trace
 							for (handledLine : handledLines.split(System.lineSeparator).reject[it.nullOrEmpty]) {
 								val split = handledLine.split(" = ", 2) // Only the first " = " is checked
@@ -256,8 +246,7 @@ class TraceBackAnnotator {
 					}
 				}
 			}
-			if (state == BackAnnotatorState.INFO || state == BackAnnotatorState.INIT) {
-				// No counterexample, the scanner is empty
+			if (!isValidTrace) { // No counterexample (no 'module CX : sig val e : e list end')
 				return null
 			}
 			
@@ -269,6 +258,9 @@ class TraceBackAnnotator {
 			step.checkStates
 		} catch (NoSuchElementException e) {
 			// If there are not enough lines, that means there are no environment actions
+			if (!isValidTrace) { // No counterexample (no 'module CX : sig val e : e list end')
+				return null
+			}
 			if (!isInitialized) {
 				step.actions += createReset
 			}
@@ -293,7 +285,7 @@ class TraceBackAnnotator {
 	protected def handleInfoLines(String line, BackAnnotatorState state) {
 		var newState = state
 		if (state == BackAnnotatorState.INFO) {
-			if (line.contains(STATE) || line.contains(ENVIRONMENT)) { // Comes in the other stream now?
+			if (line.contains(INFO_END)) {
 				// We have reached the section of interest
 				newState = BackAnnotatorState.INIT
 			}
@@ -302,7 +294,7 @@ class TraceBackAnnotator {
 		return newState
 	}
 	
-	// TODO Delete if everything comes in a separate line in the final Imandra implementation
+	// Can be deleted if everything comes in a separate line in the final Imandra implementation
 	protected def handleImandraLines(String line, Scanner scanner) {
 		var newLine = line
 		// Imandra returns the values of the fields between '{' and '}' and can have line breaks after the '='
@@ -311,9 +303,6 @@ class TraceBackAnnotator {
 		}
 		while (!(newLine.endsWith(";") || newLine.endsWith("}"))) {
 			val nextLine = scanner.nextLine
-			if (saveTrace) {
-				initString.append(nextLine + System.lineSeparator)
-			}
 			newLine = newLine + " " + nextLine
 		}
 		if (newLine.endsWith("}")) {
