@@ -196,18 +196,21 @@ class ActionSerializer {
 	//
 	
 	private def String serializeArrayAssignmentAction(ArrayAccessExpression access, Expression value) {
-		return access.serializeArrayAssignmentAction(value, newArrayList)
+		val indexes = access.indexes
+		return access.serializeArrayAssignmentAction(indexes, value, newArrayList)
 	}
 	
-	private def String serializeArrayAssignmentAction(ArrayAccessExpression access, Expression value, List<Expression> previousIndexes) {
+	private def String serializeArrayAssignmentAction(ArrayAccessExpression access,
+				List<Expression> indexes, Expression value, List<Expression> previousIndexes) {
 		val declaration = access.declaration
 		val operand = access.operand
-		val index = access.index
+		val index = indexes.head
+		indexes.remove(0)
 		
 		val actualArray = '''(«FOR previousIndex : previousIndexes.reverseView»Map.get «previousIndex.serialize» «ENDFOR»«declaration.serializeAsRhs»)'''
 		previousIndexes += index
 		
-		val serializedOperand = (operand instanceof ArrayAccessExpression) ? operand.serializeArrayAssignmentAction(value, previousIndexes) : value.serialize
+		val serializedOperand = (operand instanceof ArrayAccessExpression) ? operand.serializeArrayAssignmentAction(indexes, value, previousIndexes) : value.serialize
 		
 		return '''(Map.add «index.serialize» «serializedOperand» «actualArray»)'''
 	}
