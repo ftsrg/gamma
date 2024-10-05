@@ -166,7 +166,7 @@ class SystemReducer implements Reducer {
 	}
 	
 	private def void removeUnnecessaryStateNodes(Region region) {
-		val consideredStateNodes = region.stateNodes.reject(EntryState)
+		val consideredStateNodes = region.stateNodes.reject(EntryState).toSet // To avoid concurrent mod exception
 		for (stateNode : consideredStateNodes) {
 			if (stateNode.allIncomingTransitions.empty) {
 				for (outgoingTransitions : stateNode.outgoingTransitions) {
