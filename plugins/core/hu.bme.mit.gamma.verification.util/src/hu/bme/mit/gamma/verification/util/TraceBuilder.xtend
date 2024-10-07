@@ -260,6 +260,11 @@ class TraceBuilder {
 	}
 	
 	def addOutEventWithParameter(Step step, Port port, Event event,
+			ParameterDeclaration parameter, Integer value) {
+		return addOutEventWithParameter(step, port, event, parameter, value.doubleValue)
+	}
+	
+	def addOutEventWithParameter(Step step, Port port, Event event,
 			ParameterDeclaration parameter, Double value) {
 		val eventRaise = addOutEvent(step, port, event)
 		val index = parameter.index
@@ -368,6 +373,10 @@ class TraceBuilder {
 	}
 	
 	// String and int parsing
+	
+	def createVariableLiteral(VariableDeclaration variable, Integer value) {
+		return variable.createVariableLiteral(value.doubleValue)
+	}
 	
 	def createVariableLiteral(VariableDeclaration variable, Double value) {
 		val type = variable.typeDefinition
