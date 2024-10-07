@@ -1077,12 +1077,54 @@ public class ExpressionUtil {
 		return first;
 	}
 	
+	public RecordAccessExpression createRecordAccessExpression(Declaration declaration, FieldDeclaration field) {
+		return createRecordAccessExpression(declaration, List.of(field));
+	}
+	
+	public RecordAccessExpression createRecordAccessExpression(Declaration declaration, Collection<? extends FieldDeclaration> fields) {
+		return createRecordAccessExpression(
+				createReferenceExpression(declaration),
+				fields.stream().map(it -> createReferenceExpression(it)).toList());
+	}
+	
+	public RecordAccessExpression createRecordAccessExpression(Expression operand, FieldReferenceExpression field) {
+		return createRecordAccessExpression(operand, List.of(field));
+	}
+	
+	public RecordAccessExpression createRecordAccessExpression(Expression operand, Iterable<? extends FieldReferenceExpression> fields) {
+		if (operand == null) {
+			throw new IllegalArgumentException("Declaration is null");
+		}
+		RecordAccessExpression recordAccess = factory.createRecordAccessExpression();
+		recordAccess.setOperand(operand);
+		
+		for (FieldReferenceExpression field : fields) {
+			if (recordAccess.getFieldReference() != null) {
+				RecordAccessExpression newRecordAccess = factory.createRecordAccessExpression();
+				newRecordAccess.setOperand(recordAccess);
+				recordAccess = newRecordAccess;
+			}
+			recordAccess.setFieldReference(field);
+		}
+		
+		return recordAccess;
+	}
+	
 	public DirectReferenceExpression createReferenceExpression(Declaration declaration) {
 		if (declaration == null) {
 			throw new IllegalArgumentException("Declaration is null");
 		}
 		DirectReferenceExpression reference = factory.createDirectReferenceExpression();
 		reference.setDeclaration(declaration);
+		return reference;
+	}
+	
+	public FieldReferenceExpression createReferenceExpression(FieldDeclaration field) {
+		if (field == null) {
+			throw new IllegalArgumentException("Declaration is null");
+		}
+		FieldReferenceExpression reference = factory.createFieldReferenceExpression();
+		reference.setFieldDeclaration(field);
 		return reference;
 	}
 	
