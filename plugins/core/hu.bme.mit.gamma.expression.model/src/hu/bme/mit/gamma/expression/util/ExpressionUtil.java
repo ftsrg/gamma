@@ -640,7 +640,7 @@ public class ExpressionUtil {
 
 	protected Expression _getInitialValueOfType(DecimalTypeDefinition type) {
 		DecimalLiteralExpression decimalLiteralExpression = factory.createDecimalLiteralExpression();
-		decimalLiteralExpression.setValue(BigDecimal.ZERO);
+		decimalLiteralExpression.setValue(BigDecimal.valueOf(0.0)); // .ZERO cannot be parsed by Xtext
 		return decimalLiteralExpression;
 	}
 
@@ -1092,7 +1092,7 @@ public class ExpressionUtil {
 	}
 	
 	public RecordAccessExpression createRecordAccessExpression(Expression operand, Iterable<? extends FieldReferenceExpression> fields) {
-		if (operand == null) {
+		if (operand == null) { // operand.declaration can be null, though
 			throw new IllegalArgumentException("Declaration is null");
 		}
 		RecordAccessExpression recordAccess = factory.createRecordAccessExpression();
