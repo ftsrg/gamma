@@ -10,20 +10,32 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.iml.transformation.serialization
 
+import hu.bme.mit.gamma.expression.model.AddExpression
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
+import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.DivideExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.FalseExpression
+import hu.bme.mit.gamma.expression.model.GreaterEqualExpression
+import hu.bme.mit.gamma.expression.model.GreaterExpression
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.ImplyExpression
 import hu.bme.mit.gamma.expression.model.InequalityExpression
+import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
+import hu.bme.mit.gamma.expression.model.LessEqualExpression
+import hu.bme.mit.gamma.expression.model.LessExpression
+import hu.bme.mit.gamma.expression.model.LiteralExpression
+import hu.bme.mit.gamma.expression.model.MultiplyExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
+import hu.bme.mit.gamma.expression.model.NullaryExpression
+import hu.bme.mit.gamma.expression.model.SubtractExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
@@ -34,6 +46,7 @@ import hu.bme.mit.gamma.xsts.iml.transformation.util.Namings
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.transformation.util.MessageQueueUtil
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
+import java.util.List
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
@@ -63,6 +76,44 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	
 	def String superSerialize(Expression expression) {
 		return super.serialize(expression)
+	}
+	
+	// Int-float related operators (in OCaml, there is no automatic conversion between the two)
+	
+	override String _serialize(AddExpression expression) { expression.operands.adjustArithmeticExpression("+") }
+	
+	override String _serialize(SubtractExpression expression) { expression.adjustArithmeticExpression("-") }
+	
+	override String _serialize(MultiplyExpression expression) { expression.operands.adjustArithmeticExpression("*") }
+	
+	override String _serialize(DivideExpression expression) { expression.adjustArithmeticExpression("/") }
+	
+	override String _serialize(LessExpression expression) { expression.adjustArithmeticExpression("<") }
+	
+	override String _serialize(LessEqualExpression expression) { expression.adjustArithmeticExpression("<=") }
+	
+	override String _serialize(GreaterExpression expression) { expression.adjustArithmeticExpression(">") }
+	
+	override String _serialize(GreaterEqualExpression expression) { expression.adjustArithmeticExpression(">=") }
+	
+	protected def adjustArithmeticExpression(BinaryExpression expression, String operator) {
+		return #[expression.leftOperand, expression.rightOperand].adjustArithmeticExpression(operator)
+	}
+	
+	protected def adjustArithmeticExpression(List<? extends Expression> operands, String operator) {
+		val isEachOperandInteger = operands.map[it.typeDefinition].forall[it instanceof IntegerTypeDefinition]
+		
+		if (isEachOperandInteger) {
+			return '''(«FOR operand : operands SEPARATOR ''' «operator» '''»«operand.serialize»«ENDFOR»)'''
+		}
+		// There is a decimal operand
+		val OPERAND_PREFIX = "Real.of_int "
+		val OPERATOR_POSTFIX = "."
+		
+		return '''(«FOR operand : operands SEPARATOR ''' «operator»«OPERATOR_POSTFIX» '''»«IF
+				operand.typeDefinition instanceof IntegerTypeDefinition &&
+					operand instanceof NullaryExpression && operand instanceof LiteralExpression»«
+				OPERAND_PREFIX»«ENDIF»«operand.serialize»«ENDFOR»)'''
 	}
 	
 	//

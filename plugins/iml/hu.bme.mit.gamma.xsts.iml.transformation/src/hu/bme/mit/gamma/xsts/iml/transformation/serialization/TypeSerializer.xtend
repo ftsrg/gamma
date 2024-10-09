@@ -52,9 +52,9 @@ class TypeSerializer {
 		return 'int'
 	}
 	
-	def dispatch String serializeType(RationalTypeDefinition type) '''float'''
+	def dispatch String serializeType(RationalTypeDefinition type) '''real'''
 	
-	def dispatch String serializeType(DecimalTypeDefinition type) '''float'''
+	def dispatch String serializeType(DecimalTypeDefinition type) '''real'''
 	
 	def dispatch String serializeType(EnumerationTypeDefinition type) '''«FOR literal : type.literals SEPARATOR ' | '»«literal.serializeName»«ENDFOR»'''
 	
