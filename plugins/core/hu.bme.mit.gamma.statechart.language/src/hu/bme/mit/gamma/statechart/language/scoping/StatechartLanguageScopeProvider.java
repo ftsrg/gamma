@@ -131,10 +131,30 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				}
 			}
 			// Transitions
-			if (context instanceof Transition transition && (reference == StatechartModelPackage.Literals.TRANSITION__SOURCE_STATE
-					|| reference == StatechartModelPackage.Literals.TRANSITION__TARGET_STATE)) {
-				Collection<StateNode> candidates = stateNodesForTransition(transition);
-				return Scopes.scopeFor(candidates);
+			if (reference == StatechartModelPackage.Literals.TRANSITION__TARGET_STATE) {
+				if (context instanceof Transition transition) { // Start
+					StateNode sourceState = transition.getSourceState();
+					Region parentRegion = StatechartModelDerivedFeatures.getParentRegion(sourceState);
+					IScope parentScope = getParentScope(parentRegion.eContainer(), reference);
+					Collection<StateNode> substates = StatechartModelDerivedFeatures.getAllStateNodes(parentRegion);
+					return Scopes.scopeFor(substates, parentScope);
+				}
+				if (context instanceof StatechartDefinition) { // End
+					return IScope.NULLSCOPE;
+				}
+				if (context instanceof Region region) { // Middle
+					IScope parentScope = getParentScope(context, reference);
+					List<StateNode> stateNodes = region.getStateNodes();
+					return Scopes.scopeFor(stateNodes, parentScope);
+				}
+				else { // Middle (state element)
+					return getParentScope(context, reference);
+				}
+			}
+			if (reference == StatechartModelPackage.Literals.TRANSITION__SOURCE_STATE) {
+				StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
+				return Scopes.scopeFor( // All state nodes for now
+						ecoreUtil.getAllContentsOfType(statechart, StateNode.class));
 			}
 			if (context instanceof PortEventReference portEventReference && reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__EVENT) {
 				Port port = portEventReference.getPort();
@@ -333,12 +353,6 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			e.printStackTrace();
 		} 
 		return super.getScope(context, reference);
-	}
-	
-	protected Collection<StateNode> stateNodesForTransition(Transition transition) {
-		StatechartDefinition rootElement = StatechartModelDerivedFeatures.getContainingStatechart(transition);
-		Collection<StateNode> candidates = ecoreUtil.getAllContentsOfType(rootElement, StateNode.class);
-		return candidates;
 	}
 	
 	@Override
