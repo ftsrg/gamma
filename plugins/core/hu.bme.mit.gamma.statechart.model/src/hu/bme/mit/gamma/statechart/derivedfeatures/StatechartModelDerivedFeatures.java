@@ -2348,7 +2348,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static Collection<StateNode> getAllStateNodes(CompositeElement compositeElement) {
-		Set<StateNode> stateNodes = new HashSet<StateNode>();
+		Set<StateNode> stateNodes = new LinkedHashSet<StateNode>();
 		for (Region region : compositeElement.getRegions()) {
 			for (StateNode stateNode : region.getStateNodes()) {
 				stateNodes.add(stateNode);
@@ -2362,7 +2362,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static Collection<State> getAllStates(CompositeElement compositeElement) {
-		Set<State> states = new HashSet<State>();
+		Set<State> states = new LinkedHashSet<State>();
 		for (StateNode stateNode : getAllStateNodes(compositeElement)) {
 			if (stateNode instanceof State state) {
 				states.add(state);
@@ -2372,7 +2372,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static Collection<State> getAllStates(Region region) {
-		Set<State> states = new HashSet<State>();
+		Set<State> states = new LinkedHashSet<State>();
 		for (StateNode stateNode : region.getStateNodes()) {
 			if (stateNode instanceof State state) {
 				states.add(state);

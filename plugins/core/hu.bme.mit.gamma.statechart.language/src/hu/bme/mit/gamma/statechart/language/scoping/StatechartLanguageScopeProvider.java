@@ -136,8 +136,9 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					StateNode sourceState = transition.getSourceState();
 					Region parentRegion = StatechartModelDerivedFeatures.getParentRegion(sourceState);
 					IScope parentScope = getParentScope(parentRegion.eContainer(), reference);
-					Collection<StateNode> substates = StatechartModelDerivedFeatures.getAllStateNodes(parentRegion);
-					return Scopes.scopeFor(substates, parentScope);
+					IScope scope = getScope(parentRegion, StatechartModelPackage.Literals.TRANSITION__SOURCE_STATE); // Reusing code
+					return embedScopes(
+							List.of(parentScope, scope));
 				}
 				if (context instanceof StatechartDefinition) { // End
 					return IScope.NULLSCOPE;
@@ -152,10 +153,31 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				}
 			}
 			if (reference == StatechartModelPackage.Literals.TRANSITION__SOURCE_STATE) {
-				StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
-				return Scopes.scopeFor( // All state nodes for now
-						ecoreUtil.getAllContentsOfType(statechart, StateNode.class));
+				if (context instanceof Transition) {
+					StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
+					return getScope(statechart, reference);
+				}
+				if (context instanceof CompositeElement composite) {
+					List<Region> regions = composite.getRegions();
+					List<IScope> scopes = new ArrayList<IScope>();
+					for (Region region : regions) {
+						IScope scope = getScope(region, reference);
+						scopes.add(scope);
+					}
+					return embedScopes(scopes);
+				}
+				if (context instanceof Region region) {
+					List<StateNode> stateNodes = region.getStateNodes();
+					List<IScope> scopes = new ArrayList<IScope>();
+					for (State state : StatechartModelDerivedFeatures.getStates(region)) {
+						IScope scope = getScope(state, reference);
+						scopes.add(scope);
+					}
+					IScope parentScope = embedScopes(scopes);
+					return Scopes.scopeFor(stateNodes, parentScope);
+				}
 			}
+			//
 			if (context instanceof PortEventReference portEventReference && reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__EVENT) {
 				Port port = portEventReference.getPort();
 				Interface _interface = port.getInterfaceRealization().getInterface();
