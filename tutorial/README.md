@@ -25,7 +25,7 @@ _Tip: It is advised to turn on automatic refreshing for the workspace. The other
 
 ![Workspace settings](images/workspace-settings.png "Workspace settings")
 
-For formal verification, download and extract [UPPAAL](http://www.uppaal.org/) 4.1.24. In order to let Gamma find the UPPAAL executables, add the bin-Win32 or bin-Linux folder to the path environment variable (depending on the operating system being used).
+For formal verification, download and extract [UPPAAL](http://www.uppaal.org/) 5.0.0. In order to let Gamma find the UPPAAL executables, add the bin-Win32 or bin-Linux folder to the path environment variable (depending on the operating system being used).
 
 ## Presenting the Models
 

@@ -3097,19 +3097,21 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		for (Transition transition : transitions) {
 			Trigger trigger = transition.getTrigger();
 			if (trigger instanceof OnCycleTrigger) {
-				return false;
+				return false; // Note that 'transitions.size >= 2' at this point
 			}
 			
-			List<EventTrigger> eventTriggers = unfoldIntoEventTriggers(trigger);
-			
-			Collection<List<EventTrigger>> previousEventTriggers = triggers.values();
-			for (List<EventTrigger> previousEventTrigger : previousEventTriggers) {
-				if (!ecoreUtil.helperDisjoint(eventTriggers, previousEventTrigger)) {
-					return false;
+			if (trigger != null) { // 'null' trigger (e.g., transition leaving a choice) is disjoint from anything
+				List<EventTrigger> eventTriggers = unfoldIntoEventTriggers(trigger);
+				
+				Collection<List<EventTrigger>> previousEventTriggers = triggers.values();
+				for (List<EventTrigger> previousEventTrigger : previousEventTriggers) {
+					if (!ecoreUtil.helperDisjoint(eventTriggers, previousEventTrigger)) {
+						return false;
+					}
 				}
+				
+				triggers.put(transition, eventTriggers);
 			}
-			
-			triggers.put(transition, eventTriggers);
 		}
 		
 		return true;

@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.iml.verification
 
+import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.ScannerLogger
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
@@ -53,14 +54,7 @@ class ImlVerifier extends AbstractVerifier {
 		val pythonFile = new File(parentFile + File.separator + '''.imandra-commands-«Thread.currentThread.name».py''')
 		pythonFile.deleteOnExit
 		
-		val serializedPython = '''
-			import imandra
-			
-			with imandra.session() as session:
-				session.eval("""«System.lineSeparator»«modelString»""")
-				result = session.«command»("«commandelssQuery»")
-				print(result)
-		'''
+		val serializedPython = getTracedCode(modelString, command, parameters, commandelssQuery)
 		fileUtil.saveString(pythonFile, serializedPython)
 		
 		// python3 .\imandra-test.py
@@ -76,40 +70,25 @@ class ImlVerifier extends AbstractVerifier {
 			
 			// Reading the result of the command
 			resultReader = new Scanner(process.inputReader)
-			errorReader = new ScannerLogger(new Scanner(process.errorReader), false)
+			errorReader = new ScannerLogger(new Scanner(process.errorReader), "ValueError: ",  true)
 			errorReader.start
 			
-			val resultPattern = '''(.*Refuted.*)|(.*Proved.*)|(.*Instance (not )?found.*)'''
-			var resultFound = false
 			result = ThreeStateBoolean.UNDEF
-			while (!resultFound && resultReader.hasNextLine) {
-				val line = resultReader.nextLine
-				if (!line.nullOrEmpty) { // No header printing
-					logger.info("Imandra: " + line)
+			
+			val gammaPackage = traceability as Package
+			val backAnnotator = new TraceBackAnnotator(gammaPackage, resultReader)
+			val trace = backAnnotator.synchronizeAndExecute
+			
+			if (!errorReader.error) {
+				if (trace === null && command.contains("verify") || trace !== null && command.contains("instance")) {
+					result = ThreeStateBoolean.TRUE
 				}
-				if (line.matches(resultPattern)) {
-					resultFound = true
-					if (line.contains("Proved") || line.contains("Instance found")) {
-						result  = ThreeStateBoolean.TRUE
-					}
-					else if (line.contains("Refuted") || line.contains("Instance not found")) {
-						result  = ThreeStateBoolean.FALSE
-					} // In case of any other outcome, the result will remain undef
-				}
-			}
-			if (!resultFound) {
-				logger.severe("Imandra could not verify the model with the property: " + query)
-				val errorScanner = new Scanner(process.errorReader)
-				while (errorScanner.hasNext) {
-					logger.severe("Imandra: " + errorScanner.nextLine)
+				else if (trace !== null && command.contains("verify") || trace === null && command.contains("instance")) {
+					result = ThreeStateBoolean.FALSE
 				}
 			}
 			
-//			val gammaPackage = traceability as Package
-//			val backAnnotator = new TraceBackAnnotator(gammaPackage, resultReader)
-//			val trace = backAnnotator.synchronizeAndExecute
-			
-			traceResult = new Result(result, null)
+			traceResult = new Result(result, trace)
 			
 			logger.info("Quitting Imandra session")
 		} finally {
@@ -121,11 +100,71 @@ class ImlVerifier extends AbstractVerifier {
 		return traceResult
 	}
 	
+	protected def String getBasicCode(String modelString, String command, String commandlessQuery) '''
+		import imandra
+		
+		with imandra.session() as session:
+			session.eval("""«System.lineSeparator»«modelString»""")
+			result = session.«command»("«commandlessQuery»")
+			print(result)
+	'''
+	
+	protected def String getTracedCode(String modelString, String command, String arguments, String commandlessQuery) '''
+		import imandra.auth
+		import imandra.instance
+		import imandra_http_api_client
+		
+		# Starting an Imandra instance
+		
+		auth = imandra.auth.Auth()
+		instance = imandra.instance.create(auth, None, "imandra-http-api")
+		
+		config = imandra_http_api_client.Configuration(
+		    host = instance['new_pod']['url'],
+		    access_token = instance['new_pod']['exchange_token'],
+		)
+		
+		# Doing the low-level call to the API
+		
+		src = """
+			«modelString»;;
+			#trace trans;;
+			init;;
+			«command»«IF !arguments.nullOrEmpty» «arguments» «ENDIF»(«commandlessQuery»);; (* The trace is automatically printed *)
+		"""
+		# run init CX.e # We do not have to replay this trace (e due to 'fun e')
+		
+		with imandra_http_api_client.ApiClient(config) as api_client:
+		    api_instance = imandra_http_api_client.DefaultApi(api_client)
+		    req = {
+		        "src": src,
+		        "syntax": "iml",
+		        "hints": {
+		            "method": {
+		                "type": "auto"
+		            }
+		        }
+		    }
+		    request_src = imandra_http_api_client.EvalRequestSrc.from_dict(req)
+		    try:
+		        api_response = api_instance.eval_with_http_info(request_src)
+		    except ApiException as e:
+		        print("Exception when calling DefaultApi->eval_with_http_info: %s\n" % e)
+		
+		# json parse the raw_data yourself and take the raw_stdio
+		
+		import json
+		raw_response = json.loads(api_response.raw_data)
+		print(raw_response.get("raw_stdio"))
+		
+		# Delete the Imandra instance
+		
+		imandra.instance.delete(auth, instance['new_pod']['id'])
+	'''
+	
 	override getTemporaryQueryFilename(File modelFile) {
 		return "." + modelFile.extensionlessName + ".i"
 	}
-	
-	//
 	
 	override getHelpCommand() {
 		return #["python3", "-h"]

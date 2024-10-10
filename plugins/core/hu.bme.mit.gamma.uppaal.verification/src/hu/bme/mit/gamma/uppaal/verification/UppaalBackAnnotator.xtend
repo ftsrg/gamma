@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -91,89 +91,90 @@ class UppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 		var step = createStep
 		
 		var String line = null
-		var state = BackAnnotatorState.INITIAL
+		var state = BackAnnotatorState.INFO
 		while (traceScanner.hasNext) {
 			line = traceScanner.nextLine
-			// Variable line contains a single line from the trace
-			switch (line) {
-				case line.contains(ERROR_CONST):
-					// If the condition is not well formed, an exception is thrown
-					throw new IllegalArgumentException("Error in the trace: " + line)
-				case line.contains(WARNING_CONST): {
-					// No operation
-				}
-				case STATE_CONST_PREFIX: // There is a bug where State is written instead of State:
-					state = BackAnnotatorState.STATE_LOCATIONS
-				case STATE_CONST:
-					state = BackAnnotatorState.STATE_LOCATIONS
-				case TRANSITIONS_CONST:
-					state = BackAnnotatorState.TRANSITIONS
-				case line.startsWith(DELAY_CONST): {
-					// Parsing delays
-					val delay = parseDelay(line)
-					step.addTimeElapse(delay)
-				}
-				case line.empty:
-					state = state // no operation
-				default:
-					// This is the place for the parsing
-					switch (state) {
-						case BackAnnotatorState.INITIAL: {
-							// Staying in this state
-						}
-						case BackAnnotatorState.STATE_LOCATIONS: {
-							lastActiveLocations = parseLocations(line)
-							if (firstActiveLocations === null) {
-								// Storing the first active locations so we know when the model is reset
-								firstActiveLocations = lastActiveLocations
+			
+			// The trace starts with an INFO section, handled by the following code
+			state = line.handleInfoLines(state)
+			//
+			
+			if (state != BackAnnotatorState.INFO) {
+				switch (line) {
+					case line.empty:
+						state = state // no operation
+					case STATE_CONST_PREFIX: // There is a bug where State is written instead of State:
+						state = BackAnnotatorState.STATE_LOCATIONS
+					case STATE_CONST:
+						state = BackAnnotatorState.STATE_LOCATIONS
+					case TRANSITIONS_CONST:
+						state = BackAnnotatorState.TRANSITIONS
+					case line.startsWith(DELAY_CONST): {
+						// Parsing delays
+						val delay = parseDelay(line)
+						step.addTimeElapse(delay)
+					}
+					default:
+						// This is the place for the parsing
+						switch (state) {
+							case BackAnnotatorState.INITIAL: {
+								// Staying in this state
 							}
-							else {
-								// Checking whether the model has been reset
-								if (firstActiveLocations.isInitialState(lastActiveLocations)) {
-									// Reseting every variable as it is a "first step" (not lastActiveLocations)
-									isFirstStep = true
-									variableCollection = null
+							case BackAnnotatorState.STATE_LOCATIONS: {
+								lastActiveLocations = parseLocations(line)
+								if (firstActiveLocations === null) {
+									// Storing the first active locations so we know when the model is reset
+									firstActiveLocations = lastActiveLocations
+								}
+								else {
+									// Checking whether the model has been reset
+									if (firstActiveLocations.isInitialState(lastActiveLocations)) {
+										// Reseting every variable as it is a "first step" (not lastActiveLocations)
+										isFirstStep = true
+										variableCollection = null
+										step = createStep
+									}
+								}
+								state = BackAnnotatorState.STATE_VARIABLES
+							}
+							case BackAnnotatorState.STATE_VARIABLES: {
+								variableCollection = parseVariables(line)
+							}
+							case BackAnnotatorState.TRANSITIONS: {
+								// Parsing in events
+								step.parseTransition(line)
+								// Parsing schedulings
+								step.parseAsyncInstances(line) // Executes only for Async Composites
+								if (isStepStarted(line) && isFirstStep) {
+									// New step is created in the first step
+									val firstStep = createStep
+									// Reseting on the first step
+									firstStep.actions += createReset
+									//
+									firstStep.parseOutActions(lastActiveLocations, variableCollection)
+									trace.steps += firstStep
+									isFirstStep = false
+									// No incoming events or delay are cleared, as these occurrences will appear in the next step
+								}
+								else if (isStepEnded(line) && !isFirstStep) {
+									step.parseOutActions(lastActiveLocations, variableCollection)
+									// If it is a sync component, this is where it has to be scheduled
+									step.scheduleIfSynchronousComponent(component)
+									trace.steps += step
+									// Creating a new step for the next turn
 									step = createStep
 								}
 							}
-							state = BackAnnotatorState.STATE_VARIABLES					
-						}
-						case BackAnnotatorState.STATE_VARIABLES: {
-							variableCollection = parseVariables(line)
-						}
-						case BackAnnotatorState.TRANSITIONS: {
-							// Parsing in events
-							step.parseTransition(line)
-							// Parsing schedulings
-							step.parseAsyncInstances(line) // Executes only for Async Composites
-							if (isStepStarted(line) && isFirstStep) {
-								// New step is created in the first step
-								val firstStep = createStep
-								// Reseting on the first step
-								firstStep.actions += createReset
-								//
-								firstStep.parseOutActions(lastActiveLocations, variableCollection)
-								trace.steps += firstStep
-								isFirstStep = false
-								// No incoming events or delay are cleared, as these occurrences will appear in the next step
+							case BackAnnotatorState.DELAY: {
+								// Parsed in the previous switch
 							}
-							else if (isStepEnded(line) && !isFirstStep) {
-								step.parseOutActions(lastActiveLocations, variableCollection)
-								// If it is a sync component, this is where it has to be scheduled
-								step.scheduleIfSynchronousComponent(component)
-								trace.steps += step
-								// Creating a new step for the next turn
-								step = createStep
-							}						
+							default:
+								throw new IllegalArgumentException("Not known line: " + line)
 						}
-						case BackAnnotatorState.DELAY: {
-							// Parsed in the previous switch
-						}
-						default:
-							throw new IllegalArgumentException("Not known line: " + line)
-					}
+				}
 			}
 		}
+		
 		if (isFirstStep) {
 			if (lastActiveLocations === null && variableCollection === null) {
 				// Empty trace, no proof or counterexample
@@ -188,6 +189,7 @@ class UppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 		if (sortTrace) {
 			trace.sortInstanceStates
 		}
+		
 		return trace
 	}
 	

@@ -104,11 +104,16 @@ ParenthesesPathFormula returns PathFormula:
 PrimaryExpression returns expression::Expression:
 	LiteralExpression |
 	ElementReference |
+	RootElementReference |
 	'(' Expression ')'
 ;
 
 ElementReference returns composite::ComponentInstanceElementReferenceExpression:
 	ComponentInstanceStateExpression | ComponentInstanceReflectiveElementReferenceExpression
+;
+
+RootElementReference returns expression::Expression:
+	'self' ((PortEventReference '::') | EventParameterReferenceExpression)
 ;
 
 // Operators

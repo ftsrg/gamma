@@ -174,6 +174,22 @@ class JavaUtil {
 	
 	//
 	
+	def String deleteAll(String string, String regex) {
+		return string.replaceAll(regex, "")
+	}
+	
+	def String deleteFirst(String string, String regex) {
+		return string.replaceFirst(regex, "")
+	}
+	
+	def String deleteLast(String string, String regex) {
+		return string.replaceLast(regex, "")
+	}
+	
+	def String replaceLast(String string, String regex, String replacement) {
+		return string.replaceFirst("(?s)(.*)" + regex, "$1" + replacement);
+	}
+	
 	def matchFirstCharacterCapitalization(String string, String example) {
 		if (example.nullOrEmpty) {
 			return string

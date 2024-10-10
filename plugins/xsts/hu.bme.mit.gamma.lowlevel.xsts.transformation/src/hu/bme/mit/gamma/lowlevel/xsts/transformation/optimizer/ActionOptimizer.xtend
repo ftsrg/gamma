@@ -51,6 +51,8 @@ class ActionOptimizer {
 	// Singleton
 	public static final ActionOptimizer INSTANCE =  new ActionOptimizer
 	protected new() {}
+	//
+	protected final boolean LOG_ITERATION_COUNT = false
 	// Auxiliary objects
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
@@ -60,6 +62,8 @@ class ActionOptimizer {
 	protected final extension XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE
 	
 	protected final Logger logger = Logger.getLogger("GammaLogger")
+	
+	//
 	
 	def optimize(Iterable<? extends XTransition> transitions) {
 		val optimizedTransitions = newArrayList
@@ -87,7 +91,9 @@ class ActionOptimizer {
 		var Action newXStsAction = action
 		// Until the action cannot be optimized any more
 		while (!oldXStsAction.helperEquals(newXStsAction)) {
-			logger.info("Starting optimization iteration " + i++)
+			if (LOG_ITERATION_COUNT) {
+				logger.info("Starting optimization iteration " + i++)
+			}
 			
 			oldXStsAction = newXStsAction.clone
 			newXStsAction = newXStsAction

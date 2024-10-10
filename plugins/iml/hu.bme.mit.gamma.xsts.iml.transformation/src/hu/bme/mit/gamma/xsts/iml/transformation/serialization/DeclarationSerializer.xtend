@@ -46,10 +46,11 @@ class DeclarationSerializer {
 	def serializeEnvFieldDeclaration(HavocAction havoc) '''«
 			havoc.serializeFieldName» : «havoc.lhs.declaration.type.serializeType»;'''
 	
-	// Type declaration
+	// Type declaration: enumeration types are serialized using modules to ease 'literal -> type' linking
 	
 	def serializeTypeDeclaration(TypeDeclaration declaration) '''
-		type nonrec «declaration.serializeName» = «declaration.type.serializeType»
+		module «declaration.serializeName» = struct type t = «declaration.type.serializeType» end
 	'''
+	// type nonrec «declaration.serializeName» = «declaration.type.serializeType»
 	
 }

@@ -20,11 +20,9 @@ class ThetaPropertyExpressionSerializer extends PropertyExpressionSerializer {
 	}
 	
 	override String serialize(Expression expression) {
-		if (expression instanceof EnumerationLiteralExpression) {
-			val literal = expression.reference
-			return literal.name
-		}
 		return super.serialize(expression)
 	}
+	
+	override String _serialize(EnumerationLiteralExpression expression) '''«expression.reference.name»'''
 	
 }

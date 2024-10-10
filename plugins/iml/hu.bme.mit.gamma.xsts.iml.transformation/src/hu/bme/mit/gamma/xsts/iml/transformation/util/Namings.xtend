@@ -13,6 +13,8 @@ package hu.bme.mit.gamma.xsts.iml.transformation.util
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
+import hu.bme.mit.gamma.expression.model.TypeDeclaration
+import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
@@ -44,12 +46,23 @@ class Namings {
 	def static customizeName(Declaration variable) { variable.name.customizeDeclarationName }
 	def static customizeDeclarationName(String name) { DECLARATION_NAME_PREFIX + name }
 	
+	def static String customizeLocalDeclarationName(Declaration variable) { '''«variable.name.customizeDeclarationName»_«variable.randomizeName»''' }
+	
+	public static final String TYPE_DECLARATION_NAME_PREFIX = "M_"
+	def static customizeName(TypeDeclaration type) { type.name.customizeTypeDeclarationName }
+	def static customizeTypeDeclarationName(String name) { TYPE_DECLARATION_NAME_PREFIX + name }
+	
 	public static final String ENUM_LITERAL_PREFIX = "L_"
 	def static customizeName(EnumerationLiteralExpression literal) { literal.reference.customizeName }
 	def static customizeName(EnumerationLiteralDefinition literal) { literal.name.customizeEnumLiteralName }
 	def static customizeEnumLiteralName(String name) { ENUM_LITERAL_PREFIX + name }
 	
-	def static customizeHavocField(HavocAction havoc) '''«havoc.lhs.declaration.customizeName»_«havoc.hashCode.toString.replaceAll("-", "_")»'''
+	def static customizeHavocField(HavocAction havoc) '''«havoc.lhs.declaration.customizeName»_«havoc.randomizeName»'''
 	
-	def static customizeChoice(NonDeterministicAction choice) '''choice_«choice.hashCode.toString.replaceAll("-", "_")»'''
+	def static customizeChoice(NonDeterministicAction choice) '''choice_«choice.randomizeName»'''
+	
+	def static customizeHoistedFunctionName(Action action) '''h_«action.randomizeName»'''
+	
+	protected def static randomizeName(Object object) { object.hashCode.toString.replaceAll("-", "0") }
+	
 }

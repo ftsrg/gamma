@@ -18,5 +18,6 @@ Require-Bundle: com.google.guava,
  hu.bme.mit.gamma.trace.model,
  hu.bme.mit.gamma.querygenerator,
  hu.bme.mit.gamma.theta.verification,
- hu.bme.mit.gamma.xsts.model
+ hu.bme.mit.gamma.xsts.model,
+ hu.bme.mit.gamma.xsts.iml.transformation
 Export-Package: hu.bme.mit.gamma.iml.verification

@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.xsts.iml.transformation.serialization
 
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
+import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
@@ -35,7 +36,7 @@ class TypeSerializer {
 		throw new IllegalArgumentException("Not known type: " + type)
 	}
 	
-	def dispatch String serializeType(TypeReference type) '''«type.reference.serializeName»'''
+	def dispatch String serializeType(TypeReference type) '''«type.reference.serializeName».t''' // See module elements when serializing type declarations
 	
 	def dispatch String serializeType(BooleanTypeDefinition type) '''bool'''
 	
@@ -51,7 +52,9 @@ class TypeSerializer {
 		return 'int'
 	}
 	
-	def dispatch String serializeType(RationalTypeDefinition type) '''float'''
+	def dispatch String serializeType(RationalTypeDefinition type) '''real'''
+	
+	def dispatch String serializeType(DecimalTypeDefinition type) '''real'''
 	
 	def dispatch String serializeType(EnumerationTypeDefinition type) '''«FOR literal : type.literals SEPARATOR ' | '»«literal.serializeName»«ENDFOR»'''
 	

@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.verification.util
 
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
+import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
@@ -142,12 +143,12 @@ class TraceBuilder {
 	def addInEventWithParameter(Step step, Port port, Event event,
 			ParameterDeclaration parameter, String value) {
 		val type = parameter.typeDefinition
-		val intValue = type.convertStringToInt(value)
-		return addInEvent(step, port, event, parameter, intValue)
+		val parsedValue = type.convertStringToDouble(value)
+		return addInEvent(step, port, event, parameter, parsedValue)
 	}
 	
 	private def addInEvent(Step step, Port port, Event event,
-			ParameterDeclaration parameter, Integer value) {
+			ParameterDeclaration parameter, Double value) {
 		val eventRaise = addInEvent(step, port, event)
 		val index = parameter.index
 		eventRaise.arguments.set(index, parameter.createParameter(value))
@@ -254,12 +255,17 @@ class TraceBuilder {
 	def addOutEventWithStringParameter(Step step, Port port, Event event,
 			ParameterDeclaration parameter, String value) {
 		val type = parameter.typeDefinition
-		val intValue = type.convertStringToInt(value)
-		addOutEventWithParameter(step, port, event, parameter, intValue)
+		val parsedValue = type.convertStringToDouble(value)
+		addOutEventWithParameter(step, port, event, parameter, parsedValue)
 	}
 	
 	def addOutEventWithParameter(Step step, Port port, Event event,
 			ParameterDeclaration parameter, Integer value) {
+		return addOutEventWithParameter(step, port, event, parameter, value.doubleValue)
+	}
+	
+	def addOutEventWithParameter(Step step, Port port, Event event,
+			ParameterDeclaration parameter, Double value) {
 		val eventRaise = addOutEvent(step, port, event)
 		val index = parameter.index
 		eventRaise.arguments.set(index, parameter.createParameter(value))
@@ -369,11 +375,15 @@ class TraceBuilder {
 	// String and int parsing
 	
 	def createVariableLiteral(VariableDeclaration variable, Integer value) {
+		return variable.createVariableLiteral(value.doubleValue)
+	}
+	
+	def createVariableLiteral(VariableDeclaration variable, Double value) {
 		val type = variable.typeDefinition
 		return type.createLiteral(value)
 	}
 	
-	private def createParameter(ParameterDeclaration parameter, Integer value) {
+	private def createParameter(ParameterDeclaration parameter, Double value) {
 		if (parameter === null) {
 			return null
 		}
@@ -381,43 +391,51 @@ class TraceBuilder {
 		return paramType.createLiteral(value)
 	}
 	
-	private def convertStringToInt(Type type, String value) {
+	private def convertStringToDouble(Type type, String value) {
 		switch (value) {
 			case "false", case "FALSE":
 				return 0
 			case "true", case "TRUE":
 				return 1
-			default:
+			default: {
 				try {
-					return Integer.parseInt(value)
+					return Integer.parseInt(value) // Integer
 				} catch (NumberFormatException e) {
-					if (type instanceof EnumerationTypeDefinition) {
+					if (type instanceof EnumerationTypeDefinition) { // Enum
 						val literals = type.literals
 						val literal = literals.findFirst[it.name.equals(value)]
 						return literals.indexOf(literal)
 					}
-					throw new IllegalArgumentException("Not known value: " + value)
+					try {
+						return Double.parseDouble(value) // Decimal
+					} catch (NumberFormatException ee) {
+						throw new IllegalArgumentException("Not known value: " + value)
+					}
 				}
+			}
 		}
 	}
 	
 	private def Expression createLiteral(Type paramType, String value) {
-		return paramType.createLiteral(paramType.convertStringToInt(value))
+		return paramType.createLiteral(
+				paramType.convertStringToDouble(value))
 	}
 	
 	/**
 	 * Only primitive types and enums are accepted, type references are not.
 	 */
-	private def Expression createLiteral(Type paramType, Integer value) {
+	private def Expression createLiteral(Type paramType, Double value) {
 		val literal = switch (paramType) {
-			IntegerTypeDefinition: value.toIntegerLiteral
+			IntegerTypeDefinition: value.longValue.toIntegerLiteral
 			BooleanTypeDefinition: (value == 0) ?
 					createFalseExpression : createTrueExpression
 			EnumerationTypeDefinition: {
 				val literals = paramType.literals
-				val enum = literals.get(value)
+				val enum = literals.get(value.intValue)
 				enum.createEnumerationLiteralExpression
 			}
+			DecimalTypeDefinition: value.toDecimalLiteral
+			// TODO Rational
 			default: 
 				throw new IllegalArgumentException("Not known type definition: " + paramType)
 		}
