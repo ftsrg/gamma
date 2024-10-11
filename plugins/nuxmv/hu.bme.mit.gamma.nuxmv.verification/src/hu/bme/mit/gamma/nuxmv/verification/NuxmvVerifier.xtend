@@ -115,7 +115,7 @@ class NuxmvVerifier extends AbstractVerifier {
 			
 			// Reading the result of the command
 			resultReader = new Scanner(process.inputReader)
-			errorReader = new ScannerLogger(new Scanner(process.errorReader), false)
+			errorReader = new ScannerLogger(new Scanner(process.errorReader), true)
 			errorReader.start
 			
 			val resultPattern = '''(.*invariant.*is.*)|(.*specification.*is.*)'''
@@ -138,10 +138,6 @@ class NuxmvVerifier extends AbstractVerifier {
 			}
 			if (!resultFound) {
 				logger.severe("nuXmv could not verify the model with the property: " + query)
-				val errorScanner = new Scanner(process.errorReader)
-				while (errorScanner.hasNext) {
-					logger.severe("nuXmv: " + errorScanner.nextLine)
-				}
 			}
 			result = result.adaptResult
 			//
