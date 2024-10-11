@@ -4,6 +4,7 @@
   <artifactId>hu.bme.mit.gamma.headless.api</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>Headless Gamma</name>
+  
   <build>
     <sourceDirectory>src</sourceDirectory>
     <plugins>
