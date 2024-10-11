@@ -65,8 +65,7 @@ public class ProjectImporter extends HeadlessApplicationCommandHandler {
 		ZipEntry root = structureProvider.getRoot();
 		List<Object> list = prepareFileList(structureProvider, root);
 		ImportOperation op = new ImportOperation(path, root, structureProvider, overwriteQuery, list);
-		op.run(
-				new NullProgressMonitor());
+		op.run(new NullProgressMonitor());
 	}
 	
 	//
