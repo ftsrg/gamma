@@ -87,7 +87,7 @@ class ImlArrayParser implements XstsArrayParser {
 	}
 	
 	protected def String checkValue(String value) {
-		if (value.contains("\\.")) { // Checking enums
+		if (value.contains(".")) { // Checking enums
 			val typeLiteral = value.split("\\.")
 			val literal = typeLiteral.last
 			if (literal.startsWith(ENUM_LITERAL_PREFIX)) {
