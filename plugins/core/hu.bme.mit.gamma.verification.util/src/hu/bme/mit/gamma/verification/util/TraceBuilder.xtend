@@ -409,6 +409,17 @@ class TraceBuilder {
 					try {
 						return Double.parseDouble(value) // Decimal
 					} catch (NumberFormatException ee) {
+						if (value.contains("/")) {
+							val split = value.split("/")
+							val typeAndNumerator = split.head
+							val typeAndNumeratorSplit = typeAndNumerator.split("'")
+							val numerator = typeAndNumeratorSplit.last
+							val denominator = split.last
+							
+							val doubleValue = Double.parseDouble(numerator) / Double.parseDouble(denominator)
+							return doubleValue
+						}
+
 						throw new IllegalArgumentException("Not known value: " + value)
 					}
 				}
