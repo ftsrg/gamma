@@ -548,25 +548,24 @@ public class ExpressionModelDerivedFeatures {
 	
 	public static List<TypeDeclaration> getAllTypeDeclarations(Type type) {
 		List<TypeDeclaration> typeDeclarations = new ArrayList<TypeDeclaration>();
-		if (type instanceof TypeReference) {
-			TypeReference typeReference = (TypeReference) type;
+		if (type instanceof TypeReference typeReference) {
 			TypeDeclaration typeDeclaration = typeReference.getReference();
 			typeDeclarations.add(typeDeclaration);
 			Type typeDefinition = typeDeclaration.getType();
-			if (typeDefinition instanceof RecordTypeDefinition) {
-				RecordTypeDefinition subrecord = (RecordTypeDefinition) typeDefinition;
-				for (FieldDeclaration field : subrecord.getFieldDeclarations()) {
-					Type fieldType = field.getType();
-					typeDeclarations.addAll(
-							getAllTypeDeclarations(fieldType));
-				}
-			}
-			else if (typeDefinition instanceof ArrayTypeDefinition) {
-				ArrayTypeDefinition array = (ArrayTypeDefinition) typeDefinition;
-				Type elementType = array.getElementType();
+			typeDeclarations.addAll(
+					getAllTypeDeclarations(typeDefinition));
+		}
+		else if (type instanceof RecordTypeDefinition record) {
+			for (FieldDeclaration fieldDeclaration : record.getFieldDeclarations()) {
+				Type fieldType = fieldDeclaration.getType();
 				typeDeclarations.addAll(
-						getAllTypeDeclarations(elementType));
+						getAllTypeDeclarations(fieldType));
 			}
+		}
+		else if (type instanceof ArrayTypeDefinition array) {
+			Type elementType = array.getElementType();
+			typeDeclarations.addAll(
+					getAllTypeDeclarations(elementType));
 		}
 		return typeDeclarations;
 	}
