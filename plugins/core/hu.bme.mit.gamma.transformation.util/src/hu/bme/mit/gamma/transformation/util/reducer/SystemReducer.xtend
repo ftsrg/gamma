@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util.reducer
 
+import hu.bme.mit.gamma.action.model.AssignmentStatement
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
@@ -21,9 +23,11 @@ import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.statechart.EntryState
 import hu.bme.mit.gamma.statechart.statechart.GuardEvaluation
 import hu.bme.mit.gamma.statechart.statechart.OrthogonalRegionSchedulingOrder
+import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.SchedulingOrder
 import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
+import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
@@ -35,6 +39,7 @@ import hu.bme.mit.gamma.transformation.util.queries.RemovableTransitions
 import hu.bme.mit.gamma.transformation.util.queries.SimpleInstances
 import hu.bme.mit.gamma.transformation.util.queries.TopRegions
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.JavaUtil
 import java.util.Collection
 import java.util.logging.Logger
 import org.eclipse.emf.ecore.resource.ResourceSet
@@ -53,6 +58,7 @@ class SystemReducer implements Reducer {
 	//
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	protected final extension Logger logger = Logger.getLogger("GammaLogger")
 	
@@ -252,11 +258,58 @@ class SystemReducer implements Reducer {
 	
 	private def optimizeSemanticVariationPoints(Collection<StatechartDefinition> statecharts) {
 		for (statechart : statecharts) {
+			val stateNodes = statechart.allStateNodes
+			
 			val hasOrthogonalRegions = statechart.hasOrthogonalRegions // Transitively
 			if (!hasOrthogonalRegions) {
 				statechart.guardEvaluation = GuardEvaluation.ON_THE_FLY
 				statechart.orthogonalRegionSchedulingOrder = OrthogonalRegionSchedulingOrder.SEQUENTIAL
 				info("Setting guard evaluation to on-the-fly and orthogonal region scheduling order to sequential")
+			}
+			
+			if (statechart.guardEvaluation != GuardEvaluation.ON_THE_FLY ||
+					statechart.orthogonalRegionSchedulingOrder != OrthogonalRegionSchedulingOrder.SEQUENTIAL) {
+				var hasCrossWritingInOrthogonalRegions = false
+				val regionReadWrite = newHashMap
+				val regionRaise = newHashMap
+				val orthogonalRegionStates = stateNodes.filter(State).filter[it.regions.size > 1]
+				for (orthogonalRegionState : orthogonalRegionStates) {
+					if (!hasCrossWritingInOrthogonalRegions) {
+						val regions = orthogonalRegionState.regions
+						for (region : regions) {
+							val regionStates = region.allStates
+							val transitions = regionStates.map[it.outgoingTransitionsUntilState].flatten
+							val referencedVariables = transitions.map[it.getAllContentsOfType(DirectReferenceExpression)].flatten
+									.map[it.declaration].toSet
+							val writtenVariables = transitions.map[it.getAllContentsOfType(AssignmentStatement)].flatten
+									.map[it.rhs.getSelfAndAllContentsOfType(DirectReferenceExpression)].flatten.map[it.declaration].toSet
+							regionReadWrite += region -> (referencedVariables -> writtenVariables)
+							
+							val raisedEvents = transitions.map[it.getAllContentsOfType(RaiseEventAction)].flatten.toSet
+							regionRaise += region -> raisedEvents
+						}
+						for (var i = 0; i < regions.size && !hasCrossWritingInOrthogonalRegions; i++) {
+							val lhs = regions.get(i)
+							val lhsWrite = regionReadWrite.get(lhs).value
+							val lhsRaises = regionRaise.get(lhs)
+							for (var j = 0; j < regions.size && !hasCrossWritingInOrthogonalRegions; j++) {
+								if (i != j) {
+									val rhs = regions.get(j)
+									val rhsReferences = regionReadWrite.get(rhs).key
+									val rhsRaises = regionRaise.get(rhs)
+									
+									hasCrossWritingInOrthogonalRegions = rhsReferences.containsAny(lhsWrite) ||
+											lhsRaises.exists[l | rhsRaises.exists[l.port === it.port && l.event === it.event]]
+								}
+							}
+						}
+					}
+				}
+				if (!hasCrossWritingInOrthogonalRegions) {
+					statechart.guardEvaluation = GuardEvaluation.ON_THE_FLY
+					statechart.orthogonalRegionSchedulingOrder = OrthogonalRegionSchedulingOrder.SEQUENTIAL
+					info("Orthogonal regions are indeed orthogonal: setting guard evaluation to on-the-fly and orthogonal region scheduling order to sequential")
+				}
 			}
 			
 			val _package = statechart.containingPackage
@@ -266,7 +319,6 @@ class SystemReducer implements Reducer {
 				if (adapter.whenAnyRunOnce) { // A single event/trigger a time
 					// Transition priority if outgoing transitions are always disjoint
 					var areTriggersDisjoint = true
-					val stateNodes = statechart.allStateNodes
 					for (stateNode : stateNodes) {
 						val outgoingTransitions = stateNode.outgoingTransitions
 						if (!outgoingTransitions.areTriggersDisjoint) {
@@ -300,7 +352,7 @@ class SystemReducer implements Reducer {
 			}
 			
 			if (statechart.transitionPriority != TransitionPriority.ORDER_BASED &&
-					statechart.allStateNodes.forall[it.outgoingTransitions.size < 2]) { // Every state has at most one outgoing transition
+					stateNodes.forall[it.outgoingTransitions.size < 2]) { // Every state has at most one outgoing transition
 				statechart.transitionPriority = TransitionPriority.ORDER_BASED
 				info("Setting transition priority to order-based")
 			}

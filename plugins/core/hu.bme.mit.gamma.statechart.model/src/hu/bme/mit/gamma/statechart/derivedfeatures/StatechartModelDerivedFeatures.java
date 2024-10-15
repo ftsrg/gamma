@@ -2313,6 +2313,23 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return outgoingTransitionsOfAncestors;
 	}
 	
+	public static List<Transition> getOutgoingTransitionsUntilState(StateNode node) {
+		List<Transition> transitions = new ArrayList<Transition>();
+		
+		List<Transition> outgoingTransitions = getOutgoingTransitions(node);
+		transitions.addAll(outgoingTransitions);
+		
+		for (Transition outgoingTransition : outgoingTransitions) {
+			StateNode target = outgoingTransition.getTargetState();
+			if (!isState(target)) {
+				transitions.addAll(
+						getOutgoingTransitionsUntilState(target));
+			}
+		}
+		
+		return transitions;
+	}
+	
 	public static List<Transition> getIncomingTransitions(StateNode node) {
 		StatechartDefinition statechart = getContainingStatechart(node);
 		return statechart.getTransitions().stream().filter(it -> it.getTargetState() == node)
