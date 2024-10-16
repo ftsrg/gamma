@@ -86,9 +86,9 @@ class ModelAnnotatorPropertyGenerator {
 				!testedPortsForInteractionDataflow.nullOrEmpty) {
 			val annotator = new StatechartAnnotator(newPackage,
 				new AnnotatableElements(
-					testedComponentsForTransitions, testedComponentsForTransitionPairs,
-					testedPortsForInteractions, testedStatesForInteractions,
-					testedTransitionsForInteractions,
+					testedComponentsForTransitions,
+					testedComponentsForTransitionPairs,
+					testedPortsForInteractions, testedStatesForInteractions, testedTransitionsForInteractions,
 					annotableElements.senderCoverageCriterion, annotableElements.receiverCoverageCriterion,
 					dataflowTestedVariables, annotableElements.dataflowCoverageCriterion,
 					testedPortsForInteractionDataflow, annotableElements.interactionDataflowCoverageCriterion

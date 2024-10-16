@@ -137,7 +137,9 @@ class StatechartAnnotator {
 	
 	new(Package gammaPackage, AnnotatableElements annotableElements) {
 		this.gammaPackage = gammaPackage
-		this.engine = ViatraQueryEngine.on(new EMFScope(gammaPackage.eResource.resourceSet))
+		this.engine = ViatraQueryEngine.on(
+			new EMFScope(
+				gammaPackage.eResource.resourceSet))
 		if (!annotableElements.transitionCoverableComponents.empty) {
 			this.TRANSITION_COVERAGE = true
 			this.transitionCoverableComponents += annotableElements.transitionCoverableComponents

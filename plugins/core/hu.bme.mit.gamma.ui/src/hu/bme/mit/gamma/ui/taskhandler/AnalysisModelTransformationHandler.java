@@ -874,8 +874,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					transformation.getInitialState(), initialStateSetting
 			);
 			transformer.execute();
-			// Property serialization - not supported yet
-//			serializeProperties(fileName);
+			// Property serialization
+			serializeProperties(fileName);
 			logger.info("The Gamma -> XSTS-IML transformation has been finished");
 		}
 		
