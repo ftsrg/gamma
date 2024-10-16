@@ -111,6 +111,7 @@
     <genClasses ecoreClass="genmodel.ecore#//TestGeneration">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//TestGeneration/executionTrace"/>
     </genClasses>
+    <genClasses ecoreClass="genmodel.ecore#//NonDeterministicTransitionCoverage"/>
     <genClasses ecoreClass="genmodel.ecore#//TransitionCoverage"/>
     <genClasses ecoreClass="genmodel.ecore#//StateCoverage"/>
     <genClasses ecoreClass="genmodel.ecore#//Coverage">

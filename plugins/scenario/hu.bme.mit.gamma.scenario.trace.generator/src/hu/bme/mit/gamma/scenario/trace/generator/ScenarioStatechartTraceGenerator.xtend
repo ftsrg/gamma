@@ -88,7 +88,7 @@ class ScenarioStatechartTraceGenerator {
 		val compInstanceRef = new ComponentInstanceReferences(newArrayList,newArrayList)
 		val transformator = new Gamma2XstsTransformerSerializer(statechart, arguments, absoluteParentFolder, name, schedulingConstraint, schedulingConstraint,
 			true, false, false, true, TransitionMerging.HIERARCHICAL, null, 
-			new AnnotatablePreprocessableElements(null, compInstanceRef, null, null, null,
+			new AnnotatablePreprocessableElements(null, null, compInstanceRef, null, null, null,
 				InteractionCoverageCriterion.EVERY_INTERACTION, InteractionCoverageCriterion.EVERY_INTERACTION, null,
 				DataflowCoverageCriterion.ALL_USE, null, DataflowCoverageCriterion.ALL_USE), null, null)
 		transformator.execute

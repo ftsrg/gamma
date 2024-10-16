@@ -219,12 +219,19 @@ enum AnalysisLanguage returns AnalysisLanguage:
 ;
 
 Coverage returns Coverage:
-	StateCoverage | TransitionCoverage | TransitionPairCoverage |
+	StateCoverage | NonDeterministicTransitionCoverage | TransitionCoverage | TransitionPairCoverage |
 		OutEventCoverage | InteractionCoverage | DataflowCoverage | InteractionDataflowCoverage
 ;
 
 StateCoverage returns StateCoverage:
 	{StateCoverage} 'state-coverage' ('{' 
+		('include' ':' '[' include+=ComponentInstanceReferenceExpression (',' include+=ComponentInstanceReferenceExpression)* ']')?
+		('exclude' ':' '[' exclude+=ComponentInstanceReferenceExpression (',' exclude+=ComponentInstanceReferenceExpression)* ']')?
+	'}')?
+;
+
+NonDeterministicTransitionCoverage returns NonDeterministicTransitionCoverage:
+	{NonDeterministicTransitionCoverage} 'nondeterministic-transition-coverage' ('{' 
 		('include' ':' '[' include+=ComponentInstanceReferenceExpression (',' include+=ComponentInstanceReferenceExpression)* ']')?
 		('exclude' ':' '[' exclude+=ComponentInstanceReferenceExpression (',' exclude+=ComponentInstanceReferenceExpression)* ']')?
 	'}')?

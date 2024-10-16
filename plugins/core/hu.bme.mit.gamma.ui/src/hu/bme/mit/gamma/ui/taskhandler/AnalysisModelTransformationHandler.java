@@ -39,6 +39,7 @@ import hu.bme.mit.gamma.genmodel.model.EventCoverage;
 import hu.bme.mit.gamma.genmodel.model.InteractionCoverage;
 import hu.bme.mit.gamma.genmodel.model.InteractionDataflowCoverage;
 import hu.bme.mit.gamma.genmodel.model.ModelReference;
+import hu.bme.mit.gamma.genmodel.model.NonDeterministicTransitionCoverage;
 import hu.bme.mit.gamma.genmodel.model.OutEventCoverage;
 import hu.bme.mit.gamma.genmodel.model.StateCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
@@ -393,6 +394,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			
 			ComponentInstanceReferences testedComponentsForStates = getCoverageInstances(
 					coverages, StateCoverage.class);
+			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
+					coverages, NonDeterministicTransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
 					coverages, TransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitionPairs = getCoverageInstances(
@@ -419,8 +422,11 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					targetFolderUri, fileName, constraint, scheduler,
 					transformation.isOptimize(), transformation.getPropertyPackage(),
 					new AnnotatablePreprocessableElements(
-						testedComponentsForStates, testedComponentsForTransitions,
-						testedComponentsForTransitionPairs, testedComponentsForOutEvents,
+						testedComponentsForStates,
+						testedComponentsForNondeterministicTransitions,
+						testedComponentsForTransitions,
+						testedComponentsForTransitionPairs,
+						testedComponentsForOutEvents,
 						testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
 						dataflowTestedVariables, dataflowCoverageCriterion,
 						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion
@@ -498,6 +504,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			
 			ComponentInstanceReferences testedComponentsForStates = getCoverageInstances(
 					coverages, StateCoverage.class);
+			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
+					coverages, NonDeterministicTransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
 					coverages, TransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitionPairs = getCoverageInstances(
@@ -531,9 +539,13 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					minSchedulingConstraint, maxSchedulingConstraint,
 					optimize, optimizeArrays, optimizeMessageQueues, optimizeEnvironmentalMessageQueues,
 					TransitionMerging.HIERARCHICAL,
-					transformation.getPropertyPackage(), new AnnotatablePreprocessableElements(
-						testedComponentsForStates, testedComponentsForTransitions,
-						testedComponentsForTransitionPairs, testedComponentsForOutEvents,
+					transformation.getPropertyPackage(),
+					new AnnotatablePreprocessableElements(
+						testedComponentsForStates,
+						testedComponentsForNondeterministicTransitions,
+						testedComponentsForTransitions,
+						testedComponentsForTransitionPairs,
+						testedComponentsForOutEvents,
 						testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
 						dataflowTestedVariables, dataflowCoverageCriterion,
 						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion
@@ -601,6 +613,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			
 			ComponentInstanceReferences testedComponentsForStates = getCoverageInstances(
 					coverages, StateCoverage.class);
+			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
+					coverages, NonDeterministicTransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
 					coverages, TransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitionPairs = getCoverageInstances(
@@ -631,8 +645,11 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					TransitionMerging.HIERARCHICAL,
 					transformation.getPropertyPackage(),
 					new AnnotatablePreprocessableElements(
-						testedComponentsForStates, testedComponentsForTransitions,
-						testedComponentsForTransitionPairs, testedComponentsForOutEvents,
+						testedComponentsForStates,
+						testedComponentsForNondeterministicTransitions,
+						testedComponentsForTransitions,
+						testedComponentsForTransitionPairs,
+						testedComponentsForOutEvents,
 						testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
 						dataflowTestedVariables, dataflowCoverageCriterion,
 						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion
@@ -671,6 +688,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			
 			ComponentInstanceReferences testedComponentsForStates = getCoverageInstances(
 					coverages, StateCoverage.class);
+			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
+					coverages, NonDeterministicTransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
 					coverages, TransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitionPairs = getCoverageInstances(
@@ -701,8 +720,11 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					TransitionMerging.HIERARCHICAL,
 					transformation.getPropertyPackage(),
 					new AnnotatablePreprocessableElements(
-						testedComponentsForStates, testedComponentsForTransitions,
-						testedComponentsForTransitionPairs, testedComponentsForOutEvents,
+						testedComponentsForStates,
+						testedComponentsForNondeterministicTransitions,
+						testedComponentsForTransitions,
+						testedComponentsForTransitionPairs,
+						testedComponentsForOutEvents,
 						testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
 						dataflowTestedVariables, dataflowCoverageCriterion,
 						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion
@@ -740,6 +762,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			
 			ComponentInstanceReferences testedComponentsForStates = getCoverageInstances(
 					coverages, StateCoverage.class);
+			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
+					coverages, NonDeterministicTransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
 					coverages, TransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitionPairs = getCoverageInstances(
@@ -770,8 +794,11 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					TransitionMerging.HIERARCHICAL,
 					transformation.getPropertyPackage(),
 					new AnnotatablePreprocessableElements(
-						testedComponentsForStates, testedComponentsForTransitions,
-						testedComponentsForTransitionPairs, testedComponentsForOutEvents,
+						testedComponentsForStates,
+						testedComponentsForNondeterministicTransitions,
+						testedComponentsForTransitions,
+						testedComponentsForTransitionPairs,
+						testedComponentsForOutEvents,
 						testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
 						dataflowTestedVariables, dataflowCoverageCriterion,
 						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion
@@ -835,6 +862,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			
 			ComponentInstanceReferences testedComponentsForStates = getCoverageInstances(
 					coverages, StateCoverage.class);
+			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
+					coverages, NonDeterministicTransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
 					coverages, TransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitionPairs = getCoverageInstances(
@@ -865,8 +894,11 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					TransitionMerging.HIERARCHICAL,
 					transformation.getPropertyPackage(),
 					new AnnotatablePreprocessableElements(
-						testedComponentsForStates, testedComponentsForTransitions,
-						testedComponentsForTransitionPairs, testedComponentsForOutEvents,
+						testedComponentsForStates,
+						testedComponentsForNondeterministicTransitions,
+						testedComponentsForTransitions,
+						testedComponentsForTransitionPairs,
+						testedComponentsForOutEvents,
 						testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
 						dataflowTestedVariables, dataflowCoverageCriterion,
 						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion

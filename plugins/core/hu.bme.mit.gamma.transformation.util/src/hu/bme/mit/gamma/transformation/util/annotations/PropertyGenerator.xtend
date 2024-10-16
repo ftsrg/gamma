@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -84,18 +84,8 @@ class PropertyGenerator {
 		for (SynchronousComponentInstance instance : instances) {
 			val type = instance.type
 			if (type instanceof StatechartDefinition) {
-				for (state : type.allStates) {
-					val stateReference = compositeFactory.createComponentInstanceStateReferenceExpression
-					val parentRegion = StatechartModelDerivedFeatures.getParentRegion(state)
-					stateReference.setInstance(createInstanceReference(instance))
-					stateReference.setRegion(parentRegion)
-					stateReference.setState(state)
-					val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(stateReference))
-					val commentableStateFormula = propertyUtil.
-						createCommentableStateFormula('''«instance.name».«parentRegion.name».«state.name»''',
-							stateFormula)
-					formulas += commentableStateFormula
-				}
+				val states = type.allStates
+				formulas += states.createStateReachabilityFormulas
 			}
 		}
 		// Order optimization - "further" nodes are put earlier in the list
@@ -111,6 +101,25 @@ class PropertyGenerator {
 					.reverse
 		}
 		//
+		return formulas
+	}
+	
+	def List<CommentableStateFormula> createStateReachabilityFormulas(Collection<? extends State> states) {
+		val formulas = newArrayList
+		for (state : states) {
+			val instance = state.containingComponent.referencingComponentInstance
+			val stateReference = compositeFactory.createComponentInstanceStateReferenceExpression
+			val parentRegion = StatechartModelDerivedFeatures.getParentRegion(state)
+			stateReference.setInstance(instance.createInstanceReference)
+			stateReference.setRegion(parentRegion)
+			stateReference.setState(state)
+			val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(stateReference))
+			val commentableStateFormula = propertyUtil.
+				createCommentableStateFormula('''«instance.name».«parentRegion.name».«state.name»''',
+					stateFormula)
+			formulas += commentableStateFormula
+		}
+		
 		return formulas
 	}
 

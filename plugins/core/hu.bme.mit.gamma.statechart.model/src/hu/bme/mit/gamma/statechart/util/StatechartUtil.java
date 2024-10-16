@@ -85,6 +85,7 @@ import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.AsynchronousStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger;
 import hu.bme.mit.gamma.statechart.statechart.BinaryType;
+import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
 import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
 import hu.bme.mit.gamma.statechart.statechart.EntryState;
 import hu.bme.mit.gamma.statechart.statechart.InitialState;
@@ -976,11 +977,47 @@ public class StatechartUtil extends ActionUtil {
 		return state;
 	}
 	
+	public State createState(Region region, String stateName) {
+		State state = statechartFactory.createState();
+		state.setName(stateName);
+		region.getStateNodes().add(state);
+		
+		return state;
+	}
+	
 	public State createRegionWithState(CompositeElement compositeElement,
 			String regionName, String initialStateName, String stateName) {
 		InitialState initialState = createInitialState(initialStateName);
 		return createRegionWithState(compositeElement,
 				initialState, regionName, stateName);
+	}
+	
+	public ChoiceState createChoiceState(Transition incomingTransition, String choiceName,
+			Transition outgoingTransition) {
+		return createChoiceState(incomingTransition, choiceName, List.of(outgoingTransition));
+	}
+	
+	public ChoiceState createChoiceState(Transition incomingTransition, String choiceName,
+			Collection<? extends Transition> outgoingTransitions) {
+		ChoiceState choice = statechartFactory.createChoiceState();
+		choice.setName(choiceName);
+		
+		incomingTransition.setTargetState(choice);
+		for (Transition outgoingTransition : outgoingTransitions) {
+			outgoingTransition.setSourceState(choice);
+		}
+		
+		return choice;
+	}
+	
+	public Transition createChoiceStateWithIncomingTransition(String choiceName, Collection<? extends Transition> outgoingTransitions) {
+		Transition incomingTransition = statechartFactory.createTransition();
+		incomingTransition.setTrigger(
+				statechartFactory.createOnCycleTrigger());
+		
+		createChoiceState(incomingTransition, choiceName, outgoingTransitions);
+		
+		return incomingTransition;
 	}
 
 	public InitialState createInitialState(String name) {

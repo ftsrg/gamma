@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -48,6 +48,9 @@ class ModelAnnotatorPropertyGenerator {
 		// State coverage
 		val testedComponentsForStates = getIncludedSynchronousInstances(
 				annotableElements.testedComponentsForStates, newTopComponent)
+		// Nondeterministic transition coverage
+		val testedComponentsForNondeterministicTransitions = getIncludedSynchronousInstances(
+				annotableElements.testedComponentsForNondeterministicTransitions, newTopComponent)
 		// Transition coverage
 		val testedComponentsForTransitions = getIncludedSynchronousInstances(
 				annotableElements.testedComponentsForTransitions, newTopComponent)
@@ -78,14 +81,18 @@ class ModelAnnotatorPropertyGenerator {
 		val testedPortsForInteractionDataflow = getIncludedSynchronousInstancePorts(
 				annotableElements.testedComponentsForInteractionDataflow, newTopComponent)
 		
-		if (!testedComponentsForStates.nullOrEmpty || !testedComponentsForTransitions.nullOrEmpty ||
-				!testedComponentsForTransitionPairs.nullOrEmpty || !testedPortsForOutEvents.nullOrEmpty ||
+		if (!testedComponentsForStates.nullOrEmpty ||
+				!testedComponentsForNondeterministicTransitions.nullOrEmpty ||
+				!testedComponentsForTransitions.nullOrEmpty ||
+				!testedComponentsForTransitionPairs.nullOrEmpty ||
+				!testedPortsForOutEvents.nullOrEmpty ||
 				!testedPortsForInteractions.nullOrEmpty || !testedStatesForInteractions.nullOrEmpty ||
 				!testedTransitionsForInteractions.nullOrEmpty ||
 				!dataflowTestedVariables.nullOrEmpty ||
 				!testedPortsForInteractionDataflow.nullOrEmpty) {
 			val annotator = new StatechartAnnotator(newPackage,
 				new AnnotatableElements(
+					testedComponentsForNondeterministicTransitions,
 					testedComponentsForTransitions,
 					testedComponentsForTransitionPairs,
 					testedPortsForInteractions, testedStatesForInteractions, testedTransitionsForInteractions,
@@ -103,6 +110,8 @@ class ModelAnnotatorPropertyGenerator {
 			generatedPropertyPackage.imports += importablePackages
 			
 			val formulas = generatedPropertyPackage.formulas
+			
+			formulas += propertyGenerator.createStateReachabilityFormulas(annotator.trapStates) // Nondeterministic transition coverage
 			formulas += propertyGenerator.createTransitionReachability(
 							annotator.getTransitionVariables)
 			formulas += propertyGenerator.createTransitionPairReachability(

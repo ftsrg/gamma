@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -62,8 +62,15 @@ import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionMo
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class StatechartAnnotator {
+	//
 	protected final Package gammaPackage
 	protected final ViatraQueryEngine engine
+	// Nondeterministic transition coverage
+	protected boolean NONDETERMINISTIC_TRANSITION_COVERAGE
+	protected final Set<SynchronousComponentInstance> nondeterministicTransitionCoverableComponents = newHashSet
+	protected final Set<Transition> coverableNondeterministicTransitions = newHashSet
+	protected final Map<Region, State> nondeterministicTrapStates = newHashMap
+	
 	// Transition coverage
 	protected boolean TRANSITION_COVERAGE
 	protected final Set<SynchronousComponentInstance> transitionCoverableComponents = newHashSet
@@ -140,6 +147,13 @@ class StatechartAnnotator {
 		this.engine = ViatraQueryEngine.on(
 			new EMFScope(
 				gammaPackage.eResource.resourceSet))
+		if (!annotableElements.nondeterministicTransitionCoverableComponents.empty) {
+			this.NONDETERMINISTIC_TRANSITION_COVERAGE = true
+			this.nondeterministicTransitionCoverableComponents += annotableElements.nondeterministicTransitionCoverableComponents
+			this.coverableNondeterministicTransitions += nondeterministicTransitionCoverableComponents
+				.map[it.type].filter(StatechartDefinition)
+				.map[it.transitions].flatten.filter[it.sourceState.outgoingTransitions.size > 1]
+		}
 		if (!annotableElements.transitionCoverableComponents.empty) {
 			this.TRANSITION_COVERAGE = true
 			this.transitionCoverableComponents += annotableElements.transitionCoverableComponents
@@ -179,11 +193,66 @@ class StatechartAnnotator {
 	// Entry point
 	
 	def annotateModel() {
+		annotateModelForNondeterministicTransitionCoverage
 		annotateModelForTransitionCoverage
 		annotateModelForTransitionPairCoverage
 		annotateModelForInteractionCoverage
 		annotateModelForDataFlowCoverage
 		annotateModelForInteractionDataFlowCoverage
+	}
+	
+	// Nondeterministic transition coverage
+	
+	protected def getNondeterministicTrapState(Region region) {
+		if (!nondeterministicTrapStates.containsKey(region)) {
+			val trapState = region.createState(namings.trapStateName)
+			nondeterministicTrapStates += region -> trapState
+		}
+		
+		return nondeterministicTrapStates.get(region)
+	}
+	
+	protected def getNondeterministicTrapState(Transition transition) {
+		val source = transition.sourceState
+		val parentRegion = source.parentRegion
+		
+		return parentRegion.nondeterministicTrapState
+	}
+	
+	def annotateModelForNondeterministicTransitionCoverage() {
+		if (!NONDETERMINISTIC_TRANSITION_COVERAGE) {
+			return
+		}
+		val alreadyCoveredTransitions = newHashSet
+		for (transition : coverableNondeterministicTransitions.filter[it.needsAnnotation]) {
+			val statechart = transition.containingStatechart
+			val source = transition.sourceState
+			val parentRegion = source.parentRegion
+			val potentiallyNondeterministicTransitions = coverableNondeterministicTransitions
+					.filter[it !== transition && it.sourceState === source &&
+						!alreadyCoveredTransitions.contains(transition -> it)]
+			for (potentiallyNondeterministicTransition : potentiallyNondeterministicTransitions) {
+				//
+				alreadyCoveredTransitions += transition -> potentiallyNondeterministicTransition
+				alreadyCoveredTransitions += potentiallyNondeterministicTransition -> transition
+				//
+				val trapState = transition.nondeterministicTrapState // Only if there is a potential transition
+				
+				val transitionClone = transition.clone
+				val potentiallyNondeterministicTransitionClone = potentiallyNondeterministicTransition.clone
+				potentiallyNondeterministicTransitionClone.targetState = trapState
+				
+				val choiceName = namings.getTrapChoiceStateName(transitionClone)
+				val choiceState = transitionClone.createChoiceState(choiceName, potentiallyNondeterministicTransitionClone)
+				parentRegion.stateNodes += choiceState
+				
+				statechart.transitions += #[transitionClone, potentiallyNondeterministicTransitionClone]
+			}
+		}
+	}
+	
+	def getTrapStates() {
+		return nondeterministicTrapStates.values
 	}
 	
 	// Transition coverage

@@ -111,6 +111,8 @@
     <eLiterals name="RANDOM"/>
     <eLiterals name="FAIR" value="1"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="NonDeterministicTransitionCoverage"
+      eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="TransitionCoverage" eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="StateCoverage" eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="Coverage" abstract="true">
