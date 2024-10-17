@@ -167,14 +167,23 @@ class UnfoldedExecutionTraceBackAnnotator {
 	// Asserts
 	
 	protected def dispatch Expression transformAssert(ComponentInstanceStateReferenceExpression assert) {
-		val instance = assert.instance.lastInstance as SynchronousComponentInstance
-		val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
-		val originalState = originalInstance.getOriginalState(assert.state)
-		return compositeModelFactory.createComponentInstanceStateReferenceExpression => [
-			it.instance = originalInstance
-			it.state = originalState
-			it.region = it.state.parentRegion
-		]
+		try {
+			val instance = assert.instance.lastInstance as SynchronousComponentInstance
+			val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
+				val originalState = originalInstance.getOriginalState(assert.state)
+			return compositeModelFactory.createComponentInstanceStateReferenceExpression => [
+				it.instance = originalInstance
+				it.state = originalState
+				it.region = it.state.parentRegion
+			]
+		} catch (IllegalArgumentException e) {
+			val message = e.message.trim
+			if (message.startsWith("Not found state")) {
+				logger.warning(message)
+				return expressionModelFactory.createTrueExpression
+			}
+			throw e
+		}
 	}
 	
 	protected def dispatch Expression transformAssert(ComponentInstanceVariableReferenceExpression assert) {
