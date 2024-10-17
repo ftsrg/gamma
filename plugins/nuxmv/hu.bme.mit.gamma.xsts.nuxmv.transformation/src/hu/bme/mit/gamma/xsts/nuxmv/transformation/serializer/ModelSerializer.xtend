@@ -26,6 +26,7 @@ import hu.bme.mit.gamma.xsts.model.PrimedVariable
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
+import hu.bme.mit.gamma.xsts.model.XTransition
 import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
@@ -33,6 +34,8 @@ import java.util.Map
 import java.util.Scanner
 import java.util.Set
 import org.eclipse.emf.ecore.EObject
+
+import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
@@ -180,11 +183,23 @@ class ModelSerializer {
 	
 	protected def dispatch String serialize(NonDeterministicAction action) {
 		val subactions = action.actions
-		'''
+		if (nonDeterministicActionVariables.containsKey(action)) {
+			val iVar = nonDeterministicActionVariables.get(action)
+			return '''
+				case
+					«FOR subaction : subactions»
+						«iVar» = «subactions.indexOf(subaction)»: «subaction.serialize»;
+					«ENDFOR»
+				esac
+			'''
+		}
+		// It must be an init action: note that this is NOT semantic-preserving
+		checkState(action.getContainerOfType(XTransition) === null)
+		return '''
 			case
-				 «FOR subaction : subactions»
-				 	«nonDeterministicActionVariables.get(action)» = «subactions.indexOf(subaction)»: «subaction.serialize»;
-				 «ENDFOR»
+				«FOR subaction : subactions»
+					«IF subaction.isFirstActionAssume»«subaction.getFirstActionAssume.serialize»«ELSE»TRUE«ENDIF»: «subaction.serialize»;
+				«ENDFOR»
 			esac
 		'''
 	}
@@ -400,11 +415,25 @@ class ModelSerializer {
 	//
 	
 	protected def createNonDeterministicActionVariables(XSTS xSts) {
+		// SMV cannot handle IVAR in the INIT trans
+		val variableInitAction = xSts.variableInitializingTransition.action
+		val configurationInitAction = xSts.configurationInitializingTransition.action
+		val entryEventAction = xSts.entryEventTransition.action
+		xSts.variableInitializingTransition.action = null
+		xSts.configurationInitializingTransition.action = null
+		xSts.entryEventTransition.action = null
+		//
+		
 		val nonDeterministicActions = xSts.getAllContentsOfType(NonDeterministicAction)
 		for (nonDeterministicAction : nonDeterministicActions) {
 			nonDeterministicActionVariables += nonDeterministicAction -> 
 					"nonDeterministicAction" + nonDeterministicAction.hashCode.toString.replaceAll("-","_")
 		}
+		
+		// Restoring the init transitions
+		xSts.variableInitializingTransition.action = variableInitAction
+		xSts.configurationInitializingTransition.action = configurationInitAction
+		xSts.entryEventTransition.action = entryEventAction
 	}
 	
 	//
