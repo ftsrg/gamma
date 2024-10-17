@@ -30,6 +30,7 @@ import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.BinaryType
 import hu.bme.mit.gamma.statechart.statechart.EntryState
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.Region
@@ -224,12 +225,12 @@ class StatechartAnnotator {
 			return
 		}
 		val alreadyCoveredTransitions = newHashSet
-		for (transition : coverableNondeterministicTransitions.filter[it.needsAnnotation]) {
+		for (transition : coverableNondeterministicTransitions
+				.filter[it.needsAnnotation].reject[it.^else]) { // No 'else' transitions
 			val statechart = transition.containingStatechart
 			val source = transition.sourceState
-			val parentRegion = source.parentRegion
 			val potentiallyNondeterministicTransitions = coverableNondeterministicTransitions
-					.filter[it !== transition && it.sourceState === source &&
+					.filter[it !== transition && it.sourceState === source && !it.^else &&
 						!alreadyCoveredTransitions.contains(transition -> it)]
 			for (potentiallyNondeterministicTransition : potentiallyNondeterministicTransitions) {
 				//
@@ -238,15 +239,18 @@ class StatechartAnnotator {
 				//
 				val trapState = transition.nondeterministicTrapState // Only if there is a potential transition
 				
-				val transitionClone = transition.clone
-				val potentiallyNondeterministicTransitionClone = potentiallyNondeterministicTransition.clone
-				potentiallyNondeterministicTransitionClone.targetState = trapState
+				val mergedTransition = transition.clone
+				statechart.transitions += mergedTransition
 				
-				val choiceName = namings.getTrapChoiceStateName(transitionClone)
-				val choiceState = transitionClone.createChoiceState(choiceName, potentiallyNondeterministicTransitionClone)
-				parentRegion.stateNodes += choiceState
+				val otherTrigger = potentiallyNondeterministicTransition.trigger?.clone
+				mergedTransition.extendTrigger(otherTrigger, BinaryType.AND)
 				
-				statechart.transitions += #[transitionClone, potentiallyNondeterministicTransitionClone]
+				val otherGuard = potentiallyNondeterministicTransition.guard?.clone
+				mergedTransition.extendGuard(otherGuard, createAndExpression)
+				
+				mergedTransition.effects.clear
+				
+				mergedTransition.targetState = trapState
 			}
 		}
 	}

@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
@@ -398,18 +399,24 @@ public class StatechartUtil extends ActionUtil {
 	}
 	
 	public void extendTrigger(Transition transition, Trigger trigger, BinaryType type) {
-		if (transition.getTrigger() == null) {
+		Trigger originalTrigger = transition.getTrigger();
+		if (originalTrigger == null) {
 			transition.setTrigger(trigger);
 		}
 		else {
-			BinaryTrigger binaryTrigger = createBinaryTrigger(
-					transition.getTrigger(), trigger, type);
-			transition.setTrigger(binaryTrigger);
+			Trigger newTrigger = createBinaryTrigger(
+					originalTrigger, trigger, type);
+			transition.setTrigger(newTrigger);
 		}
 	}
 	
-	public BinaryTrigger createBinaryTrigger(Trigger oldTrigger,
-			Trigger newTrigger, BinaryType type) {
+	public Trigger createBinaryTrigger(Trigger oldTrigger, Trigger newTrigger, BinaryType type) {
+		if (oldTrigger == null) {
+			return newTrigger;
+		}
+		if (newTrigger == null) {
+			return oldTrigger;
+		}
 		BinaryTrigger binaryTrigger = statechartFactory.createBinaryTrigger();
 		binaryTrigger.setType(type);
 		binaryTrigger.setLeftOperand(oldTrigger);
@@ -418,10 +425,23 @@ public class StatechartUtil extends ActionUtil {
 	}
 	
 	public UnaryTrigger createUnaryTrigger(Trigger trigger, UnaryType type) {
+		if (trigger == null) {
+			return null;
+		}
 		UnaryTrigger unaryTrigger = statechartFactory.createUnaryTrigger();
 		unaryTrigger.setType(type);
 		unaryTrigger.setOperand(trigger);
 		return unaryTrigger;
+	}
+	
+	public void extendGuard(Transition transition, Expression guard, MultiaryExpression container) {
+		Expression originalGuard = transition.getGuard();
+		if (originalGuard == null) {
+			transition.setGuard(guard);
+		}
+		Expression newGuard = wrapIntoMultiaryExpression(
+				originalGuard, guard, container);
+		transition.setGuard(newGuard);
 	}
 	
 	public boolean areDefinitelyFalseArguments(Expression guard, Port port, Event event,
