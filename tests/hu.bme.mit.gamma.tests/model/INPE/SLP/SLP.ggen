@@ -1,12 +1,12 @@
-import external "SLP.sct"
-import "Interface/Interfaces.gcd"
-
-statechart {
-	statechart : SLP 
-	mappings {
-		map ODC = Data as required {
-			map getData = sendData
-			map sendData = getData
-		}
-	} 
-}
+//import external "SLP.sct"
+//import "Interface/Interfaces.gcd"
+//
+//statechart {
+//	statechart : SLP 
+//	mappings {
+//		map ODC = Data as required {
+//			map getData = sendData
+//			map sendData = getData
+//		}
+//	} 
+//}

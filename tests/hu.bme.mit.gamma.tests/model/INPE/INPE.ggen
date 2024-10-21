@@ -1,6 +1,6 @@
-include "Interface/Interfaces.ggen"
-include "OBC/OBC.ggen"
-include "SLP/SLP.ggen"
+//include "Interface/Interfaces.ggen"
+//include "OBC/OBC.ggen"
+//include "SLP/SLP.ggen"
 include "System/Mission.ggen"
 // Code generation has to be done after system code generation (there are .y2g traces)
 include "OBC/OBCCode.ggen"

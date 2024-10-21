@@ -1,10 +1,10 @@
-import "Interfaces/Interfaces.gcd"
-import external "Monitor.sct"
-
-statechart {
-	statechart : Monitor
-	mappings {
-		map LightInputs = LightCommands as required
-		map Error = Error as provided
-	}
-}
+//import "Interfaces/Interfaces.gcd"
+//import external "Monitor.sct"
+//
+//statechart {
+//	statechart : Monitor
+//	mappings {
+//		map LightInputs = LightCommands as required
+//		map Error = Error as provided
+//	}
+//}

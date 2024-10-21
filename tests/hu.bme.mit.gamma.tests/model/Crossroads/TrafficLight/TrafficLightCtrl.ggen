@@ -1,11 +1,11 @@
-import "Interfaces/Interfaces.gcd"
-import external "TrafficLightCtrl.sct"
-
-statechart {
-	statechart : TrafficLightCtrl
-	mappings {
-		map Control = Control as required
-		map PoliceInterrupt = PoliceInterrupt as required
-		map LightCommands = LightCommands as provided
-	}
-}
+//import "Interfaces/Interfaces.gcd"
+//import external "TrafficLightCtrl.sct"
+//
+//statechart {
+//	statechart : TrafficLightCtrl
+//	mappings {
+//		map Control = Control as required
+//		map PoliceInterrupt = PoliceInterrupt as required
+//		map LightCommands = LightCommands as provided
+//	}
+//}

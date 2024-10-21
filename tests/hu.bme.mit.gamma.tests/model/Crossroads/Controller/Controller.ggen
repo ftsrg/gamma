@@ -1,13 +1,13 @@
-import "Interfaces/Interfaces.gcd"
-import external "Controller.sct"
-
-statechart {
-	statechart : Controller
-	mappings {
-		map PriorityControl = Control as provided
-		map SecondaryControl = Control as provided
-		map PoliceInterrupt = PoliceInterrupt as required
-		map PriorityPolice = PoliceInterrupt as provided
-		map SecondaryPolice = PoliceInterrupt as provided
-	}
-}
+//import "Interfaces/Interfaces.gcd"
+//import external "Controller.sct"
+//
+//statechart {
+//	statechart : Controller
+//	mappings {
+//		map PriorityControl = Control as provided
+//		map SecondaryControl = Control as provided
+//		map PoliceInterrupt = PoliceInterrupt as required
+//		map PriorityPolice = PoliceInterrupt as provided
+//		map SecondaryPolice = PoliceInterrupt as provided
+//	}
+//}
