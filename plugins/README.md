@@ -20,9 +20,9 @@ We recommend starting from an Eclipse IDE for Java and DSL Developers as it cont
 path_to_your_java_insallation/Java/jdk-version/bin/javaw.exe
 ```
 - Install the following packages. The _Install_ window can be opened via the _Help > Install New Software..._ menu item. In the _Install_ window click _Add..._, and paste the necessary URL in the _Location_ text field. 
- - Install VIATRA 2.9.1 from update site: http://download.eclipse.org/viatra/updates/release/2.9.1.
-    - Choose the whole _VIATRA Query and Transformation SDK_ package.
- - Furthermore, it is *necessary* to setup the environment for the *PlantUML* visualization plugins located in the [`vis`](vis) folder. The instructions are described in the [`README`](vis/README.md) file of the folder.
+   - Install VIATRA 2.9.1 from update site: http://download.eclipse.org/viatra/updates/release/2.9.1.
+     - Choose the whole _VIATRA Query and Transformation SDK_ package.
+   - Furthermore, it is *necessary* to setup the environment for the *PlantUML* visualization plugins located in the [`vis`](vis) folder. The instructions are described in the [`README`](vis/README.md) file of the folder.
 
 Make sure to set the text file encoding of your Eclipse workspace to **UTF-8**: _Window > Preferences..._ Start typing `workspace` in the left upper textfield (in the place of `type filter text`). Select _General > Workspace_ from the filtered item list and check the `Text file encoding` setting at the bottom of the window.
 
