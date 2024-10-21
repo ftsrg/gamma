@@ -1,9 +1,8 @@
 package hu.bme.mit.gamma.ocra.transformation
 
-import java.util.Scanner
-import hu.bme.mit.gamma.util.ScannerLogger
-import java.io.File
 import hu.bme.mit.gamma.util.FileUtil
+import java.io.File
+import java.util.Scanner
 
 class OcraVerifier {
 	protected final static extension FileUtil fileUtil = FileUtil.INSTANCE

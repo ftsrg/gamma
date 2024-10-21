@@ -17,7 +17,6 @@ import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation
 import hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration
 import hu.bme.mit.gamma.genmodel.model.EventMapping
-import hu.bme.mit.gamma.genmodel.model.FaultTreeGeneration
 import hu.bme.mit.gamma.genmodel.model.FmeaTableGeneration
 import hu.bme.mit.gamma.genmodel.model.GenModel
 import hu.bme.mit.gamma.genmodel.model.InterfaceMapping
