@@ -294,3 +294,11 @@
 * Bugs related to optimizations in regard to removing unreachable states and subregions have been fixed.
 * Bugs been fixed related to the Theta back-annotator component of the framework as it contained faults that affected the parsing of "default" values in array literals.
 * Bugs been fixed related to the SSA conversion as it contained a fault in regard to assigning values to elements of array variables in different branches of an if-else statement.
+
+
+## 202X.YY.ZZ. - Version 2.12.0
+
+### What is New
+
+* Yakindu is no longer supported due to compatibility reasons in the newer Eclipse versions.
+* Imandra is now fully integrated as a verification back-end.

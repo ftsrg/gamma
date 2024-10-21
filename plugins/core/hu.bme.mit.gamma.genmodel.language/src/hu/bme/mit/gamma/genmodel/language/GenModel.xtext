@@ -21,14 +21,14 @@ import "http://www.mit.bme.hu/gamma/xSTS/Model" as xsts
 import "http://www.mit.bme.hu/gamma/scenario/Model" as scenario
 import "http://www.mit.bme.hu/gamma/fei/Model" as fei
 
-import "http://www.yakindu.org/sct/sgraph/2.0.0" as sgraph
-import "http://www.yakindu.org/sct/statechart/SText" as stext
-import "http://www.yakindu.org/base/types/2.0.0" as types 
+//import "http://www.yakindu.org/sct/sgraph/2.0.0" as sgraph
+//import "http://www.yakindu.org/sct/statechart/SText" as stext
+//import "http://www.yakindu.org/base/types/2.0.0" as types 
 
 GenModel returns GenModel:
 	(('import' 
 		(packageImports+=[interface::Package | STRING] |
-		'external' statechartImports+=[sgraph::Statechart| STRING] |
+//		'external' statechartImports+=[EObject| STRING] |
 		'scenario' scenarioImports+=[scenario::ScenarioPackage| STRING] |
 		'trace' traceImports+=[trace::ExecutionTrace | STRING])) |
 		'include' genmodelImports+=[GenModel | STRING]
@@ -37,7 +37,8 @@ GenModel returns GenModel:
 ;
 
 Task returns Task:
-	YakinduCompilation | CodeGeneration | AnalysisModelTransformation | TestGeneration |
+//	YakinduCompilation |
+	CodeGeneration | AnalysisModelTransformation | TestGeneration |
 		EventPriorityTransformation | AdaptiveContractTestGeneration |
 		AdaptiveBehaviorConformanceChecking | PhaseStatechartGeneration |
 		Verification | TraceReplayModelGeneration | Slicing | StatechartContractTestGeneration |
@@ -45,35 +46,35 @@ Task returns Task:
 		ModelMutation | MutationBasedTestGeneration
 ;
 
-YakinduCompilation returns YakinduCompilation:
-	StatechartCompilation | InterfaceCompilation
-;
-
-InterfaceCompilation returns InterfaceCompilation:
-	'interface' '{'
-		'statechart' ':' statechart=[sgraph::Statechart]
-		(
-			'folder' ':' targetFolder+=STRING | // The location of the folder relative to the project
-			'file' ':' fileName+=STRING | // The name of the generated file
-			'package' ':' packageName+=STRING // Gamma package name
-		)*
-	'}'
-;
-
-StatechartCompilation returns StatechartCompilation:
-	'statechart'  '{'
-		'statechart' ':' statechart=[sgraph::Statechart]
-		(
-			'folder' ':' targetFolder+=STRING | // The location of the folder relative to the project
-			'file' ':' fileName+=STRING | // The name of the generated file
-			'package' ':' packageName+=STRING | // Gamma package name
-			'name' ':' statechartName+=STRING | // Gamma statechart name
-			'mappings' '{'
-				(interfaceMappings+=InterfaceMapping)*
-			'}'
-		)*
-	'}'
-;
+//YakinduCompilation returns YakinduCompilation:
+//	StatechartCompilation | InterfaceCompilation
+//;
+//
+//InterfaceCompilation returns InterfaceCompilation:
+//	'interface' '{'
+//		'statechart' ':' statechart=[sgraph::Statechart]
+//		(
+//			'folder' ':' targetFolder+=STRING | // The location of the folder relative to the project
+//			'file' ':' fileName+=STRING | // The name of the generated file
+//			'package' ':' packageName+=STRING // Gamma package name
+//		)*
+//	'}'
+//;
+//
+//StatechartCompilation returns StatechartCompilation:
+//	'statechart'  '{'
+//		'statechart' ':' statechart=[sgraph::Statechart]
+//		(
+//			'folder' ':' targetFolder+=STRING | // The location of the folder relative to the project
+//			'file' ':' fileName+=STRING | // The name of the generated file
+//			'package' ':' packageName+=STRING | // Gamma package name
+//			'name' ':' statechartName+=STRING | // Gamma statechart name
+//			'mappings' '{'
+//				(interfaceMappings+=InterfaceMapping)*
+//			'}'
+//		)*
+//	'}'
+//;
 
 CodeGeneration returns CodeGeneration:
 	'code'  '{'
@@ -371,15 +372,15 @@ Slicing returns Slicing:
 	'}'
 ;
 
-InterfaceMapping returns InterfaceMapping:
-	'map' yakinduInterface=[stext::InterfaceScope] '=' gammaInterface=[interface::Interface] 'as' realizationMode=RealizationMode ('{'
-		eventMappings+=EventMapping*
-	'}')?
-;
-
-EventMapping returns EventMapping:
-	'map' yakinduEvent=[types::Event] '=' gammaEvent=[interface::Event] 
-;
+//InterfaceMapping returns InterfaceMapping:
+//	'map' yakinduInterface=[stext::InterfaceScope] '=' gammaInterface=[interface::Interface] 'as' realizationMode=RealizationMode ('{'
+//		eventMappings+=EventMapping*
+//	'}')?
+//;
+//
+//EventMapping returns EventMapping:
+//	'map' yakinduEvent=[types::Event] '=' gammaEvent=[interface::Event] 
+//;
 
 enum RealizationMode returns interface::RealizationMode:
 	PROVIDED = 'provided' | REQUIRED = 'required'

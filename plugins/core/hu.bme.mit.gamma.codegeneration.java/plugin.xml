@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?><plugin>
   <extension id="hu.bme.mit.gamma.codegeneration.java.queries.Patterns" point="org.eclipse.viatra.query.runtime.queryspecification">
     <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:hu.bme.mit.gamma.codegeneration.java.queries.Patterns" id="hu.bme.mit.gamma.codegeneration.java.queries.Patterns">
-      <query-specification fqn="hu.bme.mit.gamma.codegeneration.java.queries.traces"/>
       <query-specification fqn="hu.bme.mit.gamma.codegeneration.java.queries.typeDeclarations"/>
       <query-specification fqn="hu.bme.mit.gamma.codegeneration.java.queries.simpleGammaComponents"/>
-      <query-specification fqn="hu.bme.mit.gamma.codegeneration.java.queries.simpleYakinduComponents"/>
       <query-specification fqn="hu.bme.mit.gamma.codegeneration.java.queries.abstractSynchronousCompositeComponents"/>
       <query-specification fqn="hu.bme.mit.gamma.codegeneration.java.queries.simpleChannels"/>
       <query-specification fqn="hu.bme.mit.gamma.codegeneration.java.queries.broadcastChannels"/>
-      <query-specification fqn="hu.bme.mit.gamma.codegeneration.java.queries.eventToEvent"/>
       <query-specification fqn="hu.bme.mit.gamma.codegeneration.java.queries.interfaces"/>
       <query-specification fqn="hu.bme.mit.gamma.codegeneration.java.queries.constants"/>
       <query-specification fqn="hu.bme.mit.gamma.codegeneration.java.queries.synchronousComponentWrappers"/>

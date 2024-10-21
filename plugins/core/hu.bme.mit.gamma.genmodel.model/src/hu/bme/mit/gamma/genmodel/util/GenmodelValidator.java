@@ -13,34 +13,22 @@ package hu.bme.mit.gamma.genmodel.util;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.yakindu.base.types.Direction;
-import org.yakindu.base.types.Event;
-import org.yakindu.sct.model.sgraph.Scope;
-import org.yakindu.sct.model.sgraph.Statechart;
-import org.yakindu.sct.model.stext.stext.InterfaceScope;
 
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
-import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
-import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.ExpressionPackage;
-import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
-import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
 import hu.bme.mit.gamma.fei.model.FaultExtensionInstructions;
 import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
@@ -60,7 +48,6 @@ import hu.bme.mit.gamma.genmodel.model.EventPriorityTransformation;
 import hu.bme.mit.gamma.genmodel.model.FmeaTableGeneration;
 import hu.bme.mit.gamma.genmodel.model.GenModel;
 import hu.bme.mit.gamma.genmodel.model.GenmodelModelPackage;
-import hu.bme.mit.gamma.genmodel.model.InterfaceCompilation;
 import hu.bme.mit.gamma.genmodel.model.InterfaceMapping;
 import hu.bme.mit.gamma.genmodel.model.ModelMutation;
 import hu.bme.mit.gamma.genmodel.model.ModelReference;
@@ -90,11 +77,8 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpressio
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
-import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
-import hu.bme.mit.gamma.statechart.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage;
 import hu.bme.mit.gamma.statechart.interface_.Package;
-import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
@@ -567,17 +551,17 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkYakinduImports(GenModel genmodel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		Set<Statechart> statechartImports = genmodel.getStatechartImports().stream().collect(Collectors.toSet());
-		for (YakinduCompilation statechartCompilationTask : javaUtil.filterIntoList(
-					genmodel.getTasks(), YakinduCompilation.class)) {
-			statechartImports.remove(statechartCompilationTask.getStatechart());
-		}
-		for (Statechart statechartImport : statechartImports) {
-			int index = genmodel.getStatechartImports().indexOf(statechartImport);
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
-					"This Yakindu import is not used",
-					new ReferenceInfo(GenmodelModelPackage.Literals.GEN_MODEL__STATECHART_IMPORTS, index)));
-		}
+//		Set<Statechart> statechartImports = genmodel.getStatechartImports().stream().collect(Collectors.toSet());
+//		for (YakinduCompilation statechartCompilationTask : javaUtil.filterIntoList(
+//					genmodel.getTasks(), YakinduCompilation.class)) {
+//			statechartImports.remove(statechartCompilationTask.getStatechart());
+//		}
+//		for (Statechart statechartImport : statechartImports) {
+//			int index = genmodel.getStatechartImports().indexOf(statechartImport);
+//			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
+//					"This Yakindu import is not used",
+//					new ReferenceInfo(GenmodelModelPackage.Literals.GEN_MODEL__STATECHART_IMPORTS, index)));
+//		}
 		return validationResultMessages;
 	}
 	
@@ -634,320 +618,320 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkIfAllInterfacesMapped(StatechartCompilation statechartCompilation) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		Set<InterfaceScope> interfaces = new HashSet<InterfaceScope>();
-		EList<Scope> scopes = statechartCompilation.getStatechart().getScopes();
-		interfaces = javaUtil.filterIntoList(scopes, InterfaceScope.class).stream().collect(Collectors.toSet());
-
-		Set<InterfaceScope> mappedInterfaces = new HashSet<InterfaceScope>();
-		for (InterfaceMapping interfaceMapping: statechartCompilation.getInterfaceMappings()) {
-			mappedInterfaces.add(interfaceMapping.getYakinduInterface());
-		}
-		interfaces.removeAll(mappedInterfaces);
-		if (!interfaces.isEmpty()) {
-			Set<InterfaceScope> interfacesWithEvents = interfaces.stream()
-					.filter(it -> !it.getEvents().isEmpty()).collect(Collectors.toSet());
-			Set<InterfaceScope> interfacesWithoutEvents = interfaces.stream()
-					.filter(it -> it.getEvents().isEmpty()).collect(Collectors.toSet());
-			if (!interfacesWithEvents.isEmpty()) {
-				for (InterfaceScope interfacesWithEventsMap : interfacesWithEvents) {
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-							"The following interfaces with events are not mapped: " + interfacesWithEventsMap.getName(),
-							new ReferenceInfo(GenmodelModelPackage.Literals.YAKINDU_COMPILATION__STATECHART)));
-				}
-			}
-			if (!interfacesWithoutEvents.isEmpty()) {
-				for (InterfaceScope interfacesWithoutEventsMap : interfacesWithoutEvents) {
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO, 
-							"The following interfaces without events are not mapped: " + interfacesWithoutEventsMap.getName(),
-							new ReferenceInfo(GenmodelModelPackage.Literals.YAKINDU_COMPILATION__STATECHART)));
-				}
-			}
-		}
+//		Set<InterfaceScope> interfaces = new HashSet<InterfaceScope>();
+//		EList<Scope> scopes = statechartCompilation.getStatechart().getScopes();
+//		interfaces = javaUtil.filterIntoList(scopes, InterfaceScope.class).stream().collect(Collectors.toSet());
+//
+//		Set<InterfaceScope> mappedInterfaces = new HashSet<InterfaceScope>();
+//		for (InterfaceMapping interfaceMapping: statechartCompilation.getInterfaceMappings()) {
+//			mappedInterfaces.add(interfaceMapping.getYakinduInterface());
+//		}
+//		interfaces.removeAll(mappedInterfaces);
+//		if (!interfaces.isEmpty()) {
+//			Set<InterfaceScope> interfacesWithEvents = interfaces.stream()
+//					.filter(it -> !it.getEvents().isEmpty()).collect(Collectors.toSet());
+//			Set<InterfaceScope> interfacesWithoutEvents = interfaces.stream()
+//					.filter(it -> it.getEvents().isEmpty()).collect(Collectors.toSet());
+//			if (!interfacesWithEvents.isEmpty()) {
+//				for (InterfaceScope interfacesWithEventsMap : interfacesWithEvents) {
+//					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+//							"The following interfaces with events are not mapped: " + interfacesWithEventsMap.getName(),
+//							new ReferenceInfo(GenmodelModelPackage.Literals.YAKINDU_COMPILATION__STATECHART)));
+//				}
+//			}
+//			if (!interfacesWithoutEvents.isEmpty()) {
+//				for (InterfaceScope interfacesWithoutEventsMap : interfacesWithoutEvents) {
+//					validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO, 
+//							"The following interfaces without events are not mapped: " + interfacesWithoutEventsMap.getName(),
+//							new ReferenceInfo(GenmodelModelPackage.Literals.YAKINDU_COMPILATION__STATECHART)));
+//				}
+//			}
+//		}
 		return validationResultMessages;
 	}
 	
 	public Collection<ValidationResultMessage> checkInterfaceConformance(InterfaceMapping mapping) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (!(checkConformance(mapping))) {
-			RealizationMode realizationMode = mapping.getRealizationMode();
-			switch (realizationMode) {
-				case PROVIDED:
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-							"In case of provided realization mode number of in/out events must equal to "
-							+ "the number of in/out events in the Gamma interface and vice versa",
-							new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)));
-					break;
-				case REQUIRED:
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-							"In case of required realization mode number of in/out events must equal to "
-							+ "the number of out/in events in the Gamma interface and vice versa",
-							new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)));
-					break;
-				default:
-					throw new IllegalArgumentException("Such interface realization mode is not supported: " + realizationMode);
-			}
-		}
+//		if (!checkConformance(mapping)) {
+//			RealizationMode realizationMode = mapping.getRealizationMode();
+//			switch (realizationMode) {
+//				case PROVIDED:
+//					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+//							"In case of provided realization mode number of in/out events must equal to "
+//							+ "the number of in/out events in the Gamma interface and vice versa",
+//							new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)));
+//					break;
+//				case REQUIRED:
+//					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+//							"In case of required realization mode number of in/out events must equal to "
+//							+ "the number of out/in events in the Gamma interface and vice versa",
+//							new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)));
+//					break;
+//				default:
+//					throw new IllegalArgumentException("Such interface realization mode is not supported: " + realizationMode);
+//			}
+//		}
 		return validationResultMessages;
 	}
 	
 	/** It checks the events of the parent interfaces as well. */
-	public boolean checkConformance(InterfaceMapping mapping) {
-		long yOut = mapping.getYakinduInterface().getEvents().stream()
-				.filter(it -> it.getDirection() == Direction.OUT).count();
-		long yIn = mapping.getYakinduInterface().getEvents().stream()
-				.filter(it -> it.getDirection() == Direction.IN).count();
-		long gOut = StatechartModelDerivedFeatures.getAllEventDeclarations(mapping.getGammaInterface())
-				.stream().filter(it -> it.getDirection() != EventDirection.IN).count(); // Regarding in-out events
-		long gIn = StatechartModelDerivedFeatures.getAllEventDeclarations(mapping.getGammaInterface())
-				.stream().filter(it -> it.getDirection() != EventDirection.OUT).count(); // Regarding in-out events
-		RealizationMode realMode = mapping.getRealizationMode();
-		return (realMode == RealizationMode.PROVIDED && yOut == gOut && yIn == gIn) ||
-			(realMode == RealizationMode.REQUIRED && yOut == gIn && yIn == gOut);
-	}
+//	public boolean checkConformance(InterfaceMapping mapping) {
+//		long yOut = mapping.getYakinduInterface().getEvents().stream()
+//				.filter(it -> it.getDirection() == Direction.OUT).count();
+//		long yIn = mapping.getYakinduInterface().getEvents().stream()
+//				.filter(it -> it.getDirection() == Direction.IN).count();
+//		long gOut = StatechartModelDerivedFeatures.getAllEventDeclarations(mapping.getGammaInterface())
+//				.stream().filter(it -> it.getDirection() != EventDirection.IN).count(); // Regarding in-out events
+//		long gIn = StatechartModelDerivedFeatures.getAllEventDeclarations(mapping.getGammaInterface())
+//				.stream().filter(it -> it.getDirection() != EventDirection.OUT).count(); // Regarding in-out events
+//		RealizationMode realMode = mapping.getRealizationMode();
+//		return (realMode == RealizationMode.PROVIDED && yOut == gOut && yIn == gIn) ||
+//			(realMode == RealizationMode.REQUIRED && yOut == gIn && yIn == gOut);
+//	}
 	
 	public Collection<ValidationResultMessage> checkInterfaceMappingWithoutEventMapping(InterfaceMapping mapping) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		// 0 event mapping is acceptable if the two interfaces are equal
-		RealizationMode realizationMode = mapping.getRealizationMode();
-		if (mapping.getEventMappings().size() == 0) {
-			// If the interface has in-out events, 0 event mapping is surely not acceptable
-			if (!(mapping.getGammaInterface().getEvents().stream()
-					.filter(it -> it.getDirection() == EventDirection.INOUT).count() == 0)) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"The Gamma interface has in-out events, thus an automatic mapping is not possible",
-						new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)));
-				return validationResultMessages;
-			}
-			for (Event yakinduEvent : mapping.getYakinduInterface().getEvents()) {
-				List<hu.bme.mit.gamma.statechart.interface_.Event> gammaEvents = mapping.getGammaInterface().getEvents()
-						.stream().map(it -> it.getEvent())
-						.filter(it -> it.getName().equals(yakinduEvent.getName()))
-						.collect(Collectors.toList());
-				if (!(gammaEvents.size() == 1 && checkParameters(yakinduEvent, gammaEvents.get(0))
-						&& areWellDirected(realizationMode, yakinduEvent, (EventDeclaration) gammaEvents.get(0).eContainer()))) {
-					String typeName = "";
-					if (yakinduEvent.getType() != null) {
-						typeName = " : " + yakinduEvent.getType().getName();
-					} else {
-						typeName = "";
-					}
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-							"Interface mapping without event mapping is only possible if the "
-							+ "names and types of the events of the interfaces are equal; " 
-							+ yakinduEvent.getName() + typeName + " has no equivalent event in the Gamma interface",
-							new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)));
-					}
-				}			
-			}
+//		RealizationMode realizationMode = mapping.getRealizationMode();
+//		if (mapping.getEventMappings().size() == 0) {
+//			// If the interface has in-out events, 0 event mapping is surely not acceptable
+//			if (!(mapping.getGammaInterface().getEvents().stream()
+//					.filter(it -> it.getDirection() == EventDirection.INOUT).count() == 0)) {
+//				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+//						"The Gamma interface has in-out events, thus an automatic mapping is not possible",
+//						new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)));
+//				return validationResultMessages;
+//			}
+//			for (Event yakinduEvent : mapping.getYakinduInterface().getEvents()) {
+//				List<hu.bme.mit.gamma.statechart.interface_.Event> gammaEvents = mapping.getGammaInterface().getEvents()
+//						.stream().map(it -> it.getEvent())
+//						.filter(it -> it.getName().equals(yakinduEvent.getName()))
+//						.collect(Collectors.toList());
+//				if (!(gammaEvents.size() == 1 && checkParameters(yakinduEvent, gammaEvents.get(0))
+//						&& areWellDirected(realizationMode, yakinduEvent, (EventDeclaration) gammaEvents.get(0).eContainer()))) {
+//					String typeName = "";
+//					if (yakinduEvent.getType() != null) {
+//						typeName = " : " + yakinduEvent.getType().getName();
+//					} else {
+//						typeName = "";
+//					}
+//					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+//							"Interface mapping without event mapping is only possible if the "
+//							+ "names and types of the events of the interfaces are equal; " 
+//							+ yakinduEvent.getName() + typeName + " has no equivalent event in the Gamma interface",
+//							new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)));
+//				}
+//			}			
+//		}
 		return validationResultMessages;
 	}
 	
 	/**
 	 * Checks whether the event directions conform to the realization mode.
 	 */
-	public boolean areWellDirected(RealizationMode interfaceType, org.yakindu.base.types.Event yEvent, EventDeclaration gEvent) {
-		if (interfaceType == RealizationMode.PROVIDED) {
-			return (yEvent.getDirection() == Direction.OUT && gEvent.getDirection() != EventDirection.IN) ||
-			(yEvent.getDirection() == Direction.IN && gEvent.getDirection() != EventDirection.OUT);
-		}
-		else if (interfaceType == RealizationMode.REQUIRED) {
-			return (yEvent.getDirection() == Direction.OUT && gEvent.getDirection() != EventDirection.OUT) ||
-			(yEvent.getDirection() == Direction.IN && gEvent.getDirection() != EventDirection.IN);
-		}
-		else {
-			throw new IllegalArgumentException("No such direction: " + interfaceType);
-		}
-	}
+//	public boolean areWellDirected(RealizationMode interfaceType, org.yakindu.base.types.Event yEvent, EventDeclaration gEvent) {
+//		if (interfaceType == RealizationMode.PROVIDED) {
+//			return (yEvent.getDirection() == Direction.OUT && gEvent.getDirection() != EventDirection.IN) ||
+//			(yEvent.getDirection() == Direction.IN && gEvent.getDirection() != EventDirection.OUT);
+//		}
+//		else if (interfaceType == RealizationMode.REQUIRED) {
+//			return (yEvent.getDirection() == Direction.OUT && gEvent.getDirection() != EventDirection.OUT) ||
+//			(yEvent.getDirection() == Direction.IN && gEvent.getDirection() != EventDirection.IN);
+//		}
+//		else {
+//			throw new IllegalArgumentException("No such direction: " + interfaceType);
+//		}
+//	}
 	
 	public Collection<ValidationResultMessage> checkMappingCount(InterfaceMapping mapping) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		// Check only if the interface mapping is not trivial (size != 0)
-		if (mapping.getEventMappings().size() != 0 &&
-				mapping.getYakinduInterface().getEvents().size() != mapping.getEventMappings().size()) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"Each Yakindu event has to be mapped exactly once",
-					new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)));
-		}
+//		if (mapping.getEventMappings().size() != 0 &&
+//				mapping.getYakinduInterface().getEvents().size() != mapping.getEventMappings().size()) {
+//			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+//					"Each Yakindu event has to be mapped exactly once",
+//					new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)));
+//		}
 		return validationResultMessages;
 	}
 	
 	public Collection<ValidationResultMessage> checkYakinduInterfaceUniqueness(InterfaceMapping mapping) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		Set<InterfaceScope> interfaces = new HashSet<InterfaceScope>();
-		StatechartCompilation statechartCompilation = (StatechartCompilation)mapping.eContainer();
-		for (InterfaceScope interface_ : statechartCompilation.getInterfaceMappings().stream()
-				.map(it -> it.getYakinduInterface()).collect(Collectors.toList())) {
-			if (interfaces.contains(interface_)){
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Each Yakindu event has to be mapped exactly once",
-						new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)));
-			}
-			else {
-				interfaces.add(interface_);
-			}			
-		}
+//		Set<InterfaceScope> interfaces = new HashSet<InterfaceScope>();
+//		StatechartCompilation statechartCompilation = (StatechartCompilation)mapping.eContainer();
+//		for (InterfaceScope interface_ : statechartCompilation.getInterfaceMappings().stream()
+//				.map(it -> it.getYakinduInterface()).collect(Collectors.toList())) {
+//			if (interfaces.contains(interface_)){
+//				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+//						"Each Yakindu event has to be mapped exactly once",
+//						new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)));
+//			}
+//			else {
+//				interfaces.add(interface_);
+//			}			
+//		}
 		return validationResultMessages;
 	}
 	
 	public Collection<ValidationResultMessage> checkEventMappingCount(InterfaceMapping mapping) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		Set<Event> mappedYakinduEvents = new HashSet<Event>();
-		Map<hu.bme.mit.gamma.statechart.interface_.Event, Set<Event>> mappedGammaEvents = new HashMap<>();
-		for (EventMapping eventMapping : mapping.getEventMappings()) {
-			org.yakindu.base.types.Event yakinduEvent = eventMapping.getYakinduEvent();
-			hu.bme.mit.gamma.statechart.interface_.Event gammaEvent = eventMapping.getGammaEvent();
-			// Yakindu validation
-			if (mappedYakinduEvents.contains(yakinduEvent)) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"This event is mapped multiple times: " + yakinduEvent.getName(),
-						new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__EVENT_MAPPINGS)));
-			}
-			else {
-				mappedYakinduEvents.add(yakinduEvent);			
-			}
-			// Gamma validation
-			if (mappedGammaEvents.containsKey(gammaEvent)) {
-				EventDeclaration gammaEventDeclaration = (EventDeclaration)gammaEvent.eContainer();
-				if (gammaEventDeclaration.getDirection() == EventDirection.INOUT) {
-					Set<Event> yakinduEventSet = mappedGammaEvents.get(gammaEvent);
-					yakinduEventSet.add(yakinduEvent);
-					// A single in and a single out event has to be now in yakinduEventSet
-					if (!(yakinduEventSet.stream().filter(it -> it.getDirection() == Direction.IN).count() == 1 &&
-							yakinduEventSet.stream().filter(it -> it.getDirection() == Direction.OUT).count() == 1)) {
-						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-							"A single in and a single out event has to be mapped onto this Gamma event: " + gammaEvent.getName(),
-								new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__EVENT_MAPPINGS)));
-					}
-				}
-				else {
-					// Not an in-out event
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-							"Multiple Yakindu events are mapped to this Gamma event: " + gammaEvent.getName(),
-							new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__EVENT_MAPPINGS)));
-				}
-			}
-			else {
-				// First entry
-				Set<Event> set = new HashSet<Event>();
-				set.add(yakinduEvent);
-				mappedGammaEvents.put(gammaEvent, set);
-			}
-		}
+//		Set<Event> mappedYakinduEvents = new HashSet<Event>();
+//		Map<hu.bme.mit.gamma.statechart.interface_.Event, Set<Event>> mappedGammaEvents = new HashMap<>();
+//		for (EventMapping eventMapping : mapping.getEventMappings()) {
+//			org.yakindu.base.types.Event yakinduEvent = eventMapping.getYakinduEvent();
+//			hu.bme.mit.gamma.statechart.interface_.Event gammaEvent = eventMapping.getGammaEvent();
+//			// Yakindu validation
+//			if (mappedYakinduEvents.contains(yakinduEvent)) {
+//				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+//						"This event is mapped multiple times: " + yakinduEvent.getName(),
+//						new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__EVENT_MAPPINGS)));
+//			}
+//			else {
+//				mappedYakinduEvents.add(yakinduEvent);			
+//			}
+//			// Gamma validation
+//			if (mappedGammaEvents.containsKey(gammaEvent)) {
+//				EventDeclaration gammaEventDeclaration = (EventDeclaration)gammaEvent.eContainer();
+//				if (gammaEventDeclaration.getDirection() == EventDirection.INOUT) {
+//					Set<Event> yakinduEventSet = mappedGammaEvents.get(gammaEvent);
+//					yakinduEventSet.add(yakinduEvent);
+//					// A single in and a single out event has to be now in yakinduEventSet
+//					if (!(yakinduEventSet.stream().filter(it -> it.getDirection() == Direction.IN).count() == 1 &&
+//							yakinduEventSet.stream().filter(it -> it.getDirection() == Direction.OUT).count() == 1)) {
+//						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+//							"A single in and a single out event has to be mapped onto this Gamma event: " + gammaEvent.getName(),
+//								new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__EVENT_MAPPINGS)));
+//					}
+//				}
+//				else {
+//					// Not an in-out event
+//					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+//							"Multiple Yakindu events are mapped to this Gamma event: " + gammaEvent.getName(),
+//							new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__EVENT_MAPPINGS)));
+//				}
+//			}
+//			else {
+//				// First entry
+//				Set<Event> set = new HashSet<Event>();
+//				set.add(yakinduEvent);
+//				mappedGammaEvents.put(gammaEvent, set);
+//			}
+//		}
 		return validationResultMessages;
 	}
 	
 	public Collection<ValidationResultMessage> checkEventConformance(EventMapping mapping) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		InterfaceMapping ifReal = (InterfaceMapping)mapping.eContainer();
-		if (!(checkConformance(mapping))) {
-			switch (ifReal.getRealizationMode()) {
-				case PROVIDED:
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-							"In case of provided realization mode Yakindu events must have "
-							+ "the same direction and parameter as Gamma events",
-							new ReferenceInfo(GenmodelModelPackage.Literals.EVENT_MAPPING__YAKINDU_EVENT)));
-					break;
-				case REQUIRED:	
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-							"In case of required realization mode Yakindu events must have "
-							+ "the opposite direction and same parameter of Gamma events",
-							new ReferenceInfo(GenmodelModelPackage.Literals.EVENT_MAPPING__YAKINDU_EVENT)));
-					break;
-				default:
-				throw new IllegalArgumentException("Such interface realization mode is not supported: " + ifReal.getRealizationMode());				
-			}
-		}
+//		InterfaceMapping ifReal = (InterfaceMapping) mapping.eContainer();
+//		if (!(checkConformance(mapping))) {
+//			switch (ifReal.getRealizationMode()) {
+//				case PROVIDED:
+//					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+//							"In case of provided realization mode Yakindu events must have "
+//							+ "the same direction and parameter as Gamma events",
+//							new ReferenceInfo(GenmodelModelPackage.Literals.EVENT_MAPPING__YAKINDU_EVENT)));
+//					break;
+//				case REQUIRED:	
+//					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+//							"In case of required realization mode Yakindu events must have "
+//							+ "the opposite direction and same parameter of Gamma events",
+//							new ReferenceInfo(GenmodelModelPackage.Literals.EVENT_MAPPING__YAKINDU_EVENT)));
+//					break;
+//				default:
+//				throw new IllegalArgumentException("Such interface realization mode is not supported: " + ifReal.getRealizationMode());				
+//			}
+//		}
 		return validationResultMessages;
 	}
 	
 	public Collection<ValidationResultMessage> checkTraces(TestGeneration testGeneration) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		GenModel genmodel = (GenModel)testGeneration.eContainer(); 
-		Set<String> usedInterfaces = testGeneration.getExecutionTrace().getComponent().getPorts().stream()
-				.map(it -> it.getInterfaceRealization().getInterface().getName())
-				.collect(Collectors.toSet()); 
-		List<List<Scope>> interfaceCompilation = javaUtil.filterIntoList(genmodel.getTasks(), InterfaceCompilation.class).stream()
-				.map(it -> it.getStatechart().getScopes())
-				.collect(Collectors.toList());
-		Iterable<Scope> flattenList = javaUtil.flattenIntoList(interfaceCompilation);
-		Set<String> transformedInterfaces = javaUtil.filterIntoList(flattenList, InterfaceScope.class).stream()
-				.map(it -> it.getName())
-				.collect(Collectors.toSet());
-
-		usedInterfaces.retainAll(transformedInterfaces);
-		if (!usedInterfaces.isEmpty()) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
-					"This trace depends on interfaces " + usedInterfaces + ", which are about to be recompiled; " + 
-						"the recompilation of interfaces just before the generation of "
-						+ "tests might cause a break in the generated test suite",
-					new ReferenceInfo(GenmodelModelPackage.Literals.TEST_GENERATION__EXECUTION_TRACE)));
-		}
+//		GenModel genmodel = (GenModel)testGeneration.eContainer(); 
+//		Set<String> usedInterfaces = testGeneration.getExecutionTrace().getComponent().getPorts().stream()
+//				.map(it -> it.getInterfaceRealization().getInterface().getName())
+//				.collect(Collectors.toSet()); 
+//		List<List<Scope>> interfaceCompilation = javaUtil.filterIntoList(genmodel.getTasks(), InterfaceCompilation.class).stream()
+//				.map(it -> it.getStatechart().getScopes())
+//				.collect(Collectors.toList());
+//		Iterable<Scope> flattenList = javaUtil.flattenIntoList(interfaceCompilation);
+//		Set<String> transformedInterfaces = javaUtil.filterIntoList(flattenList, InterfaceScope.class).stream()
+//				.map(it -> it.getName())
+//				.collect(Collectors.toSet());
+//
+//		usedInterfaces.retainAll(transformedInterfaces);
+//		if (!usedInterfaces.isEmpty()) {
+//			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
+//					"This trace depends on interfaces " + usedInterfaces + ", which are about to be recompiled; " + 
+//						"the recompilation of interfaces just before the generation of "
+//						+ "tests might cause a break in the generated test suite",
+//					new ReferenceInfo(GenmodelModelPackage.Literals.TEST_GENERATION__EXECUTION_TRACE)));
+//		}
 		return validationResultMessages;
 	}
 	
-	public boolean checkConformance(EventMapping mapping) {
-		org.yakindu.base.types.Event yEvent = mapping.getYakinduEvent();
-		EventDeclaration gEvent = (EventDeclaration)mapping.getGammaEvent().eContainer();
-		InterfaceMapping ifReal = (InterfaceMapping)mapping.eContainer();
-		RealizationMode realMode = ifReal.getRealizationMode();
-		return checkEventConformance(yEvent, gEvent, realMode);
-	}
+//	public boolean checkConformance(EventMapping mapping) {
+//		org.yakindu.base.types.Event yEvent = mapping.getYakinduEvent();
+//		EventDeclaration gEvent = (EventDeclaration)mapping.getGammaEvent().eContainer();
+//		InterfaceMapping ifReal = (InterfaceMapping)mapping.eContainer();
+//		RealizationMode realMode = ifReal.getRealizationMode();
+//		return checkEventConformance(yEvent, gEvent, realMode);
+//	}
 	
-	public boolean checkEventConformance(org.yakindu.base.types.Event yEvent, EventDeclaration gEvent, RealizationMode realMode) {
-		switch (realMode) {
-			 // Regarding in-out events
-			case PROVIDED:
-				return yEvent.getDirection() == Direction.IN && gEvent.getDirection() != EventDirection.OUT &&
-					checkParameters(yEvent, gEvent.getEvent()) ||
-							yEvent.getDirection() == Direction.OUT && gEvent.getDirection() != EventDirection.IN &&
-								checkParameters(yEvent, gEvent.getEvent());
-			case REQUIRED:
-				return yEvent.getDirection() == Direction.IN && gEvent.getDirection() != EventDirection.IN &&
-					checkParameters(yEvent, gEvent.getEvent()) ||
-						yEvent.getDirection() == Direction.OUT && gEvent.getDirection() != EventDirection.OUT &&
-							checkParameters(yEvent, gEvent.getEvent());
-			default:
-				throw new IllegalArgumentException("Such interface realization mode is not supported: " + realMode);				
-		}
-	}
+//	public boolean checkEventConformance(org.yakindu.base.types.Event yEvent, EventDeclaration gEvent, RealizationMode realMode) {
+//		switch (realMode) {
+//			 // Regarding in-out events
+//			case PROVIDED:
+//				return yEvent.getDirection() == Direction.IN && gEvent.getDirection() != EventDirection.OUT &&
+//					checkParameters(yEvent, gEvent.getEvent()) ||
+//							yEvent.getDirection() == Direction.OUT && gEvent.getDirection() != EventDirection.IN &&
+//								checkParameters(yEvent, gEvent.getEvent());
+//			case REQUIRED:
+//				return yEvent.getDirection() == Direction.IN && gEvent.getDirection() != EventDirection.IN &&
+//					checkParameters(yEvent, gEvent.getEvent()) ||
+//						yEvent.getDirection() == Direction.OUT && gEvent.getDirection() != EventDirection.OUT &&
+//							checkParameters(yEvent, gEvent.getEvent());
+//			default:
+//				throw new IllegalArgumentException("Such interface realization mode is not supported: " + realMode);				
+//		}
+//	}
 	
-	public boolean checkParameters(Event yakinduEvent, hu.bme.mit.gamma.statechart.interface_.Event gEvent) {
-		// event.type is null not void if no explicit type is declared
-		org.yakindu.base.types.Type yakinduType = yakinduEvent.getType();
-		List<ParameterDeclaration> gammaParameters = gEvent.getParameterDeclarations();
-		if (yakinduType == null && gammaParameters.isEmpty()) {
-			return true;
-		}
-		if (!gammaParameters.isEmpty()) {
-			Type eventType = gammaParameters.get(0).getType();
-			if (eventType instanceof IntegerTypeDefinition) {
-				if (yakinduType == null) {
-					return false;
-				}
-				return yakinduType.getName().equals("integer") ||
-						yakinduType.getName().equals("string"); 
-			}
-			else if (eventType instanceof BooleanTypeDefinition) {
-				if (yakinduType == null) {
-					return false;
-				}
-				return yakinduType.getName().equals("boolean");
-			}
-			else if (eventType instanceof DecimalTypeDefinition) {
-				if (yakinduType == null) {
-					return false;
-				}
-				return yakinduType.getName().equals("real");
-			}
-			else if (eventType instanceof TypeReference) {
-				return false; // Yakindu does not support composite types
-			}
-			else {
-				throw new IllegalArgumentException("Not known type: " + gammaParameters.get(0).getType());
-			}
-		}
-		return false;
-	}
+//	public boolean checkParameters(Event yakinduEvent, hu.bme.mit.gamma.statechart.interface_.Event gEvent) {
+//		// event.type is null not void if no explicit type is declared
+//		org.yakindu.base.types.Type yakinduType = yakinduEvent.getType();
+//		List<ParameterDeclaration> gammaParameters = gEvent.getParameterDeclarations();
+//		if (yakinduType == null && gammaParameters.isEmpty()) {
+//			return true;
+//		}
+//		if (!gammaParameters.isEmpty()) {
+//			Type eventType = gammaParameters.get(0).getType();
+//			if (eventType instanceof IntegerTypeDefinition) {
+//				if (yakinduType == null) {
+//					return false;
+//				}
+//				return yakinduType.getName().equals("integer") ||
+//						yakinduType.getName().equals("string"); 
+//			}
+//			else if (eventType instanceof BooleanTypeDefinition) {
+//				if (yakinduType == null) {
+//					return false;
+//				}
+//				return yakinduType.getName().equals("boolean");
+//			}
+//			else if (eventType instanceof DecimalTypeDefinition) {
+//				if (yakinduType == null) {
+//					return false;
+//				}
+//				return yakinduType.getName().equals("real");
+//			}
+//			else if (eventType instanceof TypeReference) {
+//				return false; // Yakindu does not support composite types
+//			}
+//			else {
+//				throw new IllegalArgumentException("Not known type: " + gammaParameters.get(0).getType());
+//			}
+//		}
+//		return false;
+//	}
 	
 	// Duplicated in StatechartModelValidator
 	public Collection<ValidationResultMessage> checkComponentInstanceReferences(ComponentInstanceReferenceExpression reference) {

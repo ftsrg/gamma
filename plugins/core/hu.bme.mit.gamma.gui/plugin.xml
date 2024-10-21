@@ -186,7 +186,7 @@
           fixed="false"
           icon="icons/gamma-icon-16.png"
           id="hu.bme.mit.gamma.gui.perspective"
-          name="Gamma Perspective">
+          name="Gamma">
     </perspective>
  </extension>
  <extension

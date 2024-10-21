@@ -36,13 +36,11 @@ To cite Gamma, please cite the following paper. You can find additional publicat
 ### Dependencies
 
 ##### Recommended Eclipse version and bundle:
-* Eclipse IDE 2023-09, Eclipse IDE for Java and DSL Developers bundle. Note that Yakindu (see below) will not work with the _2023-12_ or newer Eclipse releases due to compatibility reasons.
+* Eclipse IDE 2024-09, Eclipse IDE for Java and DSL Developers bundle. Note that Yakindu (see below) will not work with the _2023-12_ or newer Eclipse releases due to compatibility reasons.
 
 ##### 3rd-party Eclipse components (should be installed separately):
-* Xtext 2.32.0 (https://www.eclipse.org/Xtext/, included in Eclipse bundle),
-* VIATRA 2.8.0 (https://www.eclipse.org/viatra/),
-* Yakindu Statechart Tools 3.5.13 (https://www.itemis.com/en/yakindu/state-machine/),
-* PlantUML 1.1.30 (https://plantuml.com/).
+* VIATRA 2.9.1 (https://www.eclipse.org/viatra/),
+* PlantUML 1.1.32 (https://plantuml.com/).
 
 ##### 3rd-party tools used by Gamma (should be installed separately):
 * UPPAAL (Uppsala and Aalborg Universities, http://www.uppaal.org/),

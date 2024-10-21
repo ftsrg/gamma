@@ -21,9 +21,6 @@ Require-Bundle: org.eclipse.core.runtime,
  hu.bme.mit.gamma.trace.model;visibility:=reexport,
  hu.bme.mit.gamma.xsts.model;visibility:=reexport,
  hu.bme.mit.gamma.fei.model;visibility:=reexport,
- org.yakindu.sct.model.sgraph;visibility:=reexport,
- org.yakindu.sct.model.stext;visibility:=reexport,
- hu.bme.mit.gamma.action.model;visibility:=reexport,
- org.yakindu.base.types;visibility:=reexport
+ hu.bme.mit.gamma.action.model;visibility:=reexport
 Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: hu.bme.mit.gamma.genmodel.model

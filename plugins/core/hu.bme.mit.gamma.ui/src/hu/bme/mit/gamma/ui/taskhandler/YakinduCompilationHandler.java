@@ -10,10 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.ui.taskhandler;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
-import java.util.List;
-
 import org.eclipse.core.resources.IFile;
 
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation;
@@ -25,20 +21,20 @@ public abstract class YakinduCompilationHandler extends TaskHandler {
 	}
 	
 	protected void setYakinduCompilation(YakinduCompilation yakinduCompilation) {
-		String fileName = getNameWithoutExtension(
-				getContainingFileName(
-						yakinduCompilation.getStatechart()));
-		List<String> fileNames = yakinduCompilation.getFileName();
-		List<String> packageNames = yakinduCompilation.getPackageName();
-		checkArgument(fileNames.size() <= 1);
-		checkArgument(packageNames.size() <= 1);
-		if (fileNames.isEmpty()) {
-			fileNames.add(fileName);
-		}
-		if (packageNames.isEmpty()) {
-			packageNames.add(
-					yakinduCompilation.getStatechart().getName().toLowerCase());
-		}
+//		String fileName = getNameWithoutExtension(
+//				getContainingFileName(
+//						yakinduCompilation.getStatechart()));
+//		List<String> fileNames = yakinduCompilation.getFileName();
+//		List<String> packageNames = yakinduCompilation.getPackageName();
+//		checkArgument(fileNames.size() <= 1);
+//		checkArgument(packageNames.size() <= 1);
+//		if (fileNames.isEmpty()) {
+//			fileNames.add(fileName);
+//		}
+//		if (packageNames.isEmpty()) {
+//			packageNames.add(
+//					yakinduCompilation.getStatechart().getName().toLowerCase());
+//		}
 	}
 	
 }

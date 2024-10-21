@@ -30,23 +30,23 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setAutoLinewrap(110);
         // Line break after these rules
         c.setLinewrap(1, 1, 2).after(f.getGenModelAccess().getPackageImportsAssignment_0_0_1_0());
-        c.setLinewrap(1, 1, 2).after(f.getGenModelAccess().getStatechartImportsAssignment_0_0_1_1_1());
-        c.setLinewrap(1, 1, 2).after(f.getGenModelAccess().getScenarioImportsAssignment_0_0_1_2_1());
-        c.setLinewrap(1, 1, 2).after(f.getGenModelAccess().getTraceImportsAssignment_0_0_1_3_1());
+        c.setLinewrap(1, 1, 2).after(f.getGenModelAccess().getScenarioImportsAssignment_0_0_1_1_1());
+        c.setLinewrap(1, 1, 2).after(f.getGenModelAccess().getTraceImportsAssignment_0_0_1_2_1());
         c.setLinewrap(1, 1, 2).after(f.getGenModelAccess().getGenmodelImportsAssignment_0_1_1());
         c.setLinewrap(1, 1, 2).after(f.getGenModelAccess().getTasksAssignment_1());
-        // Interface compilation
-        c.setLinewrap(1).after(f.getEventMappingRule());
-        c.setLinewrap(1).after(f.getInterfaceCompilationAccess().getStatechartAssignment_4());
-        c.setLinewrap(1).after(f.getInterfaceCompilationAccess().getTargetFolderAssignment_5_0_2());
-        c.setLinewrap(1).after(f.getInterfaceCompilationAccess().getFileNameAssignment_5_1_2());
-        c.setLinewrap(1).after(f.getInterfaceCompilationAccess().getPackageNameAssignment_5_2_2());
-        // Statechart compilation
-        c.setLinewrap(1).after(f.getStatechartCompilationAccess().getStatechartAssignment_4());
-        c.setLinewrap(1).after(f.getStatechartCompilationAccess().getTargetFolderAssignment_5_0_2());
-        c.setLinewrap(1).after(f.getStatechartCompilationAccess().getFileNameAssignment_5_1_2());
-        c.setLinewrap(1).after(f.getStatechartCompilationAccess().getPackageNameAssignment_5_2_2());
-        c.setLinewrap(1).after(f.getStatechartCompilationAccess().getStatechartNameAssignment_5_3_2());
+//        c.setLinewrap(1, 1, 2).after(f.getGenModelAccess().getStatechartImportsAssignment_0_0_1_1_1());
+//        // Interface compilation
+//        c.setLinewrap(1).after(f.getEventMappingRule());
+//        c.setLinewrap(1).after(f.getInterfaceCompilationAccess().getStatechartAssignment_4());
+//        c.setLinewrap(1).after(f.getInterfaceCompilationAccess().getTargetFolderAssignment_5_0_2());
+//        c.setLinewrap(1).after(f.getInterfaceCompilationAccess().getFileNameAssignment_5_1_2());
+//        c.setLinewrap(1).after(f.getInterfaceCompilationAccess().getPackageNameAssignment_5_2_2());
+//        // Statechart compilation
+//        c.setLinewrap(1).after(f.getStatechartCompilationAccess().getStatechartAssignment_4());
+//        c.setLinewrap(1).after(f.getStatechartCompilationAccess().getTargetFolderAssignment_5_0_2());
+//        c.setLinewrap(1).after(f.getStatechartCompilationAccess().getFileNameAssignment_5_1_2());
+//        c.setLinewrap(1).after(f.getStatechartCompilationAccess().getPackageNameAssignment_5_2_2());
+//        c.setLinewrap(1).after(f.getStatechartCompilationAccess().getStatechartNameAssignment_5_3_2());
         // Code generation
         c.setLinewrap(1).after(f.getCodeGenerationAccess().getComponentAssignment_4());
         c.setLinewrap(1).after(f.getCodeGenerationAccess().getTargetFolderAssignment_5_0_2());
@@ -156,7 +156,7 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getMutationBasedTestGenerationAccess().getTestClassNamePatternAssignment_3_8_2());
         c.setLinewrap(1).after(f.getMutationBasedTestGenerationAccess().getPatternClassNamesAssignment_3_9_2());
         // Interface mapping
-        c.setLinewrap(1).after(f.getInterfaceMappingRule());
+//        c.setLinewrap(1).after(f.getInterfaceMappingRule());
 		for (Keyword comma: f.findKeywords(",")) {
 			c.setNoLinewrap().before(comma);
 			c.setNoSpace().before(comma);

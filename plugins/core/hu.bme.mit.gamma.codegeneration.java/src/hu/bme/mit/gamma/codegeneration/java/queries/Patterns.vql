@@ -14,18 +14,18 @@ import "http://www.mit.bme.hu/gamma/expression/Model" as con
 import "http://www.mit.bme.hu/gamma/statechart/Model/Statechart" as model
 import "http://www.mit.bme.hu/gamma/statechart/Model/Composite"
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface" as gif
-import "http://www.mit.bme.hu/gamma/yakindu/transformation/Traceability"
-import "http://www.mit.bme.hu/gamma/genmodel/Model"
 
-import "http://www.yakindu.org/sct/sgraph/2.0.0"
-import "http://www.yakindu.org/sct/statechart/SText" as stext
-import "http://www.yakindu.org/base/base/2.0.0"
-import "http://www.yakindu.org/base/types/2.0.0" as types
+//import "http://www.mit.bme.hu/gamma/yakindu/transformation/Traceability"
+//
+//import "http://www.yakindu.org/sct/sgraph/2.0.0"
+//import "http://www.yakindu.org/sct/statechart/SText" as stext
+//import "http://www.yakindu.org/base/base/2.0.0"
+//import "http://www.yakindu.org/base/types/2.0.0" as types
 
-pattern traces(trace : Trace, from, to) {
-	Trace.from(trace, from);
-	Trace.to(trace, to);
-}
+//pattern traces(trace : Trace, from, to) {
+//	Trace.from(trace, from);
+//	Trace.to(trace, to);
+//}
 
 // Type declarations
 
@@ -39,11 +39,11 @@ pattern simpleGammaComponents(statechartDefinition : StatechartDefinition) {
 	StatechartDefinition(statechartDefinition);
 }
 
-pattern simpleYakinduComponents(statechartDefinition : Component) {
-	Statechart(yakinduStatechart);
-	find traces(_, yakinduStatechart, statechartDefinition);
-	find simpleGammaComponents(statechartDefinition);
-}
+//pattern simpleYakinduComponents(statechartDefinition : Component) {
+//	Statechart(yakinduStatechart);
+//	find traces(_, yakinduStatechart, statechartDefinition);
+//	find simpleGammaComponents(statechartDefinition);
+//}
 
 pattern abstractSynchronousCompositeComponents(synchronousCompositeComponent : AbstractSynchronousCompositeComponent) {
 	AbstractSynchronousCompositeComponent(synchronousCompositeComponent);
@@ -61,15 +61,15 @@ pattern broadcastChannels(composite : CompositeComponent, broadcastChannel : Bro
 	BroadcastChannel.requiredPorts(broadcastChannel, requiredPort);
 }
 
-private pattern mappedPorts(interface : Interface, gPort : Port, yEvent : types::Event, gEvent : gif::Event) {
-	find traces(_, yEvent, gEvent); 
-	find traces(_, ySct, gSct);
-	find traces(_, yIf, gPort);
-	Component.ports(gSct, gPort);
-	Port.interfaceRealization.interface(gPort, interface);
-	Statechart.scopes(ySct, yIf);
-	InterfaceScope.members(yIf, yEvent);
-}
+//private pattern mappedPorts(interface : Interface, gPort : Port, yEvent : types::Event, gEvent : gif::Event) {
+//	find traces(_, yEvent, gEvent); 
+//	find traces(_, ySct, gSct);
+//	find traces(_, yIf, gPort);
+//	Component.ports(gSct, gPort);
+//	Port.interfaceRealization.interface(gPort, interface);
+//	Statechart.scopes(ySct, yIf);
+//	InterfaceScope.members(yIf, yEvent);
+//}
 
 private pattern portBindings(composite : CompositeComponent, systemPort : Port, instance : ComponentInstance, instancePort : Port) {
 	CompositeComponent.portBindings(composite, portBinding);
@@ -103,23 +103,23 @@ private pattern portToInstancePort(systemPort : Port, instance : ComponentInstan
 /** 
  * It returns events of the parent interfaces as well.
  */
-pattern eventToEvent(gPort : Port, yEvent : types::Event, gEvent : gif::Event) {
-	find mappedPorts(interface, gPort, yEvent, gEvent);
-	Interface.events.event(interface, gEvent);
-} or {
-	find portToInstancePort(gPort, _, port);
-	find mappedPorts(interface, port, yEvent, gEvent);
-	Interface.events.event(interface, gEvent);	
-} or {
-	find mappedPorts(interface, gPort, yEvent, gEvent);
-	find parentInterfaces+(interface, parentInterface);
-	Interface.events.event(parentInterface, gEvent);
-} or {
-	find portToInstancePort(gPort, _, port);
-	find mappedPorts(interface, port, yEvent, gEvent);
-	find parentInterfaces+(interface, parentInterface);
-	Interface.events.event(parentInterface, gEvent);
-}
+//pattern eventToEvent(gPort : Port, yEvent : types::Event, gEvent : gif::Event) {
+//	find mappedPorts(interface, gPort, yEvent, gEvent);
+//	Interface.events.event(interface, gEvent);
+//} or {
+//	find portToInstancePort(gPort, _, port);
+//	find mappedPorts(interface, port, yEvent, gEvent);
+//	Interface.events.event(interface, gEvent);	
+//} or {
+//	find mappedPorts(interface, gPort, yEvent, gEvent);
+//	find parentInterfaces+(interface, parentInterface);
+//	Interface.events.event(parentInterface, gEvent);
+//} or {
+//	find portToInstancePort(gPort, _, port);
+//	find mappedPorts(interface, port, yEvent, gEvent);
+//	find parentInterfaces+(interface, parentInterface);
+//	Interface.events.event(parentInterface, gEvent);
+//}
 
 pattern interfaces(interface : Interface) {
 	Interface(interface);

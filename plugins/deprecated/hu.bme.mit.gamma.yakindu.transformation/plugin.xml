@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><plugin>
+  <extension id="hu.bme.mit.gamma.yakindu.transformation.queries.ErrorPatterns" point="org.eclipse.viatra.query.runtime.queryspecification">
+    <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:hu.bme.mit.gamma.yakindu.transformation.queries.ErrorPatterns" id="hu.bme.mit.gamma.yakindu.transformation.queries.ErrorPatterns">
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.entryOrExitReactionWithGuards"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.namesWithIncorrectCharacters"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.statesWithSameName"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.raisedInEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.raisedOutEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.emptyChoiceTransitions"/>
+    </group>
+  </extension>
+  <extension id="hu.bme.mit.gamma.yakindu.transformation.queries.Patterns" point="org.eclipse.viatra.query.runtime.queryspecification">
+    <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:hu.bme.mit.gamma.yakindu.transformation.queries.Patterns" id="hu.bme.mit.gamma.yakindu.transformation.queries.Patterns">
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.traces"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.expressionTraces"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.statecharts"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.topRegions"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.compositeStateRegions"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.entries"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.simpleStates"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.choices"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.merges"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.forks"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.joins"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.finalStates"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.stateToComposite"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.topRegionsOfFinalStates"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.defaultTransitionsOfExitNodes"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.exitNodeTransitions"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.transitions"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.variables"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.variableInits"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.transitionsWithGuards"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.events"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.interfaces"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.transitionsWithEventTriggers"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.recursiveExpressions"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.transitionsWithValueOfTriggers"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.transitionsWithDefaultTriggers"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.transitionsWithAlwaysTriggers"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.transitionsWithTimeTriggers"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.transitionsWithEffect"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.statesWithEntryEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.statesWithExitEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.statesWithRegularLocalReactions"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.triggersOfRegularLocalReactions"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.triggersOfTimedLocalReactions"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.valueOfLocalReactions"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.guardsOfRegularLocalReactions"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.actionsOfRegularLocalReactions"/>
+    </group>
+  </extension>
+  <extension id="hu.bme.mit.gamma.yakindu.transformation.queries.TargetPatterns" point="org.eclipse.viatra.query.runtime.queryspecification">
+    <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:hu.bme.mit.gamma.yakindu.transformation.queries.TargetPatterns" id="hu.bme.mit.gamma.yakindu.transformation.queries.TargetPatterns">
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.nonEntryNonChoiceTransitions"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.interfaceToInterface"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.eventToEvent"/>
+    </group>
+  </extension>
+</plugin>

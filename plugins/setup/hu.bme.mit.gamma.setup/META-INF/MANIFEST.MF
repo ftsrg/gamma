@@ -4,15 +4,11 @@ Bundle-Name: Gamma Setup
 Bundle-SymbolicName: hu.bme.mit.gamma.setup
 Bundle-Version: 2.11.0.qualifier
 Require-Bundle: org.eclipse.core.runtime,
- org.yakindu.base.types;visibility:=reexport,
- org.yakindu.sct.model.sgraph;visibility:=reexport,
- org.yakindu.sct.model.stext;visibility:=reexport,
  org.eclipse.emf.ecore;visibility:=reexport,
  org.eclipse.emf.ecore.xmi;visibility:=reexport,
  org.eclipse.emf.mwe2.lib,
  org.eclipse.emf.mwe2.launch,
  org.apache.commons.logging,
- org.apache.commons.lang,
  org.eclipse.xtext.xbase.lib,
  org.eclipse.xtext,
  org.apache.commons.logging,

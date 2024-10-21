@@ -7,15 +7,13 @@ Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.ui
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: com.google.gson,
+ com.google.guava,
  org.eclipse.equinox.registry,
  org.eclipse.core.resources,
- org.yakindu.sct.model.sgraph,
  de.uni_paderborn.uppaal,
  hu.bme.mit.gamma.statechart.model,
  hu.bme.mit.gamma.genmodel.model,
  hu.bme.mit.gamma.dialog,
- hu.bme.mit.gamma.yakindu.transformation.traceability,
- hu.bme.mit.gamma.yakindu.transformation,
  hu.bme.mit.gamma.statechart.language,
  hu.bme.mit.gamma.statechart.language.ui,
  hu.bme.mit.gamma.trace.language.ui,

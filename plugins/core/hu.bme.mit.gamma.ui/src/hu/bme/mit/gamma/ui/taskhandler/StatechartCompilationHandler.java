@@ -10,19 +10,11 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.ui.taskhandler;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.io.IOException;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation;
-import hu.bme.mit.gamma.statechart.interface_.Package;
-import hu.bme.mit.gamma.yakindu.transformation.batch.ModelValidator;
-import hu.bme.mit.gamma.yakindu.transformation.batch.YakinduToGammaTransformer;
-import hu.bme.mit.gamma.yakindu.transformation.traceability.Y2GTrace;
 
 public class StatechartCompilationHandler extends YakinduCompilationHandler {
 
@@ -35,23 +27,23 @@ public class StatechartCompilationHandler extends YakinduCompilationHandler {
 		setTargetFolder(statechartCompilation);
 		//
 		setYakinduCompilation(statechartCompilation);
-		setStatechartCompilation(statechartCompilation, statechartCompilation.getStatechart().getName());
-		ModelValidator validator = new ModelValidator(statechartCompilation.getStatechart());
-		validator.checkModel();
-		YakinduToGammaTransformer transformer = new YakinduToGammaTransformer(statechartCompilation);
-		SimpleEntry<Package, Y2GTrace> resultModels = transformer.execute();
-		// Saving Xtext and EMF models
-		serializer.saveModel(resultModels.getKey(), targetFolderUri, statechartCompilation.getFileName().get(0) + ".gcd");
-		serializer.saveModel(resultModels.getValue(), targetFolderUri, "." + statechartCompilation.getFileName().get(0) + ".y2g");
-		transformer.dispose();
+//		setStatechartCompilation(statechartCompilation, statechartCompilation.getStatechart().getName());
+//		ModelValidator validator = new ModelValidator(statechartCompilation.getStatechart());
+//		validator.checkModel();
+//		YakinduToGammaTransformer transformer = new YakinduToGammaTransformer(statechartCompilation);
+//		SimpleEntry<Package, Y2GTrace> resultModels = transformer.execute();
+//		// Saving Xtext and EMF models
+//		serializer.saveModel(resultModels.getKey(), targetFolderUri, statechartCompilation.getFileName().get(0) + ".gcd");
+//		serializer.saveModel(resultModels.getValue(), targetFolderUri, "." + statechartCompilation.getFileName().get(0) + ".y2g");
+//		transformer.dispose();
 	}
 
-	private void setStatechartCompilation(StatechartCompilation statechartCompilation, String statechartName) {
-		List<String> statechartNames = statechartCompilation.getStatechartName();
-		checkArgument(statechartNames.size() <= 1);
-		if (statechartNames.isEmpty()) {
-			statechartNames.add(statechartName);
-		}
-	}
+//	private void setStatechartCompilation(StatechartCompilation statechartCompilation, String statechartName) {
+//		List<String> statechartNames = statechartCompilation.getStatechartName();
+//		checkArgument(statechartNames.size() <= 1);
+//		if (statechartNames.isEmpty()) {
+//			statechartNames.add(statechartName);
+//		}
+//	}
 
 }

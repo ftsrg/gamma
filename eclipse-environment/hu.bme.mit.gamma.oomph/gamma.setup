@@ -55,42 +55,28 @@
   <setupTask
       xsi:type="setup:VariableTask"
       name="eclipse.target.platform"
-      defaultValue="2023-09"
+      defaultValue="2024-09"
       storageURI="scope://Workspace"/>
   <setupTask
       xsi:type="setup.p2:P2Task">
     <requirement
         name="net.sourceforge.plantuml.feature.feature.group"
-        versionRange="1.1.30"/>
+        versionRange="1.1.32"/>
     <requirement
         name="net.sourceforge.plantuml.ecore.feature.feature.group"
-        versionRange="1.1.30"/>
-    <requirement
-        name="com.yakindu.sct.license.standard.feature.feature.group"
-        versionRange="3.5.13"/>
-    <requirement
-        name="org.yakindu.sct.feature.group"
-        versionRange="3.5.13"/>
-    <requirement
-        name="org.yakindu.base.feature.group"
-        versionRange="3.5.13"/>
-    <requirement
-        name="org.yakindu.sct.generator.java.feature.group"
-        versionRange="3.5.13"/>
+        versionRange="1.1.32"/>
     <requirement
         name="org.eclipse.viatra.query.sdk.feature.source.feature.group"
-        versionRange="2.8.0"/>
+        versionRange="2.9.1"/>
     <repository
-        url="https://download.eclipse.org/technology/epp/packages/2023-09/202309071200/"/>
+        url="https://download.eclipse.org/technology/epp/packages/2024-09/202409051200/"/>
     <repository
-        url="https://download.eclipse.org/releases/2023-09/202309131000/">
+        url="https://download.eclipse.org/releases/2024-09/202409111000/">
       <annotation
           source="http://www.eclipse.org/oomph/setup/ReleaseTrain"/>
     </repository>
     <repository
-        url="http://updates.yakindu.com/statecharts/releases/3.5.13"/>
-    <repository
-        url="http://download.eclipse.org/viatra/updates/release/2.8.0"/>
+        url="http://download.eclipse.org/viatra/updates/release/2.9.1"/>
     <repository
         url="http://hallvard.github.io/plantuml/"/>
     <description>Install the tools needed in the IDE to work with the source code for ${scope.project.label}</description>
@@ -107,6 +93,27 @@
       <sourceLocator
           rootFolder="${git.clone.hu.bme.mit.gamma.oomph.location}"
           locateNestedProjects="true"/>
+	  <repositoryList
+          name="2024-09">
+        <repository
+            url="https://download.eclipse.org/releases/2024-09"/>
+        <repository
+            url="https://download.eclipse.org/cbi/updates/license"/>
+      </repositoryList>
+      <repositoryList
+          name="2024-06">
+        <repository
+            url="https://download.eclipse.org/releases/2024-06"/>
+        <repository
+            url="https://download.eclipse.org/cbi/updates/license"/>
+      </repositoryList>
+      <repositoryList
+          name="2024-03">
+        <repository
+            url="https://download.eclipse.org/releases/2024-03"/>
+        <repository
+            url="https://download.eclipse.org/cbi/updates/license"/>
+      </repositoryList>
       <repositoryList
           name="2023-12">
         <repository
