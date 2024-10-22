@@ -21,6 +21,8 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.property.model.AtomicFormula;
 import hu.bme.mit.gamma.property.model.BinaryLogicalOperator;
 import hu.bme.mit.gamma.property.model.BinaryOperandLogicalPathFormula;
+import hu.bme.mit.gamma.property.model.BinaryOperandPathFormula;
+import hu.bme.mit.gamma.property.model.BinaryPathOperator;
 import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PathFormula;
 import hu.bme.mit.gamma.property.model.PathQuantifier;
@@ -28,6 +30,8 @@ import hu.bme.mit.gamma.property.model.PropertyModelFactory;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.QuantifiedFormula;
 import hu.bme.mit.gamma.property.model.StateFormula;
+import hu.bme.mit.gamma.property.model.UnaryLogicalOperator;
+import hu.bme.mit.gamma.property.model.UnaryOperandLogicalPathFormula;
 import hu.bme.mit.gamma.property.model.UnaryOperandPathFormula;
 import hu.bme.mit.gamma.property.model.UnaryPathOperator;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
@@ -156,6 +160,42 @@ public class PropertyUtil extends StatechartUtil {
 		AtomicFormula atomicFormula = propertyFactory.createAtomicFormula();
 		atomicFormula.setExpression(expression);
 		return atomicFormula;
+	}
+	
+	public PathFormula createNot(PathFormula formula) {
+		UnaryOperandLogicalPathFormula pathFormula = propertyFactory.createUnaryOperandLogicalPathFormula();
+		pathFormula.setOperator(UnaryLogicalOperator.NOT);
+		pathFormula.setOperand(formula);
+		return pathFormula;
+	}
+	
+	public PathFormula createG(PathFormula formula) {
+		UnaryOperandPathFormula pathFormula = propertyFactory.createUnaryOperandPathFormula();
+		pathFormula.setOperator(UnaryPathOperator.GLOBAL);
+		pathFormula.setOperand(formula);
+		return pathFormula;
+	}
+	
+	public PathFormula createF(PathFormula formula) {
+		UnaryOperandPathFormula pathFormula = propertyFactory.createUnaryOperandPathFormula();
+		pathFormula.setOperator(UnaryPathOperator.FUTURE);
+		pathFormula.setOperand(formula);
+		return pathFormula;
+	}
+	
+	public PathFormula createX(PathFormula formula) {
+		UnaryOperandPathFormula pathFormula = propertyFactory.createUnaryOperandPathFormula();
+		pathFormula.setOperator(UnaryPathOperator.NEXT);
+		pathFormula.setOperand(formula);
+		return pathFormula;
+	}
+	
+	public PathFormula createU(PathFormula lhs, PathFormula rhs) {
+		BinaryOperandPathFormula pathFormula = propertyFactory.createBinaryOperandPathFormula();
+		pathFormula.setOperator(BinaryPathOperator.UNTIL);
+		pathFormula.setLeftOperand(lhs);
+		pathFormula.setRightOperand(rhs);
+		return pathFormula;
 	}
 	
 	public StateFormula createSimpleCtlFormula(PathQuantifier pathQuantifier,

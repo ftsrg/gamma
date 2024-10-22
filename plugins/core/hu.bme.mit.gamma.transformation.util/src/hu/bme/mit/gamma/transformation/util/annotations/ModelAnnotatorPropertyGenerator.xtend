@@ -112,6 +112,10 @@ class ModelAnnotatorPropertyGenerator {
 			val formulas = generatedPropertyPackage.formulas
 			
 			formulas += propertyGenerator.createStateReachabilityFormulas(annotator.trapStates) // Nondeterministic transition coverage
+//			
+//			formulas += propertyGenerator.createTrapStateInvariance(testedComponentsForStates.map[it.type].filter(StatechartDefinition).map[it.allStates].flatten)
+//			formulas += propertyGenerator.createUnstableStateInvariance(testedComponentsForStates.map[it.type].filter(StatechartDefinition).map[it.allStates].flatten)
+//			
 			formulas += propertyGenerator.createTransitionReachability(
 							annotator.getTransitionVariables)
 			formulas += propertyGenerator.createTransitionPairReachability(
