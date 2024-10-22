@@ -21,6 +21,8 @@ import org.eclipse.xtend.lib.annotations.Data
 @Data
 class AnnotatableElements {
 	
+	Collection<SynchronousComponentInstance> deadlockCoverableComponents
+	
 	Collection<SynchronousComponentInstance> nondeterministicTransitionCoverableComponents
 	
 	Collection<SynchronousComponentInstance> transitionCoverableComponents

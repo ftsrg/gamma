@@ -48,6 +48,17 @@ class ModelAnnotatorPropertyGenerator {
 		// State coverage
 		val testedComponentsForStates = getIncludedSynchronousInstances(
 				annotableElements.testedComponentsForStates, newTopComponent)
+		// Unstable state coverage
+		val testedComponentsForUnstableStates = getIncludedSynchronousInstances(
+				annotableElements.testedComponentsForUnstableStates, newTopComponent)
+				.map[it.type].filter(StatechartDefinition).map[it.allStates].flatten
+		// Trap state coverage
+		val testedComponentsForTrapStates = getIncludedSynchronousInstances(
+				annotableElements.testedComponentsForTrapStates, newTopComponent)
+				.map[it.type].filter(StatechartDefinition).map[it.allStates].flatten
+		// Deadlock coverage
+		val testedComponentsForDeadlock = getIncludedSynchronousInstances(
+				annotableElements.testedComponentsForDeadlock, newTopComponent)
 		// Nondeterministic transition coverage
 		val testedComponentsForNondeterministicTransitions = getIncludedSynchronousInstances(
 				annotableElements.testedComponentsForNondeterministicTransitions, newTopComponent)
@@ -82,6 +93,9 @@ class ModelAnnotatorPropertyGenerator {
 				annotableElements.testedComponentsForInteractionDataflow, newTopComponent)
 		
 		if (!testedComponentsForStates.nullOrEmpty ||
+				!testedComponentsForUnstableStates.nullOrEmpty ||
+				!testedComponentsForTrapStates.nullOrEmpty ||
+				!testedComponentsForDeadlock.nullOrEmpty ||
 				!testedComponentsForNondeterministicTransitions.nullOrEmpty ||
 				!testedComponentsForTransitions.nullOrEmpty ||
 				!testedComponentsForTransitionPairs.nullOrEmpty ||
@@ -92,6 +106,7 @@ class ModelAnnotatorPropertyGenerator {
 				!testedPortsForInteractionDataflow.nullOrEmpty) {
 			val annotator = new StatechartAnnotator(newPackage,
 				new AnnotatableElements(
+					testedComponentsForDeadlock,
 					testedComponentsForNondeterministicTransitions,
 					testedComponentsForTransitions,
 					testedComponentsForTransitionPairs,
@@ -111,17 +126,18 @@ class ModelAnnotatorPropertyGenerator {
 			
 			val formulas = generatedPropertyPackage.formulas
 			
+			formulas += propertyGenerator.createStateReachability(testedComponentsForStates)
+			
+			formulas += propertyGenerator.createUnstableStateInvariance(testedComponentsForUnstableStates)
+			formulas += propertyGenerator.createTrapStateInvariance(testedComponentsForTrapStates)
+			formulas += propertyGenerator.createDeadlockInvariance(annotator.getDeadlockTransitionVariables)
 			formulas += propertyGenerator.createStateReachabilityFormulas(annotator.trapStates) // Nondeterministic transition coverage
-//			
-//			formulas += propertyGenerator.createTrapStateInvariance(testedComponentsForStates.map[it.type].filter(StatechartDefinition).map[it.allStates].flatten)
-//			formulas += propertyGenerator.createUnstableStateInvariance(testedComponentsForStates.map[it.type].filter(StatechartDefinition).map[it.allStates].flatten)
-//			
+			
 			formulas += propertyGenerator.createTransitionReachability(
 							annotator.getTransitionVariables)
 			formulas += propertyGenerator.createTransitionPairReachability(
 							annotator.getTransitionPairAnnotations)
 			formulas += propertyGenerator.createInteractionReachability(annotator.getInteractions)
-			formulas += propertyGenerator.createStateReachability(testedComponentsForStates)
 			formulas += propertyGenerator.createOutEventReachability(testedPortsForOutEvents)
 			
 			formulas += propertyGenerator.createDataflowReachability(annotator.variableDefUses,

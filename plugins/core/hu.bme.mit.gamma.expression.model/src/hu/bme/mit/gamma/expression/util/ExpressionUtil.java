@@ -916,10 +916,10 @@ public class ExpressionUtil {
 		if (literalExpression instanceof IntegerLiteralExpression integer) {
 			return integer.getValue().intValue();
 		}
-		else if (literalExpression instanceof TrueExpression bool) {
+		else if (literalExpression instanceof TrueExpression) {
 			return 1;
 		}
-		else if (literalExpression instanceof FalseExpression bool) {
+		else if (literalExpression instanceof FalseExpression) {
 			return 0;
 		}
 		else if (literalExpression instanceof EnumerationLiteralExpression enumeration) {

@@ -122,34 +122,6 @@ class PropertyGenerator {
 		return formulas
 	}
 	
-	def List<CommentableStateFormula> createTrapStateInvariance(Iterable<? extends State> states) {
-		val formulas = newArrayList
-		for (state : states) { // A G(state -> (G state)) - note that 'loop transitions' can still fire!
-			val instance = state.containingComponent.referencingComponentInstance
-			val stateReference = compositeFactory.createComponentInstanceStateReferenceExpression
-			val parentRegion = StatechartModelDerivedFeatures.getParentRegion(state)
-			stateReference.setInstance(instance.createInstanceReference)
-			stateReference.setRegion(parentRegion)
-			stateReference.setState(state)
-			val stateReferenceFormula = propertyUtil.createAtomicFormula(stateReference)
-			val stateReferenceFormula2 = stateReferenceFormula.clone
-			
-			val implication = factory.createBinaryOperandLogicalPathFormula => [
-				it.leftOperand = stateReferenceFormula
-				it.operator = BinaryLogicalOperator.IMPLY
-				it.rightOperand = propertyUtil.createG(stateReferenceFormula2)
-			] // state -> G (state)
-			
-			val stateFormula = propertyUtil.createAG(implication) // A G(state -> G (state))
-			
-			val commentableStateFormula = propertyUtil.createCommentableStateFormula(
-					'''Is «instance.name».«parentRegion.name».«state.name» a trap state?''', stateFormula)
-			formulas += commentableStateFormula
-		}
-		
-		return formulas
-	}
-	
 	def List<CommentableStateFormula> createUnstableStateInvariance(Iterable<? extends State> states) {
 		val formulas = newArrayList
 		for (state : states) { // A G(state -> (X !(state)))
@@ -179,7 +151,75 @@ class PropertyGenerator {
 		
 		return formulas
 	}
-
+	
+	def List<CommentableStateFormula> createTrapStateInvariance(Iterable<? extends State> states) {
+		val formulas = newArrayList
+		for (state : states) { // A G(state -> (G state)) - note that 'loop transitions' can still fire!
+			val instance = state.containingComponent.referencingComponentInstance
+			val stateReference = compositeFactory.createComponentInstanceStateReferenceExpression
+			val parentRegion = StatechartModelDerivedFeatures.getParentRegion(state)
+			stateReference.setInstance(instance.createInstanceReference)
+			stateReference.setRegion(parentRegion)
+			stateReference.setState(state)
+			val stateReferenceFormula = propertyUtil.createAtomicFormula(stateReference)
+			val stateReferenceFormula2 = stateReferenceFormula.clone
+			
+			val implication = factory.createBinaryOperandLogicalPathFormula => [
+				it.leftOperand = stateReferenceFormula
+				it.operator = BinaryLogicalOperator.IMPLY
+				it.rightOperand = propertyUtil.createG(stateReferenceFormula2)
+			] // state -> G (state)
+			
+			val stateFormula = propertyUtil.createAG(implication) // A G(state -> G (state))
+			
+			val commentableStateFormula = propertyUtil.createCommentableStateFormula(
+					'''Is «instance.name».«parentRegion.name».«state.name» a trap state?''', stateFormula)
+			formulas += commentableStateFormula
+		}
+		
+		return formulas
+	}
+	
+	def List<CommentableStateFormula> createDeadlockInvariance(TransitionAnnotations transitionAnnotations) {
+		val formulas = newArrayList
+		
+		val transitions = transitionAnnotations.transitions
+		val leafStates = transitions.map[it.sourceState].filter(State).filter[!it.composite].toSet
+		for (leafState : leafStates) {
+			val consideredStates = leafState.ancestorsAndSelf
+			val allOutgoingTransitions = transitions.filter[consideredStates.contains(it.sourceState)].toSet
+			val variables = allOutgoingTransitions.map[transitionAnnotations.getVariable(it)].toSet
+			
+			if (!variables.empty) {  // A G(state -> (G (!outgoingTransitionFireable1 && .. && !outgoingTransitionFireableN))
+				val unfireableTransitionsExpression = propertyUtil.wrapIntoAndExpression( // (!outgoingTransitionFireable1 && .. && !outgoingTransitionFireableN)
+						variables.map[it.createVariableReference.createNotExpression].toList)
+				
+				val stateReference = compositeFactory.createComponentInstanceStateReferenceExpression
+				val instance = leafState.containingComponent.referencingComponentInstance
+				val parentRegion = StatechartModelDerivedFeatures.getParentRegion(leafState)
+				stateReference.setInstance(instance.createInstanceReference)
+				stateReference.setRegion(parentRegion)
+				stateReference.setState(leafState)
+				val stateReferenceFormula = propertyUtil.createAtomicFormula(stateReference)
+				val unfireableTransitionsFormula = propertyUtil.createAtomicFormula(unfireableTransitionsExpression)
+				
+				val implication = factory.createBinaryOperandLogicalPathFormula => [
+					it.leftOperand = stateReferenceFormula
+					it.operator = BinaryLogicalOperator.IMPLY
+					it.rightOperand = propertyUtil.createG(unfireableTransitionsFormula)
+				] // state -> G (!outgoingTransitionFireable1 && .. && !outgoingTransitionFireableN)
+				
+				val stateFormula = propertyUtil.createAG(implication) // A G(state -> (G (!outgoingTransitionFireable1 && .. && !outgoingTransitionFireableN))
+				
+				val commentableStateFormula = propertyUtil.createCommentableStateFormula(
+						'''Is «instance.name».«parentRegion.name».«leafState.name» a deadlock state?''', stateFormula)
+				formulas += commentableStateFormula
+			}
+		}
+		
+		return formulas
+	}
+	
 	def List<CommentableStateFormula> createOutEventReachability(Iterable<? extends Port> ports) {
 		val List<CommentableStateFormula> formulas = newArrayList
 		for (notNecessarilySimplePort : ports) {

@@ -220,12 +220,35 @@ enum AnalysisLanguage returns AnalysisLanguage:
 ;
 
 Coverage returns Coverage:
-	StateCoverage | NonDeterministicTransitionCoverage | TransitionCoverage | TransitionPairCoverage |
-		OutEventCoverage | InteractionCoverage | DataflowCoverage | InteractionDataflowCoverage
+	StateCoverage | UnstableStateCoverage | TrapStateCoverage |
+	DeadlockCoverage | NonDeterministicTransitionCoverage |
+	TransitionCoverage | TransitionPairCoverage | OutEventCoverage |
+	InteractionCoverage | DataflowCoverage | InteractionDataflowCoverage
 ;
 
 StateCoverage returns StateCoverage:
 	{StateCoverage} 'state-coverage' ('{' 
+		('include' ':' '[' include+=ComponentInstanceReferenceExpression (',' include+=ComponentInstanceReferenceExpression)* ']')?
+		('exclude' ':' '[' exclude+=ComponentInstanceReferenceExpression (',' exclude+=ComponentInstanceReferenceExpression)* ']')?
+	'}')?
+;
+
+UnstableStateCoverage returns UnstableStateCoverage:
+	{UnstableStateCoverage} 'unstable-state-coverage' ('{' 
+		('include' ':' '[' include+=ComponentInstanceReferenceExpression (',' include+=ComponentInstanceReferenceExpression)* ']')?
+		('exclude' ':' '[' exclude+=ComponentInstanceReferenceExpression (',' exclude+=ComponentInstanceReferenceExpression)* ']')?
+	'}')?
+;
+
+TrapStateCoverage returns TrapStateCoverage:
+	{TrapStateCoverage} 'trap-state-coverage' ('{' 
+		('include' ':' '[' include+=ComponentInstanceReferenceExpression (',' include+=ComponentInstanceReferenceExpression)* ']')?
+		('exclude' ':' '[' exclude+=ComponentInstanceReferenceExpression (',' exclude+=ComponentInstanceReferenceExpression)* ']')?
+	'}')?
+;
+
+DeadlockCoverage returns DeadlockCoverage:
+	{DeadlockCoverage} 'deadlock-coverage' ('{' 
 		('include' ':' '[' include+=ComponentInstanceReferenceExpression (',' include+=ComponentInstanceReferenceExpression)* ']')?
 		('exclude' ':' '[' exclude+=ComponentInstanceReferenceExpression (',' exclude+=ComponentInstanceReferenceExpression)* ']')?
 	'}')?

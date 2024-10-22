@@ -62,7 +62,7 @@ class Gamma2XstsPromelaTransformerSerializer {
 			true, TransitionMerging.HIERARCHICAL,
 			null,
 			new AnnotatablePreprocessableElements(
-				null, null, null, null, null, null,
+				null, null, null, null, null, null, null, null, null,
 				InteractionCoverageCriterion.EVERY_INTERACTION,	InteractionCoverageCriterion.EVERY_INTERACTION,
 				null, DataflowCoverageCriterion.ALL_USE,
 				null, DataflowCoverageCriterion.ALL_USE

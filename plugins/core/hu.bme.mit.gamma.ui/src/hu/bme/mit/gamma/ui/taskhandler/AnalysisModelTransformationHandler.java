@@ -35,6 +35,7 @@ import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.ComponentReference;
 import hu.bme.mit.gamma.genmodel.model.Coverage;
 import hu.bme.mit.gamma.genmodel.model.DataflowCoverage;
+import hu.bme.mit.gamma.genmodel.model.DeadlockCoverage;
 import hu.bme.mit.gamma.genmodel.model.EventCoverage;
 import hu.bme.mit.gamma.genmodel.model.InteractionCoverage;
 import hu.bme.mit.gamma.genmodel.model.InteractionDataflowCoverage;
@@ -44,6 +45,8 @@ import hu.bme.mit.gamma.genmodel.model.OutEventCoverage;
 import hu.bme.mit.gamma.genmodel.model.StateCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionPairCoverage;
+import hu.bme.mit.gamma.genmodel.model.TrapStateCoverage;
+import hu.bme.mit.gamma.genmodel.model.UnstableStateCoverage;
 import hu.bme.mit.gamma.genmodel.model.XstsReference;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging;
 import hu.bme.mit.gamma.ocra.transformation.api.Gamma2OcraTransformerSerializer;
@@ -394,6 +397,12 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			
 			ComponentInstanceReferences testedComponentsForStates = getCoverageInstances(
 					coverages, StateCoverage.class);
+			ComponentInstanceReferences testedComponentsForUnstableStates = getCoverageInstances(
+					coverages, UnstableStateCoverage.class);
+			ComponentInstanceReferences testedComponentsForTrapStates = getCoverageInstances(
+					coverages, TrapStateCoverage.class);
+			ComponentInstanceReferences testedComponentsForDeadlock = getCoverageInstances(
+					coverages, DeadlockCoverage.class);
 			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
 					coverages, NonDeterministicTransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
@@ -423,6 +432,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					transformation.isOptimize(), transformation.getPropertyPackage(),
 					new AnnotatablePreprocessableElements(
 						testedComponentsForStates,
+						testedComponentsForUnstableStates,
+						testedComponentsForTrapStates,
+						testedComponentsForDeadlock,
 						testedComponentsForNondeterministicTransitions,
 						testedComponentsForTransitions,
 						testedComponentsForTransitionPairs,
@@ -504,6 +516,12 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			
 			ComponentInstanceReferences testedComponentsForStates = getCoverageInstances(
 					coverages, StateCoverage.class);
+			ComponentInstanceReferences testedComponentsForUnstableStates = getCoverageInstances(
+					coverages, UnstableStateCoverage.class);
+			ComponentInstanceReferences testedComponentsForTrapStates = getCoverageInstances(
+					coverages, TrapStateCoverage.class);
+			ComponentInstanceReferences testedComponentsForDeadlock = getCoverageInstances(
+					coverages, DeadlockCoverage.class);
 			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
 					coverages, NonDeterministicTransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
@@ -542,6 +560,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					transformation.getPropertyPackage(),
 					new AnnotatablePreprocessableElements(
 						testedComponentsForStates,
+						testedComponentsForUnstableStates,
+						testedComponentsForTrapStates,
+						testedComponentsForDeadlock,
 						testedComponentsForNondeterministicTransitions,
 						testedComponentsForTransitions,
 						testedComponentsForTransitionPairs,
@@ -613,6 +634,12 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			
 			ComponentInstanceReferences testedComponentsForStates = getCoverageInstances(
 					coverages, StateCoverage.class);
+			ComponentInstanceReferences testedComponentsForUnstableStates = getCoverageInstances(
+					coverages, UnstableStateCoverage.class);
+			ComponentInstanceReferences testedComponentsForTrapStates = getCoverageInstances(
+					coverages, TrapStateCoverage.class);
+			ComponentInstanceReferences testedComponentsForDeadlock = getCoverageInstances(
+					coverages, DeadlockCoverage.class);
 			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
 					coverages, NonDeterministicTransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
@@ -646,6 +673,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					transformation.getPropertyPackage(),
 					new AnnotatablePreprocessableElements(
 						testedComponentsForStates,
+						testedComponentsForUnstableStates,
+						testedComponentsForTrapStates,
+						testedComponentsForDeadlock,
 						testedComponentsForNondeterministicTransitions,
 						testedComponentsForTransitions,
 						testedComponentsForTransitionPairs,
@@ -688,6 +718,12 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			
 			ComponentInstanceReferences testedComponentsForStates = getCoverageInstances(
 					coverages, StateCoverage.class);
+			ComponentInstanceReferences testedComponentsForUnstableStates = getCoverageInstances(
+					coverages, UnstableStateCoverage.class);
+			ComponentInstanceReferences testedComponentsForTrapStates = getCoverageInstances(
+					coverages, TrapStateCoverage.class);
+			ComponentInstanceReferences testedComponentsForDeadlock = getCoverageInstances(
+					coverages, DeadlockCoverage.class);
 			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
 					coverages, NonDeterministicTransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
@@ -721,6 +757,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					transformation.getPropertyPackage(),
 					new AnnotatablePreprocessableElements(
 						testedComponentsForStates,
+						testedComponentsForUnstableStates,
+						testedComponentsForTrapStates,
+						testedComponentsForDeadlock,
 						testedComponentsForNondeterministicTransitions,
 						testedComponentsForTransitions,
 						testedComponentsForTransitionPairs,
@@ -762,6 +801,12 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			
 			ComponentInstanceReferences testedComponentsForStates = getCoverageInstances(
 					coverages, StateCoverage.class);
+			ComponentInstanceReferences testedComponentsForUnstableStates = getCoverageInstances(
+					coverages, UnstableStateCoverage.class);
+			ComponentInstanceReferences testedComponentsForTrapStates = getCoverageInstances(
+					coverages, TrapStateCoverage.class);
+			ComponentInstanceReferences testedComponentsForDeadlock = getCoverageInstances(
+					coverages, DeadlockCoverage.class);
 			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
 					coverages, NonDeterministicTransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
@@ -795,6 +840,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					transformation.getPropertyPackage(),
 					new AnnotatablePreprocessableElements(
 						testedComponentsForStates,
+						testedComponentsForUnstableStates,
+						testedComponentsForTrapStates,
+						testedComponentsForDeadlock,
 						testedComponentsForNondeterministicTransitions,
 						testedComponentsForTransitions,
 						testedComponentsForTransitionPairs,
@@ -862,6 +910,12 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			
 			ComponentInstanceReferences testedComponentsForStates = getCoverageInstances(
 					coverages, StateCoverage.class);
+			ComponentInstanceReferences testedComponentsForUnstableStates = getCoverageInstances(
+					coverages, UnstableStateCoverage.class);
+			ComponentInstanceReferences testedComponentsForTrapStates = getCoverageInstances(
+					coverages, TrapStateCoverage.class);
+			ComponentInstanceReferences testedComponentsForDeadlock = getCoverageInstances(
+					coverages, DeadlockCoverage.class);
 			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
 					coverages, NonDeterministicTransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
@@ -895,6 +949,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					transformation.getPropertyPackage(),
 					new AnnotatablePreprocessableElements(
 						testedComponentsForStates,
+						testedComponentsForUnstableStates,
+						testedComponentsForTrapStates,
+						testedComponentsForDeadlock,
 						testedComponentsForNondeterministicTransitions,
 						testedComponentsForTransitions,
 						testedComponentsForTransitionPairs,

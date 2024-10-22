@@ -17,6 +17,12 @@ class AnnotatablePreprocessableElements {
 	
 	ComponentInstanceReferences testedComponentsForStates
 	
+	ComponentInstanceReferences testedComponentsForUnstableStates
+	
+	ComponentInstanceReferences testedComponentsForTrapStates
+	
+	ComponentInstanceReferences testedComponentsForDeadlock
+	
 	ComponentInstanceReferences testedComponentsForNondeterministicTransitions
 	
 	ComponentInstanceReferences testedComponentsForTransitions
@@ -39,10 +45,13 @@ class AnnotatablePreprocessableElements {
 	
 	new() {
 		// If only a placeholder is needed, this constructor can be used
-		this(null, null, null, null, null, null, null, null, null, null, null, null)
+		this(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null)
 	}
 
 	new(ComponentInstanceReferences testedComponentsForStates,
+			ComponentInstanceReferences testedComponentsForUnstableStates,
+			ComponentInstanceReferences testedComponentsForTrapStates,
+			ComponentInstanceReferences testedComponentsForDeadlock,
 			ComponentInstanceReferences testedComponentsForNondeterministicTransitions,
 			ComponentInstanceReferences testedComponentsForTransitions,
 			ComponentInstanceReferences testedComponentsForTransitionPairs,
@@ -51,6 +60,9 @@ class AnnotatablePreprocessableElements {
 			ComponentInstanceVariableReferences dataflowTestedVariables, DataflowCoverageCriterion dataflowCoverageCriterion,
 			ComponentInstancePortReferences testedComponentsForInteractionDataflow, DataflowCoverageCriterion interactionDataflowCoverageCriterion) {
 		this.testedComponentsForStates = testedComponentsForStates
+		this.testedComponentsForUnstableStates = testedComponentsForUnstableStates
+		this.testedComponentsForTrapStates = testedComponentsForTrapStates
+		this.testedComponentsForDeadlock = testedComponentsForDeadlock
 		this.testedComponentsForNondeterministicTransitions = testedComponentsForNondeterministicTransitions
 		this.testedComponentsForTransitions = testedComponentsForTransitions
 		this.testedComponentsForTransitionPairs = testedComponentsForTransitionPairs

@@ -66,6 +66,13 @@ class StatechartAnnotator {
 	//
 	protected final Package gammaPackage
 	protected final ViatraQueryEngine engine
+	
+	// Transition coverage
+	protected boolean DEADLOCK_COVERAGE
+	protected final Set<SynchronousComponentInstance> deadlockCoverableComponents = newHashSet
+	protected final Set<Transition> coverableDeadlockTransitions = newHashSet
+	protected final Map<Transition, VariableDeclaration> deadlockTransitionVariables = newHashMap // Boolean variables
+	
 	// Nondeterministic transition coverage
 	protected boolean NONDETERMINISTIC_TRANSITION_COVERAGE
 	protected final Set<SynchronousComponentInstance> nondeterministicTransitionCoverableComponents = newHashSet
@@ -148,6 +155,14 @@ class StatechartAnnotator {
 		this.engine = ViatraQueryEngine.on(
 			new EMFScope(
 				gammaPackage.eResource.resourceSet))
+		
+		if (!annotableElements.deadlockCoverableComponents.empty) {
+			this.DEADLOCK_COVERAGE = true
+			this.deadlockCoverableComponents += annotableElements.deadlockCoverableComponents
+			this.coverableDeadlockTransitions += deadlockCoverableComponents
+				.map[it.type].filter(StatechartDefinition)
+				.map[it.transitions].flatten.filter[it.sourceState.state]
+		}
 		if (!annotableElements.nondeterministicTransitionCoverableComponents.empty) {
 			this.NONDETERMINISTIC_TRANSITION_COVERAGE = true
 			this.nondeterministicTransitionCoverableComponents += annotableElements.nondeterministicTransitionCoverableComponents
@@ -194,12 +209,29 @@ class StatechartAnnotator {
 	// Entry point
 	
 	def annotateModel() {
+		annotateModelForDeadlockCoverage
 		annotateModelForNondeterministicTransitionCoverage
 		annotateModelForTransitionCoverage
 		annotateModelForTransitionPairCoverage
 		annotateModelForInteractionCoverage
 		annotateModelForDataFlowCoverage
 		annotateModelForInteractionDataFlowCoverage
+	}
+	
+	// Deadlock coverage
+	
+	def annotateModelForDeadlockCoverage() {
+		if (!DEADLOCK_COVERAGE) {
+			return
+		}
+		for (transition : coverableDeadlockTransitions.filter[it.needsAnnotation]) {
+			val variable = transition.createTransitionVariable(deadlockTransitionVariables)
+			transition.effects += variable.createAssignment(createTrueExpression)
+		}
+	}
+	
+	def getDeadlockTransitionVariables() {
+		return new TransitionAnnotations(this.deadlockTransitionVariables)
 	}
 	
 	// Nondeterministic transition coverage

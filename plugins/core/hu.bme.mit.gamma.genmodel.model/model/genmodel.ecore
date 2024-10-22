@@ -111,6 +111,9 @@
     <eLiterals name="RANDOM"/>
     <eLiterals name="FAIR" value="1"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="UnstableStateCoverage" eSuperTypes="#//Coverage"/>
+  <eClassifiers xsi:type="ecore:EClass" name="TrapStateCoverage" eSuperTypes="#//Coverage"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DeadlockCoverage" eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="NonDeterministicTransitionCoverage"
       eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="TransitionCoverage" eSuperTypes="#//Coverage"/>
