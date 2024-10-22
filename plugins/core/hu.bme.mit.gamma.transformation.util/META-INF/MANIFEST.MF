@@ -10,8 +10,6 @@ Export-Package: hu.bme.mit.gamma.transformation.util,
  hu.bme.mit.gamma.transformation.util.queries,
  hu.bme.mit.gamma.transformation.util.reducer
 Require-Bundle: org.eclipse.emf.ecore,
- org.eclipse.viatra.query.runtime.rete,
- org.eclipse.viatra.query.runtime.localsearch,
  com.google.guava,
  org.eclipse.xtext.xbase.lib,
  org.eclipse.xtend.lib,
