@@ -116,7 +116,7 @@ class ImlPropertyExpressionSerializer extends ThetaPropertyExpressionSerializer 
 	//
 	
 	def getId(Declaration declaration) {
-		return GLOBAL_RECORD_IDENTIFIER
+		return ImlReferenceSerializer.recordIdentifier
 	}
 	
 }

@@ -38,6 +38,7 @@ class Namings {
 	public static final String ENV_HAVOC_RECORD_IDENTIFIER = "e"
 	
 	public static final String INIT_FUNCTION_IDENTIFIER = "init"
+	public static final String SINGLE_RUN_FUNCTION_IDENTIFIER = "run_cycle"
 	public static final String RUN_FUNCTION_IDENTIFIER = "run"
 	
 	//

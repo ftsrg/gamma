@@ -10,7 +10,10 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.property.derivedfeatures;
 
+import java.util.List;
+
 import hu.bme.mit.gamma.property.model.AtomicFormula;
+import hu.bme.mit.gamma.property.model.BinaryOperandPathFormula;
 import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PathFormula;
 import hu.bme.mit.gamma.property.model.PathQuantifier;
@@ -49,7 +52,7 @@ public class PropertyModelDerivedFeatures extends StatechartModelDerivedFeatures
 			if (pathFormula instanceof UnaryOperandPathFormula unaryOperandPathFormula) {
 				UnaryPathOperator operator = unaryOperandPathFormula.getOperator();
 				PathFormula operand = unaryOperandPathFormula.getOperand();
-				if (operand instanceof AtomicFormula atomicFormula) {
+				if (operand instanceof AtomicFormula) {
 					return quantifier == PathQuantifier.FORALL && operator == UnaryPathOperator.GLOBAL || // AG
 							quantifier == PathQuantifier.EXISTS && operator == UnaryPathOperator.FUTURE; // EF
 				}
@@ -57,6 +60,18 @@ public class PropertyModelDerivedFeatures extends StatechartModelDerivedFeatures
 		}
 		
 		return false;
+	}
+	
+	public static boolean isLtl(PathFormula formula) {
+		List<QuantifiedFormula> quantifiedFormulas = ecoreUtil.getSelfAndAllContentsOfType(
+				formula, QuantifiedFormula.class);
+		return quantifiedFormulas.isEmpty()||
+				quantifiedFormulas.size() == 1 && quantifiedFormulas.get(0) == formula;
+	}
+	
+	public static boolean containsBinaryPathOperators(PathFormula formula) {
+		return !ecoreUtil.getSelfAndAllContentsOfType(
+				formula, BinaryOperandPathFormula.class).isEmpty();
 	}
 	
 }

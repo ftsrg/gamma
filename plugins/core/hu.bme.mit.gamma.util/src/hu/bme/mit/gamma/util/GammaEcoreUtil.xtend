@@ -437,6 +437,24 @@ class GammaEcoreUtil {
 		return contents
 	}
 	
+	def <T extends EObject, E extends EObject> List<E> getAllContentsOfTypeBetweenTypes(EObject object,
+			Class<T> typeRootAndLeaf, Class<E> typeElement) {
+		val root = object.getSelfOrContainerOfType(typeRootAndLeaf)
+		
+		val contents = newArrayList
+		contents += root.getAllContentsOfType(typeElement)
+		
+		// We consider levels of elements between the root and the leaf type
+		for (var iterator = contents.iterator; iterator.hasNext; ) {
+			val elem = iterator.next
+			if (elem.getSelfOrContainerOfType(typeRootAndLeaf) !== root) {
+				iterator.remove
+			}
+		}
+		
+		return contents
+	}
+	
 	def <T extends EObject> T getFirstOfAllContentsOfType(EObject object, Class<T> type) {
 		val contents = newLinkedList
 		contents += object.eContents

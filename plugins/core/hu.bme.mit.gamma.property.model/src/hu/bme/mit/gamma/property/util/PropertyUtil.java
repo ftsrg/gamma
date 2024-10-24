@@ -156,41 +156,65 @@ public class PropertyUtil extends StatechartUtil {
 	
 	//
 	
+	public void changeToDual(UnaryOperandPathFormula formula) {
+		UnaryPathOperator operator = formula.getOperator();
+		if (operator == UnaryPathOperator.NEXT) {
+			return;
+		}
+		
+		UnaryOperandLogicalPathFormula notFormula = createNotFormula();
+		if (formula.eContainer() != null) {
+			ecoreUtil.replace(notFormula, formula);
+		}
+		notFormula.setOperand(formula);
+		formula.setOperator(
+				getDual(operator));
+		formula.setOperand(
+				createNot(formula.getOperand()));
+	}
+	
+	//
+	
 	public AtomicFormula createAtomicFormula(Expression expression) {
 		AtomicFormula atomicFormula = propertyFactory.createAtomicFormula();
 		atomicFormula.setExpression(expression);
 		return atomicFormula;
 	}
 	
-	public PathFormula createNot(PathFormula formula) {
+	public UnaryOperandLogicalPathFormula createNotFormula() {
 		UnaryOperandLogicalPathFormula pathFormula = propertyFactory.createUnaryOperandLogicalPathFormula();
 		pathFormula.setOperator(UnaryLogicalOperator.NOT);
+		return pathFormula;
+	}
+	
+	public UnaryOperandLogicalPathFormula createNot(PathFormula formula) {
+		UnaryOperandLogicalPathFormula pathFormula = createNotFormula();
 		pathFormula.setOperand(formula);
 		return pathFormula;
 	}
 	
-	public PathFormula createG(PathFormula formula) {
+	public UnaryOperandPathFormula createG(PathFormula formula) {
 		UnaryOperandPathFormula pathFormula = propertyFactory.createUnaryOperandPathFormula();
 		pathFormula.setOperator(UnaryPathOperator.GLOBAL);
 		pathFormula.setOperand(formula);
 		return pathFormula;
 	}
 	
-	public PathFormula createF(PathFormula formula) {
+	public UnaryOperandPathFormula createF(PathFormula formula) {
 		UnaryOperandPathFormula pathFormula = propertyFactory.createUnaryOperandPathFormula();
 		pathFormula.setOperator(UnaryPathOperator.FUTURE);
 		pathFormula.setOperand(formula);
 		return pathFormula;
 	}
 	
-	public PathFormula createX(PathFormula formula) {
+	public UnaryOperandPathFormula createX(PathFormula formula) {
 		UnaryOperandPathFormula pathFormula = propertyFactory.createUnaryOperandPathFormula();
 		pathFormula.setOperator(UnaryPathOperator.NEXT);
 		pathFormula.setOperand(formula);
 		return pathFormula;
 	}
 	
-	public PathFormula createU(PathFormula lhs, PathFormula rhs) {
+	public BinaryOperandPathFormula createU(PathFormula lhs, PathFormula rhs) {
 		BinaryOperandPathFormula pathFormula = propertyFactory.createBinaryOperandPathFormula();
 		pathFormula.setOperator(BinaryPathOperator.UNTIL);
 		pathFormula.setLeftOperand(lhs);
@@ -233,6 +257,17 @@ public class PropertyUtil extends StatechartUtil {
 		imply.setRightOperand(AF);
 		StateFormula AG = createAG(imply);
 		return AG;
+	}
+	
+	public UnaryPathOperator getDual(UnaryPathOperator operator) {
+		switch (operator) {
+			case FUTURE:
+				return UnaryPathOperator.GLOBAL;
+			case GLOBAL:
+				return UnaryPathOperator.FUTURE;
+			default:
+				return operator;
+		}
 	}
 	
 	// Comments
