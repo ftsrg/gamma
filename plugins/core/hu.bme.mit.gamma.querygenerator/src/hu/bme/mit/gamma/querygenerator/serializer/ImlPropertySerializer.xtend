@@ -43,11 +43,8 @@ class ImlPropertySerializer extends ThetaPropertySerializer {
 	override serialize(Comment comment) '''(* «comment.comment» *)'''
 	
 	override serialize(StateFormula formula) {
-		// LTL can be mapped in a special way: after A, only G and X can be contained, after E, only F and X
-		val tailoredFormula = formula.tailorFormula
-		//
-		val serializedFormula = tailoredFormula.serializeFormula
-		checkArgument(tailoredFormula.validFormula, serializedFormula)
+		val serializedFormula = formula.serializeFormula
+		checkArgument(formula.validFormula, serializedFormula)
 		return serializedFormula
 	}
 	
@@ -61,9 +58,13 @@ class ImlPropertySerializer extends ThetaPropertySerializer {
 		val quantifier = formula.quantifier // A or E
 		val imandraCall = (quantifier == PathQuantifier.FORALL) ? "verify" : "instance"
 		
-		val pathFormula = formula.formula
-		val pathFormulas = formula.relevantUnaryOperandPathFormulas
-		return '''«imandraCall»(fun«FOR e : pathFormulas» «e.inputId»«ENDFOR» -> let «
+		// LTL can be mapped in a special way: after A, only G and X can be contained, after E, only F and X
+		val tailoredFormula = formula.tailorFormula
+		//
+		
+		val pathFormula = tailoredFormula.formula
+		val inputtableFormulas = tailoredFormula.relevantUnaryOperandPathFormulas
+		return '''«imandraCall»(fun«FOR e : inputtableFormulas» «e.inputId»«ENDFOR» -> let «
 				recordId» = «Namings.INIT_FUNCTION_IDENTIFIER» in «pathFormula.serializeFormula»)'''
 	}
 	
@@ -95,7 +96,7 @@ class ImlPropertySerializer extends ThetaPropertySerializer {
 	
 	//
 	
-	protected def tailorFormula(StateFormula formula) {
+	protected def tailorFormula(QuantifiedFormula formula) {
 		if (formula instanceof QuantifiedFormula) {
 			val clonedFormula = formula.clone // So no side-effect
 			val pathFormulas = clonedFormula.relevantUnaryOperandPathFormulas
@@ -103,20 +104,14 @@ class ImlPropertySerializer extends ThetaPropertySerializer {
 			//
 			if (quantifier == PathQuantifier.EXISTS) { // E
 				val globals = pathFormulas.filter[it.operator == UnaryPathOperator.GLOBAL]
-				if (globals.empty) { // G cannot be after E, but: G p === !F!p
-					return formula
-				}
-				for (global : globals) {
+				for (global : globals) { // G cannot be after E, but: G p === !F!p
 					global.changeToDual
 				}
 				return clonedFormula
 			}
 			else { // A
 				val futures = pathFormulas.filter[it.operator == UnaryPathOperator.FUTURE]
-				if (futures.empty) { // F cannot be after A, but: F p === !G!p
-					return formula
-				}
-				for (future : futures) {
+				for (future : futures) { // F cannot be after A, but: F p === !G!p
 					future.changeToDual
 				}
 				return clonedFormula
