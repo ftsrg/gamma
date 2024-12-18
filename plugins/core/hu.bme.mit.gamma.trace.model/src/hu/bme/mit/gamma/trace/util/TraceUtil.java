@@ -337,7 +337,7 @@ public class TraceUtil extends StatechartUtil {
 			return;
 		}
 		
-		Step last = javaUtil.getLast(steps);
+		Step last = javaUtil.getLastElement(steps);
 		for (Step step : steps) {
 			if (ecoreUtil.helperEquals(step, last) && step != last) {
 				int i = ecoreUtil.getIndex(step);

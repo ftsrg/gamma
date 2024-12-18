@@ -482,7 +482,7 @@ class ComponentTransformer {
 				// Note that the last expression is unnecessary as all branches (event ids) are disjoint and
 				// complete -> removing the last one to create an 'else' branch (optimization) if queue is not empty
 				if (!branchExpressions.empty) {
-					branchExpressions.removeLast
+					branchExpressions.removeLastElement
 				}
 				if (branchExpressions.empty) {
 					val onlyAction = (branchActions.empty) ? createEmptyAction // No message can be placed in the queue

@@ -138,7 +138,7 @@ public class PropertyUtil extends StatechartUtil {
 				createInstanceReferenceChain(instanceReferences);
 		
 		// Last operand is the declaration reference
-		Expression lastExpression = javaUtil.getLast(expressions);
+		Expression lastExpression = javaUtil.getLastElement(expressions);
 		if (lastExpression instanceof DirectReferenceExpression) {
 			Declaration declaration = getDeclaration(lastExpression);
 			if (declaration instanceof VariableDeclaration) {

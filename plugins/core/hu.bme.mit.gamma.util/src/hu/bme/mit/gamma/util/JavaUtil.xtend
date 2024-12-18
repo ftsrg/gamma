@@ -51,7 +51,7 @@ class JavaUtil {
 			.getFirstOfType(clazz)
 	}
 	
-	def <T> T getLast(Iterable<T> collection) {
+	def <T> T getLastElement(Iterable<T> collection) {
 		var T last = null
 		for (element : collection) {
 			last = element
@@ -59,7 +59,7 @@ class JavaUtil {
 		return last
 	}
 	
-	def <T> T removeLast(List<T> list) {
+	def <T> T removeLastElement(List<T> list) {
 		return list.remove(list.size - 1)
 	}
 	
@@ -97,7 +97,7 @@ class JavaUtil {
 		if (collection.size !== 1) {
 			throw new IllegalArgumentException("Not one elment: " + collection)
 		}
-		return collection.last
+		return collection.lastElement
 	}
 	
 	def <K, V> List<V> getOrCreateList(Map<K, List<V>> map, K key) {

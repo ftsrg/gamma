@@ -147,7 +147,7 @@ class ImlSemanticDiffer {
 		regions += constraints.toString -> invariant.toString
 		
 		//
-		val lastKey = regions.keySet.last // "Instance killed"
+		val lastKey = regions.keySet.lastElement // "Instance killed"
 		val lastValue = regions.get(lastKey)
 		var lastIndex = (lastValue.lastIndexOf("}") < 0) ? lastValue.length : lastValue.lastIndexOf("}") + 1
 		regions.replace(lastKey, lastValue.substring(0, lastIndex))

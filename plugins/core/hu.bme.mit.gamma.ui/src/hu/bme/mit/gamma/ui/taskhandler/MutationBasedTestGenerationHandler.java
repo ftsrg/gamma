@@ -180,7 +180,7 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 			//
 		
 			// Generating a test based on the newly generated mutant
-			Package mutatedModel = javaUtil.getLast(mutatedModels);
+			Package mutatedModel = javaUtil.getLastElement(mutatedModels);
 			if (mutatedModel == null) {
 				logger.info("Could not generate a concrete test passing mutant in iteration " + i);
 				continue; // We continue with the next iteration (which will probably also 'fail' as there are many equivalent mutants)

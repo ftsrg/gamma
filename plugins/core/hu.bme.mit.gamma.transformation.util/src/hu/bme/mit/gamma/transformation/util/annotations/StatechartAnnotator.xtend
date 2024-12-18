@@ -604,7 +604,7 @@ class StatechartAnnotator {
 			// Receiving
 			val inPort = match.inPort
 			val event = match.raisedEvent
-			val inParameter = event.parameterDeclarations.last // It is always the last
+			val inParameter = event.parameterDeclarations.lastElement // It is always the last
 			val receivingTransition = match.receivingTransition
 			
 			// We do not want to duplicate the same assignments to the same variable
@@ -912,14 +912,14 @@ class StatechartAnnotator {
 		// Def
 		for (defReference : defReferences) {
 			val event = defReference.event
-			val defVariable = event.parameterDeclarations.last // Parameter is always the last
+			val defVariable = event.parameterDeclarations.lastElement // Parameter is always the last
 			defReference.saveDefId(defVariable)
 			// Argument addition is in annotateModelForInteractionDataflowCoverage
 		}
 		// Use
 		for (useReference : useReferences) {
 			val event = useReference.event
-			val defVariable = event.parameterDeclarations.last // Parameter is always the last
+			val defVariable = event.parameterDeclarations.lastElement // Parameter is always the last
 			val useVariable = useReference.createUseVariable(interactionUseVariables,
 				namings.getInteractionUseVariableName(useReference))
 			useReference.saveDefUseVariablePair(defVariable, useVariable)

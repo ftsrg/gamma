@@ -535,7 +535,7 @@ public class VerificationHandler extends TaskHandler {
 	protected AbstractVerification getVerification(Verification verification) {
 		Set<AnalysisLanguage> languagesSet = new LinkedHashSet<AnalysisLanguage>(
 				verification.getAnalysisLanguages());
-		AnalysisLanguage analysisLanguage = javaUtil.getLast(languagesSet);
+		AnalysisLanguage analysisLanguage = javaUtil.getLastElement(languagesSet);
 		return getVerification(analysisLanguage);
 	}
 
