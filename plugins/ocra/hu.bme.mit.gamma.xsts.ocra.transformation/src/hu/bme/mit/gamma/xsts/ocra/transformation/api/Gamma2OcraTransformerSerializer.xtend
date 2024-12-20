@@ -8,13 +8,13 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.ocra.transformation.api
+package hu.bme.mit.gamma.xsts.ocra.transformation.api
 
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
-import hu.bme.mit.gamma.ocra.transformation.ModelSerializer
-import hu.bme.mit.gamma.ocra.transformation.util.OcraUtil
+import hu.bme.mit.gamma.xsts.ocra.transformation.ModelSerializer
+import hu.bme.mit.gamma.xsts.ocra.transformation.util.OcraUtil
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
@@ -26,7 +26,7 @@ import java.util.List
 import java.util.Map
 import java.util.Set
 
-import static extension hu.bme.mit.gamma.ocra.transformation.NamingSerializer.*
+import static extension hu.bme.mit.gamma.xsts.ocra.transformation.NamingSerializer.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class Gamma2OcraTransformerSerializer {

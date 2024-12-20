@@ -22,8 +22,8 @@ import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.XorExpression
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 
-import static extension hu.bme.mit.gamma.ocra.transformation.NamingSerializer.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.ocra.transformation.NamingSerializer.*
 
 class OcraPropertyExpressionSerializer extends ThetaPropertyExpressionSerializer {
 	

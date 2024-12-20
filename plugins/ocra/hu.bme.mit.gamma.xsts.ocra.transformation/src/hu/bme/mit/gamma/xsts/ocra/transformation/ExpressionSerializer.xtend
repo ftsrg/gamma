@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.ocra.transformation;
+package hu.bme.mit.gamma.xsts.ocra.transformation;
 
 import hu.bme.mit.gamma.expression.model.AndExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression

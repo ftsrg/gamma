@@ -16,7 +16,7 @@ import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 
-import static extension hu.bme.mit.gamma.ocra.transformation.NamingSerializer.*
+import static extension hu.bme.mit.gamma.xsts.ocra.transformation.NamingSerializer.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class OcraReferenceSerializer extends ThetaReferenceSerializer {

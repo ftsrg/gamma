@@ -49,7 +49,6 @@ import hu.bme.mit.gamma.genmodel.model.TrapStateCoverage;
 import hu.bme.mit.gamma.genmodel.model.UnstableStateCoverage;
 import hu.bme.mit.gamma.genmodel.model.XstsReference;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging;
-import hu.bme.mit.gamma.ocra.transformation.api.Gamma2OcraTransformerSerializer;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.querygenerator.serializer.NuxmvPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.OcraPropertySerializer;
@@ -85,6 +84,7 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.UppaalModelPr
 import hu.bme.mit.gamma.xsts.iml.transformation.Gamma2XstsImlTransformerSerializer;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.nuxmv.transformation.Gamma2XstsNuxmvTransformerSerializer;
+import hu.bme.mit.gamma.xsts.ocra.transformation.api.Gamma2OcraTransformerSerializer;
 import hu.bme.mit.gamma.xsts.promela.transformation.Gamma2XstsPromelaTransformerSerializer;
 import hu.bme.mit.gamma.xsts.transformation.InitialStateSetting;
 import hu.bme.mit.gamma.xsts.transformation.api.Gamma2XstsTransformerSerializer;

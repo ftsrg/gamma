@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.ocra.transformation.util;
+package hu.bme.mit.gamma.xsts.ocra.transformation.util;
 
 import java.io.BufferedReader;
 import java.io.File;

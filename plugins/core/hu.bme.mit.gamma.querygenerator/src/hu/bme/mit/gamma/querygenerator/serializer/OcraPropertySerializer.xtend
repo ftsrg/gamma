@@ -22,7 +22,7 @@ import hu.bme.mit.gamma.property.model.UnaryPathOperator
 import hu.bme.mit.gamma.statechart.interface_.Component
 import java.util.Collection
 
-import static extension hu.bme.mit.gamma.ocra.transformation.NamingSerializer.*
+import static extension hu.bme.mit.gamma.xsts.ocra.transformation.NamingSerializer.*
 
 class OcraPropertySerializer extends ThetaPropertySerializer {
 	//
