@@ -82,7 +82,8 @@ class ImlVerifier extends AbstractVerifier {
 			errorReader = new ScannerLogger(
 					new Scanner(process.errorReader),
 					#["imandra_http_api_client.exceptions.ServiceException", "HTTP Error", "urllib.error.HTTPError", "ValueError", "Error:"],
-					4, true)
+					4,
+					false) // Set to 'true' for debugging
 			errorReader.start
 			
 			result = ThreeStateBoolean.UNDEF
@@ -95,8 +96,8 @@ class ImlVerifier extends AbstractVerifier {
 			trace?.createCycleIfPossible
 			//
 			
-			if (!errorReader.error ||
-					errorReader.concatenateLines.contains("Type error (env): Unbound module CX")) { // Expected: no counterexample
+			val noCounterExample = errorReader.concatenateLines.contains("Type error (env): Unbound module CX")
+			if (!errorReader.error || noCounterExample) { // Expected: no counterexample
 				if (trace === null && command.contains("verify") || trace !== null && command.contains("instance")) {
 					result = ThreeStateBoolean.TRUE
 				}

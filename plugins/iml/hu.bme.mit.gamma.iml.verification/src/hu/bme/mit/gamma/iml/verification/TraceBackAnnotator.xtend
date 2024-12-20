@@ -35,7 +35,7 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 
 class TraceBackAnnotator {
 	//
-	protected final String INFO_END = "module CX :"
+	protected final String CX_START = "module CX :"
 	protected final String STATE_CHANGE = "{"
 	protected final String STATE_CHANGE2 = "[{"
 	protected final String LOOP = " loop "
@@ -125,11 +125,11 @@ class TraceBackAnnotator {
 				
 				if (state != BackAnnotatorState.INFO && state != BackAnnotatorState.END) {
 					switch (line) {
-						case line.contains(COUNTEREXAMPLE_INIT_VAR): { // Before RETURN_VALUE
+						case line.contains(COUNTEREXAMPLE_INIT_VAR): { // Before RETURN_VALUE; UNREACHABLE?
 							isValidTrace = true
 							state = BackAnnotatorState.END
 						}
-						case line.contains(COUNTEREXAMPLE_TRACE_VAR): {
+						case line.contains(COUNTEREXAMPLE_TRACE_VAR): { // UNREACHABLE?
 							isValidTrace = true
 							state = BackAnnotatorState.STATE_CHECK // Will be switched to ENV in default branch
 						}
@@ -301,7 +301,7 @@ class TraceBackAnnotator {
 	protected def handleInfoLines(String line, BackAnnotatorState state) {
 		var newState = state
 		if (state == BackAnnotatorState.INFO) {
-			if (line.startsWith(INFO_END)) {
+			if (line.startsWith(CX_START)) {
 				// We have reached the section of interest
 				newState = BackAnnotatorState.INIT
 			}
@@ -314,11 +314,11 @@ class TraceBackAnnotator {
 	protected def handleImandraLines(String line, Scanner scanner) {
 		var newLine = line
 		if (newLine.startsWith("[")) {
-			newLine = line.substring(1)
+			newLine = newLine.substring(1)
 		}
 		// Imandra returns the values of the fields between '{' and '}' and can have line breaks after the '='
 		if (newLine.startsWith("{")) {
-			newLine = line.substring(1)
+			newLine = newLine.substring(1)
 		}
 		while (!(newLine.endsWith(";") || newLine.endsWith("}") || newLine.endsWith("}]"))) {
 			val nextLine = scanner.nextLine
