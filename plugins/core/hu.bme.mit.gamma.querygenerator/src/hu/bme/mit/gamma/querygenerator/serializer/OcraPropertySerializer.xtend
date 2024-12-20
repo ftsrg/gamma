@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2024 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator.serializer
 
 import hu.bme.mit.gamma.property.model.BinaryOperandLogicalPathFormula
@@ -9,8 +19,8 @@ import hu.bme.mit.gamma.property.model.QuantifiedFormula
 import hu.bme.mit.gamma.property.model.StateFormula
 import hu.bme.mit.gamma.property.model.UnaryOperandPathFormula
 import hu.bme.mit.gamma.property.model.UnaryPathOperator
-import java.util.Collection
 import hu.bme.mit.gamma.statechart.interface_.Component
+import java.util.Collection
 
 import static extension hu.bme.mit.gamma.ocra.transformation.NamingSerializer.*
 
@@ -27,37 +37,30 @@ class OcraPropertySerializer extends ThetaPropertySerializer {
 	
 	def String serializeContracts(Collection<Contract> contracts, Component component) {
 		val groupedContracts = contracts.groupBy[contract | 
-        if (contract.instance !== null) contract.instance.customizeComponentName
-        else component.customizeComponentName
-    ]
+			(contract.instance !== null) ?
+				contract.instance.customizeComponentName : component.customizeComponentName]
 		
-		return 
-		'''
+		return '''
 			«FOR instances : groupedContracts.entrySet»
-			«CONTRACTS_START_FOR» «instances.key»
-			«FOR contract : instances.value»
-			«contract.serialize»
-			«ENDFOR»
-			«CONTRACTS_END_FOR» «instances.key»
+				«CONTRACTS_START_FOR» «instances.key»
+				«FOR contract : instances.value»
+					«contract.serialize»
+				«ENDFOR»
+				«CONTRACTS_END_FOR» «instances.key»
 			«ENDFOR»
 		'''
 	}
 	
-	def serialize(Contract contract) {
-		'''
+	def serialize(Contract contract) '''
 		CONTRACT «contract.name»
 			assume: «contract.assume.serialize»;
 			guarantee: «contract.guarantee.serialize»;
 			
-		'''
-	}
+	'''
 	
-	//TODO constraints
+	// TODO constraints
 	
-	
-	
-	
-	//NuXmw
+	// nuXmv copy?
 	protected override isValidFormula(StateFormula formula) {
 		val quantifiedFormulas = newArrayList
 		quantifiedFormulas += formula.getAllContentsOfType(QuantifiedFormula)

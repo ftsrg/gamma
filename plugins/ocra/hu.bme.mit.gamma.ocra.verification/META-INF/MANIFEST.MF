@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Ocra Verifier
 Bundle-SymbolicName: hu.bme.mit.gamma.ocra.verification
-Bundle-Version: 2.9.0.qualifier
+Bundle-Version: 2.11.0.qualifier
 Export-Package: hu.bme.mit.gamma.ocra.verification
 Automatic-Module-Name: hu.bme.mit.gamma.ocra.verification
 Bundle-RequiredExecutionEnvironment: JavaSE-17

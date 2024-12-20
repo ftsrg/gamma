@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Gamma project
+ * Copyright (c) 2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -26,10 +26,8 @@ import java.util.List
 import java.util.Map
 import java.util.Set
 
-import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.ocra.transformation.NamingSerializer.*
-import java.util.Scanner
-import java.util.logging.Logger
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class Gamma2OcraTransformerSerializer {
 	//
@@ -51,8 +49,6 @@ class Gamma2OcraTransformerSerializer {
 	protected final extension ExpressionModelFactory constraintModelFactory = ExpressionModelFactory.eINSTANCE
 	//
 	
-	
-	
 	new(Component component, String targetFolderUri, String fileName) {
 		this(component, #[], targetFolderUri, fileName, null, null)
 	}
@@ -68,7 +64,7 @@ class Gamma2OcraTransformerSerializer {
 	}
 	
 	def execute() {
-		//Organize to Subfolder	
+		// Organize to Subfolder	
 		//val subfolder = targetFolderUri + File.separator + "ocra"
 		// Normal transformation
 		val gammaToOcraTransformer = ModelSerializer.INSTANCE
@@ -105,26 +101,23 @@ class Gamma2OcraTransformerSerializer {
 			val transformer = new Gamma2XstsNuxmvTransformerSerializer(statechart, arguments , targetFolderUri, name, minSchedulingConstraint)
 			transformer.execute()
 			statechart.name = originalName
-			
 		}
 		///
 		
 		//Extract and Copy SMV serializations into respective template		
 		val Map<String, Set<String>> inVars = extractInVars(ocraString)
 		for (entry : inVars.entrySet()) {
-	    	val componentName = entry.getKey()
-	    	val inVarSet = entry.getValue()
-	    
-	    	parseIntoTemplate(targetFolderUri, inVarSet, componentName)
+			val componentName = entry.getKey()
+			val inVarSet = entry.getValue()
+		
+			parseIntoTemplate(targetFolderUri, inVarSet, componentName)
 		}
 		deleteTempFiles(targetFolderUri)
 		///
-					
 	}
 	
 	def createImplementationTemplates(File ocraFile) {
-		
-		//TODO add the OCRA_HOME variable to your system path
+		// TODO add the OCRA_HOME variable to your system path
 		val ocraPath = System.getenv("OCRA_HOME") + File.separator + "ocra-win64.exe"
 		val parentPath = ocraFile.parent
 		val commandFile = new File(parentPath + File.separator + '''.ocra-commands-«Thread.currentThread.name».cmd''')
@@ -140,25 +133,24 @@ class Gamma2OcraTransformerSerializer {
 		
 				
 		try {
-			
 			val ocraCommand = #[ocraPath] + #["-source", commandFile.absolutePath]
-	        val process = Runtime.getRuntime().exec(ocraCommand, null, ocraFile.parentFile)
-	        val successRegex = ".*" + "Success:" + ".*"
-	        val failureRegex = ".*" + "Error at line " + ".*"
-	        
-	        processImplementationTemplateGenerationLogs(process.inputReader, process.errorReader, successRegex, failureRegex)
-	    } catch (Exception e) {
-	    	throw e
-	    }
+			val process = Runtime.getRuntime().exec(ocraCommand, null, ocraFile.parentFile)
+			val successRegex = ".*" + "Success:" + ".*"
+			val failureRegex = ".*" + "Error at line " + ".*"
+			
+			processImplementationTemplateGenerationLogs(process.inputReader, process.errorReader, successRegex, failureRegex)
+		} catch (Exception e) {
+			throw e
+		}
 		
 	}
 	
 	def List<String> getConstantDeclerationNameList(int size) {
-		val constantNames = CollectionLiterals.newArrayList
-	    for (i : 1..size) {
-	        constantNames.add("constant" + i)
-	    }
-	    return constantNames
+		val constantNames = newArrayList
+		for (i : 1..size) {
+			constantNames.add("constant" + i)
+		}
+		return constantNames
 	}
 	
 }

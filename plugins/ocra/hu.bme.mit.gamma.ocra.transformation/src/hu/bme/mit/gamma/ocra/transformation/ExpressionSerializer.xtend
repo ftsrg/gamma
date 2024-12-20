@@ -1,35 +1,49 @@
+/********************************************************************************
+ * Copyright (c) 2024 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.ocra.transformation;
 
-import hu.bme.mit.gamma.expression.model.*;
+import hu.bme.mit.gamma.expression.model.AndExpression
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.EqualityExpression
+import hu.bme.mit.gamma.expression.model.FalseExpression
+import hu.bme.mit.gamma.expression.model.IfThenElseExpression
+import hu.bme.mit.gamma.expression.model.ImplyExpression
+import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
+import hu.bme.mit.gamma.expression.model.OrExpression
+import hu.bme.mit.gamma.expression.model.RationalLiteralExpression
+import hu.bme.mit.gamma.expression.model.TrueExpression
+import hu.bme.mit.gamma.expression.model.XorExpression
 
+class ExpressionSerializer extends hu.bme.mit.gamma.xsts.nuxmv.transformation.serializer.ExpressionSerializer{
+	
+	override String _serialize(TrueExpression expression) '''true'''
+	
+	override String _serialize(FalseExpression expression) '''false'''
+	
+	override String _serialize(DirectReferenceExpression expression) '''«expression.declaration.name»'''
+	
+	override String _serialize(IntegerLiteralExpression expression) '''«expression.getValue.toString»'''
+	
+	override String _serialize(RationalLiteralExpression expression) ''''''
+	
+	override String _serialize(OrExpression expression) '''(«FOR operand : expression.operands SEPARATOR ' or '»«operand.serialize»«ENDFOR»)'''
 
-class ExpressionSerializer {
-		    
-    def dispatch String serializeExpression(Expression expression) {
-    	throw new IllegalArgumentException("Not known expression: " + expression)	
-    }
-    
-    def dispatch String serializeExpression(TrueExpression expression) '''true'''
-    
-    def dispatch String serializeExpression(FalseExpression expression) '''false'''
-    
-    def dispatch String serializeExpression(DirectReferenceExpression expression) '''«expression.declaration.name»'''
-    
-    def dispatch String serializeExpression(IntegerLiteralExpression expression) '''«expression.getValue.toString»'''
-    
-    def dispatch String serializeExpression(RationalLiteralExpression expression) ''''''
-    
-    def dispatch String serializeExpression(OrExpression expression) '''(«FOR operand : expression.operands SEPARATOR ' or '»«operand.serializeExpression»«ENDFOR»)'''
+	override String _serialize(XorExpression expression) '''(«FOR operand : expression.operands SEPARATOR ' xor '»«operand.serialize»«ENDFOR»)'''
 
-	def dispatch String serializeExpression(XorExpression expression) '''(«FOR operand : expression.operands SEPARATOR ' xor '»«operand.serializeExpression»«ENDFOR»)'''
+	override String _serialize(AndExpression expression) '''(«FOR operand : expression.operands SEPARATOR ' and '»«operand.serialize»«ENDFOR»)'''
 
-	def dispatch String serializeExpression(AndExpression expression) '''(«FOR operand : expression.operands SEPARATOR ' and '»«operand.serializeExpression»«ENDFOR»)'''
+	override String _serialize(ImplyExpression expression) '''(«expression.leftOperand.serialize» -> «expression.rightOperand.serialize»)''' //??
 
-	def dispatch String serializeExpression(ImplyExpression expression) '''(«expression.leftOperand.serializeExpression» -> «expression.rightOperand.serializeExpression»)''' //??
+	override String _serialize(EqualityExpression expression) '''(«expression.leftOperand.serialize» = «expression.rightOperand.serialize»)''' //??
 
-	def dispatch String serializeExpression(EqualityExpression expression) '''(«expression.leftOperand.serializeExpression» = «expression.rightOperand.serializeExpression»)''' //??
-
-	def dispatch String serializeExpression(IfThenElseExpression expression) '''((«expression.condition.serializeExpression») ? («expression.then.serializeExpression») : («expression.^else.serializeExpression»))'''    
-    
-    
+	override String _serialize(IfThenElseExpression expression) '''((«expression.condition.serialize») ? («expression.then.serialize») : («expression.^else.serialize»))'''	
+	
 }

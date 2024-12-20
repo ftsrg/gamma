@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2024 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator.serializer
 
 import hu.bme.mit.gamma.expression.model.AndExpression
@@ -12,9 +22,8 @@ import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.XorExpression
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 
-import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.ocra.transformation.NamingSerializer.*
-
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class OcraPropertyExpressionSerializer extends ThetaPropertyExpressionSerializer {
 	
@@ -55,6 +64,5 @@ class OcraPropertyExpressionSerializer extends ThetaPropertyExpressionSerializer
 	override String _serialize(ArrayAccessExpression arrayAccessExpression) '''READ(«arrayAccessExpression.operand.serialize», «arrayAccessExpression.index.serialize»)'''
 	
 	//override String _serialize(PortEventReference expression) '''«expression.event.customizePortName(expression.port, expression.containingComponent)»'''
-	
 	
 }
