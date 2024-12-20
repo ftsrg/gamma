@@ -8,6 +8,8 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Component"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="formulas" upperBound="-1"
         eType="#//CommentableStateFormula" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="contracts" upperBound="-1"
+        eType="#//Contract" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="CommentableStateFormula" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//CommentableElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="formula" lowerBound="1"
@@ -81,5 +83,14 @@
         eType="#//PathFormula" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="rightOperand" lowerBound="1"
         eType="#//PathFormula" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Contract">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="assume" lowerBound="1"
+        eType="#//StateFormula" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="guarantee" lowerBound="1"
+        eType="#//StateFormula" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instance" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceReferenceExpression"
+        containment="true"/>
   </eClassifiers>
 </ecore:EPackage>

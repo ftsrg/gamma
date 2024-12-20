@@ -21,7 +21,8 @@ Require-Bundle: org.eclipse.emf.ecore,
  hu.bme.mit.gamma.transformation.util,
  hu.bme.mit.gamma.xsts.promela.transformation,
  hu.bme.mit.gamma.xsts.nuxmv.transformation,
- hu.bme.mit.gamma.xsts.iml.transformation
+ hu.bme.mit.gamma.xsts.iml.transformation,
+ hu.bme.mit.gamma.ocra.transformation
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Automatic-Module-Name: hu.bme.mit.gamma.querygenerator
 Import-Package: org.apache.log4j

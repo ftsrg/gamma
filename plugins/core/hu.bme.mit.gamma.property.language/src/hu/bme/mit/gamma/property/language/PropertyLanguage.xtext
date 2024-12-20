@@ -20,11 +20,27 @@ import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 PropertyPackage returns PropertyPackage:
 	('import' ^imports+=[interface::Package| STRING])+
 	'component' component=[interface::Component]
-	(formulas+=CommentableStateFormula)*
+	(formulas+=CommentableStateFormula | contracts+=Contract)* // Add contracts as part of the package
 ;
 
-// Comment
+//Ocra
+Contract returns Contract:
+    'contract' name=ID ('instance' instance=ComponentInstanceReferenceExpression)? '{'
+        'assume:' assume=StateFormula // Non-containment reference
+        'guarantee:' guarantee=StateFormula // Non-containment reference
+    '}';
+    
+//ContractFormula returns ContractFormula:
+//    RootElementReference | LiteralExpression | ParenthesizedExpression
+//;
+//
+//// ParenthesizedExpression is allowed to contain RestrictedFormulas inside parentheses
+//ParenthesizedExpression returns StateFormula:
+//    '(' RestrictedFormula ')'
+//;
 
+    
+// Comment
 Comment returns expression::Comment:
 	'@' '(' comment=STRING ')'
 ;

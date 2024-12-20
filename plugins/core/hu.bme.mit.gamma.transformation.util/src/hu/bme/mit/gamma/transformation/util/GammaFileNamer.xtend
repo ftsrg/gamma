@@ -47,13 +47,14 @@ class GammaFileNamer {
 	public static final String NUXMV_MODEL_EXTENSION = "smv";
 	
 	public static final String OCRA_MODEL_EXTENSION = "oss";
+	public static final String OCRA_CONTRACT_EXTENSION= "ctrt";
 	
 	public static final String IML_MODEL_EXTENSION = "iml";
 	
 	public static final String UPPAAL_QUERY_EXTENSION = "q";
 	public static final String THETA_QUERY_EXTENSION = "prop";
 	public static final String PROMELA_QUERY_EXTENSION = "pmlp";
-	
+		
 	//
 	
 	def String getPackageFileName(String fileName) '''«fileName.extensionlessName».«PACKAGE_XTEXT_EXTENSION»'''
@@ -89,6 +90,7 @@ class GammaFileNamer {
 	def String getSmvNuxmvFileName(String fileName) '''«fileName.extensionlessName».«NUXMV_MODEL_EXTENSION»'''
 	
 	def String getOcraFileName(String fileName) '''«fileName.extensionlessName».«OCRA_MODEL_EXTENSION»'''
+	def String getOcraContractsFileName(String fileName) '''«fileName.extensionlessName».«OCRA_CONTRACT_EXTENSION»'''
 	
 	def String getImlImandraFileName(String fileName) '''«fileName.extensionlessName».«IML_MODEL_EXTENSION»'''
 	

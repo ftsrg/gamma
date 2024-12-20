@@ -1,0 +1,24 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Ocra Verifier
+Bundle-SymbolicName: hu.bme.mit.gamma.ocra.verification
+Bundle-Version: 2.9.0.qualifier
+Export-Package: hu.bme.mit.gamma.ocra.verification
+Automatic-Module-Name: hu.bme.mit.gamma.ocra.verification
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Vendor: BME-FTSRG
+Require-Bundle: com.google.guava,
+ org.eclipse.xtext.xbase.lib,
+ org.eclipse.xtend.lib,
+ org.eclipse.xtend.lib.macro,
+ org.eclipse.emf.ecore,
+ hu.bme.mit.gamma.util,
+ hu.bme.mit.gamma.verification.util,
+ hu.bme.mit.gamma.transformation.util,
+ hu.bme.mit.gamma.xsts.transformation.util,
+ hu.bme.mit.gamma.trace.model,
+ hu.bme.mit.gamma.querygenerator,
+ hu.bme.mit.gamma.theta.verification,
+ hu.bme.mit.gamma.xsts.model,
+ hu.bme.mit.gamma.property.model
+

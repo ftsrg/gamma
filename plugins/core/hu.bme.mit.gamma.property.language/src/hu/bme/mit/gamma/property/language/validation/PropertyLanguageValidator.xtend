@@ -10,9 +10,17 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.property.language.validation
 
+import hu.bme.mit.gamma.property.model.Contract
+import hu.bme.mit.gamma.property.model.PathQuantifier
+import hu.bme.mit.gamma.property.model.QuantifiedFormula
+import hu.bme.mit.gamma.property.model.StateFormula
 import hu.bme.mit.gamma.property.util.PropertyModelValidator
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
+import hu.bme.mit.gamma.statechart.statechart.PortEventReference
+import java.util.List
 import org.eclipse.xtext.validation.Check
+
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class PropertyLanguageValidator extends AbstractPropertyLanguageValidator {
 	
@@ -28,5 +36,16 @@ class PropertyLanguageValidator extends AbstractPropertyLanguageValidator {
 	override checkComponentInstanceReferences(ComponentInstanceReferenceExpression reference) {
 		handleValidationResultMessage(validator.checkComponentInstanceReferences(reference))
 	}
+	
+	
+	 @Check
+    def checkContractInstance(Contract contract) {
+        handleValidationResultMessage(validator.checkContractInstance(contract))
+    }
+    
+    @Check
+    def checkNoExistentialQuantifierInContracts(Contract contract) {
+        handleValidationResultMessage(validator.checkNoExistentialQuantifierInContracts(contract))
+    }
 	
 }

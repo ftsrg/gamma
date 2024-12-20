@@ -91,6 +91,8 @@ import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result;
 import hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil;
+import hu.bme.mit.gamma.ocra.verification.OcraVerification;
+import hu.bme.mit.gamma.querygenerator.serializer.OcraPropertySerializer;
 
 public class VerificationHandler extends TaskHandler {
 
@@ -193,6 +195,10 @@ public class VerificationHandler extends TaskHandler {
 				case IML:
 					verificationTask = ImlVerification.INSTANCE;
 					propertySerializer = ImlPropertySerializer.INSTANCE;
+					break;
+				case OCRA:
+					verificationTask = OcraVerification.INSTANCE;
+					propertySerializer = OcraPropertySerializer.INSTANCE;
 					break;
 				default:
 					throw new IllegalArgumentException(analysisLanguage + " is not supported");
