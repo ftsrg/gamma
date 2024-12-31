@@ -11,7 +11,12 @@
 package hu.bme.mit.gamma.querygenerator
 
 import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.statechart.Region
+import hu.bme.mit.gamma.statechart.statechart.State
+
+import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class NuxmvQueryGenerator extends ThetaQueryGenerator {
 	//
@@ -19,6 +24,10 @@ class NuxmvQueryGenerator extends ThetaQueryGenerator {
 	//
 	new(Component component) {
 		super(component)
+	}
+	
+	override protected getSingleTargetStateName(State state, Region parentRegion, SynchronousComponentInstance instance) {
+		return '''«parentRegion.customizeName(instance)» == «state.customizeName»'''
 	}
 	
 	// nuXmv returns array values like this "b[1][2]" and here we need only "b"
