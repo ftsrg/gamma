@@ -95,7 +95,7 @@ class TraceToPlantUmlTransformer {
 		hnote over System
 		«FOR config : step.instanceStateConfigurations.groupBy[it.instance?.serialize].entrySet.sortBy[it.key]»
 			«config.key» «"in".addKeywordStyle» {«config.value.map[
-					it.region.name + "." + it.state.name].join(", ")»} «IF step.instanceVariableStates.exists[it.instanceReference?.serialize == config.key]»«"with".addKeywordStyle»«ENDIF»
+					it.region.name + "." + it.state.name.addItalicStyle].join(", ")»} «IF step.instanceVariableStates.exists[it.instanceReference?.serialize == config.key]»«"with".addKeywordStyle»«ENDIF»
 			«FOR variableConstraint : step.instanceVariableStates.filter[it.instanceReference?.serialize == config.key].sortBy[it.variableDeclaration.name]»
 				«'''  '''»«variableConstraint.variableDeclaration.name» = «variableConstraint.otherOperandIfContainedByEquality.serialize»
 			«ENDFOR»
@@ -114,5 +114,6 @@ class TraceToPlantUmlTransformer {
 	//
 	
 	protected def addKeywordStyle(String keyword) '''<b>«keyword»</b>'''
+	protected def addItalicStyle(String string) '''<i>«string»</i>'''
 	
 }
