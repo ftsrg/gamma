@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Gamma project
+ * Copyright (c) 2024-2025 Contributors to the Gamma project
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -21,7 +21,8 @@ class ExpressionSerializer extends hu.bme.mit.gamma.statechart.util.ExpressionSe
 	override _serialize(RecordLiteralExpression expression) {
 		val fields = expression.fieldAssignments
 		val DELIMETER = fields.size < 2 ? '' : '\\n'
-		return '''# {«FOR field : fields BEFORE DELIMETER SEPARATOR ',' + DELIMETER AFTER DELIMETER»«
+		val INDENT = (fields.size > 1) ? "\t" : ""
+		return '''# {«FOR field : fields BEFORE DELIMETER + INDENT SEPARATOR ',' + DELIMETER + INDENT AFTER DELIMETER»«
 			field.reference.fieldDeclaration.name» := «field.value.serialize»«ENDFOR»}'''
 	}
 }

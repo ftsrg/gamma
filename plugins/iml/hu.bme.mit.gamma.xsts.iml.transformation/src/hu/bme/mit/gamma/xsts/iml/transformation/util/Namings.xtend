@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Gamma project
+ * Copyright (c) 2024-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -63,7 +63,7 @@ class Namings {
 	
 	def static customizeHavocField(HavocAction havoc) '''«havoc.lhs.declaration.customizeName»_«havoc.randomizeName»'''
 	
-	def static customizeChoice(NonDeterministicAction choice) '''choice_«choice.uniqueName»''' // Deterministic name - needed for the reuse of the 'r' record during semantic diff computation
+	def static customizeChoice(NonDeterministicAction choice) '''choice_«choice.uniqueIndex»''' // Deterministic name - needed for the reuse of the 'r' record during semantic diff computation
 	
 	def static customizeHoistedFunctionName(Action action) '''h_«action.randomizeName»'''
 	
@@ -71,13 +71,13 @@ class Namings {
 		return object.hashCode.toString.replaceAll("-", "0")
 	}
 	
-	protected def static uniqueName(EObject object) {
+	protected def static uniqueIndex(EObject object) {
 		if (object.eContainer === null) {
 			return object.randomizeName
 		}
-		val containerSize = object.getAllContainersOfType(EObject).size
-		val index = object.indexOrZero
-		return containerSize + "_" + index
+		val containers = object.getAllContainersOfType(EObject)
+		val index = containers.map[it.indexOrZero].join
+		return index
 	}
 	
 }
