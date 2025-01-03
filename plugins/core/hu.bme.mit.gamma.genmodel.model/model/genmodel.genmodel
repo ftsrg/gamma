@@ -69,6 +69,7 @@
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//Task">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Task/fileName"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Task/fileName2"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Task/targetFolder"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//Task/timeout"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//Task/iterationCount"/>

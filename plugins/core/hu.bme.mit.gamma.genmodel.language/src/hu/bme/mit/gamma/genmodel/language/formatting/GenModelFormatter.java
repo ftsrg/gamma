@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -122,21 +122,24 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getPhaseStatechartGenerationAccess().getTargetFolderAssignment_7_0_2());
         c.setLinewrap(1).after(f.getPhaseStatechartGenerationAccess().getFileNameAssignment_7_1_2());
         // Verification
-        c.setLinewrap(1).after(f.getVerificationAccess().getTargetFolderAssignment_3_0_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getFileNameAssignment_3_1_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getProjectNameAssignment_3_2_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getAlternatives_3_3_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getSvgFileNameAssignment_3_4_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getAnalysisLanguagesAssignment_3_5_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getQueryFilesAssignment_3_6_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getVerificationArgumentsAssignment_3_7_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getPropertyPackagesAssignment_3_8_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getPackageNameAssignment_3_9_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getFileNameAssignment_3_0_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getTargetFolderAssignment_3_1_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getFileName2Assignment_3_2_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getProjectNameAssignment_3_3_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getAlternatives_3_4_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getSvgFileNameAssignment_3_5_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getAnalysisLanguagesAssignment_3_6_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getQueryFilesAssignment_3_7_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getVerificationArgumentsAssignment_3_8_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getPropertyPackagesAssignment_3_9_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getPackageNameAssignment_3_10_2());
         c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_9());
-        c.setLinewrap(1).after(f.getVerificationAccess().getProgrammingLanguagesAssignment_3_10_2());
         c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_10());
-        c.setLinewrap(1).after(f.getVerificationAccess().getTestFolderAssignment_3_13_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getTimeoutAssignment_3_14_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getProgrammingLanguagesAssignment_3_11_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_11());
+        c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_13());
+        c.setLinewrap(1).after(f.getVerificationAccess().getTestFolderAssignment_3_14_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getTimeoutAssignment_3_15_2());
         // Model mutation
         c.setLinewrap(1).after(f.getModelMutationAccess().getTargetFolderAssignment_3_0_2());
         c.setLinewrap(1).after(f.getModelMutationAccess().getModelAssignment_2());
