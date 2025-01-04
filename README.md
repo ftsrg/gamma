@@ -33,6 +33,8 @@ To cite Gamma, please cite the following paper. You can find additional publicat
 
 ## Using Gamma
 
+Note that if you use a Mac or Linux-based OS, you probably have to launch the Gamma Eclipse from a *terminal* (e.g., `% open .../eclispe-folder/eclipse.app` or `$ .../eclipse-folder./eclipsec.exe`) to allow the invoked process to read the global variables of the system and run the integrated 3rd-party tools.
+
 ### Dependencies
 
 ##### Recommended Eclipse version and bundle:
