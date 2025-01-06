@@ -207,11 +207,6 @@ class TraceBackAnnotator {
 												id.parseOutEventParameter(value, step)
 											}
 											//
-											// Synchronous in-event parameter: only if it is PERSISTENT
-											else if (imlQueryGenerator.isSynchronousSourceInEventParameter(id)) {
-												id.parseSynchronousInEventParameter(value, step)
-											}
-											//
 											// We check the async queue in every state_check: if the message remains in the queue,
 											// then it was not processed in the cycle, so we remove it from the trace.
 											// Next time it is processed, in env_check, we will see that it is still in the queue,
