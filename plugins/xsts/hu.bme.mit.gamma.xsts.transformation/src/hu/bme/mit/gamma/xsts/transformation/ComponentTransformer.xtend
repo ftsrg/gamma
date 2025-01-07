@@ -1326,7 +1326,7 @@ class ComponentTransformer {
 		val lowlevelStatechart = gammaToLowlevelTransformer.transform(statechart)
 		lowlevelPackage.components += lowlevelStatechart
 		val lowlevelToXSTSTransformer = new LowlevelToXstsTransformer(
-			lowlevelPackage, optimize, transitionMerging)
+				lowlevelPackage, optimize, transitionMerging)
 		val xStsEntry = lowlevelToXSTSTransformer.execute
 		lowlevelPackage.components -= lowlevelStatechart // So that next time the matches do not return elements from this statechart
 		val xSts = xStsEntry.key

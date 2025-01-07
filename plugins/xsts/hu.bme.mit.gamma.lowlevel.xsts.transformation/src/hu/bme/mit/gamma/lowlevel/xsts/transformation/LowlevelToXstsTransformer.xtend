@@ -144,7 +144,8 @@ class LowlevelToXstsTransformer {
 		this.xSts = createXSTS => [
 			it.name = _package.name
 		]
-		this.targetEngine = ViatraQueryEngine.on(new EMFScope(this.xSts))
+		this.targetEngine = ViatraQueryEngine.on(
+				new EMFScope(this.xSts))
 		this.trace = new Trace(_package, xSts)
 		// The transformers need the trace model for the variable mapping
 		this.regionActivator = new RegionActivator(this.engine, this.trace)

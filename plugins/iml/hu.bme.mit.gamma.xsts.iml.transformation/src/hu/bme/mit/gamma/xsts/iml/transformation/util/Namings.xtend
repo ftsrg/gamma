@@ -50,7 +50,7 @@ class Namings {
 	def static customizeName(Declaration variable) { variable.name.customizeDeclarationName }
 	def static customizeDeclarationName(String name) { DECLARATION_NAME_PREFIX + name }
 	
-	def static String customizeLocalDeclarationName(Declaration variable) { '''«variable.name.customizeDeclarationName»_«variable.randomizeName»''' }
+	def static String customizeLocalDeclarationName(Declaration variable) { '''«variable.name.customizeDeclarationName»_«variable.uniqueIndex»''' }
 	
 	public static final String TYPE_DECLARATION_NAME_PREFIX = "M_"
 	def static customizeName(TypeDeclaration type) { type.name.customizeTypeDeclarationName }
@@ -61,7 +61,7 @@ class Namings {
 	def static customizeName(EnumerationLiteralDefinition literal) { literal.name.customizeEnumLiteralName }
 	def static customizeEnumLiteralName(String name) { ENUM_LITERAL_PREFIX + name }
 	
-	def static customizeHavocField(HavocAction havoc) '''«havoc.lhs.declaration.customizeName»_«havoc.randomizeName»'''
+	def static customizeHavocField(HavocAction havoc) '''«havoc.lhs.declaration.customizeName»_«havoc.uniqueIndex»'''
 	
 	def static customizeChoice(NonDeterministicAction choice) '''choice_«choice.uniqueIndex»''' // Deterministic name - needed for the reuse of the 'r' record during semantic diff computation
 	
