@@ -210,8 +210,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			if (propertyPackage != null) {
 				PropertySerializer propertySerializer = getPropertySerializer();
 				String serializedFormulas = propertySerializer.serializeCommentableStateFormulas(propertyPackage.getFormulas());
+				String extensionlessFileName = fileUtil.getExtensionlessName(fileName);
 				fileUtil.saveString(targetFolderUri + File.separator +
-						fileName + "." + getQueryFileExtension(), serializedFormulas);
+						extensionlessFileName + "." + getQueryFileExtension(), serializedFormulas);
 			}
 		}
 		
@@ -869,7 +870,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 
 		@Override
 		protected String getQueryFileExtension() {
-			return GammaFileNamer.PROMELA_QUERY_EXTENSION;
+			return GammaFileNamer.NUXMV_QUERY_EXTENSION;
 		}
 	}
 	

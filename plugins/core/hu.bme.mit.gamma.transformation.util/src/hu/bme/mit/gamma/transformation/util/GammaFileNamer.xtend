@@ -54,6 +54,7 @@ class GammaFileNamer {
 	public static final String UPPAAL_QUERY_EXTENSION = "q";
 	public static final String THETA_QUERY_EXTENSION = "prop";
 	public static final String PROMELA_QUERY_EXTENSION = "pmlp";
+	public static final String NUXMV_QUERY_EXTENSION = "smvp";
 		
 	//
 	
