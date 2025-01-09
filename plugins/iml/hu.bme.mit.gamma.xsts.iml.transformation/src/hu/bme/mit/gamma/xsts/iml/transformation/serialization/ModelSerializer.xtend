@@ -129,7 +129,11 @@ class ModelSerializer {
 		val trans = '''
 			let trans («globalVariableName» : «GLOBAL_RECORD_TYPE_NAME») «IF actionSerializer.getHasTransHavoc»(«ENV_HAVOC_RECORD_IDENTIFIER» : «ENV_HAVOC_RECORD_TYPE_NAME») «ENDIF»=
 				«localVariables.initVariablesIfNotEmpty(LOCAL_RECORD_IDENTIFIER)»
-				«xSts.mergedAction.serializeActionGlobally»
+				«xSts.mergedAction.serializeActionIntermediate»
+				«IF !choices.empty /* Here, instead of run_cycle to support semantic diff? */»
+					«globalVariableDeclaration»{ «globalVariableName» with «FOR choice : choices»«choice.customizeChoice» = 0; «ENDFOR»} (* Optimization *) in
+				«ENDIF»
+				«globalVariableName»
 		'''
 		val hoistedFunctions = actionSerializer.hoistedFunctions
 		actionSerializer.hoistBranches = false // We do not want to hoist 'env'
@@ -147,9 +151,6 @@ class ModelSerializer {
 				«ENDIF»
 				«globalVariableDeclaration»env «globalVariableName» «ENV_HAVOC_RECORD_IDENTIFIER» in
 				«globalVariableDeclaration»trans «globalVariableName» «IF actionSerializer.getHasTransHavoc»«ENV_HAVOC_RECORD_IDENTIFIER» «ENDIF»in
-				«IF !choices.empty»
-					«globalVariableDeclaration»{ «globalVariableName» with «FOR choice : choices»«choice.customizeChoice» = 0; «ENDFOR»} (* Optimization *) in
-				«ENDIF»
 				«globalVariableName»
 				
 			let rec «RUN_FUNCTION_IDENTIFIER» («globalVariableName» : «GLOBAL_RECORD_TYPE_NAME») («ENV_HAVOC_RECORD_IDENTIFIER» : «ENV_HAVOC_RECORD_TYPE_NAME» list) =

@@ -75,6 +75,11 @@ class ActionSerializer {
 				.changeReturnValue
 	}
 	
+	def serializeActionIntermediate(Action action) {
+		return action.serialize
+				.removeReturnValue
+	}
+	
 	//
 	
 	protected def String serialize(Action action) {
@@ -368,6 +373,10 @@ class ActionSerializer {
 	
 	protected def changeReturnValue(String action) {
 		return action.replaceFirst(localVariableNames + "$", globalVariableName)
+	}
+	
+	protected def removeReturnValue(String action) {
+		return action.replaceFirst(localVariableNames + "$", "")
 	}
 	
 	//
