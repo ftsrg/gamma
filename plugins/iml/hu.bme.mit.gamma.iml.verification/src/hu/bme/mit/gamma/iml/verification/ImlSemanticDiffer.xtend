@@ -76,7 +76,8 @@ class ImlSemanticDiffer {
 	
 	protected def execute(File grandparentFile, String cmd) {
 		val parentFile = grandparentFile + File.separator + IMANDRA_TEMPORARY_COMMAND_FOLDER
-		val pythonFile = new File(parentFile, '''.imandra-commands-«Thread.currentThread.name».py''')
+		val nameSuffix = Thread.currentThread.name.replaceAll(":", "").replaceAll(" ", "_")
+		val pythonFile = new File(parentFile, '''.imandra-commands-«nameSuffix».py''')
 		pythonFile.deleteOnExit
 		pythonFile.saveString(cmd)
 		
