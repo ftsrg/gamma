@@ -44,9 +44,13 @@ class ImlSemanticDiffer {
 			«trans2»
 		'''
 		
+		val diffParameters = src.extractTransFunctionParameters
+		val diffArguments = diffParameters.extractTransFunctionArguments
+		
 		val DIFF_PREDICATE_NAME = "diff"
 		val diffFunction = '''
-			let «DIFF_PREDICATE_NAME» (r : t) = ((«DIFF_FUNCTION_NAME» r) <> («NEW_DIFF_FUNCTION_NAME» r));;
+			let «DIFF_PREDICATE_NAME» «diffParameters» = ((«
+				DIFF_FUNCTION_NAME» «diffArguments») <> («NEW_DIFF_FUNCTION_NAME» «diffArguments»));;
 		'''
 		
 		val cmd1 = ImlApiHelper.getDecompoiseCall(
@@ -273,6 +277,41 @@ class ImlSemanticDiffer {
 		val newSrc = newStart + src.substring(start + offset, end)
 				.replaceAll('''let «DIFF_FUNCTION_NAME» ''', '''let «NEW_DIFF_FUNCTION_NAME» ''')
 		return newSrc
+	}
+	
+	protected def extractTransFunctionParameters(String src) {
+		val FUNCTION_NAME = "trans"
+		val START_STRING = '''let «FUNCTION_NAME»'''
+		val END_STRING = "="
+		
+		val transIndex = src.indexOf(START_STRING)
+		val firstIndex = src.indexOf("(", transIndex)
+		val lastIndex = src.indexOf(END_STRING, transIndex)
+		
+		val parameters = src.substring(firstIndex, lastIndex).trim
+		
+		return parameters
+	}
+	
+	protected def extractTransFunctionArguments(String transFunctionParameters) {
+		val arguments = new StringBuilder
+		
+		val char leftPar = '('
+		val char colon = ':'
+		
+		var previousParenthesis = 0
+		for (var i = 0; i < transFunctionParameters.length; i++) {
+			var charAt = transFunctionParameters.charAt(i)
+			if (charAt == leftPar) {
+				previousParenthesis = i
+			}
+			else if (charAt == colon) {
+				val argument = transFunctionParameters.substring(previousParenthesis + 1, i).trim
+				arguments.append(argument + " ")
+			}
+		}
+		
+		return arguments.toString.trim
 	}
 	
 }
