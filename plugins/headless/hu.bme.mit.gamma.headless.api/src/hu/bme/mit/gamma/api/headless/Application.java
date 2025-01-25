@@ -28,6 +28,7 @@ public class Application implements IApplication {
 	
 	@Override
 	public Object start(final IApplicationContext context) throws Exception {
+		// Use a terminal or git bash for invoking the headless application:
 		final Map<?, ?> args = context.getArguments(); // ./eclipse.exe -data ./ws gamma info .../Genmodelfile.ggen
 		final String[] appArgs = (String[]) args.get(IApplicationContext.APPLICATION_ARGS);
 		

@@ -3,7 +3,6 @@
 
 <product name="Gamma Api Headless" uid="gamma.api.headless.product" id="hu.bme.mit.gamma.headless.api.product" application="gamma.api.headless.application" version="1.0.0" type="bundles" includeLaunchers="true" autoIncludeRequirements="true">
 
-
    <configIni use="default">
    </configIni>
 
@@ -14,17 +13,14 @@
 
    <windowImages/>
 
-
    <launcher>
       <win useIco="false">
          <bmp/>
       </win>
    </launcher>
 
-
    <vm>
    </vm>
-
 
    <plugins>
       <plugin id="bcpg"/>
@@ -76,7 +72,7 @@
       <plugin id="hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability"/>
       <plugin id="hu.bme.mit.gamma.mutation"/>
       <plugin id="hu.bme.mit.gamma.nuxmv.verification"/>
-      <plugin id="hu.bme.mit.gamma.ocra.transformation"/>
+      <plugin id="hu.bme.mit.gamma.ocra.verification"/>
       <plugin id="hu.bme.mit.gamma.promela.verification"/>
       <plugin id="hu.bme.mit.gamma.property.concretization.commandhandler"/>
       <plugin id="hu.bme.mit.gamma.property.language"/>
@@ -135,6 +131,7 @@
       <plugin id="hu.bme.mit.gamma.xsts.iml.transformation"/>
       <plugin id="hu.bme.mit.gamma.xsts.model"/>
       <plugin id="hu.bme.mit.gamma.xsts.nuxmv.transformation"/>
+      <plugin id="hu.bme.mit.gamma.xsts.ocra.transformation"/>
       <plugin id="hu.bme.mit.gamma.xsts.promela.transformation"/>
       <plugin id="hu.bme.mit.gamma.xsts.transformation"/>
       <plugin id="hu.bme.mit.gamma.xsts.transformation.util"/>
@@ -170,6 +167,7 @@
       <plugin id="org.apache.commons.commons-beanutils"/>
       <plugin id="org.apache.commons.commons-codec"/>
       <plugin id="org.apache.commons.commons-io"/>
+      <plugin id="org.apache.commons.commons-logging"/>
       <plugin id="org.apache.commons.jxpath"/>
       <plugin id="org.apache.commons.logging"/>
       <plugin id="org.apache.felix.scr"/>
@@ -179,6 +177,8 @@
       <plugin id="org.apache.xmlgraphics"/>
       <plugin id="org.bndtools.versioncontrol.ignores.manager"/>
       <plugin id="org.bndtools.versioncontrol.ignores.plugin.git"/>
+      <plugin id="org.commonmark"/>
+      <plugin id="org.commonmark-gfm-tables"/>
       <plugin id="org.eclipse.ant.core"/>
       <plugin id="org.eclipse.collections"/>
       <plugin id="org.eclipse.compare"/>
@@ -285,16 +285,6 @@
       <plugin id="org.eclipse.jface.text"/>
       <plugin id="org.eclipse.ltk.core.refactoring"/>
       <plugin id="org.eclipse.ltk.ui.refactoring"/>
-      <plugin id="org.eclipse.m2e.archetype.catalog"/>
-      <plugin id="org.eclipse.m2e.archetype.common"/>
-      <plugin id="org.eclipse.m2e.archetype.descriptor"/>
-      <plugin id="org.eclipse.m2e.archetype.maven-artifact-transfer"/>
-      <plugin id="org.eclipse.m2e.core"/>
-      <plugin id="org.eclipse.m2e.core.ui"/>
-      <plugin id="org.eclipse.m2e.logback"/>
-      <plugin id="org.eclipse.m2e.maven.runtime"/>
-      <plugin id="org.eclipse.m2e.model.edit"/>
-      <plugin id="org.eclipse.m2e.workspace.cli"/>
       <plugin id="org.eclipse.orbit.xml-apis-ext"/>
       <plugin id="org.eclipse.osgi"/>
       <plugin id="org.eclipse.osgi.compatibility.state"/>
@@ -365,10 +355,9 @@
       <plugin id="org.eclipse.xtext.ide.source"/>
       <plugin id="org.eclipse.xtext.java"/>
       <plugin id="org.eclipse.xtext.java.source"/>
+      <plugin id="org.eclipse.xtext.jdt.facade"/>
       <plugin id="org.eclipse.xtext.logging"/>
       <plugin id="org.eclipse.xtext.logging.source"/>
-      <plugin id="org.eclipse.xtext.m2e"/>
-      <plugin id="org.eclipse.xtext.m2e.source"/>
       <plugin id="org.eclipse.xtext.purexbase"/>
       <plugin id="org.eclipse.xtext.purexbase.ide"/>
       <plugin id="org.eclipse.xtext.purexbase.ide.source"/>
@@ -422,7 +411,6 @@
       <plugin id="org.eclipse.xtext.xtext.wizard"/>
       <plugin id="org.eclipse.xtext.xtext.wizard.source"/>
       <plugin id="org.hamcrest"/>
-      <plugin id="org.hamcrest.core"/>
       <plugin id="org.jdom"/>
       <plugin id="org.jdom2"/>
       <plugin id="org.junit"/>
