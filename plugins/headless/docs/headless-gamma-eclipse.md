@@ -59,6 +59,7 @@ We have created target platforms for Windows and Linux operating systems (see th
  - Create or export your current target platform by clicking on the `Share` button (inside `Window > Preferences > Plug-in Development > Target Platform`) and giving it a valid filename ending in a `.target` extension.
  - Edit the target platform by modifying its content. For *each and every* plugin, select **only** a single version, and deselect other versions (remove the tick from the box next to them). Make sure to select the version that is depended on the Gamma plugins. You can experiment with the (de)selection of the versions and reloading the emergent target platform; see if you get errors in the workspace after rebuilding Gamma.
    - Note: this probably has to be done only for the actual plugins depended on by Gamma. Nonetheless, it is safer to have a *single* version for each plugin in the target platform.
+   - Note: starting from 2024 Eclipse installations, the `javax.inject` package is [not available](https://github.com/eclipse-pde/eclipse.pde/issues/902) in target platforms, even though it is depended on by pre-installed `*.m2e.*` plugins, causing issues. To counter this, deselect *each and every* plugin from your target platform that contains the `*.m2e*` string in their name. Similarly, remove these plugins from the product file (content of exported plugins).
  
 **If you have Gamma installed into your host Eclipse:**
 
@@ -104,6 +105,8 @@ If the above modifications do not solve the issue, you should move onto the foll
 After exporting and running the Headless Eclipse, it is possible that an error will occur stating "*An error has occured. See the log file [...]*". After inspecting the log file, it is possible that the exported Eclipse can't resolve the module, because some bundles are missing ("*Unresolved requirement: Require-Bundle: [...]*").
 
 To resolve this, add the missing plugin(s) to the contents of the product file, in the Contents tab.
+
+Note: if the unresolved requirement is the `javax.inject` plugin, remove the `*.m2e.*` plugins from your target platform and product (see explanation above).
 
 **Application could not be found in registry**
 

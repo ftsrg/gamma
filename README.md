@@ -38,7 +38,7 @@ Note that if you use a Mac or Linux-based OS, you probably have to launch the Ga
 ### Dependencies
 
 ##### Recommended Eclipse version and bundle:
-* Eclipse IDE 2024-09, Eclipse IDE for Java and DSL Developers bundle. Note that Yakindu (see below) will not work with the _2023-12_ or newer Eclipse releases due to compatibility reasons.
+* Eclipse IDE 2024-12, Eclipse IDE for Java and DSL Developers bundle. Note that Yakindu (see below) will not work with the _2023-12_ or newer Eclipse releases due to compatibility reasons.
 
 ##### 3rd-party Eclipse components (should be installed separately):
 * VIATRA 2.9.1 (https://www.eclipse.org/viatra/),
