@@ -106,7 +106,7 @@ After exporting and running the Headless Eclipse, it is possible that an error w
 
 To resolve this, add the missing plugin(s) to the contents of the product file, in the Contents tab.
 
-Note: if the unresolved requirement is the `javax.inject` plugin, remove the `*.m2e.*` plugins from your target platform and product (see explanation above).
+Note: if the unresolved requirement is the `javax.inject` package, remove the `*.m2e.*` plugins from your target platform and product (see explanation above).
 
 **Application could not be found in registry**
 
