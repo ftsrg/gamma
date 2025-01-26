@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Gamma project
+ * Copyright (c) 2024-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -20,12 +20,8 @@ import org.eclipse.equinox.app.IApplicationContext;
 // The application class that gets executed and exported as Headless Gamma
 public class Application implements IApplication {
 	//
-	private GammaEntryPoint gammaEntryPoint;
-	private ProjectImporter projectImporter;
-	private WorkspaceGenerator workspaceGenerator;
-	//
 	protected Logger logger = Logger.getLogger("GammaLogger");
-	
+	//
 	@Override
 	public Object start(final IApplicationContext context) throws Exception {
 		// Use a terminal or git bash for invoking the headless application:
@@ -40,7 +36,7 @@ public class Application implements IApplication {
 			 * the user, so this error should not appear, as the server always passes these arguments.
 			 */
 			if (appArgs.length == 0) {
-				logger.warning("No argument given. Either a \"workspace\", \"import\" or \"gamma\" argument is expected.");
+				logger.warning("No argument given; use any of the following: " + serializeAcceptedArguments());
 			}
 			else {
 				// The second argument is the log level. This is INFO by default. This can be
@@ -65,22 +61,8 @@ public class Application implements IApplication {
 				}
 				// The first argument is the operation type: creating workspace, importing
 				// project or executing Gamma .ggen file
-				switch (appArgs[0]) {
-					case "workspace":
-						workspaceGenerator = new WorkspaceGenerator(context, appArgs, level);
-						workspaceGenerator.execute();
-						break;
-					case "import":
-						projectImporter = new ProjectImporter(context, appArgs, level);
-						projectImporter.execute();
-						break;
-					case "gamma":
-						gammaEntryPoint = new GammaEntryPoint(context, appArgs, level);
-						gammaEntryPoint.execute();
-						break;
-					default:
-						logger.warning("Invalid argument for operation type: " + appArgs[0] + ". Use \"workspace\", \"import\" or \"gamma\".");
-				}
+				HeadlessApplicationCommandHandler handler = createHandler(context, appArgs, level);
+				handler.execute();
 			}
 		} catch (Throwable t) {
 			logger.severe(t.getMessage());
@@ -93,5 +75,37 @@ public class Application implements IApplication {
 	public void stop() {
 		logger.info("Headless Gamma application stopped");
 	}
+	
+	//
+	
+	protected HeadlessApplicationCommandHandler createHandler(
+			IApplicationContext context, String[] appArgs, Level level) {
+		String argument = appArgs[0];
+		//
+		switch (argument) {
+			case "workspace":
+				return new WorkspaceGenerator(context, appArgs, level);
+			case "import":
+				return new ProjectImporter(context, appArgs, level);
+			case "gamma":
+				return new GammaEntryPoint(context, appArgs, level);
+			default:
+				throw new IllegalArgumentException("Invalid argument for operation type: " + argument +
+						"; use one of the following: " + serializeAcceptedArguments());
+		}
+	}
 
+	protected String[] getAcceptedArguments() {
+		return new String[] { "workspace", "import", "gamma" };
+	}
+	
+	private String serializeAcceptedArguments() {
+		StringBuilder builder = new StringBuilder();
+		for (String argument : getAcceptedArguments()) {
+			builder.append("\"" + argument + "\", ");
+		}
+		builder.setLength(builder.length() - 2); // Deleting last ', '
+		return builder.toString();
+	}
+	
 }
