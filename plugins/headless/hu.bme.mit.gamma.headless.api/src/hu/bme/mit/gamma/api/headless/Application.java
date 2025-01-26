@@ -81,7 +81,6 @@ public class Application implements IApplication {
 	protected HeadlessApplicationCommandHandler createHandler(
 			IApplicationContext context, String[] appArgs, Level level) {
 		String argument = appArgs[0];
-		//
 		switch (argument) {
 			case "workspace":
 				return new WorkspaceGenerator(context, appArgs, level);
