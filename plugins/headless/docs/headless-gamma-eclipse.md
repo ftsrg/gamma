@@ -124,6 +124,10 @@ This error occurs when the `Synchronise before exporting` option remains checked
 
 This error occurs when the `Generate p2 repository` option remains checked when exporting. Uncheck this option, and export again.
 
+**Eclipse executable launcher error: Unable to locate companion shared library**
+
+This error occurs when the `Generate p2 repository` option remains unchecked when exporting. Check this option, and export again. (Cf. previous problem: when should it be checked and when should it be unchecked? Excellent question...)
+
 **Problems with SWT**
 
 This problem can occur mainly in the Docker version of Gamma. The two parts that make up the headless version of Gamma, the generator and the API can run into errors with SWT in a new Linux environment. These errors prevent normal functioning.
