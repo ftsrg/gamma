@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Gamma project
+ * Copyright (c) 2024-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,6 +15,8 @@ import java.util.logging.Logger;
 
 import org.eclipse.equinox.app.IApplicationContext;
 
+import hu.bme.mit.gamma.util.GammaEcoreUtil;
+
 // Abstract class for all Headless Gamma application options
 public abstract class HeadlessApplicationCommandHandler {
 	//
@@ -22,7 +24,8 @@ public abstract class HeadlessApplicationCommandHandler {
 	final String[] appArgs;
 	final Level level;
 	//
-	protected Logger logger = Logger.getLogger("GammaLogger");
+	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected final Logger logger = Logger.getLogger("GammaLogger");
 	//
 
 	public HeadlessApplicationCommandHandler(IApplicationContext context, String[] appArgs, Level level) {
