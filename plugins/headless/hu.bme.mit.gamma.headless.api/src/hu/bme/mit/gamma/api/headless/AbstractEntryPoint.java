@@ -32,6 +32,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.equinox.app.IApplicationContext;
+import org.eclipse.xtext.ISetup;
 import org.eclipse.xtext.resource.XtextResourceSet;
 
 import com.google.gson.Gson;
@@ -47,7 +48,6 @@ import hu.bme.mit.gamma.genmodel.language.GenModelStandaloneSetup;
 import hu.bme.mit.gamma.property.language.PropertyLanguageStandaloneSetup;
 import hu.bme.mit.gamma.scenario.language.ScenarioLanguageStandaloneSetup;
 import hu.bme.mit.gamma.statechart.language.StatechartLanguageStandaloneSetup;
-import hu.bme.mit.gamma.statechart.language.StatechartLanguageStandaloneSetupGenerated;
 import hu.bme.mit.gamma.trace.language.TraceLanguageStandaloneSetup;
 import hu.bme.mit.gamma.ui.util.ResourceSetCreator;
 import hu.bme.mit.gamma.util.FileUtil;
@@ -77,47 +77,53 @@ public abstract class AbstractEntryPoint extends HeadlessApplicationCommandHandl
 			IWorkspaceRoot workspaceRoot = workspace.getRoot();
 			IPath workspaceLocation = workspaceRoot.getLocation();
 			File workspaceFolder = workspaceLocation.toFile();
-			IProgressMonitor progressMonitor = new NullProgressMonitor();
+			//
+			setup(appArgs);
 			// The file and its containing project is not in the given workspace
 			// The project has to be copied into the workspace
 			if (!contains(workspaceFolder, genFile)) {
 				// Note that in this case the gen file cannot refer to models outside of the project
-				IProject project = workspaceRoot.getProject(projectName);
-				try {
-					project.create(progressMonitor);
-				} catch (CoreException creationException) {
-					// Project with same name exists, trying to open it
-					try {
-						project.open(progressMonitor);
-					} catch (CoreException openException) {
-						// Open did not succeed, deleting and creating needed
-						project.delete(true, progressMonitor);
-						project.create(progressMonitor);
-					}
-				}
-				project.open(progressMonitor);
-				IProjectDescription description = project.getDescription();
-				//description.setNatureIds(new String[] { XtextProjectHelper.NATURE_ID });
-				project.setDescription(description, progressMonitor);
-				// Not needed to add project natures like this, maybe copyDirectory does that?
-				copyDirectory(projectFolder, project);
-				workspace.save(true, progressMonitor);
+				copyProject(projectFolder, projectName);
 			}
 			// The file and its containing project is in the given workspace
 			run(fileWorkspaceRelativePath);
-			// Commented due to repeatedly throwing exceptions. The application works without it.
-			// workspace.save(true, progressMonitor);
 
 			beforeExitOperation(projectDescriptorPath);
 		}
-
 	}
+
+	protected void copyProject(File projectFolder, String projectName) throws CoreException, Exception {
+		IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		IWorkspaceRoot workspaceRoot = workspace.getRoot();
+		IProgressMonitor progressMonitor = new NullProgressMonitor();
+		IProject project = workspaceRoot.getProject(projectName);
+		try {
+			project.create(progressMonitor);
+		} catch (CoreException creationException) {
+			// Project with same name exists, trying to open it
+			try {
+				project.open(progressMonitor);
+			} catch (CoreException openException) {
+				// Open did not succeed, deleting and creating needed
+				project.delete(true, progressMonitor);
+				project.create(progressMonitor);
+			}
+		}
+		project.open(progressMonitor);
+		IProjectDescription description = project.getDescription();
+		project.setDescription(description, progressMonitor);
+		// Not needed to add project natures like this, maybe copyDirectory does that?
+		copyDirectory(projectFolder, project);
+		workspace.save(true, progressMonitor);
+	}
+
+	protected abstract void setup(String[] args) throws Exception;
 	
 	protected abstract void run(String fileWorkspaceRelativePath) throws Exception;
 	
-	//
+	protected abstract void setupXtext();
 	
-	protected void setupXtext() {
+	protected void setupGammaXtext() {
 		ExpressionLanguageStandaloneSetup.doSetup();
 		ActionLanguageStandaloneSetup.doSetup();
 		StatechartLanguageStandaloneSetup.doSetup();
@@ -134,7 +140,7 @@ public abstract class AbstractEntryPoint extends HeadlessApplicationCommandHandl
 
 			private Injector getInjector() {
 				if (injector == null) {
-					injector = new StatechartLanguageStandaloneSetupGenerated()
+					injector = getLanguageSetup()
 							.createInjectorAndDoEMFRegistration();
 				}
 				return injector;
@@ -147,6 +153,8 @@ public abstract class AbstractEntryPoint extends HeadlessApplicationCommandHandl
 			}
 		};
 	}
+	
+	protected abstract ISetup getLanguageSetup();
 
 	private boolean contains(File folder, File file) {
 		File parentFolder = file.getParentFile();
