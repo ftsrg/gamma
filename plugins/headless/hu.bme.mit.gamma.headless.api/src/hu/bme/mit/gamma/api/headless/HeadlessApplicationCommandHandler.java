@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 
 import org.eclipse.equinox.app.IApplicationContext;
 
+import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 // Abstract class for all Headless Gamma application options
@@ -24,6 +25,7 @@ public abstract class HeadlessApplicationCommandHandler {
 	final String[] appArgs;
 	final Level level;
 	//
+	protected final FileUtil fileUtil = FileUtil.INSTANCE;
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final Logger logger = Logger.getLogger("GammaLogger");
 	//
