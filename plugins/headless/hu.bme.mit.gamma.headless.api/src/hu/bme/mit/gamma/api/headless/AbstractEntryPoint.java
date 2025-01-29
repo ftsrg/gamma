@@ -89,6 +89,7 @@ public abstract class AbstractEntryPoint extends HeadlessApplicationCommandHandl
 			run(fileWorkspaceRelativePath);
 
 			beforeExitOperation(projectDescriptorPath);
+			logger.info("Exiting...");
 		}
 	}
 
