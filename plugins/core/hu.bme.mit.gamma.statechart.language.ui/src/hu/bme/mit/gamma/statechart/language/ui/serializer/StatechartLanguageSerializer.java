@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,6 +15,7 @@ import java.io.IOException;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.xtext.ISetup;
 
 import com.google.inject.Injector;
 
@@ -29,8 +30,8 @@ public class StatechartLanguageSerializer {
 		Injector injector = null;
 		LanguageActivator activator = LanguageActivator.getInstance();
 		if (activator == null) { // Headless Eclipse
-			injector = new StatechartLanguageStandaloneSetupGenerated()
-					.createInjectorAndDoEMFRegistration();
+			ISetup setup = new StatechartLanguageStandaloneSetupGenerated();
+			injector = setup.createInjectorAndDoEMFRegistration();
 		}
 		else { // "Normal" Eclipse
 			injector = activator.getInjector(
