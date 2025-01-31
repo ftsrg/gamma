@@ -43,6 +43,6 @@ public class GammaEntryPoint extends AbstractEntryPoint {
 	}
 
 	@Override
-	protected void setup(String[] args) {}
+	protected void setup() {}
 	
 }

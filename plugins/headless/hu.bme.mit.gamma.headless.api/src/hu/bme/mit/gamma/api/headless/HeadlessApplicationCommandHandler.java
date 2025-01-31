@@ -21,9 +21,9 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil;
 // Abstract class for all Headless Gamma application options
 public abstract class HeadlessApplicationCommandHandler {
 	//
-	final IApplicationContext context;
-	final String[] appArgs;
-	final Level level;
+	final protected IApplicationContext context;
+	final protected String[] appArgs;
+	final protected Level level;
 	//
 	protected final FileUtil fileUtil = FileUtil.INSTANCE;
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
