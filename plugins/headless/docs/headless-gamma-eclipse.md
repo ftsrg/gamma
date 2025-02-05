@@ -30,7 +30,7 @@ The `hu.bme.mit.gamma.headless.api` creates the headless version of Gamma. This 
  - **Gamma** plugin (imported to the current workspace from the official Gamma repository), and
  - **Xtext** plugin (installed via the official update site of Xtext).
  
-That is, click on the `Add` button on the right, start typing _*gamma_ and later again, _*xtext_ in the search field and make sure no plugin pops up in the *Plug-in Selection* window.
+That is, click on the `Add` button on the right, start typing `*gamma` and later again, `*xtext` in the search field and make sure no plugin pops up in the `Plug-in Selection` window.
 
 Also, make sure that every required plugin is added by clicking on the `Add Required Plug-ins` button on the right. Make sure that `org.eclipse.search` is included  as it is an Xtext dependency not declared by Xtext explicitly.
 
@@ -132,7 +132,7 @@ This error occurs when the `Generate p2 repository` option remains unchecked whe
 
 This problem can occur mainly in the Docker version of Gamma. The two parts that make up the headless version of Gamma, the generator and the API can run into errors with SWT in a new Linux environment. These errors prevent normal functioning.
 
-The first notable thing about SWT is that it is platform-dependent. This means that in the product file, the platform-specific SWT plugins have to be imported (and possibly removed) according to the platform. For example, when moving from Windows to Linux, on the Content tab of the products, the Windows-specific plugins will be missing, which is indicated with an error icon. These have to be replaced with the Linux-specific plugins, which have the same name, with the operating system being a difference (instead of "*win32*", "*linux*" is in the name).
+The first notable thing about SWT is that it is platform-dependent. This means that in the product file, the platform-specific SWT plugins have to be imported (and possibly removed) according to the platform. For example, when moving from Windows to Linux, on the `Content` tab of the products, the Windows-specific plugins will be missing, which is indicated with an error icon. These have to be replaced with the Linux-specific plugins, which have the same name, with the operating system being a difference (instead of "*win32*", "*linux*" is in the name).
 
 The following solutions resolved these issues:
 
@@ -156,4 +156,4 @@ Eclipse Compiler for Java(TM) v20210223-0522, 3.25.0, Copyright IBM Corp 2000, 2
 Compliance level '17' is incompatible with target level '21'. A compliance level '21' or better is required
 ``` 
 
-This means that the compiler compliance level is set too high. Open the Eclipse IDE, select `Window -> Preferences -> Java -> Compiler`, and under `JDK Compliance`, set the `Compiler compliance level` to 17. After this, export the products again, and the problem should be resolved.
+This means that the compiler compliance level is set too high. Open the Eclipse IDE, select `Window > Preferences > Java > Compiler`, and under `JDK Compliance`, set the `Compiler compliance level` to 17. After this, export the products again, and the problem should be resolved.
