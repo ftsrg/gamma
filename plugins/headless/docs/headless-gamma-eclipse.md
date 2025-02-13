@@ -126,7 +126,7 @@ This error occurs when the `Generate p2 repository` option remains checked when 
 
 **Eclipse executable launcher error: Unable to locate companion shared library**
 
-This error occurs when the `Generate p2 repository` option remains unchecked when exporting. Check this option, and export again. (Cf. previous problem: when should it be checked and when should it be unchecked? Excellent question...)
+This error occurs when the `Generate p2 repository` option remains unchecked when exporting. Check this option, and export again. (Cf. previous problem: when should it be checked and when should it be unchecked? Excellent question... The theory is that it depends on the used Eclipse package: in a _Java and DSL Developers_ Eclipse, the above-mentioned option should be unchecked, whereas in a _Modeling Tools_ Eclipse, it should be checked.)
 
 **Problems with SWT**
 
@@ -144,7 +144,7 @@ The following solutions resolved these issues:
 
 **The exported plug-in jars do not contain any .class file**
 
-Check if there is a `logs.zip` file generated next to the target root directory folder. If there is, then refer to the section `Java compiler compliance level`.
+Check if there is a `logs.zip` file generated next to the target root directory folder. If so, then refer to the section `Java compiler compliance level`.
 
 **Java compiler compliance level**
 
