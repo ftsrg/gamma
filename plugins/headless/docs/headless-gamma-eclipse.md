@@ -71,7 +71,7 @@ Go to `Window > Preferences > Java > Compiler` and set the `Compiler compliance 
 
 ## Step 7 - Exporting the product
 
-Select the product file named `gamma.api.headless.product` to begin the exporting process. It can be found in the `product` folder inside the `hu.bme.mit.gamma.headless.api` project.
+Select the product file named `linux.product` or `windows.product` according to your OS to begin the exporting process. The files can be found in the `product` folder inside the `hu.bme.mit.gamma.headless.api` project.
 
 In the Overview tab, under `Product Definition`, check if the appropriate `Application` is selected for the `Product`. The application is `gamma.api.headless.application` for `hu.bme.mit.gamma.headless.api.product`.
 
@@ -97,6 +97,7 @@ The following paragraphs include some notable errors users tend to stumble upon 
  - Make sure that the `Contents` page contains every **Gamma** and **Xtext** plugin, as well as all the required plugins (see corresponding part of Step 2).
  - Make sure that the `gamma.api.headless.product` file (on the `Source` page) sets autoStart for the `org.apache.felix.scr` plugin: `<plugin id="org.apache.felix.scr" autoStart="true" startLevel="<N>" />` (see corresponding part of Step 3).
  - Make sure that the target platform contains a *single version* of each referenced plugin (see corresponding part of Step 4).
+ - Make sure that the plugins you are trying to export into a product (i.e., the Gamma plugins imported into the workspace, containing the source code) do not rely on old Java execution environments in their _MANIFEST.MF_ files, e.g., Java 1.8. The plugins should either not specify the execution environment explicitly, or rely on Java 17.
  
 If the above modifications do not solve the issue, you should move onto the following points.
 
@@ -104,7 +105,7 @@ If the above modifications do not solve the issue, you should move onto the foll
 
 After exporting and running the Headless Eclipse, it is possible that an error will occur stating "*An error has occured. See the log file [...]*". After inspecting the log file, it is possible that the exported Eclipse can't resolve the module, because some bundles are missing ("*Unresolved requirement: Require-Bundle: [...]*").
 
-To resolve this, add the missing plugin(s) to the contents of the product file, in the Contents tab.
+To resolve this issue, add the missing plugin(s) to the contents of the product file, in the Contents tab.
 
 Note: if the unresolved requirement is the `javax.inject` package, remove the `*.m2e.*` plugins from your target platform and product (see explanation above).
 
@@ -157,3 +158,7 @@ Compliance level '17' is incompatible with target level '21'. A compliance level
 ``` 
 
 This means that the compiler compliance level is set too high. Open the Eclipse IDE, select `Window > Preferences > Java > Compiler`, and under `JDK Compliance`, set the `Compiler compliance level` to 17. After this, export the products again, and the problem should be resolved.
+
+**The execution of the invokedheadless Eclipse process stops without any messages or exceptions**
+
+This error can occur when the plugins you are trying to export into a product (i.e., the Gamma plugins imported into the workspace, containing the source code) rely on old Java execution environments in their _MANIFEST.MF_ files, e.g., Java 1.8. The plugins should either not specify the execution environment explicitly, or rely on Java 17.
