@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -88,7 +88,7 @@ class ThetaVerifier extends AbstractVerifier {
 			}
 			command +=
 				#["--model", modelFile.canonicalPath, "--property", queryFile.canonicalPath,
-					"--cex", traceFile.canonicalPath, "--stacktrace"]
+					"--cexfile", traceFile.canonicalPath, "--stacktrace"]
 			// Executing the command
 			logger.info("Executing command: " + command.join(" "))
 			process = Runtime.getRuntime().exec(command)
