@@ -94,10 +94,25 @@ public abstract class AbstractEntryPoint extends HeadlessApplicationCommandHandl
 	}
 
 	protected void copyProject(File projectFolder, String projectName) throws CoreException, Exception {
+		IProject project = openProject(projectName);
+		IProjectDescription description = project.getDescription();
+		project.setDescription(description, new NullProgressMonitor());
+		// Not needed to add project natures like this, maybe copyDirectory does that?
+		copyDirectory(projectFolder, project);
+		saveWorkspace();
+	}
+
+	protected void saveWorkspace() throws CoreException {
+		IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		workspace.save(true, new NullProgressMonitor());
+	}
+
+	protected IProject openProject(String projectName) throws CoreException {
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		IWorkspaceRoot workspaceRoot = workspace.getRoot();
-		IProgressMonitor progressMonitor = new NullProgressMonitor();
 		IProject project = workspaceRoot.getProject(projectName);
+		//
+		IProgressMonitor progressMonitor = new NullProgressMonitor();
 		try {
 			project.create(progressMonitor);
 		} catch (CoreException creationException) {
@@ -111,11 +126,7 @@ public abstract class AbstractEntryPoint extends HeadlessApplicationCommandHandl
 			}
 		}
 		project.open(progressMonitor);
-		IProjectDescription description = project.getDescription();
-		project.setDescription(description, progressMonitor);
-		// Not needed to add project natures like this, maybe copyDirectory does that?
-		copyDirectory(projectFolder, project);
-		workspace.save(true, progressMonitor);
+		return project;
 	}
 
 	protected abstract void setup() throws Exception;
