@@ -23,14 +23,18 @@ class ImlApiHelper {
 	
 	static def String getBasicCall(String src) '''
 		import sys
-		import imandra.auth
-		import imandra.instance
+		import imandra.api.auth
+		import imandra.api.instance
 		import imandra_http_api_client
 		
 		# Starting an Imandra instance
 		
-		auth = imandra.auth.Auth()
-		instance = imandra.instance.create(auth, None, "imandra-http-api")
+		auth = imandra.api.auth.Auth()
+		auth.ensure_folder()
+		auth.ensure_token()
+		auth.ensure_zone()
+		
+		instance = imandra.api.instance.create(auth, None, "imandra-http-api")
 		
 		config = imandra_http_api_client.Configuration(
 			host = instance['new_pod']['url'],
@@ -73,7 +77,7 @@ class ImlApiHelper {
 		
 		# Delete the Imandra instance
 		
-		imandra.instance.delete(auth, instance['new_pod']['id'])
+		imandra.api.instance.delete(auth, instance['new_pod']['id'])
 	'''
 	
 	public static val REGION_START = "> Region"
