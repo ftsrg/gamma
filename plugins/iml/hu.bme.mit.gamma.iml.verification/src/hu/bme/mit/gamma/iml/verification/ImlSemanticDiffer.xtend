@@ -227,7 +227,7 @@ class ImlSemanticDiffer {
 			return regions.map[it.getConstraints].toList
 		}
 		
-		def getInvaraint(String constraints) {
+		def getInvariant(String constraints) {
 			return regions.findFirst[it.constraints == constraints]?.invariant
 		}
 		
@@ -240,7 +240,7 @@ class ImlSemanticDiffer {
 		//
 		new(String constraints, String invariant) {
 			this.constraints = constraints.trimLine
-			this.invariant = invariant.trimLine
+			this.invariant = invariant.trimLine.changeTopmostSemicolons
 		}
 		
 		def getConstraints() {
@@ -259,6 +259,36 @@ class ImlSemanticDiffer {
 		
 		protected def trimLine(String line) {
 			return line.trim.replaceAll("\\s+", " ")
+		}
+		
+		// Needed for invariant parsing
+		protected def changeTopmostSemicolons(String string) {
+			val builder = new StringBuilder
+			
+			val char semicolon = ';'
+			val char openBracket = '{'
+			val char closedBracket = '}'
+			
+			var openBracketCount = 0
+			for (var i = 0; i < string.length; i++) {
+				val charAt = string.charAt(i)
+				if (charAt == openBracket) {
+					openBracketCount++
+				}
+				else if (charAt == closedBracket) {
+					openBracketCount--
+				}
+				
+				// 
+				if (openBracketCount <= 1 && charAt == semicolon) {
+					builder.append(ImlApiHelper.CONSTRAINT_DELIM)
+				}
+				else {
+					builder.append(charAt)
+				}
+			}
+			
+			return builder.toString
 		}
 		
 	}
@@ -285,9 +315,9 @@ class ImlSemanticDiffer {
 			val diffs = newLinkedHashMap
 			
 			for (constraints1 : result1.constraints) {
-				val invariant2 = result2.getInvaraint(constraints1)
+				val invariant2 = result2.getInvariant(constraints1)
 				if (invariant2 !== null) {
-					val invariant1 = result1.getInvaraint(constraints1)
+					val invariant1 = result1.getInvariant(constraints1)
 					// Found an entry where constraints are the same
 					val diff = invariant1.extractDiff(invariant2) // Diffing the invariants
 					diffs += constraints1 -> diff
@@ -308,31 +338,36 @@ class ImlSemanticDiffer {
 			entries1 -= intersection
 			entries2 -= intersection
 			
-			return Map.entry(entries1, entries2)
+			val delim = " " + ImlApiHelper.CONSTRAINT_DELIM + System.lineSeparator
+			
+			return Map.entry(entries1.join(delim), entries2.join(delim))
 		}
 
 		protected def splitInvariant(String result) {
 			val firstI = result.indexOf("{")
-			val lastI = result.indexOf("}")
+			val lastI = result.lastIndexOf("}")
 			
 			val parsedResult = result.substring(firstI + 1, lastI)
 			val split = newArrayList
-			split += parsedResult.split(";")
+			split += parsedResult.split(ImlApiHelper.CONSTRAINT_DELIM) // See region 'changeExternalSemicolons'
 					.map[it.trim]
+					.reject[it.nullOrEmpty]
 					
 			return split
 		}
 		
 		//
 	
-		protected def print(Map<String, ? extends Entry<? extends List<String>, ? extends List<String>>> diffs) {
+		protected def print(Map<String, ? extends Entry<String, String>> diffs) {
 			println("Semantic diff:")
+			val S = "  "
 			
 			val invert = true // If true, invariants are not duplicated for different constraints
 			if (invert) {
+				val C = "- "
 				val semDiffs = newLinkedHashMap
 				for (entries : diffs.entrySet) {
-					val key = entries.key
+					val actualConstraint = C + entries.key
 					val value = entries.value
 					
 					val invariant1 = value.key
@@ -340,26 +375,25 @@ class ImlSemanticDiffer {
 					
 					val invariant = '''
 						Original invariant:
-						  «invariant1.join(System.lineSeparator + "  ")»
+						«S»«invariant1»
 						New invariant:
-						  «invariant2.join(System.lineSeparator + "  ")»
+						«S»«invariant2»
 					'''
 					if (semDiffs.containsKey(invariant)) {
 						val constraint = semDiffs.get(invariant)
-						semDiffs.replace(invariant, #[constraint, key]
-								.join(System.lineSeparator + "Constraint:" + System.lineSeparator))
+						semDiffs.replace(invariant, #[constraint, actualConstraint].join(System.lineSeparator))
 					}
 					else {
-						semDiffs += invariant -> key
+						semDiffs += invariant -> actualConstraint
 					}
 				}
 				
 				for (invariant : semDiffs.keySet) {
 					val constraint = semDiffs.get(invariant)
 					
-					println("  Constraint:")
-					println("    " + constraint.replaceAll(System.lineSeparator, System.lineSeparator + "    "))
-					println("  " + invariant.replaceAll(System.lineSeparator, System.lineSeparator + "  "))
+					println(S + "Constraints:")
+					println(S + constraint.replaceAll(System.lineSeparator, System.lineSeparator + S))
+					println(S + invariant.replaceAll(System.lineSeparator, System.lineSeparator + S))
 					println
 				}
 				
@@ -372,12 +406,12 @@ class ImlSemanticDiffer {
 				val invariant1 = value.key
 				val invariant2 = value.value
 				
-				println("  Constraint:")
-				println("    " + constraint.replaceAll(System.lineSeparator, System.lineSeparator + "    "))
-				println("  Original invariant:")
-				println("    " + invariant1.join(System.lineSeparator + "    "))
-				println("  New invariant:")
-				println("    " + invariant2.join(System.lineSeparator + "    "))
+				println(S + "Constraint:")
+				println(S + S + constraint.replaceAll(System.lineSeparator, System.lineSeparator + S + S))
+				println(S + "Original invariant:")
+				println(S + S + invariant1)
+				println(S + "New invariant:")
+				println(S + S + invariant2)
 				println
 			}
 		}

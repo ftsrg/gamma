@@ -87,7 +87,7 @@ class ImlApiHelper {
 	public static val REGION_START = "> Region"
 	public static val CONSTRAINT_START = "Constraints:"
 	public static val INVARIANT_START = "Invariant:"
-	public static val CONSTRAINT_DELIM = ";"
+	public static val CONSTRAINT_DELIM = "@"
 	
 	/**
 	 * For this call, the IMANDRA_API_KEY variable has to be set.
