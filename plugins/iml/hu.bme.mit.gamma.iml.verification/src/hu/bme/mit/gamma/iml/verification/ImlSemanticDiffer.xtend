@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Gamma project
+ * Copyright (c) 2024-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -67,11 +67,10 @@ class ImlSemanticDiffer {
 		
 		///
 		
-		val result1 = grandparentFile.execute(cmd1)
-//		Thread.sleep(10000)
-		val result2 = grandparentFile.execute(cmd2)
+		val decomposition1 = grandparentFile.execute(cmd1)
+		val decomposition2 = grandparentFile.execute(cmd2)
 		
-		val diff = result1.extractDiff(result2)
+		val diff = decomposition1.extractDiff(decomposition2)
 		
 		diff.print
 		
@@ -122,7 +121,8 @@ class ImlSemanticDiffer {
 	
 	enum ParseRegionStates { CONSTRAINT, INVARIANT }
 	protected def parseRegion(Scanner result) {
-		val regions = newLinkedHashMap
+		val decomposition = new Decomposition
+		val regions = decomposition.getRegions
 		
 		var state = ParseRegionStates.CONSTRAINT
 		
@@ -132,7 +132,7 @@ class ImlSemanticDiffer {
 			val line = result.nextLine.trim
 			if (line.startsWith(ImlApiHelper.REGION_START)) {
 				if (!constraints.empty) {
-					regions += constraints.toString -> invariant.toString
+					regions += new Region(constraints.toString, invariant.toString)
 				}
 				constraints.length = 0
 				invariant.length = 0
@@ -149,31 +149,30 @@ class ImlSemanticDiffer {
 			}
 		}
 		
-		regions += constraints.toString -> invariant.toString
+		regions += new Region(constraints.toString, invariant.toString)
 		
 		//
-		val lastKey = regions.keySet.lastElement // "Instance killed"
-		val lastValue = regions.get(lastKey)
-		var lastIndex = (lastValue.lastIndexOf("}") < 0) ? lastValue.length : lastValue.lastIndexOf("}") + 1
-		regions.replace(lastKey, lastValue.substring(0, lastIndex))
-		val firstKey = regions.keySet.head // "Instance created"
-		regions.keySet.remove(firstKey)
+		val lastRegion = regions.lastElement // "Instance killed"
+		val lastInvariant = lastRegion.invariant
+		var lastIndex = (lastInvariant.lastIndexOf("}") < 0) ? lastInvariant.length : lastInvariant.lastIndexOf("}") + 1
+		lastRegion.invariant = lastInvariant.substring(0, lastIndex)
+		regions.removeFirstElement // "Instance created"
 		//
 		
-		return regions
+		return decomposition
 	}
 	
-	protected def extractDiff(Map<String, String> result1, Map<String, String> result2) {
+	protected def extractDiff(Decomposition result1, Decomposition result2) {
 		// Maybe a standalone Diff lib would work better?
 		val diffs = newLinkedHashMap
 		
-		for (key1 : result1.keySet) {
-			val value2 = result2.get(key1)
-			if (value2 !== null) {
-				val value1 = result1.get(key1)
+		for (constraints1 : result1.constraints) {
+			val invariant2 = result2.getInvaraint(constraints1)
+			if (invariant2 !== null) {
+				val invariant1 = result1.getInvaraint(constraints1)
 				// Found an entry where constraints are the same
-				val diff = value1.extractDiff(value2) // Diffing the invariants
-				diffs += key1 -> diff
+				val diff = invariant1.extractDiff(invariant2) // Diffing the invariants
+				diffs += constraints1 -> diff
 			}
 		}
 		
@@ -313,5 +312,52 @@ class ImlSemanticDiffer {
 		
 		return arguments.toString.trim
 	}
+	
+	//
+	
+	static class Decomposition {
+		List<Region> regions = newArrayList
+		
+		def getRegions() {
+			return regions
+		}
+		
+		def getConstraints() {
+			return regions.map[it.getConstraints].toList
+		}
+		
+		def getInvaraint(String constraints) {
+			return regions.findFirst[it.constraints == constraints]?.invariant
+		}
+		
+	}
+	
+	static class Region {
+		String constraints
+		String invariant
+		
+		new(String constraints, String invariant) {
+			this.constraints = constraints
+			this.invariant = invariant
+		}
+		
+		def getConstraints() {
+			return constraints
+		}
+		
+		def getInvariant() {
+			return invariant
+		}
+		
+		def void setInvariant(String invariant) {
+			this.invariant = invariant
+		}
+		
+	}
+	
+	static class SemanticDiffParser {
+		
+	}
+	
 	
 }

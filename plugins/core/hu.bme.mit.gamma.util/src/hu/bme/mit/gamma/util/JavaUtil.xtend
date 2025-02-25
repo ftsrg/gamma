@@ -59,6 +59,10 @@ class JavaUtil {
 		return last
 	}
 	
+	def <T> T removeFirstElement(List<T> list) {
+		return list.remove(0)
+	}
+	
 	def <T> T removeLastElement(List<T> list) {
 		return list.remove(list.size - 1)
 	}
