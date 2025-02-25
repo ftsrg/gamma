@@ -70,9 +70,8 @@ class ImlSemanticDiffer {
 		val decomposition1 = grandparentFile.execute(cmd1)
 		val decomposition2 = grandparentFile.execute(cmd2)
 		
-		val diff = decomposition1.extractDiff(decomposition2)
-		
-		diff.print
+		val parser = new SemanticDiffParser(decomposition1, decomposition2)
+		parser.execute
 		
 		return null
 	}
@@ -162,105 +161,6 @@ class ImlSemanticDiffer {
 		return decomposition
 	}
 	
-	protected def extractDiff(Decomposition result1, Decomposition result2) {
-		// Maybe a standalone Diff lib would work better?
-		val diffs = newLinkedHashMap
-		
-		for (constraints1 : result1.constraints) {
-			val invariant2 = result2.getInvaraint(constraints1)
-			if (invariant2 !== null) {
-				val invariant1 = result1.getInvaraint(constraints1)
-				// Found an entry where constraints are the same
-				val diff = invariant1.extractDiff(invariant2) // Diffing the invariants
-				diffs += constraints1 -> diff
-			}
-		}
-		
-		return diffs
-	}
-	
-	protected def extractDiff(String result1, String result2) {
-		val entries1 = result1.splitInvariant
-		val entries2 = result2.splitInvariant
-		
-		val intersection = newHashSet
-		intersection += entries1
-		intersection.retainAll(entries2)
-		
-		entries1 -= intersection
-		entries2 -= intersection
-		
-		return Map.entry(entries1, entries2)
-	}
-
-	protected def splitInvariant(String result) {
-		val firstI = result.indexOf("{")
-		val lastI = result.indexOf("}")
-		
-		val parsedResult = result.substring(firstI + 1, lastI)
-		val split = newArrayList
-		split += parsedResult.split(";")
-				.map[it.trim]
-				
-		return split
-	}
-	
-	//
-	
-	protected def print(Map<String, ? extends Entry<? extends List<String>, ? extends List<String>>> diffs) {
-		println("Semantic diff:")
-		
-		val invert = true
-		if (invert) {
-			val semDiffs = newLinkedHashMap
-			for (entries : diffs.entrySet) {
-				val key = entries.key
-				val value = entries.value
-				
-				val invariant = '''
-					Original invariant:
-					  «value.key.join(System.lineSeparator + "  ")»
-					New invariant:
-					  «value.value.join(System.lineSeparator + "  ")»
-				'''
-				if (semDiffs.containsKey(invariant)) {
-					val constraint = semDiffs.get(invariant)
-					semDiffs.replace(invariant, #[constraint, key]
-							.join(System.lineSeparator + "Constraint:" + System.lineSeparator))
-				}
-				else {
-					semDiffs += invariant -> key
-				}
-			}
-			
-			for (invariant : semDiffs.keySet) {
-				val constraint = semDiffs.get(invariant)
-				
-				println("  Constraint:")
-				println("    " + constraint.replaceAll(System.lineSeparator, System.lineSeparator + "    "))
-				println("  " + invariant.replaceAll(System.lineSeparator, System.lineSeparator + "  "))
-				println()
-			}
-			
-			return
-		}
-		
-		for (constraint : diffs.keySet) {
-			val value = diffs.get(constraint)
-			
-			val invariant1 = value.key
-			val invariant2 = value.value
-			
-			println("  Constraint:")
-			println("    " + constraint.replaceAll(System.lineSeparator, System.lineSeparator + "    "))
-			println("  Original invariant:")
-			println("    " + invariant1.join(System.lineSeparator + "    "))
-			println("  New invariant:")
-			println("    " + invariant2.join(System.lineSeparator + "    "))
-			println()
-		}
-	}
-	
 	//
 	
 	protected def extractTransFunction(String src) {
@@ -316,8 +216,9 @@ class ImlSemanticDiffer {
 	//
 	
 	static class Decomposition {
+		//
 		List<Region> regions = newArrayList
-		
+		//
 		def getRegions() {
 			return regions
 		}
@@ -333,9 +234,10 @@ class ImlSemanticDiffer {
 	}
 	
 	static class Region {
+		//
 		String constraints
 		String invariant
-		
+		//
 		new(String constraints, String invariant) {
 			this.constraints = constraints
 			this.invariant = invariant
@@ -356,8 +258,124 @@ class ImlSemanticDiffer {
 	}
 	
 	static class SemanticDiffParser {
+		//
+		Decomposition decomposition1
+		Decomposition decomposition2
+		//
+		new(Decomposition decomposition1, Decomposition decomposition2) {
+			this.decomposition1 = decomposition1
+			this.decomposition2 = decomposition2
+		}
+		
+		def execute() {
+			val diff = decomposition1.extractDiff(decomposition2)
+			diff.print
+		}
+		
+		//
+		
+		protected def extractDiff(Decomposition result1, Decomposition result2) {
+			// Maybe a standalone Diff lib would work better?
+			val diffs = newLinkedHashMap
+			
+			for (constraints1 : result1.constraints) {
+				val invariant2 = result2.getInvaraint(constraints1)
+				if (invariant2 !== null) {
+					val invariant1 = result1.getInvaraint(constraints1)
+					// Found an entry where constraints are the same
+					val diff = invariant1.extractDiff(invariant2) // Diffing the invariants
+					diffs += constraints1 -> diff
+				}
+			}
+			
+			return diffs
+		}
+		
+		protected def extractDiff(String result1, String result2) {
+			val entries1 = result1.splitInvariant
+			val entries2 = result2.splitInvariant
+			
+			val intersection = newHashSet
+			intersection += entries1
+			intersection.retainAll(entries2)
+			
+			entries1 -= intersection
+			entries2 -= intersection
+			
+			return Map.entry(entries1, entries2)
+		}
+
+		protected def splitInvariant(String result) {
+			val firstI = result.indexOf("{")
+			val lastI = result.indexOf("}")
+			
+			val parsedResult = result.substring(firstI + 1, lastI)
+			val split = newArrayList
+			split += parsedResult.split(";")
+					.map[it.trim]
+					
+			return split
+		}
+		
+		//
+	
+		protected def print(Map<String, ? extends Entry<? extends List<String>, ? extends List<String>>> diffs) {
+			println("Semantic diff:")
+			
+			val invert = true
+			if (invert) {
+				val semDiffs = newLinkedHashMap
+				for (entries : diffs.entrySet) {
+					val key = entries.key
+					val value = entries.value
+					
+					val invariant1 = value.key
+					val invariant2 = value.value
+					
+					val invariant = '''
+						Original invariant:
+						  «invariant1.join(System.lineSeparator + "  ")»
+						New invariant:
+						  «invariant2.join(System.lineSeparator + "  ")»
+					'''
+					if (semDiffs.containsKey(invariant)) {
+						val constraint = semDiffs.get(invariant)
+						semDiffs.replace(invariant, #[constraint, key]
+								.join(System.lineSeparator + "Constraint:" + System.lineSeparator))
+					}
+					else {
+						semDiffs += invariant -> key
+					}
+				}
+				
+				for (invariant : semDiffs.keySet) {
+					val constraint = semDiffs.get(invariant)
+					
+					println("  Constraint:")
+					println("    " + constraint.replaceAll(System.lineSeparator, System.lineSeparator + "    "))
+					println("  " + invariant.replaceAll(System.lineSeparator, System.lineSeparator + "  "))
+					println
+				}
+				
+				return
+			}
+			
+			for (constraint : diffs.keySet) {
+				val value = diffs.get(constraint)
+				
+				val invariant1 = value.key
+				val invariant2 = value.value
+				
+				println("  Constraint:")
+				println("    " + constraint.replaceAll(System.lineSeparator, System.lineSeparator + "    "))
+				println("  Original invariant:")
+				println("    " + invariant1.join(System.lineSeparator + "    "))
+				println("  New invariant:")
+				println("    " + invariant2.join(System.lineSeparator + "    "))
+				println
+			}
+		}
 		
 	}
-	
 	
 }
