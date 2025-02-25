@@ -87,6 +87,7 @@ class ImlApiHelper {
 	public static val REGION_START = "> Region"
 	public static val CONSTRAINT_START = "Constraints:"
 	public static val INVARIANT_START = "Invariant:"
+	public static val CONSTRAINT_DELIM = ";"
 	
 	/**
 	 * For this call, the IMANDRA_API_KEY variable has to be set.
@@ -97,7 +98,7 @@ class ImlApiHelper {
 		client = Client()
 		
 		client.eval_src("""
-				«model»
+			«model»
 		""")
 		
 		decomposition = client.decompose("«decomposeFunctionName»"«
@@ -106,8 +107,8 @@ class ImlApiHelper {
 		for n, region in enumerate(decomposition.regions_str):
 			print("«REGION_START»", n, "-" * 10 + "\n«CONSTRAINT_START»")
 			for c in region.constraints_str:
-				print("  ", c)
-			print("«INVARIANT_START»", "\n  ", region.invariant_str)
+				print("  ", c.strip(), "«CONSTRAINT_DELIM»")
+			print("«INVARIANT_START»", "\n  ", region.invariant_str.strip())
 	'''
 	
 }

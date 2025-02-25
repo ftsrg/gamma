@@ -151,11 +151,11 @@ class ImlSemanticDiffer {
 		regions += new Region(constraints.toString, invariant.toString)
 		
 		//
-		val lastRegion = regions.lastElement // "Instance killed"
-		val lastInvariant = lastRegion.invariant
-		var lastIndex = (lastInvariant.lastIndexOf("}") < 0) ? lastInvariant.length : lastInvariant.lastIndexOf("}") + 1
-		lastRegion.invariant = lastInvariant.substring(0, lastIndex)
-		regions.removeFirstElement // "Instance created"
+//		val lastRegion = regions.lastElement // "Instance killed"
+//		val lastInvariant = lastRegion.invariant
+//		var lastIndex = (lastInvariant.lastIndexOf("}") < 0) ? lastInvariant.length : lastInvariant.lastIndexOf("}") + 1
+//		lastRegion.invariant = lastInvariant.substring(0, lastIndex)
+//		regions.removeFirstElement // "Instance created"
 		//
 		
 		return decomposition
@@ -239,8 +239,8 @@ class ImlSemanticDiffer {
 		String invariant
 		//
 		new(String constraints, String invariant) {
-			this.constraints = constraints
-			this.invariant = invariant
+			this.constraints = constraints.trimLine
+			this.invariant = invariant.trimLine
 		}
 		
 		def getConstraints() {
@@ -253,6 +253,12 @@ class ImlSemanticDiffer {
 		
 		def void setInvariant(String invariant) {
 			this.invariant = invariant
+		}
+		
+		//
+		
+		protected def trimLine(String line) {
+			return line.trim.replaceAll("\\s+", " ")
 		}
 		
 	}
@@ -322,7 +328,7 @@ class ImlSemanticDiffer {
 		protected def print(Map<String, ? extends Entry<? extends List<String>, ? extends List<String>>> diffs) {
 			println("Semantic diff:")
 			
-			val invert = true
+			val invert = true // If true, invariants are not duplicated for different constraints
 			if (invert) {
 				val semDiffs = newLinkedHashMap
 				for (entries : diffs.entrySet) {
