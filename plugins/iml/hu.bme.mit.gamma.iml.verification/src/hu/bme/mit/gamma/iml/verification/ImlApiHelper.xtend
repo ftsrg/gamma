@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Gamma project
+ * Copyright (c) 2024-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.iml.verification
 
 class ImlApiHelper {
 	
+	@Deprecated
 	static def String getInvariantCall(String model, String command, String commandlessQuery) '''
 		import imandra
 		
@@ -21,6 +22,9 @@ class ImlApiHelper {
 			print(result)
 	'''
 	
+	/**
+	 * For this call, the caller has to be logged in via the Imandra CLI.
+	 */
 	static def String getBasicCall(String src) '''
 		import sys
 		import imandra.api.auth
@@ -61,7 +65,7 @@ class ImlApiHelper {
 			request_src = imandra_http_api_client.EvalRequestSrc.from_dict(req)
 			try:
 				api_response = api_instance.eval_with_http_info(request_src)
-			except ApiException as e:
+			except Exception as e:
 				print("Exception when calling DefaultApi->eval_with_http_info: %s\n" % e)
 		
 		# json parse the raw_data yourself and take the raw_stdio
@@ -83,21 +87,27 @@ class ImlApiHelper {
 	public static val REGION_START = "> Region"
 	public static val CONSTRAINT_START = "Constraints:"
 	public static val INVARIANT_START = "Invariant:"
+	
+	/**
+	 * For this call, the IMANDRA_API_KEY variable has to be set.
+	 */
 	static def String getDecompoiseCall(String model, String decomposeFunctionName, String assumingFunctionName) '''
-		import imandra
+		from imandra.core import Client
 		
-		with imandra.session() as session:
-			session.eval("""
+		client = Client()
+		
+		client.eval_src("""
 				«model»
-			""")
-			decomposition = session.decompose("«decomposeFunctionName»"«
-					IF assumingFunctionName !== null», "«assumingFunctionName»"«ENDIF»)
-			
-			for n, region in enumerate(decomposition.regions):
-				print("«REGION_START»", n, "-" * 10 + "\n«CONSTRAINT_START»")
-				for c in region.constraints_pp:
-					print("  ", c)
-				print("«INVARIANT_START»", "\n  ", region.invariant_pp)
+		""")
+		
+		decomposition = client.decompose("«decomposeFunctionName»"«
+				IF assumingFunctionName !== null», "«assumingFunctionName»"«ENDIF»)
+		
+		for n, region in enumerate(decomposition.regions_str):
+			print("«REGION_START»", n, "-" * 10 + "\n«CONSTRAINT_START»")
+			for c in region.constraints_str:
+				print("  ", c)
+			print("«INVARIANT_START»", "\n  ", region.invariant_str)
 	'''
 	
 }
