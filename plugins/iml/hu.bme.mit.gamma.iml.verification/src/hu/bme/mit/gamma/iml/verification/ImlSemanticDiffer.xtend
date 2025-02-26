@@ -150,14 +150,6 @@ class ImlSemanticDiffer {
 		
 		regions += new Region(constraints.toString, invariant.toString)
 		
-		//
-//		val lastRegion = regions.lastElement // "Instance killed"
-//		val lastInvariant = lastRegion.invariant
-//		var lastIndex = (lastInvariant.lastIndexOf("}") < 0) ? lastInvariant.length : lastInvariant.lastIndexOf("}") + 1
-//		lastRegion.invariant = lastInvariant.substring(0, lastIndex)
-//		regions.removeFirstElement // "Instance created"
-		//
-		
 		return decomposition
 	}
 	
@@ -319,8 +311,8 @@ class ImlSemanticDiffer {
 				if (invariant2 !== null) {
 					val invariant1 = result1.getInvariant(constraints1)
 					// Found an entry where constraints are the same
-					val diff = invariant1.extractDiff(invariant2) // Diffing the invariants
-					diffs += constraints1 -> diff
+					val invariantDiff = invariant1.extractDiff(invariant2) // Diffing the invariants
+					diffs += constraints1 -> invariantDiff
 				}
 			}
 			
@@ -328,19 +320,19 @@ class ImlSemanticDiffer {
 		}
 		
 		protected def extractDiff(String result1, String result2) {
-			val entries1 = result1.splitInvariant
-			val entries2 = result2.splitInvariant
+			val invariants1 = result1.splitInvariant
+			val invariants2 = result2.splitInvariant
 			
 			val intersection = newHashSet
-			intersection += entries1
-			intersection.retainAll(entries2)
+			intersection += invariants1
+			intersection.retainAll(invariants2)
 			
-			entries1 -= intersection
-			entries2 -= intersection
+			invariants1 -= intersection
+			invariants2 -= intersection
 			
 			val delim = " " + ImlApiHelper.CONSTRAINT_DELIM + System.lineSeparator
 			
-			return Map.entry(entries1.join(delim), entries2.join(delim))
+			return Map.entry(invariants1.join(delim), invariants2.join(delim))
 		}
 
 		protected def splitInvariant(String result) {
@@ -351,7 +343,7 @@ class ImlSemanticDiffer {
 			val split = newArrayList
 			split += parsedResult.split(ImlApiHelper.CONSTRAINT_DELIM) // See region 'changeExternalSemicolons'
 					.map[it.trim]
-					.reject[it.nullOrEmpty]
+					.reject[it.nullOrEmpty] // Reject "" if any
 					
 			return split
 		}
@@ -362,7 +354,7 @@ class ImlSemanticDiffer {
 			println("Semantic diff:")
 			val S = "  "
 			
-			val invert = true // If true, invariants are not duplicated for different constraints
+			val invert = true // If true, the same invariants are not duplicated for different constraints
 			if (invert) {
 				val C = "- "
 				val semDiffs = newLinkedHashMap
