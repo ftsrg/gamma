@@ -35,13 +35,13 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 
 class TraceBackAnnotator {
 	//
-	protected final String CX_START = "module CX :"
-	protected final String STATE_CHANGE = "{"
-	protected final String STATE_CHANGE2 = "[{"
-	protected final String LOOP = " loop "
-	protected final String RETURN_VALUE = "- : "
-	protected final String COUNTEREXAMPLE_INIT_VAR = RETURN_VALUE + "t =" // Used to be 'module CX :' before refactor
-	protected final String COUNTEREXAMPLE_TRACE_VAR = RETURN_VALUE + "t list ="
+	protected static final String LOOP = " loop "
+	protected static final String RETURN_VALUE = "- : "
+	public static final String CX_START = "module CX :"
+	public static final String STATE_CHANGE = "{"
+	public static final String STATE_CHANGE2 = "[{"
+	public static final String COUNTEREXAMPLE_INIT_VAR = RETURN_VALUE + "t =" // Used to be 'module CX :' before refactor
+	public static final String COUNTEREXAMPLE_TRACE_VAR = RETURN_VALUE + "t list ="
 	
 	//
 	protected final Scanner traceScanner

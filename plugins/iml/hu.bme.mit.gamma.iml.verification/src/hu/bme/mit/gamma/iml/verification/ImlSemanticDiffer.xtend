@@ -26,6 +26,8 @@ class ImlSemanticDiffer {
 	final String DIFF_FUNCTION_NAME = "trans"
 	final String NEW_DIFF_FUNCTION_NAME = DIFF_FUNCTION_NAME + 2
 	//
+	protected static final String INVARIANT_DELIM = " " + ImlApiHelper.CONSTRAINT_DELIM + System.lineSeparator
+	//
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
 	protected final ImlPythonApiHelper pythonApiHelper = ImlPythonApiHelper.INSTANCE
@@ -330,9 +332,7 @@ class ImlSemanticDiffer {
 			invariants1 -= intersection
 			invariants2 -= intersection
 			
-			val delim = " " + ImlApiHelper.CONSTRAINT_DELIM + System.lineSeparator
-			
-			return Map.entry(invariants1.join(delim), invariants2.join(delim))
+			return Map.entry(invariants1.join(INVARIANT_DELIM), invariants2.join(INVARIANT_DELIM))
 		}
 
 		protected def splitInvariant(String result) {
@@ -407,6 +407,55 @@ class ImlSemanticDiffer {
 				println
 			}
 		}
+		
+	}
+	
+	static class SemanticDiffAdapter {
+		//
+		protected final String REC = "r"
+		//
+		
+		def execute(Map<String, Entry<String, String>> diff) {
+			val preprocessedDiff = diff.preprocessSemanticDiff
+			return preprocessedDiff.adaptSemanticDiff
+		}
+		
+		//
+		
+		
+		protected def preprocessSemanticDiff(Map<String, Entry<String, String>> diff) {
+			val preprocessedDiff = <String, Entry<String, String>>newLinkedHashMap
+			
+			for (entry : diff.entrySet) {
+				val key = entry.key.replace(''' «REC».''', " ")
+				val valueKey = entry.value.key.replace(''' «REC».''', " ")
+				val valueValue = entry.value.value.replace(''' «REC».''', " ")
+				
+				preprocessedDiff += key -> Map.entry(valueKey, valueValue)
+			}
+			
+			return preprocessedDiff
+		}
+		
+		protected def adaptSemanticDiff(Map<String, Entry<String, String>> diff) '''
+			«TraceBackAnnotator.CX_START»
+			«TraceBackAnnotator.COUNTEREXAMPLE_INIT_VAR»
+			{
+			
+			}
+			«TraceBackAnnotator.COUNTEREXAMPLE_TRACE_VAR»
+			«TraceBackAnnotator.STATE_CHANGE2 /*[*/»
+				«FOR entry : diff.entrySet SEPARATOR ';'»
+				«TraceBackAnnotator.STATE_CHANGE /*{*/»
+«««					TODO constraints
+				}
+				«TraceBackAnnotator.STATE_CHANGE /*{*/»
+					«entry.value.key.replace(INVARIANT_DELIM, ";" + System.lineSeparator)»
+					«entry.value.value.replace(INVARIANT_DELIM, ";" + System.lineSeparator)»
+				}
+				«ENDFOR»
+			]
+		'''
 		
 	}
 	
