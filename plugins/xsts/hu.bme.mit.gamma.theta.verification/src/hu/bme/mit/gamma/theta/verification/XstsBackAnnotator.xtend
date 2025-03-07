@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021-2024 Contributors to the Gamma project
+ * Copyright (c) 2021-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -23,6 +23,7 @@ import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.InstanceSchedule
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
+import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.verification.util.TraceBuilder
 import hu.bme.mit.gamma.xsts.transformation.util.Namings
@@ -51,6 +52,7 @@ class XstsBackAnnotator {
 	protected final Set<State> activatedStates = newHashSet
 	
 	protected final extension TraceBuilder traceBuilder = TraceBuilder.INSTANCE
+	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	
 	new(ThetaQueryGenerator queryGenerator, XstsArrayParser arrayParser) {
@@ -114,7 +116,15 @@ class XstsBackAnnotator {
 		for (indexPair : indexPairs) {
 			val index = indexPair.key
 			val parsedValue = indexPair.value
-			step.addInstanceVariableState(instance, variable, field, index, parsedValue)
+			try {
+				// Literal value
+				step.addInstanceVariableState(instance, variable, field, index, parsedValue)
+			} catch (IndexOutOfBoundsException e) {
+				// Value is not a literal; parsing expression
+				val expression = parsedValue.parseExpression
+				step.addInstanceVariableState(instance, variable, field, index, expression)
+				// TODO do for in and out parameters
+			}
 		}
 	}
 	
@@ -296,6 +306,23 @@ class XstsBackAnnotator {
 				targetType = targetType.arrayElementType.typeDefinition
 			}
 		}
+	}
+	
+	///
+	
+	protected def parseExpression(String value) {
+		val expression =
+		if (xStsQueryGenerator.isSourceVariable(value)) {
+			val instanceVariable = xStsQueryGenerator.getSourceVariable(value)
+			val instance = instanceVariable.value
+			val variable = instanceVariable.key
+			
+			instance.createInstanceReference.createVariableReference(variable)
+		}
+		else {
+			value.createOpaqueExpression
+		}
+		return expression
 	}
 	
 	///

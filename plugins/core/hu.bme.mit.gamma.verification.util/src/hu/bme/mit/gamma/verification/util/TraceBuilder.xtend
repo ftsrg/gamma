@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.RationalTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
@@ -34,7 +35,6 @@ import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.util.ExpressionTypeDeterminator
-import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
@@ -63,7 +63,6 @@ class TraceBuilder {
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	protected final extension ExpressionTypeDeterminator typeDeterminator = ExpressionTypeDeterminator.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
-	protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE // For component instance reference
 	
 	// Add annotation
 	
@@ -233,7 +232,7 @@ class TraceBuilder {
 	
 	private def void addInstanceScheduling(Step step, AsynchronousComponentInstance instance) {
 		step.actions += createInstanceSchedule => [
-			it.instanceReference = statechartUtil.createInstanceReference(instance)
+			it.instanceReference = instance.createInstanceReference
 			// Not reference chain - that is used for back-annotation to original component
 		]
 	}
@@ -297,16 +296,29 @@ class TraceBuilder {
 	
 	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
 			VariableDeclaration variable, Expression value) {
-		step.asserts += statechartUtil.createVariableReference(
-				statechartUtil.createInstanceReference(instance), variable)
-					.createEqualityExpression(value)
+		step.asserts += instance.createInstanceReference
+							.createVariableReference(variable)
+								.createEqualityExpression(value)
 	}
 	
 	def void addInstanceVariableState(Step step, SynchronousComponentInstance instance,
 			VariableDeclaration variable, FieldHierarchy fieldHierarchy, IndexHierarchy indexes, String value) {
 		val type = variable.typeDefinition
 		if (type.native) {
-			addInstanceVariableState(step, instance, variable, value)
+			step.addInstanceVariableState(instance, variable, value)
+		}
+		else {
+			checkState(type.complex)
+			val literal = step.getOrCreateLiteral(instance, variable)
+			literal.changeValue(fieldHierarchy, indexes, value)
+		}
+	}
+	
+	def void addInstanceVariableState(Step step, SynchronousComponentInstance instance,
+			VariableDeclaration variable, FieldHierarchy fieldHierarchy, IndexHierarchy indexes, Expression value) {
+		val type = variable.typeDefinition
+		if (type.native) {
+			step.addInstanceVariableState(instance, variable, value)
 		}
 		else {
 			checkState(type.complex)
@@ -336,9 +348,9 @@ class TraceBuilder {
 			// Creating the literal, similar to "getInstance" in singletons
 			val type = variable.typeDefinition
 			val initialValue = type.initialValueOfType
-			step.asserts += statechartUtil.createVariableReference(
-					statechartUtil.createInstanceReference(instance), variable)
-						.createEqualityExpression(initialValue)
+			step.asserts += instance.createInstanceReference
+								.createVariableReference(variable)
+									.createEqualityExpression(initialValue)
 			
 			return initialValue
 		}
@@ -351,7 +363,7 @@ class TraceBuilder {
 	
 	def addInstanceState(Step step, SynchronousComponentInstance instance, State state) {
 		step.asserts += createComponentInstanceStateReferenceExpression => [
-			it.instance = statechartUtil.createInstanceReference(instance)
+			it.instance = instance.createInstanceReference
 			it.region = state.parentRegion
 			it.state = state
 		]
@@ -451,7 +463,7 @@ class TraceBuilder {
 				enum.createEnumerationLiteralExpression
 			}
 			DecimalTypeDefinition: value.toDecimalLiteral
-			// TODO Rational
+			RationalTypeDefinition: value.toDecimalLiteral
 			default: 
 				throw new IllegalArgumentException("Not known type definition: " + paramType)
 		}
@@ -466,6 +478,12 @@ class TraceBuilder {
 		val innerType = valueToBeChanged.typeDefinition // Works even if fieldHierarchy is empty
 		val newValue = innerType.createLiteral(value)
 		newValue.replace(valueToBeChanged)
+	}
+	
+	private def changeValue(Expression literal,
+			FieldHierarchy fieldHierarchy, IndexHierarchy indexes, Expression value) {
+		val valueToBeChanged = literal.getValue(fieldHierarchy, indexes)
+		value.replace(valueToBeChanged)
 	}
 	
 }

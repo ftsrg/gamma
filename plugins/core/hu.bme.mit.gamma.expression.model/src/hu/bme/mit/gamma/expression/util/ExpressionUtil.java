@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -67,6 +67,7 @@ import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.MultiplyExpression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.NullaryExpression;
+import hu.bme.mit.gamma.expression.model.OpaqueExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ParameterDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
@@ -249,6 +250,12 @@ public class ExpressionUtil {
 	public Expression subtract(Expression expression, int value) {
 		return toIntegerLiteral(
 				evaluator.evaluate(expression) - value);
+	}
+	
+	public Expression createOpaqueExpression(String string) {
+		OpaqueExpression opaqueExpression = factory.createOpaqueExpression();
+		opaqueExpression.setExpression(string);
+		return opaqueExpression;
 	}
 	
 	public Expression createIncrementExpression(VariableDeclaration variable) {

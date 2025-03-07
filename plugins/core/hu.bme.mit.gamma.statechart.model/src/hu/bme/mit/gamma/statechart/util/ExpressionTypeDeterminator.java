@@ -41,7 +41,7 @@ public class ExpressionTypeDeterminator extends ExpressionTypeDeterminator2 {
 			Type type = parameter.getType();
 			return ecoreUtil.clone(type);
 		}
-		else if (expression instanceof EventReference referenceExpression) {
+		else if (expression instanceof EventReference) {
 			return factory.createBooleanTypeDefinition();
 		}
 		else if (expression instanceof InterfaceParameterReferenceExpression referenceExpression) {
