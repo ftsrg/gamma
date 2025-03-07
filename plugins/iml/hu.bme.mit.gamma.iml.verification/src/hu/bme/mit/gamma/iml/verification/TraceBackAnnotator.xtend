@@ -180,7 +180,9 @@ class TraceBackAnnotator {
 							// Parsing variables
 							val handledLines = line.handleImandraLines(traceScanner)
 							// There can be multiple lines with variable valuations in the trace
-							for (handledLine : handledLines.split(System.lineSeparator).reject[it.nullOrEmpty]) {
+							for (handledLine : handledLines.split(System.lineSeparator)
+										.map[it.trim]
+										.reject[it.nullOrEmpty]) {
 								val split = handledLine.split(" = ", 2) // Only the first " = " is checked
 								val id = split.get(0).trim
 								val value = split.get(1).trim
@@ -325,7 +327,7 @@ class TraceBackAnnotator {
 		if (newLine.endsWith("};") || newLine.endsWith("}]")) {
 			newLine = newLine.substring(0, newLine.length - 2)
 		}
-		newLine = newLine.replaceAll(";", System.lineSeparator)
+		newLine = newLine.replaceAll(";", System.lineSeparator).trim
 		
 		return newLine
 	}

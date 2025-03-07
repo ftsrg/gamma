@@ -78,11 +78,10 @@ class ImlSemanticDiffer {
 		val diff = parser.execute
 		parser.print(diff)
 		
-		
 		if (traceability !== null) {
 			val diffAdapter = new SemanticDiffAdapter
-			val diffTrace = diffAdapter.execute(diff)
-			
+//			val diffTrace = diffAdapter.execute(diff)
+			val diffTrace = diffAdapter.exampleDiff
 			println(diffTrace)
 			
 			val gammaPackage = traceability as Package
@@ -472,6 +471,28 @@ class ImlSemanticDiffer {
 						«entry.value.value.replace(INVARIANT_DELIM, ";" + System.lineSeparator)»
 					}
 				«ENDFOR»
+			]
+		'''
+		
+		protected def String getExampleDiff() '''
+			module CX :
+			- : t =
+			{
+			
+			}
+			- : t list =
+			[{
+					};
+				{
+					_subtraffic_light_Example_ControllerStatechart = M_Subtraffic_light_Example_ControllerStatechart.L_red_on;
+					_red_light_state_Example_ControllerStatechart = true
+				};
+				{
+					};
+				{
+					_subtraffic_light_Example_ControllerStatechart = M_Subtraffic_light_Example_ControllerStatechart.L_red_on;
+					_green_light_state_Example_ControllerStatechart = _red_light_state_Example_ControllerStatechart
+				}
 			]
 		'''
 		

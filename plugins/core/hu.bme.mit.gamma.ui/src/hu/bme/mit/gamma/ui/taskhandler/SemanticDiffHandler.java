@@ -68,7 +68,7 @@ public class SemanticDiffHandler extends TaskHandler {
 	
 	protected Package getTraceabilityPackage(Iterable<String> fileNames) {
 		for (String fileName : fileNames) {
-			String unfoldedPackageFileName = fileNamer.getUnfoldedPackageFileName(fileName);
+			String unfoldedPackageFileName = fileNamer.getUnfoldedPackageUri(fileName);
 			File unfoldedPackageFile = new File(unfoldedPackageFileName);
 			if (unfoldedPackageFile.exists()) {
 				return (Package) ecoreUtil.normalLoad(unfoldedPackageFile);
