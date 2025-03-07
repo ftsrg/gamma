@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -84,6 +84,7 @@ import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
+import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.util.FileUtil;
 
 public class GenmodelValidator extends ExpressionModelValidator {
@@ -94,6 +95,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	
 	protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE;
 	protected final FileUtil fileUtil = FileUtil.INSTANCE;
+	protected final GammaFileNamer fileNamer = GammaFileNamer.INSTANCE;
 	
 	// Checking tasks, only one parameter is acceptable
 	
@@ -250,14 +252,35 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkTasks(SemanticDiff semanticDiff) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
+		List<String> fileNames = semanticDiff.getFileName();
 		validationResultMessages.addAll(
-				checkRelativeFilePaths(semanticDiff, semanticDiff.getFileName(), GenmodelModelPackage.Literals.TASK__FILE_NAME));
+				checkRelativeFilePaths(semanticDiff, fileNames, GenmodelModelPackage.Literals.TASK__FILE_NAME));
 		
-		if (semanticDiff.getFileName().size() > 1) {
+		if (fileNames.size() > 1) {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.INFO,
 					"Make sure that this new model variant does not contain new states, inputs or variables compared to the original version",
 						new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, 1)));
+			
+			File anchor = ecoreUtil.getFile(semanticDiff.eResource());
+			boolean hasTraceability = false;
+			for (String fileName : fileNames) {
+				String unfoldedPackageFileName = fileNamer.getUnfoldedPackageFileName(fileName);
+				if (fileUtil.isValidRelativeFile(anchor, unfoldedPackageFileName)) {
+					hasTraceability = true;
+					validationResultMessages.add(
+						new ValidationResultMessage(ValidationResult.INFO,
+							"Back-annotation will be conducted using " + unfoldedPackageFileName,
+								new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, 0)));
+					break;
+				}
+			}
+			if (!hasTraceability) {
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.WARNING,
+						"Back-annotation will not be carried out as a corresponding Gamma model is not found",
+							new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, 0)));
+			}
 		}
 		
 		return validationResultMessages;
