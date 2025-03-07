@@ -80,7 +80,7 @@ class ImlSemanticDiffer {
 		
 		if (traceability !== null) {
 			val diffAdapter = new SemanticDiffAdapter
-//			val diffTrace = diffAdapter.execute(diff)
+//			val diffTrace = diffAdapter.execute(diff) // TODO
 			val diffTrace = diffAdapter.exampleDiff
 			println(diffTrace)
 			
@@ -88,6 +88,10 @@ class ImlSemanticDiffer {
 			val scanner = new Scanner(diffTrace)
 			val backAnnotator = new TraceBackAnnotator(gammaPackage, scanner)
 			val trace = backAnnotator.execute
+			// TODO Parse arbitrary expression
+			// TODO Add support for expressions in and out parameters in trace builder
+			// TODO support state configurations
+			// TODO support constraints
 			
 			return trace
 		}

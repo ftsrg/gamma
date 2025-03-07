@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -93,10 +93,12 @@ class TraceToPlantUmlTransformer {
 		«IF step.needsOutEventGroup»end«ENDIF»
 		
 		hnote over System
-		«FOR config : step.instanceStateConfigurations.toSet.groupBy[it.instance?.serialize].entrySet.sortBy[it.key]»
+		«FOR config : step.instanceStateConfigurations
+						.groupBy[it.instance?.serialize].entrySet.sortBy[it.key]»
 			«config.key» «"in".addKeywordStyle» {«config.value.map[
 					it.region.name + "." + it.state.name.addItalicStyle].join(",\n\t")»} «IF step.instanceVariableStates.exists[it.instanceReference?.serialize == config.key]»«"with".addKeywordStyle»«ENDIF»
-			«FOR variableConstraint : step.instanceVariableStates.toSet.filter[it.instanceReference?.serialize == config.key].sortBy[it.variableDeclaration.name]»
+			«FOR variableConstraint : step.uniqueInstanceVariableStates
+						.filter[it.instanceReference?.serialize == config.key].sortBy[it.variableDeclaration.name]»
 				«'''  '''»«variableConstraint.variableDeclaration.name» = «variableConstraint.otherOperandIfContainedByEquality.serialize»
 			«ENDFOR»
 		«ENDFOR»

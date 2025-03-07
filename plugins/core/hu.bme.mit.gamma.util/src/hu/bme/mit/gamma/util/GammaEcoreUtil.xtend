@@ -886,7 +886,7 @@ class GammaEcoreUtil {
 		val container = object.eContainer
 		val get = container.eGet(containingFeature)
 		if (get instanceof List) {
-			return get.get(object.index - 1)
+			return get.get(object.index - 1) as EObject
 		}
 		throw new IllegalArgumentException("Not a list: " + get)
 	}
@@ -896,7 +896,7 @@ class GammaEcoreUtil {
 		val container = object.eContainer
 		val get = container.eGet(containingFeature)
 		if (get instanceof List) {
-			return get.get(object.index + 1)
+			return get.get(object.index + 1) as EObject
 		}
 		throw new IllegalArgumentException("Not a list: " + get)
 	}
