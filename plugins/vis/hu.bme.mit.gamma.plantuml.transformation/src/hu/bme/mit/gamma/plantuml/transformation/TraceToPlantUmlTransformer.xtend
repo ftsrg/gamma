@@ -93,10 +93,10 @@ class TraceToPlantUmlTransformer {
 		«IF step.needsOutEventGroup»end«ENDIF»
 		
 		hnote over System
-		«FOR config : step.instanceStateConfigurations.groupBy[it.instance?.serialize].entrySet.sortBy[it.key]»
+		«FOR config : step.instanceStateConfigurations.toSet.groupBy[it.instance?.serialize].entrySet.sortBy[it.key]»
 			«config.key» «"in".addKeywordStyle» {«config.value.map[
 					it.region.name + "." + it.state.name.addItalicStyle].join(",\n\t")»} «IF step.instanceVariableStates.exists[it.instanceReference?.serialize == config.key]»«"with".addKeywordStyle»«ENDIF»
-			«FOR variableConstraint : step.instanceVariableStates.filter[it.instanceReference?.serialize == config.key].sortBy[it.variableDeclaration.name]»
+			«FOR variableConstraint : step.instanceVariableStates.toSet.filter[it.instanceReference?.serialize == config.key].sortBy[it.variableDeclaration.name]»
 				«'''  '''»«variableConstraint.variableDeclaration.name» = «variableConstraint.otherOperandIfContainedByEquality.serialize»
 			«ENDFOR»
 		«ENDFOR»
