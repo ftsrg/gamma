@@ -73,7 +73,13 @@ class ImlSemanticDiffer {
 		val decomposition2 = grandparentFile.execute(cmd2)
 		
 		val parser = new SemanticDiffParser(decomposition1, decomposition2)
-		parser.execute
+		val diff = parser.execute
+		parser.print(diff)
+		
+		val diffAdapter = new SemanticDiffAdapter
+		val diffTrace = diffAdapter.execute(diff)
+		
+		println(diffTrace)
 		
 		return null
 	}
@@ -299,7 +305,7 @@ class ImlSemanticDiffer {
 		
 		def execute() {
 			val diff = decomposition1.extractDiff(decomposition2)
-			diff.print
+			return diff
 		}
 		
 		//
@@ -350,7 +356,7 @@ class ImlSemanticDiffer {
 		
 		//
 	
-		protected def print(Map<String, ? extends Entry<String, String>> diffs) {
+		def print(Map<String, ? extends Entry<String, String>> diffs) {
 			println("Semantic diff:")
 			val S = "  "
 			
@@ -416,6 +422,7 @@ class ImlSemanticDiffer {
 		//
 		
 		def execute(Map<String, Entry<String, String>> diff) {
+			// TODO validation
 			val preprocessedDiff = diff.preprocessSemanticDiff
 			return preprocessedDiff.adaptSemanticDiff
 		}
@@ -444,15 +451,14 @@ class ImlSemanticDiffer {
 			
 			}
 			«TraceBackAnnotator.COUNTEREXAMPLE_TRACE_VAR»
-			«TraceBackAnnotator.STATE_CHANGE2 /*[*/»
-				«FOR entry : diff.entrySet SEPARATOR ';'»
-				«TraceBackAnnotator.STATE_CHANGE /*{*/»
-«««					TODO constraints
-				}
-				«TraceBackAnnotator.STATE_CHANGE /*{*/»
-					«entry.value.key.replace(INVARIANT_DELIM, ";" + System.lineSeparator)»
-					«entry.value.value.replace(INVARIANT_DELIM, ";" + System.lineSeparator)»
-				}
+			«TraceBackAnnotator.STATE_CHANGE2 /*[{*/»
+				«FOR entry : diff.entrySet SEPARATOR ';' + System.lineSeparator + TraceBackAnnotator.STATE_CHANGE»
+	«««					TODO constraints - input events
+					};
+					«TraceBackAnnotator.STATE_CHANGE /*{*/»
+						«entry.value.key.replace(INVARIANT_DELIM, ";" + System.lineSeparator)»
+						«entry.value.value.replace(INVARIANT_DELIM, ";" + System.lineSeparator)»
+					}
 				«ENDFOR»
 			]
 		'''
