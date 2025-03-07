@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Gamma project
+ * Copyright (c) 2024-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -21,6 +21,8 @@ import org.eclipse.core.resources.IFile;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.SemanticDiff;
 import hu.bme.mit.gamma.iml.verification.ImlSemanticDiffer;
+import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 
 public class SemanticDiffHandler extends TaskHandler {
 	
@@ -46,9 +48,15 @@ public class SemanticDiffHandler extends TaskHandler {
 		File modelFile1 = new File(fileNames.get(0));
 		File modelFile2 = new File(fileNames.get(1));
 		
-		ImlSemanticDiffer semanticDiffer = new ImlSemanticDiffer();
+		Package unfoldedPackage = getTraceabilityPackage(fileNames);
 		
-		semanticDiffer.execute(null, modelFile1, modelFile2);
+		ImlSemanticDiffer semanticDiffer = new ImlSemanticDiffer();
+		ExecutionTrace trace = semanticDiffer.execute(unfoldedPackage, modelFile1, modelFile2);
+		
+		if (trace != null) {
+			String traceFileName = fileNamer.getExecutionTraceFileName(modelFile1.getName());
+			serializer.saveModel(trace, targetFolderUri, traceFileName);
+		}
 	}
 
 	private void setSemanticDiffHandler(SemanticDiff semanticDiff) {
@@ -57,6 +65,16 @@ public class SemanticDiffHandler extends TaskHandler {
 			analysisLanguages.add(AnalysisLanguage.IML);
 		}
 	}
-		
+	
+	protected Package getTraceabilityPackage(Iterable<String> fileNames) {
+		for (String fileName : fileNames) {
+			String unfoldedPackageFileName = fileNamer.getUnfoldedPackageFileName(fileName);
+			File unfoldedPackageFile = new File(unfoldedPackageFileName);
+			if (unfoldedPackageFile.exists()) {
+				return (Package) ecoreUtil.normalLoad(unfoldedPackageFile);
+			}
+		}
+		return null;
+	}
 
 }

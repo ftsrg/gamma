@@ -20,6 +20,8 @@ import java.util.Map.Entry
 import java.util.Scanner
 import java.util.logging.Logger
 
+import hu.bme.mit.gamma.statechart.interface_.Package
+
 class ImlSemanticDiffer {
 	//
 	public static final String IMANDRA_TEMPORARY_COMMAND_FOLDER = ".imandra"
@@ -76,10 +78,20 @@ class ImlSemanticDiffer {
 		val diff = parser.execute
 		parser.print(diff)
 		
-		val diffAdapter = new SemanticDiffAdapter
-		val diffTrace = diffAdapter.execute(diff)
 		
-		println(diffTrace)
+		if (traceability !== null) {
+			val diffAdapter = new SemanticDiffAdapter
+			val diffTrace = diffAdapter.execute(diff)
+			
+			println(diffTrace)
+			
+			val gammaPackage = traceability as Package
+			val scanner = new Scanner(diffTrace)
+			val backAnnotator = new TraceBackAnnotator(gammaPackage, scanner)
+			val trace = backAnnotator.execute
+			
+			return trace
+		}
 		
 		return null
 	}
@@ -421,7 +433,7 @@ class ImlSemanticDiffer {
 		protected final String REC = "r"
 		//
 		
-		def execute(Map<String, Entry<String, String>> diff) {
+		def String execute(Map<String, Entry<String, String>> diff) {
 			// TODO validation
 			val preprocessedDiff = diff.preprocessSemanticDiff
 			return preprocessedDiff.adaptSemanticDiff
@@ -444,7 +456,7 @@ class ImlSemanticDiffer {
 			return preprocessedDiff
 		}
 		
-		protected def adaptSemanticDiff(Map<String, Entry<String, String>> diff) '''
+		protected def String adaptSemanticDiff(Map<String, Entry<String, String>> diff) '''
 			«TraceBackAnnotator.CX_START»
 			«TraceBackAnnotator.COUNTEREXAMPLE_INIT_VAR»
 			{
