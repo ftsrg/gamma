@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.theta.verification
 
+import hu.bme.mit.gamma.expression.language.parser.ExpressionLanguageParserAndLinker
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.util.FieldHierarchy
@@ -322,6 +323,12 @@ class XstsBackAnnotator {
 		else {
 			value.createOpaqueExpression
 		}
+		
+		// Test
+//		val parser = new ExpressionLanguageParserAndLinker
+//		val obj = parser.parse("asd + 1 + 2")
+		//
+		
 		return expression
 	}
 	
