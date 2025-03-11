@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.iml.verification
 
+import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.util.ScannerLogger
@@ -19,8 +20,6 @@ import java.util.Map
 import java.util.Map.Entry
 import java.util.Scanner
 import java.util.logging.Logger
-
-import hu.bme.mit.gamma.statechart.interface_.Package
 
 class ImlSemanticDiffer {
 	//
@@ -88,8 +87,6 @@ class ImlSemanticDiffer {
 			val scanner = new Scanner(diffTrace)
 			val backAnnotator = new TraceBackAnnotator(gammaPackage, scanner)
 			val trace = backAnnotator.execute
-			// TODO Parse arbitrary expression
-			// TODO Add support for expressions in and out parameters in trace builder
 			// TODO support state configurations
 			// TODO support constraints
 			

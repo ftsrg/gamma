@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.verification.util
 
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
+import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
@@ -143,30 +144,62 @@ class TraceBuilder {
 			ParameterDeclaration parameter, String value) {
 		val type = parameter.typeDefinition
 		val parsedValue = type.convertStringToDouble(value)
-		return addInEvent(step, port, event, parameter, parsedValue)
+		return step.addInEvent(port, event, parameter, parsedValue)
+	}
+	
+	def addInEventWithParameter(Step step, Port port, Event event,
+			ParameterDeclaration parameter, Expression value) {
+		return step.addInEvent(port, event, parameter, value)
 	}
 	
 	private def addInEvent(Step step, Port port, Event event,
 			ParameterDeclaration parameter, Double value) {
-		val eventRaise = addInEvent(step, port, event)
+		val eventRaise = step.addInEvent(port, event)
 		val index = parameter.index
-		eventRaise.arguments.set(index, parameter.createParameter(value))
+		eventRaise.arguments.set(index, parameter.createLiteral(value))
+	}
+	
+	private def addInEvent(Step step, Port port, Event event,
+			ParameterDeclaration parameter, Expression value) {
+		val eventRaise = step.addInEvent(port, event)
+		val index = parameter.index
+		eventRaise.arguments.set(index, value)
 	}
 	
 	def addInEventWithParameter(Step step, Port port, Event event,
 			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, IndexHierarchy indexes, String value) {
-		addInEvent(step, port, event, parameter, fieldHierarchy, indexes, value)
+		step.addInEvent(port, event, parameter, fieldHierarchy, indexes, value)
+	}
+	
+	def addInEventWithParameter(Step step, Port port, Event event,
+			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, IndexHierarchy indexes, Expression value) {
+		step.addInEvent(port, event, parameter, fieldHierarchy, indexes, value)
 	}
 	
 	private def addInEvent(Step step, Port port, Event event,
 			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, IndexHierarchy indexes, String value) {
 		val type = parameter.typeDefinition
 		if (type.native) {
-			addInEventWithParameter(step, port, event, parameter, value)
+			step.addInEventWithParameter(port, event, parameter, value)
 		}
 		else {
 			checkState(type.complex)
-			val eventRaise = addInEvent(step, port, event)
+			val eventRaise = step.addInEvent(port, event)
+			val arguments = eventRaise.arguments // Filled with dummy default literals
+			val literal = arguments.get(parameter.index)
+			literal.changeValue(fieldHierarchy, indexes, value)
+		}
+	}
+	
+	private def addInEvent(Step step, Port port, Event event,
+			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, IndexHierarchy indexes, Expression value) {
+		val type = parameter.typeDefinition
+		if (type.native) {
+			step.addInEventWithParameter(port, event, parameter, value)
+		}
+		else {
+			checkState(type.complex)
+			val eventRaise = step.addInEvent(port, event)
 			val arguments = eventRaise.arguments // Filled with dummy default literals
 			val literal = arguments.get(parameter.index)
 			literal.changeValue(fieldHierarchy, indexes, value)
@@ -208,7 +241,7 @@ class TraceBuilder {
 	}
 	
 	def addScheduling(Step step) {
-		addScheduling(step, null)
+		step.addScheduling(null)
 	}
 	
 	def addScheduling(Step step, AsynchronousComponentInstance instance) {
@@ -255,30 +288,52 @@ class TraceBuilder {
 			ParameterDeclaration parameter, String value) {
 		val type = parameter.typeDefinition
 		val parsedValue = type.convertStringToDouble(value)
-		addOutEventWithParameter(step, port, event, parameter, parsedValue)
+		step.addOutEventWithParameter(port, event, parameter, parsedValue)
 	}
 	
 	def addOutEventWithParameter(Step step, Port port, Event event,
 			ParameterDeclaration parameter, Integer value) {
-		return addOutEventWithParameter(step, port, event, parameter, value.doubleValue)
+		return step.addOutEventWithParameter(port, event, parameter, value.doubleValue)
 	}
 	
 	def addOutEventWithParameter(Step step, Port port, Event event,
 			ParameterDeclaration parameter, Double value) {
-		val eventRaise = addOutEvent(step, port, event)
+		val eventRaise = step.addOutEvent(port, event)
 		val index = parameter.index
-		eventRaise.arguments.set(index, parameter.createParameter(value))
+		eventRaise.arguments.set(index, parameter.createLiteral(value))
+	}
+	
+	def addOutEventWithParameter(Step step, Port port, Event event,
+			ParameterDeclaration parameter, Expression value) {
+		val eventRaise = step.addOutEvent(port, event)
+		val index = parameter.index
+		eventRaise.arguments.set(index, value)
 	}
 	
 	def addOutEventWithStringParameter(Step step, Port port, Event event,
 			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, IndexHierarchy indexes, String value) {
 		val type = parameter.typeDefinition
 		if (type.native) {
-			addOutEventWithStringParameter(step, port, event, parameter, value)
+			step.addOutEventWithStringParameter(port, event, parameter, value)
 		}
 		else {
 			checkState(type.complex)
-			val eventRaise = addOutEvent(step, port, event)
+			val eventRaise = step.addOutEvent(port, event)
+			val arguments = eventRaise.arguments // Filled with dummy default literals
+			val literal = arguments.get(parameter.index)
+			literal.changeValue(fieldHierarchy, indexes, value)
+		}
+	}
+	
+	def addOutEventWithParameter(Step step, Port port, Event event,
+			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, IndexHierarchy indexes, Expression value) {
+		val type = parameter.typeDefinition
+		if (type.native) {
+			step.addOutEventWithParameter(port, event, parameter, value)
+		}
+		else {
+			checkState(type.complex)
+			val eventRaise = step.addOutEvent(port, event)
 			val arguments = eventRaise.arguments // Filled with dummy default literals
 			val literal = arguments.get(parameter.index)
 			literal.changeValue(fieldHierarchy, indexes, value)
@@ -297,8 +352,8 @@ class TraceBuilder {
 	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
 			VariableDeclaration variable, Expression value) {
 		step.asserts += instance.createInstanceReference
-							.createVariableReference(variable)
-								.createEqualityExpression(value)
+								.createVariableReference(variable)
+									.createEqualityExpression(value)
 	}
 	
 	def void addInstanceVariableState(Step step, SynchronousComponentInstance instance,
@@ -386,21 +441,13 @@ class TraceBuilder {
 	
 	// String and int parsing
 	
-	def createVariableLiteral(VariableDeclaration variable, Integer value) {
-		return variable.createVariableLiteral(value.doubleValue)
+	def createLiteral(Declaration declaration, Integer value) {
+		return declaration.createLiteral(value.doubleValue)
 	}
 	
-	def createVariableLiteral(VariableDeclaration variable, Double value) {
-		val type = variable.typeDefinition
+	def createLiteral(Declaration declaration, Double value) {
+		val type = declaration.typeDefinition
 		return type.createLiteral(value)
-	}
-	
-	private def createParameter(ParameterDeclaration parameter, Double value) {
-		if (parameter === null) {
-			return null
-		}
-		val paramType = parameter.typeDefinition
-		return paramType.createLiteral(value)
 	}
 	
 	private def convertStringToDouble(Type type, String value) {

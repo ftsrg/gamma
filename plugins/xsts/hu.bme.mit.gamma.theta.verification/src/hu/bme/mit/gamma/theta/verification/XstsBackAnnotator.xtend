@@ -130,13 +130,14 @@ class XstsBackAnnotator {
 			val index = indexPair.key
 			val parsedValue = indexPair.value
 			try {
-				// Literal value
+				// If the string is a literal value (e.g., false, 0, ENUM_LITERAL)
 				step.addInstanceVariableState(instance, variable, field, index, parsedValue)
 			} catch (IndexOutOfBoundsException e) {
 				// Value is not a literal; parsing expression
 				val expression = parsedValue.parseExpression
 				step.addInstanceVariableState(instance, variable, field, index, expression)
-				// TODO do for in and out parameters
+				// This could be used in general, but the string literal based solution
+				// was kept for performance purposes (no actual expression parsing is needed most of the time)
 			}
 		}
 	}
@@ -148,7 +149,7 @@ class XstsBackAnnotator {
 			val port = systemOutEvent.get(1) as Port
 			val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 			step.addOutEvent(systemPort, event)
-			// Denoting that this event has been actually
+			// Denoting that this event has been actually raised
 			raisedOutEvents += systemPort -> event
 		}
 	}
@@ -167,8 +168,14 @@ class XstsBackAnnotator {
 		for (indexPair : indexPairs) {
 			val index = indexPair.key
 			val parsedValue = indexPair.value
-			step.addOutEventWithStringParameter(systemPort, event, parameter,
-					field, index, parsedValue)
+			try {
+				step.addOutEventWithStringParameter(systemPort, event, parameter,
+						field, index, parsedValue)
+			} catch (IndexOutOfBoundsException e) {
+				val expression = parsedValue.parseExpression
+				step.addOutEventWithParameter(systemPort, event, parameter,
+						field, index, expression)
+			}
 		}
 	}
 	
@@ -198,7 +205,13 @@ class XstsBackAnnotator {
 		for (indexPair : indexPairs) {
 			val index = indexPair.key
 			val parsedValue = indexPair.value
-			step.addInEventWithParameter(systemPort, event, parameter, field, index, parsedValue)
+			try {
+				step.addInEventWithParameter(systemPort, event, parameter, field, index, parsedValue)
+			} catch (IndexOutOfBoundsException e) {
+				val expression = parsedValue.parseExpression
+				step.addInEventWithParameter(systemPort, event, parameter,
+						field, index, expression)
+			}
 		}
 	}
 	
@@ -284,8 +297,14 @@ class XstsBackAnnotator {
 				index.removeFirstIfNotEmpty // If the slave queue is an array, we remove the first index
 				// Or we do not do anything if it is a plain value due to array optimization
 				val parsedValue = firstElement.value
-				step.addInEventWithParameter(systemPort, event,
-						parameter, field, index, parsedValue)
+				try {
+					step.addInEventWithParameter(systemPort, event,
+							parameter, field, index, parsedValue)
+				} catch (IndexOutOfBoundsException e) {
+					val expression = parsedValue.parseExpression
+					step.addInEventWithParameter(systemPort, event, parameter,
+							field, index, expression)
+				}
 			}
 		}
 	}
