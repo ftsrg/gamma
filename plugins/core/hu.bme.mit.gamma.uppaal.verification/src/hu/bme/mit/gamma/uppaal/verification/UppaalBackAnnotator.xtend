@@ -314,7 +314,7 @@ class UppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 						val gammaVariable = gammaVariables.head
 						val instance = uppaalVariable.owner
 						checkState(variableMap.value !== null)
-						val rhs = gammaVariable.createVariableLiteral(variableMap.value)
+						val rhs = gammaVariable.createLiteral(variableMap.value)
 						step.addInstanceVariableState(instance, gammaVariable, rhs)
 					}
 				}
