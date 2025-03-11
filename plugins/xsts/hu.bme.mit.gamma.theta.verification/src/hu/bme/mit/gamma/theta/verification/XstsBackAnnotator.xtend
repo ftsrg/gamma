@@ -12,10 +12,12 @@ package hu.bme.mit.gamma.theta.verification
 
 import hu.bme.mit.gamma.expression.language.parser.ExpressionLanguageParserAndLinker
 import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.expression.util.IndexHierarchy
 import hu.bme.mit.gamma.querygenerator.ThetaQueryGenerator
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
@@ -29,7 +31,9 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.verification.util.TraceBuilder
 import hu.bme.mit.gamma.xsts.transformation.util.Namings
 import java.util.List
+import java.util.Map
 import java.util.Set
+import java.util.function.Function
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -42,9 +46,11 @@ class XstsBackAnnotator {
 	protected final Component component
 	protected final ThetaQueryGenerator xStsQueryGenerator
 	protected final extension XstsArrayParser arrayParser
+	protected final Map<String, String> expressionPreprocess
 	//
 	protected final String SCHEDULING_VARIABLE_PREFIX
 	//
+	protected ExpressionLanguageParserAndLinker parser // Lazy load
 	protected final Set<Pair<Port, Event>> storedAsynchronousInEvents = newHashSet
 	
 	// To check if certain elements are actually raised/reached
@@ -54,17 +60,23 @@ class XstsBackAnnotator {
 	
 	protected final extension TraceBuilder traceBuilder = TraceBuilder.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
-	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	new(ThetaQueryGenerator queryGenerator, XstsArrayParser arrayParser) {
 		this(queryGenerator, arrayParser, "")
 	}
 	
 	new(ThetaQueryGenerator queryGenerator, XstsArrayParser arrayParser, String schedulingVariablePrefix) {
+		this(queryGenerator, arrayParser, schedulingVariablePrefix, newHashMap)
+	}
+	
+	new(ThetaQueryGenerator queryGenerator, XstsArrayParser arrayParser,
+			String schedulingVariablePrefix, Map<String, String> expressionPreprocess) {
 		this.component = queryGenerator.component
 		this.xStsQueryGenerator = queryGenerator
 		this.arrayParser = arrayParser
 		this.SCHEDULING_VARIABLE_PREFIX = schedulingVariablePrefix // E.g., _ in IML
+		this.expressionPreprocess = expressionPreprocess
 	}
 	
 	//
@@ -311,25 +323,54 @@ class XstsBackAnnotator {
 	
 	///
 	
+	protected def getParser() {
+		if (parser === null) {
+			parser = new ExpressionLanguageParserAndLinker
+		}
+		return parser
+	}
+	
 	protected def parseExpression(String value) {
-		val expression =
-		if (xStsQueryGenerator.isSourceVariable(value)) {
-			val instanceVariable = xStsQueryGenerator.getSourceVariable(value)
+		val parser = getParser
+		val expression = parser.preprocessAndParse(value,
+			new Function<String, Expression> {
+				override apply(String id) {
+					return id.parseReference
+				}
+			},
+			expressionPreprocess)
+		
+		return expression
+	}
+	
+	protected def parseReference(String id) {
+		return if (xStsQueryGenerator.isSourceVariable(id)) {
+			val instanceVariable = xStsQueryGenerator.getSourceVariable(id)
 			val instance = instanceVariable.value
 			val variable = instanceVariable.key
 			
 			instance.createInstanceReference.createVariableReference(variable)
 		}
-		else {
-			value.createOpaqueExpression
+		else if (xStsQueryGenerator.isSourceOutEvent(id)) {
+			val instanceOutEvent = xStsQueryGenerator.getSourceOutEvent(id)
+			val event = instanceOutEvent.head as Event
+			val port = instanceOutEvent.get(1) as Port
+			val instance = instanceOutEvent.lastOrNull as ComponentInstance
+			
+			instance.createInstanceReference.createEventReference(port, event)
 		}
-		
-		// Test
-//		val parser = new ExpressionLanguageParserAndLinker
-//		val obj = parser.parse("asd + 1 + 2")
-		//
-		
-		return expression
+		else if (xStsQueryGenerator.isSourceOutEventParameter(id)) {
+			val instanceOutEvent = xStsQueryGenerator.getSourceOutEventParameter(id)
+			val event = instanceOutEvent.head as Event
+			val port = instanceOutEvent.get(1) as Port
+			val parameter = instanceOutEvent.get(2) as ParameterDeclaration
+			val instance = instanceOutEvent.lastOrNull as ComponentInstance
+			
+			instance.createInstanceReference.createParameterReference(port, event, parameter)
+		}
+		else {
+			throw new IllegalArgumentException("Not known id: " + id)
+		}
 	}
 	
 	///

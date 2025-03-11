@@ -43,6 +43,9 @@ class TraceBackAnnotator {
 	public static final String COUNTEREXAMPLE_INIT_VAR = RETURN_VALUE + "t =" // Used to be 'module CX :' before refactor
 	public static final String COUNTEREXAMPLE_TRACE_VAR = RETURN_VALUE + "t list ="
 	
+	protected val preprocessExpressions = #{ "&&" -> "and", "||" -> "or", "<>" -> "!=",
+			"+." -> "+", "-." -> "-", "*." -> "*", "/." -> "/" }
+	
 	//
 	protected final Scanner traceScanner
 	//
@@ -59,7 +62,7 @@ class TraceBackAnnotator {
 	protected final extension TraceModelFactory trFact = TraceModelFactory.eINSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension TraceBuilder traceBuilder = TraceBuilder.INSTANCE
-	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
@@ -83,7 +86,8 @@ class TraceBackAnnotator {
 		synchronized (engineSynchronizationObject) { // Due to the VIATRA engine
 			this.imlQueryGenerator = new ImlQueryGenerator(component)
 		}
-		this.xStsBackAnnotator = new XstsBackAnnotator(imlQueryGenerator, ImlArrayParser.INSTANCE, "_")
+		this.xStsBackAnnotator = new XstsBackAnnotator(imlQueryGenerator,
+				ImlArrayParser.INSTANCE, "_", preprocessExpressions)
 	}
 	
 	def ExecutionTrace synchronizeAndExecute() {
