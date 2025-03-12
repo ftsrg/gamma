@@ -10,8 +10,12 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.iml.verification
 
+import hu.bme.mit.gamma.expression.model.EqualityExpression
+import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.util.FileUtil
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.util.ScannerLogger
 import java.io.File
@@ -31,6 +35,7 @@ class ImlSemanticDiffer {
 	//
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final ImlPythonApiHelper pythonApiHelper = ImlPythonApiHelper.INSTANCE
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//
@@ -89,6 +94,8 @@ class ImlSemanticDiffer {
 			val trace = backAnnotator.execute
 			// TODO support state configurations
 			// TODO support constraints
+			
+			trace.postprocessSemanticDiff
 			
 			return trace
 		}
@@ -171,6 +178,23 @@ class ImlSemanticDiffer {
 		regions += new Region(constraints.toString, invariant.toString)
 		
 		return decomposition
+	}
+	
+	protected def postprocessSemanticDiff(ExecutionTrace trace) {
+		for (assertion : trace.steps.map[it.asserts].flatten) {
+			for (equality : assertion.getSelfAndAllContentsOfType(EqualityExpression)) {
+				val rhs = equality.rightOperand
+				// Addressing havocs
+				if (rhs instanceof OpaqueExpression) {
+					val expression = rhs.expression
+					val split = expression.split("_")
+					// Havoc "heuristics"
+					if (split.size > 1 && split.lastElement.matches("[0-9]+")) {
+						rhs.expression = "Anything"
+					}
+				}
+			}
+		}
 	}
 	
 	//
@@ -443,7 +467,8 @@ class ImlSemanticDiffer {
 		def String execute(Map<String, Entry<String, String>> diff) {
 			// TODO validation
 			val preprocessedDiff = diff.preprocessSemanticDiff
-			return preprocessedDiff.adaptSemanticDiff
+			val adaptedSemanticDiff = preprocessedDiff.adaptSemanticDiff
+			return adaptedSemanticDiff
 		}
 		
 		//
