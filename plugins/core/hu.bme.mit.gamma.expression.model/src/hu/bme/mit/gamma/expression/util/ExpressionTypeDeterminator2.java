@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -95,22 +95,20 @@ public class ExpressionTypeDeterminator2 {
 		if (expression instanceof DecimalLiteralExpression) {
 			return factory.createDecimalTypeDefinition();
 		}
-		if (expression instanceof EnumerationLiteralExpression) {
-			EnumerationLiteralExpression enumerationLiteralExpression = (EnumerationLiteralExpression) expression;
-			TypeReference typeReference = ecoreUtil.clone(enumerationLiteralExpression.getTypeReference());
+		if (expression instanceof EnumerationLiteralExpression enumerationLiteralExpression) {
+			TypeReference typeReference = ecoreUtil.clone(
+					enumerationLiteralExpression.getTypeReference());
 			return typeReference;
 		}
 		if (expression instanceof IntegerRangeLiteralExpression) {
 			return factory.createIntegerRangeTypeDefinition();
 		}
-		if (expression instanceof RecordLiteralExpression) {
+		if (expression instanceof RecordLiteralExpression recordLiteralExpression) {
 			TypeReference typeReference = factory.createTypeReference();
-			RecordLiteralExpression recordLiteralExpression = (RecordLiteralExpression) expression;
 			typeReference.setReference(recordLiteralExpression.getTypeDeclaration());
 			return typeReference;
 		}
-		if (expression instanceof ArrayLiteralExpression) {
-			ArrayLiteralExpression arrayLiteralExpression = (ArrayLiteralExpression) expression;
+		if (expression instanceof ArrayLiteralExpression arrayLiteralExpression) {
 			List<Expression> operands = arrayLiteralExpression.getOperands();
 			if (operands.isEmpty()) {
 				// Maybe this should be changed to VoidTypeDefinition, as empty array literals could be useful
@@ -118,14 +116,15 @@ public class ExpressionTypeDeterminator2 {
 			}
 			Expression firstOperand = operands.get(0);
 			ArrayTypeDefinition arrayTypeDefinition = factory.createArrayTypeDefinition();
-			arrayTypeDefinition.setElementType(getType(firstOperand));
+			arrayTypeDefinition.setElementType(
+					getType(firstOperand));
 			IntegerLiteralExpression size = factory.createIntegerLiteralExpression();
-			size.setValue(BigInteger.valueOf(operands.size()));
+			size.setValue(
+					BigInteger.valueOf(operands.size()));
 			arrayTypeDefinition.setSize(size);
 			return arrayTypeDefinition;
 		}
-		if (expression instanceof DirectReferenceExpression) {
-			DirectReferenceExpression referenceExpression = (DirectReferenceExpression) expression;
+		if (expression instanceof DirectReferenceExpression referenceExpression) {
 			Declaration declaration = referenceExpression.getDeclaration();
 			Type type = declaration.getType();
 			return ecoreUtil.clone(type);
@@ -139,43 +138,41 @@ public class ExpressionTypeDeterminator2 {
 		if (expression instanceof QuantifierExpression) {
 			return factory.createBooleanTypeDefinition();
 		}
-		if (expression instanceof IfThenElseExpression) {
-			IfThenElseExpression ifThenElseExpression = (IfThenElseExpression) expression;
-			return getType(ifThenElseExpression.getThen());
+		if (expression instanceof IfThenElseExpression ifThenElseExpression) {
+			return getType(
+					ifThenElseExpression.getThen());
 		}
 		if (expression instanceof OpaqueExpression) {
 			return factory.createVoidTypeDefinition();
 		}
-		if (expression instanceof UnaryPlusExpression) {
-			return getArithmeticUnaryType((UnaryPlusExpression) expression);
+		if (expression instanceof UnaryPlusExpression unaryPlusExpression) {
+			return getArithmeticUnaryType(unaryPlusExpression);
 		}
-		if (expression instanceof UnaryMinusExpression) {
-			return getArithmeticUnaryType((UnaryMinusExpression) expression);
+		if (expression instanceof UnaryMinusExpression unaryMinusExpression) {
+			return getArithmeticUnaryType(unaryMinusExpression);
 		}
-		if (expression instanceof SubtractExpression) {
-			return getArithmeticBinaryType((SubtractExpression) expression);
+		if (expression instanceof SubtractExpression subtractExpression) {
+			return getArithmeticBinaryType(subtractExpression);
 		}
-		if (expression instanceof DivideExpression) {
-			return getArithmeticBinaryType((DivideExpression) expression);
+		if (expression instanceof DivideExpression divideExpression) {
+			return getArithmeticBinaryType(divideExpression);
 		}
-		if (expression instanceof ModExpression) {
-			return getArithmeticBinaryIntegerType((ModExpression) expression);
+		if (expression instanceof ModExpression modExpression) {
+			return getArithmeticBinaryIntegerType(modExpression);
 		}
-		if (expression instanceof DivExpression) {
-			return getArithmeticBinaryIntegerType((DivExpression) expression);
+		if (expression instanceof DivExpression divExpression) {
+			return getArithmeticBinaryIntegerType(divExpression);
 		}
-		if (expression instanceof AddExpression) {
-			return getArithmeticMultiaryType((AddExpression) expression);
+		if (expression instanceof AddExpression addExpression) {
+			return getArithmeticMultiaryType(addExpression);
 		}
-		if (expression instanceof MultiplyExpression) {
-			return getArithmeticMultiaryType((MultiplyExpression) expression);
+		if (expression instanceof MultiplyExpression multiplyExpression) {
+			return getArithmeticMultiaryType(multiplyExpression);
 		}
-		if (expression instanceof ArrayAccessExpression) {
-			ArrayAccessExpression arrayAccessExpression = (ArrayAccessExpression) expression;
+		if (expression instanceof ArrayAccessExpression arrayAccessExpression) {
 			Expression operand = arrayAccessExpression.getOperand();
 			Type type = getTypeDefinition(operand);
-			if (type instanceof ArrayTypeDefinition) {
-				ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) type;
+			if (type instanceof ArrayTypeDefinition arrayTypeDefinition) {
 				Type elementType = arrayTypeDefinition.getElementType();
 				return ecoreUtil.clone(elementType);
 			}
@@ -183,29 +180,24 @@ public class ExpressionTypeDeterminator2 {
 				throw new IllegalArgumentException("Not known type: " + type);
 			}
 		}
-		if (expression instanceof FunctionAccessExpression) {
-			FunctionAccessExpression functionAccessExpression = (FunctionAccessExpression) expression;
+		if (expression instanceof FunctionAccessExpression functionAccessExpression) {
 			Expression operand = functionAccessExpression.getOperand();
 			return getType(operand);
 		}
-		if (expression instanceof FieldReferenceExpression) {
-			FieldReferenceExpression fieldReferenceExpression = (FieldReferenceExpression) expression;
+		if (expression instanceof FieldReferenceExpression fieldReferenceExpression) {
 			FieldDeclaration fieldDeclaration = fieldReferenceExpression.getFieldDeclaration();
 			Type type = fieldDeclaration.getType();
 			return ecoreUtil.clone(type);
 		}
-		if (expression instanceof RecordAccessExpression) {
-			RecordAccessExpression recordAccessExpression = (RecordAccessExpression) expression;
+		if (expression instanceof RecordAccessExpression recordAccessExpression) {
 			FieldReferenceExpression fieldReference = recordAccessExpression.getFieldReference();
 			return getType(fieldReference);
 		}
-		if (expression instanceof SelectExpression) {
-			SelectExpression selectExpression = (SelectExpression) expression;
+		if (expression instanceof SelectExpression selectExpression) {
 			Expression operand = selectExpression.getOperand();
 			Type operandType = getType(operand);
 			TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(operandType);
-			if (typeDefinition instanceof ArrayTypeDefinition) {
-				ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) typeDefinition;
+			if (typeDefinition instanceof ArrayTypeDefinition arrayTypeDefinition) {
 				Type elementType = arrayTypeDefinition.getElementType();
 				return ecoreUtil.clone(elementType);
 			}
@@ -236,12 +228,12 @@ public class ExpressionTypeDeterminator2 {
 	// TypeReference handling auxiliary methods
 	
 	private Type getAliaslessTypeTree(Type type) {
-		if (type instanceof TypeReference) {
+		if (type instanceof TypeReference typReference) {
 			TypeDefinition typeDefinition = null;
 			try {
 				typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
 			} catch (IllegalArgumentException e) {
-				return null; // // Might be the result of inconsistent Xtext type reference (reference is null)
+				return null; // Might be the result of inconsistent Xtext type reference (reference is null)
 			}
 			// Valid type reference, we can move on
 			if (ExpressionModelDerivedFeatures.isPrimitive(typeDefinition)) {
@@ -251,8 +243,7 @@ public class ExpressionTypeDeterminator2 {
 				return getAliaslessTypeTree(typeDefinition); // We do no distinguish between aliases and arrays
 			}
 			// Enum or record
-			TypeReference finalTypeReference = ExpressionModelDerivedFeatures.getFinalTypeReference(
-					(TypeReference) type);
+			TypeReference finalTypeReference = ExpressionModelDerivedFeatures.getFinalTypeReference(typReference);
 			TypeReference clonedFinalTypeReference = ecoreUtil.clone(finalTypeReference);
 			TypeDeclaration typeDeclaration = finalTypeReference.getReference();
 			// Optimization possibility

@@ -407,6 +407,7 @@ public class ExpressionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkPredicateExpression(PredicateExpression expression) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
 		if (expression instanceof UnaryExpression) {
 			// in expression, semantics not known
 		}
@@ -416,13 +417,18 @@ public class ExpressionModelValidator {
 				EquivalenceExpression equivalenceExpression = (EquivalenceExpression) expression;
 				Expression lhs = equivalenceExpression.getLeftOperand();
 				Expression rhs = equivalenceExpression.getRightOperand();
-				Type leftHandSideExpressionType = typeDeterminator.getType(lhs);
-				Type rightHandSideExpressionType = typeDeterminator.getType(rhs);
-				if (!typeDeterminator.equalsType(lhs, rhs)) {
+				try {
+					Type leftHandSideExpressionType = typeDeterminator.getType(lhs);
+					Type rightHandSideExpressionType = typeDeterminator.getType(rhs);
+					if (!typeDeterminator.equalsType(lhs, rhs)) {
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+							"The left and right hand sides are not compatible: " + typeDeterminator.print(leftHandSideExpressionType) +
+								" and " + typeDeterminator.print(rightHandSideExpressionType), 
+								new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND)));
+					}
+				} catch (IllegalArgumentException e) { // For typeDeterminator.getType()
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"The left and right hand sides are not compatible: " + typeDeterminator.print(leftHandSideExpressionType) +
-							" and " + typeDeterminator.print(rightHandSideExpressionType), 
-							new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND)));
+							e.getMessage(), new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND)));
 				}
 			}
 			// Comparison
@@ -437,10 +443,10 @@ public class ExpressionModelValidator {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 							"The right operand of this binary predicate expression is evaluated as a non-comparable value", 
 							new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND)));
-					
 				}
 			}
-		}	
+		}
+		
 		return validationResultMessages;
 	}
 	

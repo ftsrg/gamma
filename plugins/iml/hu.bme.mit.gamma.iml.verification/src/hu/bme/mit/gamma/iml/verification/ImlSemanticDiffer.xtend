@@ -486,13 +486,13 @@ class ImlSemanticDiffer {
 					};
 				{
 					_subtraffic_light_Example_ControllerStatechart = M_Subtraffic_light_Example_ControllerStatechart.L_red_on;
-					_red_light_state_Example_ControllerStatechart = true
+					_red_light_state_Example_ControllerStatechart = true <> false
 				};
 				{
 					};
 				{
 					_subtraffic_light_Example_ControllerStatechart = M_Subtraffic_light_Example_ControllerStatechart.L_red_on;
-					_green_light_state_Example_ControllerStatechart = _red_light_state_Example_ControllerStatechart
+					_green_light_state_Example_ControllerStatechart = _red_light_state_Example_ControllerStatechart + 1
 				}
 			]
 		'''
