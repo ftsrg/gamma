@@ -80,8 +80,12 @@ public class ExpressionLanguageParserAndLinker {
 
 					String text = node.getText();
 					Expression parsedReference = scope.apply(text);
-					if (parsedReference != null) {
+					if (parsedReference == null) {
 						parsedReference = util.createOpaqueExpression(text);
+					}
+					if (reference.eContainer() == null) {
+						// Replace would not work as it is a single element
+						return parsedReference;
 					}
 					ecoreUtil.replace(parsedReference, reference);
 				}

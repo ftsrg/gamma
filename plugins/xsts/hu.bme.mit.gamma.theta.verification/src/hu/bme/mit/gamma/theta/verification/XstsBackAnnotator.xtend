@@ -388,7 +388,7 @@ class XstsBackAnnotator {
 			instance.createInstanceReference.createParameterReference(port, event, parameter)
 		}
 		else {
-			throw new IllegalArgumentException("Not known id: " + id)
+			return null // As expected by the parser
 		}
 	}
 	
