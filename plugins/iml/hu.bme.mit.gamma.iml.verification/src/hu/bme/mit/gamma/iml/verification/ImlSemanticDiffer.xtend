@@ -79,8 +79,8 @@ class ImlSemanticDiffer {
 		
 		if (traceability !== null) {
 			val diffAdapter = new SemanticDiffAdapter
-//			val diffTrace = diffAdapter.execute(diff) // TODO
-			val diffTrace = diffAdapter.exampleDiff
+			val diffTrace = diffAdapter.execute(diff)
+//			val diffTrace = diffAdapter.exampleDiff // Test
 			println(diffTrace)
 			
 			val gammaPackage = traceability as Package
@@ -431,6 +431,13 @@ class ImlSemanticDiffer {
 	static class SemanticDiffAdapter {
 		//
 		protected final String REC = "r"
+		protected final String ENV = "e"
+		protected final String DELIM = ";"
+		// Check semantics!
+		protected final Map<String, String> preprocessElements = #{
+			''' «REC».''' -> " ",
+			''' «ENV».''' -> " "
+		}
 		//
 		
 		def String execute(Map<String, Entry<String, String>> diff) {
@@ -441,14 +448,22 @@ class ImlSemanticDiffer {
 		
 		//
 		
-		
 		protected def preprocessSemanticDiff(Map<String, Entry<String, String>> diff) {
 			val preprocessedDiff = <String, Entry<String, String>>newLinkedHashMap
 			
 			for (entry : diff.entrySet) {
-				val key = entry.key.replace(''' «REC».''', " ")
-				val valueKey = entry.value.key.replace(''' «REC».''', " ")
-				val valueValue = entry.value.value.replace(''' «REC».''', " ")
+				var key = entry.key
+				var valueKey = entry.value.key
+				var valueValue = entry.value.value
+				
+				for (element : preprocessElements.entrySet) {
+					val preprocKey = element.key
+					val preprocValue = element.value
+					
+					key = key.replace(preprocKey, preprocValue)
+					valueKey = valueKey.replace(preprocKey, preprocValue)
+					valueValue = valueValue.replace(preprocKey, preprocValue)
+				}
 				
 				preprocessedDiff += key -> Map.entry(valueKey, valueValue)
 			}
@@ -464,12 +479,13 @@ class ImlSemanticDiffer {
 			}
 			«TraceBackAnnotator.COUNTEREXAMPLE_TRACE_VAR»
 			«TraceBackAnnotator.STATE_CHANGE2 /*[{*/»
-				«FOR entry : diff.entrySet SEPARATOR ';' + System.lineSeparator + TraceBackAnnotator.STATE_CHANGE»
+				«FOR entry : diff.entrySet SEPARATOR DELIM + System.lineSeparator + TraceBackAnnotator.STATE_CHANGE»
 	«««					TODO constraints - input events
-					};
+					}«DELIM»
 					«TraceBackAnnotator.STATE_CHANGE /*{*/»
-						«entry.value.key.replace(INVARIANT_DELIM, ";" + System.lineSeparator)»
-						«entry.value.value.replace(INVARIANT_DELIM, ";" + System.lineSeparator)»
+						«entry.value.key.replace(INVARIANT_DELIM, DELIM + System.lineSeparator)»
+						«DELIM»
+						«entry.value.value.replace(INVARIANT_DELIM, DELIM + System.lineSeparator)»
 					}
 				«ENDFOR»
 			]

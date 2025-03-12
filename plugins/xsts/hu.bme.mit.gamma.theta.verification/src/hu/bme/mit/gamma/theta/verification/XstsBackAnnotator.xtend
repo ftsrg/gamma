@@ -132,7 +132,7 @@ class XstsBackAnnotator {
 			try {
 				// If the string is a literal value (e.g., false, 0, ENUM_LITERAL)
 				step.addInstanceVariableState(instance, variable, field, index, parsedValue)
-			} catch (IndexOutOfBoundsException e) {
+			} catch (RuntimeException e) {
 				// Value is not a literal; parsing expression
 				val expression = parsedValue.parseExpression
 				step.addInstanceVariableState(instance, variable, field, index, expression)
@@ -171,7 +171,7 @@ class XstsBackAnnotator {
 			try {
 				step.addOutEventWithStringParameter(systemPort, event, parameter,
 						field, index, parsedValue)
-			} catch (IndexOutOfBoundsException e) {
+			} catch (RuntimeException e) {
 				val expression = parsedValue.parseExpression
 				step.addOutEventWithParameter(systemPort, event, parameter,
 						field, index, expression)
@@ -207,7 +207,7 @@ class XstsBackAnnotator {
 			val parsedValue = indexPair.value
 			try {
 				step.addInEventWithParameter(systemPort, event, parameter, field, index, parsedValue)
-			} catch (IndexOutOfBoundsException e) {
+			} catch (RuntimeException e) {
 				val expression = parsedValue.parseExpression
 				step.addInEventWithParameter(systemPort, event, parameter,
 						field, index, expression)
@@ -300,7 +300,7 @@ class XstsBackAnnotator {
 				try {
 					step.addInEventWithParameter(systemPort, event,
 							parameter, field, index, parsedValue)
-				} catch (IndexOutOfBoundsException e) {
+				} catch (RuntimeException e) {
 					val expression = parsedValue.parseExpression
 					step.addInEventWithParameter(systemPort, event, parameter,
 							field, index, expression)
@@ -363,6 +363,7 @@ class XstsBackAnnotator {
 	}
 	
 	protected def parseReference(String id) {
+		// TODO field hierarchies
 		return if (xStsQueryGenerator.isSourceVariable(id)) {
 			val instanceVariable = xStsQueryGenerator.getSourceVariable(id)
 			val instance = instanceVariable.value
@@ -370,20 +371,26 @@ class XstsBackAnnotator {
 			
 			instance.createInstanceReference.createVariableReference(variable)
 		}
-		else if (xStsQueryGenerator.isSourceOutEvent(id)) {
-			val instanceOutEvent = xStsQueryGenerator.getSourceOutEvent(id)
-			val event = instanceOutEvent.head as Event
-			val port = instanceOutEvent.get(1) as Port
-			val instance = instanceOutEvent.lastOrNull as ComponentInstance
+		else if (xStsQueryGenerator.isSourceOutEvent(id) ||
+					xStsQueryGenerator.isSynchronousSourceInEvent(id) /* Only sync, no support for queues */) {
+			val instanceEvent = xStsQueryGenerator.isSourceOutEvent(id) ?
+				xStsQueryGenerator.getSourceOutEvent(id):
+				xStsQueryGenerator.getSynchronousSourceInEvent(id)
+			val event = instanceEvent.head as Event
+			val port = instanceEvent.get(1) as Port
+			val instance = instanceEvent.lastOrNull as ComponentInstance
 			
 			instance.createInstanceReference.createEventReference(port, event)
 		}
-		else if (xStsQueryGenerator.isSourceOutEventParameter(id)) {
-			val instanceOutEvent = xStsQueryGenerator.getSourceOutEventParameter(id)
-			val event = instanceOutEvent.head as Event
-			val port = instanceOutEvent.get(1) as Port
-			val parameter = instanceOutEvent.get(2) as ParameterDeclaration
-			val instance = instanceOutEvent.lastOrNull as ComponentInstance
+		else if (xStsQueryGenerator.isSourceOutEventParameter(id) ||
+					xStsQueryGenerator.isSynchronousSourceInEventParameter(id) /* Only sync, no support for queues */) {
+			val instanceEvent = xStsQueryGenerator.isSourceOutEventParameter(id) ?
+				xStsQueryGenerator.getSourceOutEventParameter(id) :
+				xStsQueryGenerator.getSynchronousSourceInEventParameter(id)
+			val event = instanceEvent.head as Event
+			val port = instanceEvent.get(1) as Port
+			val parameter = instanceEvent.get(2) as ParameterDeclaration
+			val instance = instanceEvent.lastOrNull as ComponentInstance
 			
 			instance.createInstanceReference.createParameterReference(port, event, parameter)
 		}
