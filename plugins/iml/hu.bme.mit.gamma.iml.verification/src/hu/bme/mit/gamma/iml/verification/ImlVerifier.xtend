@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Gamma project
+ * Copyright (c) 2024-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -25,7 +25,6 @@ class ImlVerifier extends AbstractVerifier {
 	public static final String IMANDRA_TEMPORARY_COMMAND_FOLDER = ".imandra"
 	//
 	protected final static extension FileUtil fileUtil = FileUtil.INSTANCE
-	protected final ImlPythonApiHelper pythonApiHelper = ImlPythonApiHelper.INSTANCE
 	//
 	
 	override verifyQuery(Object traceability, String parameters, File modelFile, File queryFile) {
@@ -113,8 +112,6 @@ class ImlVerifier extends AbstractVerifier {
 			resultReader?.close
 			errorReader?.cancel
 			cancel
-			
-			pythonApiHelper?.killImandraInstances
 		}
 		
 		return traceResult

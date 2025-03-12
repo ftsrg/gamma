@@ -79,9 +79,11 @@ class ImlApiHelper {
 		if error != None:
 			print(error, file=sys.stderr)
 		
-		# Delete the Imandra instance
+		# Delete all alive Imandra instances (note: not thread-safe)
 		
-		imandra.api.instance.delete(auth, instance['new_pod']['id'])
+		alive_instances = imandra.api.instance.list(auth)
+		for alive_instance in alive_instances:
+			imandra.api.instance.delete(auth, alive_instance['pod_id'])
 	'''
 	
 	public static val REGION_START = "> Region"

@@ -36,7 +36,6 @@ class ImlSemanticDiffer {
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
-	protected final ImlPythonApiHelper pythonApiHelper = ImlPythonApiHelper.INSTANCE
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//
 	
@@ -140,8 +139,6 @@ class ImlSemanticDiffer {
 			resultReader?.close
 			errorReader?.cancel
 			process?.destroy
-			
-			pythonApiHelper?.killImandraInstances
 		}
 	}
 	
