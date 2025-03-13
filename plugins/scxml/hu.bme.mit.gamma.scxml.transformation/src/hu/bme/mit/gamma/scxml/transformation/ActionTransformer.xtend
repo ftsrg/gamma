@@ -26,6 +26,7 @@ import java.util.logging.Level
 import org.eclipse.emf.ecore.EObject
 
 import static ac.soton.scxml.ScxmlModelDerivedFeatures.*
+import ac.soton.scxml.ScxmlSendType
 
 class ActionTransformer extends AtomicElementTransformer {
 
@@ -45,7 +46,7 @@ class ActionTransformer extends AtomicElementTransformer {
 
 	def Action transformOnentry(ScxmlOnentryType scxmlOnentry) {
 		logger.log(Level.INFO, "Transforming <onentry> element (" + scxmlOnentry + ")")
-		
+
 		val scxmlActions = getOnentryActions(scxmlOnentry)
 		if (!scxmlActions.nullOrEmpty) {
 			val gammaEntryAction = scxmlActions.transformBlock;
@@ -56,7 +57,7 @@ class ActionTransformer extends AtomicElementTransformer {
 
 	def Action transformOnexit(ScxmlOnexitType scxmlOnexit) {
 		logger.log(Level.INFO, "Transforming <onexit> element (" + scxmlOnexit + ")")
-		
+
 		val scxmlActions = getOnexitActions(scxmlOnexit)
 		if (!scxmlActions.nullOrEmpty) {
 			val gammaExitAction = scxmlActions.transformBlock;
@@ -129,6 +130,46 @@ class ActionTransformer extends AtomicElementTransformer {
 			}
 
 		// Event parameters are currently not supported.
+		// TODO Support payload
+		val gammaRaise = createRaiseEventAction(gammaPort, gammaEvent, newArrayList)
+		return gammaRaise
+	}
+
+	// TODO <send> actions
+	// TODO Is traceability entry needed?
+	def dispatch Action transformAction(ScxmlSendType scxmlSend) {
+		logger.log(Level.INFO, "Transforming <send> element (" + scxmlSend + ")")
+
+		// TODO Check nulls / empty substrings
+		val eventString = scxmlSend.event
+		val targetInterfacePortString = scxmlSend.targetexpr
+		val eventTargetString = targetInterfacePortString + "." + eventString
+
+		val tokens = eventTargetString.split("\\.")
+		if (tokens.size < 2 || tokens.size > 3) {
+			throw new IllegalArgumentException(
+				"Event descriptor " + eventString + " does not contain exactly 2 or 3 dot separated tokens."
+			)
+		}
+
+		var gammaInterface = null as Interface
+		var gammaPort = null as Port
+
+		val interfaceName = tokens.get(tokens.size - 2)
+		gammaInterface = getOrTransformInterfaceByName(interfaceName)
+
+		if (tokens.size >= 3) {
+			val portName = tokens.head
+			gammaPort = getOrTransformPortByName(gammaInterface, portName, RealizationMode.PROVIDED)
+		} else {
+			gammaPort = getOrTransformDefaultInterfacePort(gammaInterface)
+		}
+
+		val eventName = tokens.last
+		val gammaEvent = getOrTransformOutEvent(gammaInterface, eventName)
+
+		// Event parameters are currently not supported.
+		// TODO Support payload
 		val gammaRaise = createRaiseEventAction(gammaPort, gammaEvent, newArrayList)
 		return gammaRaise
 	}
