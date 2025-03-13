@@ -3,7 +3,7 @@
     xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/de.uni_paderborn.uppaal/src-gen" editDirectory="/de.uni_paderborn.uppaal.edit/src-gen"
     editorDirectory="/de.uni_paderborn.uppaal.editor/src-gen" modelPluginID="de.uni_paderborn.uppaal"
     modelName="Uppaal" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
-    importerID="org.eclipse.emf.importer.ecore" complianceLevel="7.0" copyrightFields="false"
+    importerID="org.eclipse.emf.importer.ecore" complianceLevel="17.0" copyrightFields="false"
     operationReflection="true" importOrganizing="true">
   <foreignModel>uppaal.ecore</foreignModel>
   <genPackages prefix="Uppaal" resource="XML" disposableProviderFactory="true" ecorePackage="uppaal.ecore#/">
