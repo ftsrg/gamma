@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -59,12 +59,14 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		throw new UnsupportedOperationException("TODO: auto-generated method stub")
 	}
 	
+	//
+	
 	override protected getTargetStateName(State state, Region parentRegion, SynchronousComponentInstance instance) {
 		return '''«state.getSingleTargetStateName(parentRegion, instance)»«FOR parent : state.ancestors BEFORE " && " SEPARATOR " && "»«parent.getSingleTargetStateName(parent.parentRegion, instance)»«ENDFOR»'''
 	}
 	
 	def protected getSingleTargetStateName(State state, Region parentRegion, SynchronousComponentInstance instance) {
-		return '''«parentRegion.customizeName(instance)» == «state.customizeName»'''
+		return '''«parentRegion.customizeName(instance)» == «parentRegion.customizeRegionTypeName».«state.customizeName»'''
 	}
 	
 	override protected getTargetVariableNames(VariableDeclaration variable, SynchronousComponentInstance instance) {
@@ -118,7 +120,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	def isDelay(String targetVariableName) {
-		return targetVariableName.equals(Namings.delayVariableName)
+		return targetVariableName == Namings.delayVariableName
 	}
 	
 	// Record
@@ -214,8 +216,8 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	def getSourceState(String targetStateName) {
 		for (match : instanceStates) {
 			val name = getSingleTargetStateName(match.state, match.parentRegion, match.instance)
-			if (name.equals(targetStateName)) {
-				return new Pair(match.state, match.instance)
+			if (name == targetStateName) {
+				return match.state -> match.instance
 			}
 		}
 		throw new IllegalArgumentException("Not known id")

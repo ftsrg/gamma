@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -43,7 +43,9 @@ import hu.bme.mit.gamma.genmodel.model.GenmodelModelFactory;
 import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
 import hu.bme.mit.gamma.genmodel.model.Verification;
+import hu.bme.mit.gamma.iml.verification.ImlVerification;
 import hu.bme.mit.gamma.nuxmv.verification.NuxmvVerification;
+import hu.bme.mit.gamma.ocra.verification.OcraVerification;
 import hu.bme.mit.gamma.plantuml.serialization.SvgSerializer;
 import hu.bme.mit.gamma.plantuml.transformation.TraceToPlantUmlTransformer;
 import hu.bme.mit.gamma.promela.verification.PromelaVerification;
@@ -53,7 +55,9 @@ import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.StateFormula;
 import hu.bme.mit.gamma.property.util.PropertyUtil;
 import hu.bme.mit.gamma.querygenerator.serializer.AbstractReferenceSerializer;
+import hu.bme.mit.gamma.querygenerator.serializer.ImlPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.NuxmvPropertySerializer;
+import hu.bme.mit.gamma.querygenerator.serializer.OcraPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.PromelaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
@@ -73,7 +77,6 @@ import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.theta.verification.ThetaVerification;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
-import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
 import hu.bme.mit.gamma.trace.util.TraceUtil;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.transformation.util.StatechartEcoreUtil;
@@ -99,7 +102,7 @@ public class VerificationHandler extends TaskHandler {
 	protected String packageName; // Set in setVerification
 	protected String svgFileName; // Set in setVerification
 	protected ProgrammingLanguage programmingLanguage; // Set in setVerification
-	protected final String traceFileName = "ExecutionTrace";
+	protected String traceFileName = "ExecutionTrace";
 	protected final String testFileName = traceFileName + "Simulation";
 	
 	protected TimeSpecification timeout = null;
@@ -187,6 +190,14 @@ public class VerificationHandler extends TaskHandler {
 				case NUXMV:
 					verificationTask = NuxmvVerification.INSTANCE;
 					propertySerializer = NuxmvPropertySerializer.INSTANCE;
+					break;
+				case IML:
+					verificationTask = ImlVerification.INSTANCE;
+					propertySerializer = ImlPropertySerializer.INSTANCE;
+					break;
+				case OCRA:
+					verificationTask = OcraVerification.INSTANCE;
+					propertySerializer = OcraPropertySerializer.INSTANCE;
 					break;
 				default:
 					throw new IllegalArgumentException(analysisLanguage + " is not supported");
@@ -491,6 +502,10 @@ public class VerificationHandler extends TaskHandler {
 	}
 	
 	private void setVerification(Verification verification) {
+		List<String> traceFileNames = verification.getFileName2();
+		if (!traceFileNames.isEmpty()) {
+			this.traceFileName = traceFileNames.get(0);
+		}
 		List<String> packageNames = verification.getPackageName();
 		if (packageNames.isEmpty()) {
 			this.packageName = file.getProject().getName().toLowerCase();
@@ -529,7 +544,7 @@ public class VerificationHandler extends TaskHandler {
 	protected AbstractVerification getVerification(Verification verification) {
 		Set<AnalysisLanguage> languagesSet = new LinkedHashSet<AnalysisLanguage>(
 				verification.getAnalysisLanguages());
-		AnalysisLanguage analysisLanguage = javaUtil.getLast(languagesSet);
+		AnalysisLanguage analysisLanguage = javaUtil.getLastElement(languagesSet);
 		return getVerification(analysisLanguage);
 	}
 
@@ -545,6 +560,8 @@ public class VerificationHandler extends TaskHandler {
 				return PromelaVerification.INSTANCE;
 			case NUXMV:
 				return NuxmvVerification.INSTANCE;
+			case IML:
+				return ImlVerification.INSTANCE;
 			default:
 				throw new IllegalArgumentException(analysisLanguage + " is not supported");
 		}
@@ -640,14 +657,14 @@ public class VerificationHandler extends TaskHandler {
 			}
 		}
 
-		protected void serializeJavaTestCase(String testFolderUri, String basePackage,
-				String className, ExecutionTrace trace) {
-			TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
-			String testCode = testGenerator.execute();
-			String packageUri = testGenerator.getPackageName().replaceAll("\\.", "/");
-			fileUtil.saveString(testFolderUri + File.separator + packageUri +
-				File.separator + className + ".java", testCode);
-		}
+//		protected void serializeJavaTestCase(String testFolderUri, String basePackage,
+//				String className, ExecutionTrace trace) {
+//			TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
+//			String testCode = testGenerator.execute();
+//			String packageUri = testGenerator.getPackageName().replaceAll("\\.", "/");
+//			fileUtil.saveString(testFolderUri + File.separator + packageUri +
+//				File.separator + className + ".java", testCode);
+//		}
 		
 		// Serialization of test cases for additional programming languages here...
 		

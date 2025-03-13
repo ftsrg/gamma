@@ -52,17 +52,20 @@ class TraceGenUtil {
 		if(traces.size == 1) {
 			return traces.head
 		}
-		val lastSteps = traces.map[it.steps.last]
+		val lastSteps = traces.map[it.steps.lastOrNull]
 		val or = createOrExpression
 		or.operands += lastSteps.flatMap[it.asserts.clone].filterNull
 		val result = traces.head
+		val lastAsserts = result.steps.lastOrNull.asserts
 		if (or.operands.size >= 2) {
-			result.steps.last.asserts.clear
-			result.steps.last.asserts += or
-		} else if(or.operands.size == 1) {
-			result.steps.last.asserts.clear
-			result.steps.last.asserts += or.operands.head
-		} else {
+			lastAsserts.clear
+			lastAsserts += or
+		}
+		else if (or.operands.size == 1) {
+			lastAsserts.clear
+			lastAsserts += or.operands.head
+		}
+		else {
 			//nop
 		}
 		return result

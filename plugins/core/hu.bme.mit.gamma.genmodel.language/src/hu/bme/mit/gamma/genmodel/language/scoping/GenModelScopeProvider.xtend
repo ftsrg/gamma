@@ -30,19 +30,30 @@ import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.scoping.Scopes
-import org.yakindu.sct.model.stext.stext.InterfaceScope
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 
 	override getScope(EObject context, EReference reference) {
-		if (context instanceof YakinduCompilation &&
-				reference == GenmodelModelPackage.Literals.YAKINDU_COMPILATION__STATECHART) {
-			val yakinduCompilation = context as YakinduCompilation
-			val genmodel = yakinduCompilation.eContainer as GenModel
-			return Scopes.scopeFor(genmodel.statechartImports)
-		}
+//		if (context instanceof YakinduCompilation &&
+//				reference == GenmodelModelPackage.Literals.YAKINDU_COMPILATION__STATECHART) {
+//			val yakinduCompilation = context as YakinduCompilation
+//			val genmodel = yakinduCompilation.eContainer as GenModel
+//			return Scopes.scopeFor(genmodel.statechartImports)
+//		}
+//		if (context instanceof InterfaceMapping &&
+//			reference == GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE) {
+//			val statechart = ((context as InterfaceMapping).eContainer as YakinduCompilation).statechart
+//			if (statechart !== null) {
+//				return Scopes.scopeFor(statechart.scopes.filter(InterfaceScope))
+//			}
+//		}
+//		if (context instanceof EventMapping && reference == GenmodelModelPackage.Literals.EVENT_MAPPING__YAKINDU_EVENT) {
+//			val yakinduInterface = ((context as EventMapping).eContainer as InterfaceMapping).yakinduInterface
+//			val events = yakinduInterface.events
+//			return Scopes.scopeFor(events)
+//		}
 		if (reference == GenmodelModelPackage.Literals.CODE_GENERATION__COMPONENT ||
 				reference == GenmodelModelPackage.Literals.COMPONENT_REFERENCE__COMPONENT) {
 			val genmodel = ecoreUtil.getSelfOrContainerOfType(context, GenModel)
@@ -134,13 +145,6 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			return Scopes.scopeFor(genmodel.traceImports)
 		}
 		if (context instanceof InterfaceMapping &&
-			reference == GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE) {
-			val statechart = ((context as InterfaceMapping).eContainer as YakinduCompilation).statechart
-			if (statechart !== null) {
-				return Scopes.scopeFor(statechart.scopes.filter(InterfaceScope))
-			}
-		}
-		if (context instanceof InterfaceMapping &&
 			reference == GenmodelModelPackage.Literals.INTERFACE_MAPPING__GAMMA_INTERFACE) {
 			val yakinduCompilation = (context as InterfaceMapping).eContainer as YakinduCompilation
 			val genModel = yakinduCompilation.eContainer as GenModel
@@ -148,11 +152,6 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			if (!gammaInterfaceRoots.empty) {
 				return Scopes.scopeFor(gammaInterfaceRoots.map[it.interfaces].flatten)
 			}
-		}
-		if (context instanceof EventMapping && reference == GenmodelModelPackage.Literals.EVENT_MAPPING__YAKINDU_EVENT) {
-			val yakinduInterface = ((context as EventMapping).eContainer as InterfaceMapping).yakinduInterface
-			val events = yakinduInterface.events
-			return Scopes.scopeFor(events)
 		}
 		if (context instanceof EventMapping && reference == GenmodelModelPackage.Literals.EVENT_MAPPING__GAMMA_EVENT) {
 			val gammaInterface = ((context as EventMapping).eContainer as InterfaceMapping).gammaInterface

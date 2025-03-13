@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.action.model.BreakStatement
 import hu.bme.mit.gamma.action.model.ChoiceStatement
 import hu.bme.mit.gamma.action.model.EmptyStatement
 import hu.bme.mit.gamma.action.model.ForStatement
+import hu.bme.mit.gamma.action.model.HavocStatement
 import hu.bme.mit.gamma.action.model.IfStatement
 import hu.bme.mit.gamma.action.model.SwitchStatement
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
@@ -25,6 +26,7 @@ import hu.bme.mit.gamma.expression.model.DefaultExpression
 import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
@@ -37,6 +39,7 @@ class ActionTransformer {
 	protected final extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	// Action utility
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
+	protected final extension ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	// Needed for the transformation of assignment actions
 	protected final extension ExpressionTransformer expressionTransformer
@@ -88,6 +91,23 @@ class ActionTransformer {
 			it.lhs = action.lhs.transformExpression as ReferenceExpression
 			it.rhs = action.rhs.transformExpression
 		]
+	}
+	
+	def dispatch Action transformAction(HavocStatement action) {
+		val lhs = action.lhs
+		val constraint = action.constraint
+		
+		val havoc = createHavocAction
+		havoc.lhs = lhs.transformExpression as ReferenceExpression
+		
+		if (constraint === null || constraint.definitelyTrueExpression) {
+			return havoc
+		}
+		
+		val xStsAssumption = constraint.transformExpression
+		val assumption = xStsAssumption.createAssumeAction
+		
+		return #[ havoc, assumption ].createSequentialAction
 	}
 	
 	def dispatch Action transformAction(Block action) {

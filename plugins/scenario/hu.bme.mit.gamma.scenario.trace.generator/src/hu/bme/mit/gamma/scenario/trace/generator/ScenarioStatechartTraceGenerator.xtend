@@ -88,18 +88,18 @@ class ScenarioStatechartTraceGenerator {
 		val compInstanceRef = new ComponentInstanceReferences(newArrayList,newArrayList)
 		val transformator = new Gamma2XstsTransformerSerializer(statechart, arguments, absoluteParentFolder, name, schedulingConstraint, schedulingConstraint,
 			true, false, false, true, TransitionMerging.HIERARCHICAL, null, 
-			new AnnotatablePreprocessableElements(null, compInstanceRef, null, null, null,
+			new AnnotatablePreprocessableElements(null, null, null, null, null, compInstanceRef, null, null, null,
 				InteractionCoverageCriterion.EVERY_INTERACTION, InteractionCoverageCriterion.EVERY_INTERACTION, null,
 				DataflowCoverageCriterion.ALL_USE, null, DataflowCoverageCriterion.ALL_USE), null, null)
 		transformator.execute
 		
 		val xStsFile = new File(absoluteParentFolder + File.separator + fileNamer.getXtextXStsFileName(name))
 		
-		val targetStateName = 	isNegativeTest ? 
+		val targetStateName = isNegativeTest ? 
 			scenarioStatechartUtil.hotViolation : 
 			scenarioStatechartUtil.accepting
 		val traces = 
-		if(USE_OWN_TRAVERSAL) {
+		if (USE_OWN_TRAVERSAL) {
 			deriveTracesWithOwn(targetStateName, component, xStsFile)
 		} else {
 			deriveTracesWithBuiltIn(targetStateName, component, xStsFile)
@@ -137,15 +137,15 @@ class ScenarioStatechartTraceGenerator {
 				var added = false
 				for (similarSet : similarTracesSet) {// traces should be at least 2 step long
 					val steps = trace.steps.subList(0,trace.steps.size-2)
-					if (!added && similarSet.exists[steps.isCovered(it.steps.subList(0, it.steps.size-2)) 
-						&& it.steps.subList(0, it.steps.size-2).isCovered(steps)]) {
+					if (!added && similarSet.exists[steps.isCovered(it.steps.subList(0, it.steps.size - 2)) 
+						&& it.steps.subList(0, it.steps.size - 2).isCovered(steps)]) {
 						similarSet += trace
 						added = true
 					}
 				}
 				if (!added) {
 					similarTracesSet += <ExecutionTrace>newArrayList
-					similarTracesSet.last += trace
+					similarTracesSet.lastOrNull += trace
 				}
 			}
 			
@@ -163,14 +163,14 @@ class ScenarioStatechartTraceGenerator {
 	}	
 	
 	def List<ExecutionTrace> deriveTracesWithBuiltIn(String targetStateName, Component component, File xStsFile){
-		val derivedTraces = new ArrayList<ExecutionTrace>();
-		val ttg = new ThetaTraceGenerator()
+		val derivedTraces = new ArrayList<ExecutionTrace>
+		val ttg = new ThetaTraceGenerator
 		derivedTraces += ttg.execute(xStsFile, true, <String>newArrayList, false, false)
 		val traces = <ExecutionTrace>newArrayList	
 		var i = 0
 		val containingPackage = component.containingPackage
-		for(trace : derivedTraces) {
-			val lastStep = trace.steps.last
+		for (trace : derivedTraces) {
+			val lastStep = trace.steps.lastOrNull
 			val stateAssert = lastStep.asserts.filter(ComponentInstanceStateReferenceExpression).head // this filter is sufficient due to the simple assertions used in the tests
 			if(stateAssert !== null && stateAssert.state.name.contains(targetStateName)) {
 				trace.setupExecutionTrace(null, trace.name + i++, component, containingPackage, statechart.scenarioAllowedWaitAnnotation.clone)

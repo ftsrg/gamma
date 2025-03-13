@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: NuXMV Verifier
+Bundle-Name: nuXmv Verifier
 Bundle-SymbolicName: hu.bme.mit.gamma.nuxmv.verification
 Bundle-Version: 2.11.0.qualifier
 Automatic-Module-Name: hu.bme.mit.gamma.nuxmv.verification

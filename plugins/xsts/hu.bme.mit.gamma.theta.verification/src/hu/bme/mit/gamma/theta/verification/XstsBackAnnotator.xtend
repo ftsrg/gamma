@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021-2024 Contributors to the Gamma project
+ * Copyright (c) 2021-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,11 +10,14 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.theta.verification
 
+import hu.bme.mit.gamma.expression.language.parser.ExpressionLanguageParserAndLinker
 import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.expression.util.IndexHierarchy
 import hu.bme.mit.gamma.querygenerator.ThetaQueryGenerator
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
@@ -23,11 +26,14 @@ import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.InstanceSchedule
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
+import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.verification.util.TraceBuilder
 import hu.bme.mit.gamma.xsts.transformation.util.Namings
 import java.util.List
+import java.util.Map
 import java.util.Set
+import java.util.function.Function
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -40,8 +46,11 @@ class XstsBackAnnotator {
 	protected final Component component
 	protected final ThetaQueryGenerator xStsQueryGenerator
 	protected final extension XstsArrayParser arrayParser
-	
+	protected final Map<String, String> expressionPreprocess
 	//
+	protected final String SCHEDULING_VARIABLE_PREFIX
+	//
+	protected ExpressionLanguageParserAndLinker parser // Lazy load
 	protected final Set<Pair<Port, Event>> storedAsynchronousInEvents = newHashSet
 	
 	// To check if certain elements are actually raised/reached
@@ -50,18 +59,30 @@ class XstsBackAnnotator {
 	protected final Set<State> activatedStates = newHashSet
 	
 	protected final extension TraceBuilder traceBuilder = TraceBuilder.INSTANCE
-	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
-	new(ThetaQueryGenerator thetaQueryGenerator, XstsArrayParser arrayParser) {
-		this.xStsQueryGenerator = thetaQueryGenerator
-		this.component = thetaQueryGenerator.component
+	new(ThetaQueryGenerator queryGenerator, XstsArrayParser arrayParser) {
+		this(queryGenerator, arrayParser, "")
+	}
+	
+	new(ThetaQueryGenerator queryGenerator, XstsArrayParser arrayParser, String schedulingVariablePrefix) {
+		this(queryGenerator, arrayParser, schedulingVariablePrefix, newHashMap)
+	}
+	
+	new(ThetaQueryGenerator queryGenerator, XstsArrayParser arrayParser,
+			String schedulingVariablePrefix, Map<String, String> expressionPreprocess) {
+		this.component = queryGenerator.component
+		this.xStsQueryGenerator = queryGenerator
 		this.arrayParser = arrayParser
+		this.SCHEDULING_VARIABLE_PREFIX = schedulingVariablePrefix // E.g., _ in IML
+		this.expressionPreprocess = expressionPreprocess
 	}
 	
 	//
 	
 	def isSchedulingVariable(String id) {
-		return id == Namings.instanceEndcodingVariableName
+		return id == SCHEDULING_VARIABLE_PREFIX + Namings.instanceEndcodingVariableName
 	}
 	
 	def addScheduling(String id, String value, Step step) {
@@ -108,7 +129,16 @@ class XstsBackAnnotator {
 		for (indexPair : indexPairs) {
 			val index = indexPair.key
 			val parsedValue = indexPair.value
-			step.addInstanceVariableState(instance, variable, field, index, parsedValue)
+			try {
+				// If the string is a literal value (e.g., false, 0, ENUM_LITERAL)
+				step.addInstanceVariableState(instance, variable, field, index, parsedValue)
+			} catch (RuntimeException e) {
+				// Value is not a literal; parsing expression
+				val expression = parsedValue.parseExpression
+				step.addInstanceVariableState(instance, variable, field, index, expression)
+				// This could be used in general, but the string literal based solution
+				// was kept for performance purposes (no actual expression parsing is needed most of the time)
+			}
 		}
 	}
 	
@@ -119,7 +149,7 @@ class XstsBackAnnotator {
 			val port = systemOutEvent.get(1) as Port
 			val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 			step.addOutEvent(systemPort, event)
-			// Denoting that this event has been actually
+			// Denoting that this event has been actually raised
 			raisedOutEvents += systemPort -> event
 		}
 	}
@@ -138,8 +168,14 @@ class XstsBackAnnotator {
 		for (indexPair : indexPairs) {
 			val index = indexPair.key
 			val parsedValue = indexPair.value
-			step.addOutEventWithStringParameter(systemPort, event, parameter,
-					field, index, parsedValue)
+			try {
+				step.addOutEventWithStringParameter(systemPort, event, parameter,
+						field, index, parsedValue)
+			} catch (RuntimeException e) {
+				val expression = parsedValue.parseExpression
+				step.addOutEventWithParameter(systemPort, event, parameter,
+						field, index, expression)
+			}
 		}
 	}
 	
@@ -169,7 +205,13 @@ class XstsBackAnnotator {
 		for (indexPair : indexPairs) {
 			val index = indexPair.key
 			val parsedValue = indexPair.value
-			step.addInEventWithParameter(systemPort, event, parameter, field, index, parsedValue)
+			try {
+				step.addInEventWithParameter(systemPort, event, parameter, field, index, parsedValue)
+			} catch (RuntimeException e) {
+				val expression = parsedValue.parseExpression
+				step.addInEventWithParameter(systemPort, event, parameter,
+						field, index, expression)
+			}
 		}
 	}
 	
@@ -255,8 +297,14 @@ class XstsBackAnnotator {
 				index.removeFirstIfNotEmpty // If the slave queue is an array, we remove the first index
 				// Or we do not do anything if it is a plain value due to array optimization
 				val parsedValue = firstElement.value
-				step.addInEventWithParameter(systemPort, event,
-						parameter, field, index, parsedValue)
+				try {
+					step.addInEventWithParameter(systemPort, event,
+							parameter, field, index, parsedValue)
+				} catch (RuntimeException e) {
+					val expression = parsedValue.parseExpression
+					step.addInEventWithParameter(systemPort, event, parameter,
+							field, index, expression)
+				}
 			}
 		}
 	}
@@ -294,6 +342,65 @@ class XstsBackAnnotator {
 	
 	///
 	
+	protected def getParser() {
+		if (parser === null) {
+			parser = new ExpressionLanguageParserAndLinker
+		}
+		return parser
+	}
+	
+	protected def parseExpression(String value) {
+		val parser = getParser
+		val expression = parser.preprocessAndParse(value,
+			new Function<String, Expression> {
+				override apply(String id) {
+					return id.parseReference
+				}
+			},
+			expressionPreprocess)
+		
+		return expression
+	}
+	
+	protected def parseReference(String id) {
+		// TODO field hierarchies
+		return if (xStsQueryGenerator.isSourceVariable(id)) {
+			val instanceVariable = xStsQueryGenerator.getSourceVariable(id)
+			val instance = instanceVariable.value
+			val variable = instanceVariable.key
+			
+			instance.createInstanceReference.createVariableReference(variable)
+		}
+		else if (xStsQueryGenerator.isSourceOutEvent(id) ||
+					xStsQueryGenerator.isSynchronousSourceInEvent(id) /* Only sync, no support for queues */) {
+			val instanceEvent = xStsQueryGenerator.isSourceOutEvent(id) ?
+				xStsQueryGenerator.getSourceOutEvent(id):
+				xStsQueryGenerator.getSynchronousSourceInEvent(id)
+			val event = instanceEvent.head as Event
+			val port = instanceEvent.get(1) as Port
+			val instance = instanceEvent.lastOrNull as ComponentInstance
+			
+			instance.createInstanceReference.createEventReference(port, event)
+		}
+		else if (xStsQueryGenerator.isSourceOutEventParameter(id) ||
+					xStsQueryGenerator.isSynchronousSourceInEventParameter(id) /* Only sync, no support for queues */) {
+			val instanceEvent = xStsQueryGenerator.isSourceOutEventParameter(id) ?
+				xStsQueryGenerator.getSourceOutEventParameter(id) :
+				xStsQueryGenerator.getSynchronousSourceInEventParameter(id)
+			val event = instanceEvent.head as Event
+			val port = instanceEvent.get(1) as Port
+			val parameter = instanceEvent.get(2) as ParameterDeclaration
+			val instance = instanceEvent.lastOrNull as ComponentInstance
+			
+			instance.createInstanceReference.createParameterReference(port, event, parameter)
+		}
+		else {
+			return null // As expected by the parser
+		}
+	}
+	
+	///
+	
 	def isArray(String id, String value) {
 		return arrayParser.isArray(id, value)
 	}
@@ -307,6 +414,7 @@ class XstsBackAnnotator {
 				raiseEventAct.delete
 			}
 		}
+		val asserts = step.asserts
 		val instanceStates = step.instanceStateConfigurations
 		for (instanceState : instanceStates) {
 			// A state is active if all of its ancestor states are active
@@ -317,7 +425,9 @@ class XstsBackAnnotator {
 					ancestorStateReference.region = ancestorState.parentRegion
 					ancestorStateReference.state = ancestorState
 					
-					step.asserts += ancestorStateReference
+					if (!asserts.exists[it.helperEquals(ancestorStateReference)]) { // To avoid duplication
+						asserts += ancestorStateReference
+					}
 				}
 //				instanceState.delete // Was necessary when history literals were not yet introduced
 			}

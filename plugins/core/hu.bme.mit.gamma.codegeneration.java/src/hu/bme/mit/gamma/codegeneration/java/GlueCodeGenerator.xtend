@@ -14,7 +14,6 @@ import hu.bme.mit.gamma.codegeneration.java.queries.AbstractSynchronousComposite
 import hu.bme.mit.gamma.codegeneration.java.queries.AsynchronousCompositeComponents
 import hu.bme.mit.gamma.codegeneration.java.queries.Interfaces
 import hu.bme.mit.gamma.codegeneration.java.queries.SimpleGammaComponents
-import hu.bme.mit.gamma.codegeneration.java.queries.SimpleYakinduComponents
 import hu.bme.mit.gamma.codegeneration.java.queries.SynchronousComponentWrappers
 import hu.bme.mit.gamma.codegeneration.java.queries.TypeDeclarations
 import hu.bme.mit.gamma.codegeneration.java.util.EventCodeGenerator
@@ -27,7 +26,6 @@ import hu.bme.mit.gamma.codegeneration.java.util.TypeDeclarationGenerator
 import hu.bme.mit.gamma.codegeneration.java.util.VirtualTimerServiceCodeGenerator
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Package
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import java.io.File
 import java.io.FileWriter
 import java.util.HashSet
@@ -155,7 +153,7 @@ class GlueCodeGenerator {
 		getPortInterfaceRule.fireAllCurrent
 		generateReflectiveInterfaceRule
 		getSimpleComponentReflectionRule.fireAllCurrent
-		getSimpleComponentDeclarationRule.fireAllCurrent
+//		getSimpleComponentDeclarationRule.fireAllCurrent
 		getSynchronousCompositeComponentsRule.fireAllCurrent
 		if (hasSynchronousWrapper) {
 			generateLinkedBlockingMultiQueueClasses
@@ -282,14 +280,14 @@ class GlueCodeGenerator {
 	 */
 	protected def getSimpleComponentDeclarationRule() {
 		if (simpleComponentsRule === null) {
-			 simpleComponentsRule = createRule(SimpleYakinduComponents.instance).action [
-				val componentUri = BASE_PACKAGE_URI + File.separator  + it.statechartDefinition.containingPackage.name.toLowerCase
-				val code = (it.statechartDefinition as StatechartDefinition).createSimpleComponentClass
-				code.saveCode(componentUri + File.separator + it.statechartDefinition.generateComponentClassName + ".java")
-				// Generating the interface for returning the Ports
-				val interfaceCode = it.statechartDefinition.generateComponentInterface
-				interfaceCode.saveCode(componentUri + File.separator + it.statechartDefinition.generatePortOwnerInterfaceName + ".java")
-			].build		
+//			 simpleComponentsRule = createRule(SimpleYakinduComponents.instance).action [
+//				val componentUri = BASE_PACKAGE_URI + File.separator  + it.statechartDefinition.containingPackage.name.toLowerCase
+//				val code = (it.statechartDefinition as StatechartDefinition).createSimpleComponentClass
+//				code.saveCode(componentUri + File.separator + it.statechartDefinition.generateComponentClassName + ".java")
+//				// Generating the interface for returning the Ports
+//				val interfaceCode = it.statechartDefinition.generateComponentInterface
+//				interfaceCode.saveCode(componentUri + File.separator + it.statechartDefinition.generatePortOwnerInterfaceName + ".java")
+//			].build
 		}
 		return simpleComponentsRule
 	}

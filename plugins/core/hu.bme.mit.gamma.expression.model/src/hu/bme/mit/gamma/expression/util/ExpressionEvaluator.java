@@ -115,6 +115,14 @@ public class ExpressionEvaluator {
 		}
 	}
 	
+	public double evaluateDouble(Expression expression) {
+		try {
+			return (double) evaluate(expression);
+		} catch (IllegalArgumentException e) {
+			return evaluateDecimal(expression);
+		}
+	}
+	
 	// Integers (and enums)
 	public int evaluateInteger(Expression expression) {
 		if (expression instanceof DirectReferenceExpression referenceExpression) {
@@ -269,7 +277,7 @@ public class ExpressionEvaluator {
 			}
 		}
 		if (expression instanceof IntegerLiteralExpression integerLiteralExpression) {
-			return (double) integerLiteralExpression.getValue().intValue();
+			return integerLiteralExpression.getValue().doubleValue();
 		}
 		if (expression instanceof DecimalLiteralExpression decimalLiteralExpression) {
 			return decimalLiteralExpression.getValue().doubleValue();

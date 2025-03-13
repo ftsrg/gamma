@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.action.model.ConstantDeclarationStatement
 import hu.bme.mit.gamma.action.model.EmptyStatement
 import hu.bme.mit.gamma.action.model.ExpressionStatement
 import hu.bme.mit.gamma.action.model.ForStatement
+import hu.bme.mit.gamma.action.model.HavocStatement
 import hu.bme.mit.gamma.action.model.IfStatement
 import hu.bme.mit.gamma.action.model.ReturnStatement
 import hu.bme.mit.gamma.action.model.SwitchStatement
@@ -237,6 +238,35 @@ class ActionTransformer {
 		return result
 	}
 	
+	protected def dispatch List<Action> transformAction(HavocStatement action) {
+		val result = <Action>newLinkedList
+		
+		val actionLhs = action.lhs
+		val lowlevelLhs = actionLhs.transformReferenceExpression // Potentially more references are expected
+		// This addresses record1 := record2 like assignments
+		
+		val assumption = action.constraint
+		// Precondition (function inlining)
+		if (assumption !== null) {
+			result += assumption.transformPrecondition
+		}
+		// Transform assumption and create actions
+		val lowlevelAssumptions = (assumption === null) ? #[ createTrueExpression ] : assumption.transformExpression
+		val lowlevelAssumption = (lowlevelAssumptions.size == 1) ? lowlevelAssumptions.head : lowlevelAssumptions.wrapIntoAndExpression
+		
+		for (lhs : lowlevelLhs) {
+			val lowlevelHavoc = actionFactory.createHavocStatement
+			result += lowlevelHavoc
+			
+			lowlevelHavoc.lhs = lhs
+			if (lhs === lowlevelLhs.lastOrNull) { // One constraint is enough at the end
+				lowlevelHavoc.constraint = lowlevelAssumption
+			}
+		}
+		
+		return result
+	}
+	
 	protected def dispatch List<Action> transformAction(RaiseEventAction action) {
 		val result = <Action>newLinkedList
 		
@@ -251,7 +281,7 @@ class ActionTransformer {
 		
 		// Setting IsRaised flag to true
 		result += lowlevelEvent.isRaised.createReferenceExpression
-			.createAssignment(createTrueExpression)
+				.createAssignment(createTrueExpression)
 		
 		return result
 	}

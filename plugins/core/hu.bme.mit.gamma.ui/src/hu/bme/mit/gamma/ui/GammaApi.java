@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -41,6 +41,7 @@ import hu.bme.mit.gamma.genmodel.model.ModelMutation;
 import hu.bme.mit.gamma.genmodel.model.MutationBasedTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.PhaseStatechartGeneration;
 import hu.bme.mit.gamma.genmodel.model.SafetyAssessment;
+import hu.bme.mit.gamma.genmodel.model.SemanticDiff;
 import hu.bme.mit.gamma.genmodel.model.Slicing;
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation;
 import hu.bme.mit.gamma.genmodel.model.StatechartContractGeneration;
@@ -64,6 +65,7 @@ import hu.bme.mit.gamma.ui.taskhandler.ModelMutationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.MutationBasedTestGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.OptimizerAndVerificationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.PhaseGenerationHandler;
+import hu.bme.mit.gamma.ui.taskhandler.SemanticDiffHandler;
 import hu.bme.mit.gamma.ui.taskhandler.SlicingHandler;
 import hu.bme.mit.gamma.ui.taskhandler.StatechartCompilationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.StatechartContractGenerationHandler;
@@ -282,6 +284,12 @@ public class GammaApi {
 									handler.execute(mutationBasedTestGeneration);
 									logger.info("Model mutation has been finished");
 								}
+								else if (task instanceof SemanticDiff semanticDiff) {
+									logger.info("Semantic diff computation has been started");
+									SemanticDiffHandler handler = new SemanticDiffHandler(file);
+									handler.execute(semanticDiff);
+									logger.info("Semantic diff computation has been finished");
+								}
 							}
 							// Iteration end
 							hook.endIteration();
@@ -345,7 +353,8 @@ public class GammaApi {
 								it instanceof AdaptiveBehaviorConformanceChecking ||
 								it instanceof TraceReplayModelGeneration ||
 								it instanceof StatechartContractTestGeneration || it instanceof StatechartContractGeneration ||
-								it instanceof SafetyAssessment || it instanceof MutationBasedTestGeneration
+								it instanceof SafetyAssessment || it instanceof MutationBasedTestGeneration ||
+								it instanceof SemanticDiff
 						).collect(Collectors.toList());
 			default: 
 				throw new IllegalArgumentException("Not known iteration variable: " + iteration);

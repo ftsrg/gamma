@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -31,7 +31,7 @@ abstract class AbstractUppaalBackAnnotator {
 	
 	protected final String STATE_CONST_PREFIX = "State"
 	protected final String STATE_CONST = "State:"
-	protected final String TRANSITIONS_CONST = "Transitions:"
+	protected final String TRANSITIONS_CONST = "Transition:"
 	protected final String DELAY_CONST = "Delay:"
 	
 	protected final Scanner traceScanner
@@ -47,6 +47,8 @@ abstract class AbstractUppaalBackAnnotator {
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension TraceBuilder traceBuilder = TraceBuilder.INSTANCE
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	
+	protected final StringBuilder resultText = new StringBuilder
 	
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
@@ -74,6 +76,28 @@ abstract class AbstractUppaalBackAnnotator {
 		return trace
 	}
 	
+	protected def handleInfoLines(String line, BackAnnotatorState state) {
+		var newState = state
+		if (state == BackAnnotatorState.INFO) {
+			if (line.contains(ERROR_CONST)) { // Comes in the other stream now?
+				// If e.g., the condition is not well formed, an exception is thrown
+				throw new IllegalArgumentException("Error in the trace: " + line)
+			}
+			else if (line.contains(WARNING_CONST)) { // Comes in the other stream now?
+				logger.warning(line)
+			}
+			else if (line == STATE_CONST_PREFIX || line == STATE_CONST) {
+				// We have reached the section of interest
+				newState = BackAnnotatorState.INITIAL
+			}
+			else { // Saving the "info" lines
+				resultText.append(line)
+			}
+		}
+		
+		return newState
+	}
+	
 	def ExecutionTrace synchronizeAndExecute() {
 		synchronized (engineSynchronizationObject) {
 			return execute
@@ -82,8 +106,12 @@ abstract class AbstractUppaalBackAnnotator {
 	
 	def ExecutionTrace execute() throws EmptyTraceException
 	
+	def getResultText() {
+		return resultText.toString
+	}
+	
 }
 
-enum BackAnnotatorState {INITIAL, STATE_LOCATIONS, STATE_VARIABLES, TRANSITIONS, DELAY}
+enum BackAnnotatorState {INFO, INITIAL, STATE_LOCATIONS, STATE_VARIABLES, TRANSITIONS, DELAY}
 
 class EmptyTraceException extends Exception {}

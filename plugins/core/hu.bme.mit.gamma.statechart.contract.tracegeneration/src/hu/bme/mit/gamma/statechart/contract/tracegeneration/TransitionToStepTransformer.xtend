@@ -127,7 +127,7 @@ class TransitionToStepTransformer {
 				for (parameterGroup : eventGroup.value.groupBy[it.key.parameter].entrySet) {
 					val parameter = parameterGroup.key
 					val parameterIndex = event.parameterDeclarations.indexOf(parameter)
-					val value = parameterGroup.value.last.value // Last assigned expression
+					val value = parameterGroup.value.lastOrNull.value // Last assigned expression
 					act.arguments.set(parameterIndex, value) // Resetting the false expression
 				}
 			}

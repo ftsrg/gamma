@@ -482,7 +482,7 @@ class ComponentTransformer {
 				// Note that the last expression is unnecessary as all branches (event ids) are disjoint and
 				// complete -> removing the last one to create an 'else' branch (optimization) if queue is not empty
 				if (!branchExpressions.empty) {
-					branchExpressions.removeLast
+					branchExpressions.removeLastElement
 				}
 				if (branchExpressions.empty) {
 					val onlyAction = (branchActions.empty) ? createEmptyAction // No message can be placed in the queue
@@ -1326,7 +1326,7 @@ class ComponentTransformer {
 		val lowlevelStatechart = gammaToLowlevelTransformer.transform(statechart)
 		lowlevelPackage.components += lowlevelStatechart
 		val lowlevelToXSTSTransformer = new LowlevelToXstsTransformer(
-			lowlevelPackage, optimize, transitionMerging)
+				lowlevelPackage, optimize, transitionMerging)
 		val xStsEntry = lowlevelToXSTSTransformer.execute
 		lowlevelPackage.components -= lowlevelStatechart // So that next time the matches do not return elements from this statechart
 		val xSts = xStsEntry.key

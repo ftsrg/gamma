@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -28,9 +28,11 @@ import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.List
+import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.transformation.util.Namings.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.QueueNamings.*
@@ -108,7 +110,9 @@ class Namings {
 	
 	// Region customization
 	
-	static def String customizeRegionTypeName(TypeDeclaration type, Component component) '''«getName(type).typeName»_«component.name»'''
+	static def String customizeRegionTypeName(Region region) '''«region.regionName.regionTypeName.customizeRegionTypeName(region.containingStatechart.name)»'''
+	static def String customizeRegionTypeName(TypeDeclaration type, Component component) '''«getName(type).typeName.customizeRegionTypeName(component.name)»'''
+	static def String customizeRegionTypeName(String typeName, String componentName) '''«typeName»_«componentName»'''
 	
 	static def String customizeName(State state) '''«state.stateName.stateEnumLiteralName»''' // They are enum literals
 	
@@ -120,5 +124,20 @@ class Namings {
 	static def String getOrthogonalName(VariableDeclaration variable) '''_«variable.name»_''' // Caller must make sure there is no name collision
 	// XSTS instantiation
 	static def String getCustomizedName(VariableDeclaration variable, ComponentInstance instance) '''«variable.name»_«instance.name»''' // Caller must make sure there is no name collision
-
+	
+	//
+	
+	def static randomizeName(EObject object) {
+		return object.hashCode.toString.replaceAll("-", "0")
+	}
+	
+	def static uniqueIndex(EObject object) {
+		if (object.eContainer === null) {
+			return object.randomizeName
+		}
+		val containers = object.getAllContainersOfType(EObject)
+		val index = containers.map[it.indexOrZero].join
+		return index
+	}
+	
 }

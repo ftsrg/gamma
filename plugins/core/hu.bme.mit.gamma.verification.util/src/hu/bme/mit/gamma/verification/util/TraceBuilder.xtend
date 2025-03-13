@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,12 +11,15 @@
 package hu.bme.mit.gamma.verification.util
 
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
+import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
+import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.RationalTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
@@ -33,7 +36,6 @@ import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.util.ExpressionTypeDeterminator
-import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
@@ -62,7 +64,6 @@ class TraceBuilder {
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	protected final extension ExpressionTypeDeterminator typeDeterminator = ExpressionTypeDeterminator.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
-	protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE // For component instance reference
 	
 	// Add annotation
 	
@@ -142,31 +143,63 @@ class TraceBuilder {
 	def addInEventWithParameter(Step step, Port port, Event event,
 			ParameterDeclaration parameter, String value) {
 		val type = parameter.typeDefinition
-		val intValue = type.convertStringToInt(value)
-		return addInEvent(step, port, event, parameter, intValue)
+		val parsedValue = type.convertStringToDouble(value)
+		return step.addInEvent(port, event, parameter, parsedValue)
+	}
+	
+	def addInEventWithParameter(Step step, Port port, Event event,
+			ParameterDeclaration parameter, Expression value) {
+		return step.addInEvent(port, event, parameter, value)
 	}
 	
 	private def addInEvent(Step step, Port port, Event event,
-			ParameterDeclaration parameter, Integer value) {
-		val eventRaise = addInEvent(step, port, event)
+			ParameterDeclaration parameter, Double value) {
+		val eventRaise = step.addInEvent(port, event)
 		val index = parameter.index
-		eventRaise.arguments.set(index, parameter.createParameter(value))
+		eventRaise.arguments.set(index, parameter.createLiteral(value))
+	}
+	
+	private def addInEvent(Step step, Port port, Event event,
+			ParameterDeclaration parameter, Expression value) {
+		val eventRaise = step.addInEvent(port, event)
+		val index = parameter.index
+		eventRaise.arguments.set(index, value)
 	}
 	
 	def addInEventWithParameter(Step step, Port port, Event event,
 			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, IndexHierarchy indexes, String value) {
-		addInEvent(step, port, event, parameter, fieldHierarchy, indexes, value)
+		step.addInEvent(port, event, parameter, fieldHierarchy, indexes, value)
+	}
+	
+	def addInEventWithParameter(Step step, Port port, Event event,
+			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, IndexHierarchy indexes, Expression value) {
+		step.addInEvent(port, event, parameter, fieldHierarchy, indexes, value)
 	}
 	
 	private def addInEvent(Step step, Port port, Event event,
 			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, IndexHierarchy indexes, String value) {
 		val type = parameter.typeDefinition
 		if (type.native) {
-			addInEventWithParameter(step, port, event, parameter, value)
+			step.addInEventWithParameter(port, event, parameter, value)
 		}
 		else {
 			checkState(type.complex)
-			val eventRaise = addInEvent(step, port, event)
+			val eventRaise = step.addInEvent(port, event)
+			val arguments = eventRaise.arguments // Filled with dummy default literals
+			val literal = arguments.get(parameter.index)
+			literal.changeValue(fieldHierarchy, indexes, value)
+		}
+	}
+	
+	private def addInEvent(Step step, Port port, Event event,
+			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, IndexHierarchy indexes, Expression value) {
+		val type = parameter.typeDefinition
+		if (type.native) {
+			step.addInEventWithParameter(port, event, parameter, value)
+		}
+		else {
+			checkState(type.complex)
+			val eventRaise = step.addInEvent(port, event)
 			val arguments = eventRaise.arguments // Filled with dummy default literals
 			val literal = arguments.get(parameter.index)
 			literal.changeValue(fieldHierarchy, indexes, value)
@@ -208,7 +241,7 @@ class TraceBuilder {
 	}
 	
 	def addScheduling(Step step) {
-		addScheduling(step, null)
+		step.addScheduling(null)
 	}
 	
 	def addScheduling(Step step, AsynchronousComponentInstance instance) {
@@ -232,7 +265,7 @@ class TraceBuilder {
 	
 	private def void addInstanceScheduling(Step step, AsynchronousComponentInstance instance) {
 		step.actions += createInstanceSchedule => [
-			it.instanceReference = statechartUtil.createInstanceReference(instance)
+			it.instanceReference = instance.createInstanceReference
 			// Not reference chain - that is used for back-annotation to original component
 		]
 	}
@@ -254,26 +287,53 @@ class TraceBuilder {
 	def addOutEventWithStringParameter(Step step, Port port, Event event,
 			ParameterDeclaration parameter, String value) {
 		val type = parameter.typeDefinition
-		val intValue = type.convertStringToInt(value)
-		addOutEventWithParameter(step, port, event, parameter, intValue)
+		val parsedValue = type.convertStringToDouble(value)
+		step.addOutEventWithParameter(port, event, parameter, parsedValue)
 	}
 	
 	def addOutEventWithParameter(Step step, Port port, Event event,
 			ParameterDeclaration parameter, Integer value) {
-		val eventRaise = addOutEvent(step, port, event)
+		return step.addOutEventWithParameter(port, event, parameter, value.doubleValue)
+	}
+	
+	def addOutEventWithParameter(Step step, Port port, Event event,
+			ParameterDeclaration parameter, Double value) {
+		val eventRaise = step.addOutEvent(port, event)
 		val index = parameter.index
-		eventRaise.arguments.set(index, parameter.createParameter(value))
+		eventRaise.arguments.set(index, parameter.createLiteral(value))
+	}
+	
+	def addOutEventWithParameter(Step step, Port port, Event event,
+			ParameterDeclaration parameter, Expression value) {
+		val eventRaise = step.addOutEvent(port, event)
+		val index = parameter.index
+		eventRaise.arguments.set(index, value)
 	}
 	
 	def addOutEventWithStringParameter(Step step, Port port, Event event,
 			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, IndexHierarchy indexes, String value) {
 		val type = parameter.typeDefinition
 		if (type.native) {
-			addOutEventWithStringParameter(step, port, event, parameter, value)
+			step.addOutEventWithStringParameter(port, event, parameter, value)
 		}
 		else {
 			checkState(type.complex)
-			val eventRaise = addOutEvent(step, port, event)
+			val eventRaise = step.addOutEvent(port, event)
+			val arguments = eventRaise.arguments // Filled with dummy default literals
+			val literal = arguments.get(parameter.index)
+			literal.changeValue(fieldHierarchy, indexes, value)
+		}
+	}
+	
+	def addOutEventWithParameter(Step step, Port port, Event event,
+			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, IndexHierarchy indexes, Expression value) {
+		val type = parameter.typeDefinition
+		if (type.native) {
+			step.addOutEventWithParameter(port, event, parameter, value)
+		}
+		else {
+			checkState(type.complex)
+			val eventRaise = step.addOutEvent(port, event)
 			val arguments = eventRaise.arguments // Filled with dummy default literals
 			val literal = arguments.get(parameter.index)
 			literal.changeValue(fieldHierarchy, indexes, value)
@@ -291,16 +351,29 @@ class TraceBuilder {
 	
 	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
 			VariableDeclaration variable, Expression value) {
-		step.asserts += statechartUtil.createVariableReference(
-				statechartUtil.createInstanceReference(instance), variable)
-					.createEqualityExpression(value)
+		step.asserts += instance.createInstanceReference
+								.createVariableReference(variable)
+									.createEqualityExpression(value)
 	}
 	
 	def void addInstanceVariableState(Step step, SynchronousComponentInstance instance,
 			VariableDeclaration variable, FieldHierarchy fieldHierarchy, IndexHierarchy indexes, String value) {
 		val type = variable.typeDefinition
 		if (type.native) {
-			addInstanceVariableState(step, instance, variable, value)
+			step.addInstanceVariableState(instance, variable, value)
+		}
+		else {
+			checkState(type.complex)
+			val literal = step.getOrCreateLiteral(instance, variable)
+			literal.changeValue(fieldHierarchy, indexes, value)
+		}
+	}
+	
+	def void addInstanceVariableState(Step step, SynchronousComponentInstance instance,
+			VariableDeclaration variable, FieldHierarchy fieldHierarchy, IndexHierarchy indexes, Expression value) {
+		val type = variable.typeDefinition
+		if (type.native) {
+			step.addInstanceVariableState(instance, variable, value)
 		}
 		else {
 			checkState(type.complex)
@@ -330,9 +403,9 @@ class TraceBuilder {
 			// Creating the literal, similar to "getInstance" in singletons
 			val type = variable.typeDefinition
 			val initialValue = type.initialValueOfType
-			step.asserts += statechartUtil.createVariableReference(
-					statechartUtil.createInstanceReference(instance), variable)
-						.createEqualityExpression(initialValue)
+			step.asserts += instance.createInstanceReference
+								.createVariableReference(variable)
+									.createEqualityExpression(initialValue)
 			
 			return initialValue
 		}
@@ -345,7 +418,7 @@ class TraceBuilder {
 	
 	def addInstanceState(Step step, SynchronousComponentInstance instance, State state) {
 		step.asserts += createComponentInstanceStateReferenceExpression => [
-			it.instance = statechartUtil.createInstanceReference(instance)
+			it.instance = instance.createInstanceReference
 			it.region = state.parentRegion
 			it.state = state
 		]
@@ -368,56 +441,76 @@ class TraceBuilder {
 	
 	// String and int parsing
 	
-	def createVariableLiteral(VariableDeclaration variable, Integer value) {
-		val type = variable.typeDefinition
+	def createLiteral(Declaration declaration, Integer value) {
+		return declaration.createLiteral(value.doubleValue)
+	}
+	
+	def createLiteral(Declaration declaration, Double value) {
+		val type = declaration.typeDefinition
 		return type.createLiteral(value)
 	}
 	
-	private def createParameter(ParameterDeclaration parameter, Integer value) {
-		if (parameter === null) {
-			return null
-		}
-		val paramType = parameter.typeDefinition
-		return paramType.createLiteral(value)
-	}
-	
-	private def convertStringToInt(Type type, String value) {
+	private def convertStringToDouble(Type type, String value) {
 		switch (value) {
 			case "false", case "FALSE":
 				return 0
 			case "true", case "TRUE":
 				return 1
-			default:
+			default: {
 				try {
-					return Integer.parseInt(value)
+					return Integer.parseInt(value) // Integer
 				} catch (NumberFormatException e) {
-					if (type instanceof EnumerationTypeDefinition) {
+					if (type instanceof EnumerationTypeDefinition) { // Enum
+						val typeDeclaration = type.typeDeclaration
+						val typeDeclarationName = typeDeclaration?.name
 						val literals = type.literals
-						val literal = literals.findFirst[it.name.equals(value)]
+						val literal = literals.findFirst[
+							it.name == value || // "literal"
+							(typeDeclarationName + "." + it.name) == value // "TypeName.literal"
+						]
 						return literals.indexOf(literal)
 					}
-					throw new IllegalArgumentException("Not known value: " + value)
+					try {
+						return Double.parseDouble(value) // Decimal
+					} catch (NumberFormatException ee) {
+						if (value.contains("/")) {
+							val split = value.split("/")
+							val typeAndNumerator = split.head
+							val typeAndNumeratorSplit = typeAndNumerator.split("'")
+							val numerator = typeAndNumeratorSplit.lastOrNull
+							val denominator = split.lastOrNull
+							
+							val doubleValue = Double.parseDouble(numerator) / Double.parseDouble(denominator)
+							return doubleValue
+						}
+
+						throw new IllegalArgumentException("Not known value: " + value)
+					}
 				}
+			}
 		}
 	}
 	
 	private def Expression createLiteral(Type paramType, String value) {
-		return paramType.createLiteral(paramType.convertStringToInt(value))
+		return paramType.createLiteral(
+				paramType.convertStringToDouble(value))
 	}
 	
 	/**
 	 * Only primitive types and enums are accepted, type references are not.
 	 */
-	private def Expression createLiteral(Type paramType, Integer value) {
+	private def Expression createLiteral(Type paramType, Double value) {
 		val literal = switch (paramType) {
-			IntegerTypeDefinition: value.toIntegerLiteral
+			IntegerTypeDefinition: value.longValue.toIntegerLiteral
 			BooleanTypeDefinition: (value == 0) ?
 					createFalseExpression : createTrueExpression
 			EnumerationTypeDefinition: {
 				val literals = paramType.literals
-				val enum = literals.get(value)
+				val enum = literals.get(value.intValue)
 				enum.createEnumerationLiteralExpression
 			}
+			DecimalTypeDefinition: value.toDecimalLiteral
+			RationalTypeDefinition: value.toDecimalLiteral
 			default: 
 				throw new IllegalArgumentException("Not known type definition: " + paramType)
 		}
@@ -432,6 +525,12 @@ class TraceBuilder {
 		val innerType = valueToBeChanged.typeDefinition // Works even if fieldHierarchy is empty
 		val newValue = innerType.createLiteral(value)
 		newValue.replace(valueToBeChanged)
+	}
+	
+	private def changeValue(Expression literal,
+			FieldHierarchy fieldHierarchy, IndexHierarchy indexes, Expression value) {
+		val valueToBeChanged = literal.getValue(fieldHierarchy, indexes)
+		value.replace(valueToBeChanged)
 	}
 	
 }

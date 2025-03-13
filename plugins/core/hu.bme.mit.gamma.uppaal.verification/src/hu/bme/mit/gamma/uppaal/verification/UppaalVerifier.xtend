@@ -20,13 +20,14 @@ import java.util.Scanner
 
 class UppaalVerifier extends AbstractVerifier {
 	
-	protected ScannerLogger resultLogger = null // Created one for each execution
+	protected ScannerLogger errorLogger = null // Created one for each execution
 	
-	override Result verifyQuery(Object traceability, String parameters,
-			File uppaalFile, File uppaalQueryFile) {
-		var Scanner resultReader = null
-		var Scanner traceReader = null
+	override Result verifyQuery(Object traceability, String parameters, File uppaalFile, File uppaalQueryFile) {
 		val actualUppaalQuery = uppaalQueryFile.loadString
+		
+		var Scanner errorReader = null
+		var Scanner traceReader = null
+		
 		try {
 			// verifyta -t0 -T TestOneComponent.xml asd.q 
 			val command = #["verifyta"] + parameters.split("\\s+") +
@@ -38,25 +39,25 @@ class UppaalVerifier extends AbstractVerifier {
 			val outputStream = process.inputStream
 			val errorStream = process.errorStream
 			
-			// Reading the result of the command
-			resultReader = new Scanner(outputStream)
-			resultLogger = new ScannerLogger(resultReader, "Out of memory", 2 /* UPPAAL-specific */)
-			resultLogger.start
-			traceReader = new Scanner(errorStream)
+			traceReader = new Scanner(outputStream)
+			
+			errorReader = new Scanner(errorStream)
+			errorLogger = new ScannerLogger(errorReader, "Out of memory", 2 /* UPPAAL-specific */, false)
+			errorLogger.start
 			
 			if (isCancelled || Thread.currentThread.interrupted) {
 				// If the process is killed, this is where it can be checked
 				throw new NotBackannotatedException(ThreeStateBoolean.UNDEF)
 			}
 			if (!traceReader.hasNext()) {
-				if (resultLogger.error) {
+				if (errorLogger.error) {
 					// E.g. out of memory
 					throw new NotBackannotatedException(ThreeStateBoolean.UNDEF)
 				}
 				// No back annotation of empty lines
-				throw new NotBackannotatedException(
-						actualUppaalQuery.handleEmptyLines)
+				throw new NotBackannotatedException(actualUppaalQuery.handleEmptyLines)
 			}
+			
 			val backAnnotator = if (traceability instanceof G2UTrace) {
 				new UppaalBackAnnotator(traceability, traceReader)
 			}
@@ -67,8 +68,8 @@ class UppaalVerifier extends AbstractVerifier {
 				throw new IllegalStateException("Not known traceability element: " + traceability)
 			}
 			val traceModel = backAnnotator.synchronizeAndExecute
+			val lines = backAnnotator.getResultText
 			
-			val lines = resultLogger.concatenateLines
 			result =
 			if (lines.contains("Formula is NOT satisfied")) {
 				ThreeStateBoolean.FALSE
@@ -80,7 +81,7 @@ class UppaalVerifier extends AbstractVerifier {
 			
 			return new Result(result, traceModel)
 		} catch (EmptyTraceException e) {
-			result = handleEmptyLines(actualUppaalQuery)
+			result = actualUppaalQuery.handleEmptyLines
 			return new Result(result, null)
 		} catch (NotBackannotatedException e) {
 			result = e.result
@@ -88,9 +89,8 @@ class UppaalVerifier extends AbstractVerifier {
 		} catch (Exception e) {
 			throw e
 		} finally {
-			resultReader?.close
 			traceReader?.close
-			resultLogger?.cancel
+			errorReader?.close
 			cancel
 		}
 	}
@@ -108,7 +108,7 @@ class UppaalVerifier extends AbstractVerifier {
 	}
 	
 	override cancel() {
-		resultLogger?.cancel
+		errorLogger?.cancel
 		super.cancel
 	}
 	

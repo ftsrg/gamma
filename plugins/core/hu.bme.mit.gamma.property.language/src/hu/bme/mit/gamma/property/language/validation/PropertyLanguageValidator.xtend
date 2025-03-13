@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.property.language.validation
 
+import hu.bme.mit.gamma.property.model.Contract
 import hu.bme.mit.gamma.property.util.PropertyModelValidator
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import org.eclipse.xtext.validation.Check
@@ -27,6 +28,17 @@ class PropertyLanguageValidator extends AbstractPropertyLanguageValidator {
 	@Check
 	override checkComponentInstanceReferences(ComponentInstanceReferenceExpression reference) {
 		handleValidationResultMessage(validator.checkComponentInstanceReferences(reference))
+	}
+	
+	
+	@Check
+	def checkContractInstance(Contract contract) {
+		handleValidationResultMessage(validator.checkContractInstance(contract))
+	}
+	
+	@Check
+	def checkNoExistentialQuantifierInContracts(Contract contract) {
+		handleValidationResultMessage(validator.checkNoExistentialQuantifierInContracts(contract))
 	}
 	
 }

@@ -2,6 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: C Code Generator Command Handler
 Bundle-SymbolicName: hu.bme.mit.gamma.xsts.codegeneration.c.commandhandler;singleton:=true
+Bundle-Vendor: BME-FTSRG
 Bundle-Version: 2.11.0.qualifier
 Require-Bundle: org.eclipse.ui;bundle-version="3.202.0",
  org.eclipse.core.runtime;bundle-version="3.26.100",

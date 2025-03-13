@@ -1,9 +1,9 @@
-import external "OBC.sct"
-import "Interface/Interfaces.gcd"
-
-statechart {
-	statechart : OBC
-	mappings {
-		map PL = Data as provided
-	}
-}
+//import external "OBC.sct"
+//import "Interface/Interfaces.gcd"
+//
+//statechart {
+//	statechart : OBC
+//	mappings {
+//		map PL = Data as provided
+//	}
+//}

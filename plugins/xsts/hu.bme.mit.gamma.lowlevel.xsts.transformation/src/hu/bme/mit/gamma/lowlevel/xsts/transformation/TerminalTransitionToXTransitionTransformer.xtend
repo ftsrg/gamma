@@ -52,7 +52,7 @@ class TerminalTransitionToXTransitionTransformer extends LowlevelTransitionToXTr
 			it.actions.add(0, lowlevelIncomingTransition.connectForkBackward) // Needed as transformForward does not do this
 			it.actions.add(0, xStsPreconditionAction)
 		]
-		val xStsForkAction = xStsAction.actions.last as ParallelAction
+		val xStsForkAction = xStsAction.actions.lastOrNull as ParallelAction
 		val xStsComplexTransition = xStsAction.createXStsTransition
 		trace.put(lowlevelFirstForkState, xStsComplexTransition, xStsPrecondition, xStsForkAction)
 		return xStsComplexTransition
@@ -70,7 +70,7 @@ class TerminalTransitionToXTransitionTransformer extends LowlevelTransitionToXTr
 			it.actions.add(0, lowlevelIncomingTransition.connectChoiceBackward) // Needed as transformForward does not do this
 			it.actions.add(0, xStsPreconditionAction)
 		]
-		val xStsChoiceAction = xStsAction.actions.last as CompositeAction // If or NonDet
+		val xStsChoiceAction = xStsAction.actions.lastOrNull as CompositeAction // If or NonDet
 		val xStsComplexTransition = xStsAction.createXStsTransition
 		trace.put(lowlevelFirstChoiceState, xStsComplexTransition, xStsPrecondition, xStsChoiceAction)
 		return xStsComplexTransition

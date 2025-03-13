@@ -21,7 +21,7 @@ class ScannerLogger implements Runnable {
 	volatile boolean isCancelled = false
 	volatile boolean error = false
 	
-	final String errorLine
+	final Iterable<String> errorLines
 	
 	//
 	
@@ -40,23 +40,31 @@ class ScannerLogger implements Runnable {
 	//
 	
 	new(Scanner scanner) {
-		this(scanner, null)
+		this(scanner, #[])
 	}
 	
 	new(Scanner scanner, boolean printLines) {
-		this(scanner, null, printLines)
+		this(scanner, #[], printLines)
 	}
 	
 	new(Scanner scanner, String errorLine) {
-		this(scanner, errorLine, 0, true)
+		this(scanner, #[errorLine])
+	}
+	
+	new(Scanner scanner, Iterable<String> errorLines) {
+		this(scanner, errorLines, 0, true)
 	}
 	
 	new(Scanner scanner, String errorLine, boolean printLines) {
-		this(scanner, errorLine, 0, printLines)
+		this(scanner, #[errorLine], printLines)
+	}
+	
+	new(Scanner scanner, Iterable<String> errorLines, boolean printLines) {
+		this(scanner, errorLines, 0, printLines)
 	}
 	
 	new(Scanner scanner, int storedLineCapacity) {
-		this(scanner, null, storedLineCapacity, true)
+		this(scanner, #[], storedLineCapacity, true)
 	}
 	
 	new(Scanner scanner, String errorLine, int storedLineCapacity) {
@@ -64,8 +72,12 @@ class ScannerLogger implements Runnable {
 	}
 	
 	new(Scanner scanner, String errorLine, int storedLineCapacity, boolean printLines) {
+		this(scanner, #[errorLine], storedLineCapacity, printLines)
+	}
+	
+	new(Scanner scanner, Iterable<String> errorLines, int storedLineCapacity, boolean printLines) {
 		this.scanner = scanner
-		this.errorLine = errorLine
+		this.errorLines = errorLines
 		this.storedLineCapacity = storedLineCapacity
 		this.printLines = printLines
 	}
@@ -73,12 +85,12 @@ class ScannerLogger implements Runnable {
 	override void run() {
 		while (!isCancelled && scanner.hasNext) {
 			val line = scanner.nextLine
-			if (errorLine !== null) {
+			if (!errorLines.nullOrEmpty) {
 				line.checkError
 				line.storeLine
 			}
 			if (printLines) {
-				logger.info(line)
+				logger.severe(line)
 //				println(line)
 			}
 		}
@@ -86,14 +98,17 @@ class ScannerLogger implements Runnable {
 	
 	private def checkError(String line) {
 		val trimmedLine = line.trim
-		if (trimmedLine
-				.startsWith(errorLine)) {
-			error = true
+		for (errorLine : errorLines) {
+			if (trimmedLine
+					.startsWith(errorLine)) {
+				error = true
+			}
 		}
 	}
 	
 	def void cancel() {
 		this.isCancelled = true
+		this.scanner?.close
 		if (thread !== null) {
 			thread.interrupt
 		}
@@ -123,7 +138,10 @@ class ScannerLogger implements Runnable {
 	}
 	
 	def concatenateLines() {
-		return lines.reduce[p1, p2| p1 + p2]
+		if (lines.empty) {
+			return ""
+		}
+		return lines.reduce[p1, p2 | p1 + p2]
 	}
 	
 	// 

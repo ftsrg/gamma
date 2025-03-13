@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.xsts.nuxmv.transformation.serializer
 
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
+import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
@@ -26,7 +27,7 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class TypeSerializer {
-		// Singleton
+	// Singleton
 	public static final TypeSerializer INSTANCE = new TypeSerializer
 	//
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
@@ -61,6 +62,8 @@ class TypeSerializer {
 	}
 	
 	def dispatch String serializeType(RationalTypeDefinition type) '''real'''
+	
+	def dispatch String serializeType(DecimalTypeDefinition type) '''real'''
 	
 	def dispatch String serializeType(EnumerationTypeDefinition type) '''{ «FOR literal : type.literals SEPARATOR ', '»«literal.name»«ENDFOR» }'''
 	

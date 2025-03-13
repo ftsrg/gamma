@@ -42,7 +42,7 @@ class UnhandledTransitionTransformer {
 			
 			checkState(!commonRegions.empty)
 			// In theory, the last element is the "closest" region
-			val closestCommonRegion = commonRegions.last
+			val closestCommonRegion = commonRegions.lastOrNull
 			
 			val splitterChoice = createChoiceState => [
 				it.name = source.name + "_" + target.name + "Splitter"

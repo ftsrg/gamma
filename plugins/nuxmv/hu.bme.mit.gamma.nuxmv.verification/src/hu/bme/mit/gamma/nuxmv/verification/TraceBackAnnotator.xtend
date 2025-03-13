@@ -142,7 +142,7 @@ class TraceBackAnnotator {
 						else if (line.startsWith(TIME_ELAPSE)) {
 							// -- [ time elapse: time = 0.0; delta = 2000.0 ] --
 							val splitLine = line.split("delta = ")
-							val last = splitLine.last
+							val last = splitLine.lastOrNull
 							val delaySplit = last.split("\\.")
 							val delayString = delaySplit.head
 							val delay = Integer.parseInt(delayString)

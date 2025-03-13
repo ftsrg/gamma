@@ -75,7 +75,7 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		}
 		else if (assignment instanceof HavocStatement havoc) {
 			Expression constraint = havoc.getConstraint();
-			if (!typeDeterminator.isBoolean(constraint)) {
+			if (constraint != null && !typeDeterminator.isBoolean(constraint)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"This constraint is not a boolean expression",
 						new ReferenceInfo(ActionModelPackage.Literals.HAVOC_STATEMENT__CONSTRAINT)));

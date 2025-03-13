@@ -4,13 +4,13 @@ Bundle-Name: Command Handler of Java Code Generator
 Bundle-SymbolicName: hu.bme.mit.gamma.codegeneration.java.commandhandler;singleton:=true
 Bundle-Version: 2.11.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-17
-Require-Bundle: org.eclipse.ui.workbench;bundle-version="3.107.1",
- org.eclipse.core.resources;bundle-version="3.10.1",
+Require-Bundle: org.eclipse.ui.workbench,
+ org.eclipse.core.resources,
  org.eclipse.core.commands,
  org.eclipse.jface,
  org.eclipse.emf.ecore,
+ hu.bme.mit.gamma.statechart.model,
  org.eclipse.equinox.registry,
- hu.bme.mit.gamma.yakindu.transformation.traceability,
  hu.bme.mit.gamma.codegeneration.java,
  hu.bme.mit.gamma.dialog
 Export-Package: hu.bme.mit.gamma.codegeneration.java.commandhandler

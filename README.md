@@ -5,9 +5,11 @@
 The Gamma Statechart Composition Framework is a toolset to model, verify and generate code for component-based reactive systems. The framework builds on Yakindu, an open source statechart modeling tool and provides an additional modeling layer to instatiate a communicating network of statecharts. Compositionality is hierarchical, which facilitates the creation of reusable component libraries. Individual statecharts, as well as composite statechart networks can be validated and verified by an automated translation to
 - [UPPAAL](http://www.uppaal.org/), a model checker for timed automata,
 - [Theta](https://github.com/ftsrg/theta), a generic, modular and configurable model checking framework,
-- [Spin](https://spinroot.com/), a tool for the formal verification of multi-threaded software applications, or
-- [nuXmv](https://nuxmv.fbk.eu/), a symbolic model checker for the analysis of synchronous finite-state and infinite-state systems.
-Once a complete model is built, designers can use the code generation functionality of the framework, which can generate Java code for the whole system.
+- [Spin](https://spinroot.com/), a tool for the formal verification of multi-threaded software applications,
+- [nuXmv](https://nuxmv.fbk.eu/), a symbolic model checker for the analysis of synchronous finite-state and infinite-state systems, or
+- [Imandra](https://imandra.ai/), a programming language and an automated reasoning engine to create models/programs and reason about them.
+
+Once a complete model is built, designers can use the code generation functionality of the framework, which can generate Java or C code for the whole system.
 
 Check out http://gamma.inf.mit.bme.hu for more resources about Gamma. A good starting point is our [tool paper](https://inf.mit.bme.hu/sites/default/files/publications/icse18.pdf), [slides](https://www.slideshare.net/VinMol/icse2018-the-gamma-statechart-composition-framework-design-verification-and-code-generation-for-componentbased-reactive-systems) and [demo video](https://youtu.be/ng7lKd1wlDo) presented at [ICSE 2018](https://www.icse2018.org/event/icse-2018-demonstrations-the-gamma-statechart-composition-framework-design-verification-and-code-generation-for-component-based-reactive-systems) as well as our [journal paper](https://link.springer.com/article/10.1007/s10270-020-00806-5).
 
@@ -31,21 +33,22 @@ To cite Gamma, please cite the following paper. You can find additional publicat
 
 ## Using Gamma
 
+Note that if you use a Mac or Linux-based OS, you probably have to launch the Gamma Eclipse from a *terminal* (e.g., `% open .../eclispe-folder/eclipse.app` or `$ .../eclipse-folder./eclipsec.exe`) to allow the invoked process to read the global variables of the system and run the integrated 3rd-party tools.
+
 ### Dependencies
 
 ##### Recommended Eclipse version and bundle:
-* Eclipse IDE 2023-09, Eclipse IDE for Java and DSL Developers bundle. Note that Yakindu (see below) will not work with the _2023-12_ or newer Eclipse releases due to compatibility reasons.
+* Eclipse IDE 2024-12, Eclipse IDE for Java and DSL Developers bundle. Note that Yakindu (see below) will not work with the _2023-12_ or newer Eclipse releases due to compatibility reasons.
 
 ##### 3rd-party Eclipse components (should be installed separately):
-* Xtext 2.32.0 (https://www.eclipse.org/Xtext/, included in Eclipse bundle),
-* VIATRA 2.8.0 (https://www.eclipse.org/viatra/),
-* Yakindu Statechart Tools 3.5.13 (https://www.itemis.com/en/yakindu/state-machine/),
-* PlantUML 1.1.30 (https://plantuml.com/).
+* VIATRA 2.9.1 (https://www.eclipse.org/viatra/),
+* PlantUML 1.1.32 (https://plantuml.com/).
 
 ##### 3rd-party tools used by Gamma (should be installed separately):
 * UPPAAL (Uppsala and Aalborg Universities, http://www.uppaal.org/),
 * Spin (Available under the standard BSD 3-Clause open source license, https://spinroot.com/),
-* nuXmv (Fondazione Bruno Kessler, https://nuxmv.fbk.eu/).
+* nuXmv (Fondazione Bruno Kessler, https://nuxmv.fbk.eu/),
+* Imandra (Imandra, https://imandra.ai/).
 
 ### Installation
 
@@ -60,6 +63,7 @@ To cite Gamma, please cite the following paper. You can find additional publicat
 * If you want to use Spin, check out the installation steps [here](plugins/promela/README.md).
 * If you want to use nuXmv, check out the installation steps [here](plugins/nuxmv/README.md).
 * If you want to use xSAP, check out the installation steps [here](plugins/safety/README.md).
+* If you want to use Imandra, check out the installation steps [here](plugins/iml/README.md).
 
 ### Tutorials
 

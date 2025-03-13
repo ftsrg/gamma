@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -35,19 +35,23 @@ import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.ComponentReference;
 import hu.bme.mit.gamma.genmodel.model.Coverage;
 import hu.bme.mit.gamma.genmodel.model.DataflowCoverage;
+import hu.bme.mit.gamma.genmodel.model.DeadlockCoverage;
 import hu.bme.mit.gamma.genmodel.model.EventCoverage;
 import hu.bme.mit.gamma.genmodel.model.InteractionCoverage;
 import hu.bme.mit.gamma.genmodel.model.InteractionDataflowCoverage;
 import hu.bme.mit.gamma.genmodel.model.ModelReference;
+import hu.bme.mit.gamma.genmodel.model.NonDeterministicTransitionCoverage;
 import hu.bme.mit.gamma.genmodel.model.OutEventCoverage;
 import hu.bme.mit.gamma.genmodel.model.StateCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionPairCoverage;
+import hu.bme.mit.gamma.genmodel.model.TrapStateCoverage;
+import hu.bme.mit.gamma.genmodel.model.UnstableStateCoverage;
 import hu.bme.mit.gamma.genmodel.model.XstsReference;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.TransitionMerging;
-import hu.bme.mit.gamma.ocra.transformation.api.Gamma2OcraTransformerSerializer;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.querygenerator.serializer.NuxmvPropertySerializer;
+import hu.bme.mit.gamma.querygenerator.serializer.OcraPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.PromelaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
@@ -77,8 +81,10 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.OrchestratingConstrain
 import hu.bme.mit.gamma.uppaal.composition.transformation.SchedulingConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.api.Gamma2UppaalTransformerSerializer;
 import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.UppaalModelPreprocessor;
+import hu.bme.mit.gamma.xsts.iml.transformation.Gamma2XstsImlTransformerSerializer;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.nuxmv.transformation.Gamma2XstsNuxmvTransformerSerializer;
+import hu.bme.mit.gamma.xsts.ocra.transformation.api.Gamma2OcraTransformerSerializer;
 import hu.bme.mit.gamma.xsts.promela.transformation.Gamma2XstsPromelaTransformerSerializer;
 import hu.bme.mit.gamma.xsts.transformation.InitialStateSetting;
 import hu.bme.mit.gamma.xsts.transformation.api.Gamma2XstsTransformerSerializer;
@@ -128,6 +134,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				case OCRA: // Keep in mind that OCRA is not a model checker though
 					transformer = new Gamma2OcraTransformer();
 					break;
+				case IML:
+					transformer = new Gamma2XstsImlTransformer();
+					break;
 				default:
 					throw new IllegalArgumentException(analysisLanguage + " is not supported");
 			}
@@ -163,6 +172,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			return fileNamer.getPmlPromelaFileName(plainFileName);
 		case NUXMV:
 			return fileNamer.getSmvNuxmvFileName(plainFileName);
+		case IML:
+			return fileNamer.getImlImandraFileName(plainFileName);
 		default:
 			throw new IllegalArgumentException("Not known language " + analysisLanguage);
 		}
@@ -199,8 +210,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			if (propertyPackage != null) {
 				PropertySerializer propertySerializer = getPropertySerializer();
 				String serializedFormulas = propertySerializer.serializeCommentableStateFormulas(propertyPackage.getFormulas());
+				String extensionlessFileName = fileUtil.getExtensionlessName(fileName);
 				fileUtil.saveString(targetFolderUri + File.separator +
-						fileName + "." + getQueryFileExtension(), serializedFormulas);
+						extensionlessFileName + "." + getQueryFileExtension(), serializedFormulas);
 			}
 		}
 		
@@ -389,6 +401,14 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			
 			ComponentInstanceReferences testedComponentsForStates = getCoverageInstances(
 					coverages, StateCoverage.class);
+			ComponentInstanceReferences testedComponentsForUnstableStates = getCoverageInstances(
+					coverages, UnstableStateCoverage.class);
+			ComponentInstanceReferences testedComponentsForTrapStates = getCoverageInstances(
+					coverages, TrapStateCoverage.class);
+			ComponentInstanceReferences testedComponentsForDeadlock = getCoverageInstances(
+					coverages, DeadlockCoverage.class);
+			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
+					coverages, NonDeterministicTransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
 					coverages, TransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitionPairs = getCoverageInstances(
@@ -415,8 +435,14 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					targetFolderUri, fileName, constraint, scheduler,
 					transformation.isOptimize(), transformation.getPropertyPackage(),
 					new AnnotatablePreprocessableElements(
-						testedComponentsForStates, testedComponentsForTransitions,
-						testedComponentsForTransitionPairs, testedComponentsForOutEvents,
+						testedComponentsForStates,
+						testedComponentsForUnstableStates,
+						testedComponentsForTrapStates,
+						testedComponentsForDeadlock,
+						testedComponentsForNondeterministicTransitions,
+						testedComponentsForTransitions,
+						testedComponentsForTransitionPairs,
+						testedComponentsForOutEvents,
 						testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
 						dataflowTestedVariables, dataflowCoverageCriterion,
 						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion
@@ -494,6 +520,14 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			
 			ComponentInstanceReferences testedComponentsForStates = getCoverageInstances(
 					coverages, StateCoverage.class);
+			ComponentInstanceReferences testedComponentsForUnstableStates = getCoverageInstances(
+					coverages, UnstableStateCoverage.class);
+			ComponentInstanceReferences testedComponentsForTrapStates = getCoverageInstances(
+					coverages, TrapStateCoverage.class);
+			ComponentInstanceReferences testedComponentsForDeadlock = getCoverageInstances(
+					coverages, DeadlockCoverage.class);
+			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
+					coverages, NonDeterministicTransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
 					coverages, TransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitionPairs = getCoverageInstances(
@@ -527,9 +561,16 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					minSchedulingConstraint, maxSchedulingConstraint,
 					optimize, optimizeArrays, optimizeMessageQueues, optimizeEnvironmentalMessageQueues,
 					TransitionMerging.HIERARCHICAL,
-					transformation.getPropertyPackage(), new AnnotatablePreprocessableElements(
-						testedComponentsForStates, testedComponentsForTransitions,
-						testedComponentsForTransitionPairs, testedComponentsForOutEvents,
+					transformation.getPropertyPackage(),
+					new AnnotatablePreprocessableElements(
+						testedComponentsForStates,
+						testedComponentsForUnstableStates,
+						testedComponentsForTrapStates,
+						testedComponentsForDeadlock,
+						testedComponentsForNondeterministicTransitions,
+						testedComponentsForTransitions,
+						testedComponentsForTransitionPairs,
+						testedComponentsForOutEvents,
 						testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
 						dataflowTestedVariables, dataflowCoverageCriterion,
 						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion
@@ -597,6 +638,14 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			
 			ComponentInstanceReferences testedComponentsForStates = getCoverageInstances(
 					coverages, StateCoverage.class);
+			ComponentInstanceReferences testedComponentsForUnstableStates = getCoverageInstances(
+					coverages, UnstableStateCoverage.class);
+			ComponentInstanceReferences testedComponentsForTrapStates = getCoverageInstances(
+					coverages, TrapStateCoverage.class);
+			ComponentInstanceReferences testedComponentsForDeadlock = getCoverageInstances(
+					coverages, DeadlockCoverage.class);
+			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
+					coverages, NonDeterministicTransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
 					coverages, TransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitionPairs = getCoverageInstances(
@@ -627,8 +676,14 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					TransitionMerging.HIERARCHICAL,
 					transformation.getPropertyPackage(),
 					new AnnotatablePreprocessableElements(
-						testedComponentsForStates, testedComponentsForTransitions,
-						testedComponentsForTransitionPairs, testedComponentsForOutEvents,
+						testedComponentsForStates,
+						testedComponentsForUnstableStates,
+						testedComponentsForTrapStates,
+						testedComponentsForDeadlock,
+						testedComponentsForNondeterministicTransitions,
+						testedComponentsForTransitions,
+						testedComponentsForTransitionPairs,
+						testedComponentsForOutEvents,
 						testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
 						dataflowTestedVariables, dataflowCoverageCriterion,
 						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion
@@ -667,6 +722,14 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			
 			ComponentInstanceReferences testedComponentsForStates = getCoverageInstances(
 					coverages, StateCoverage.class);
+			ComponentInstanceReferences testedComponentsForUnstableStates = getCoverageInstances(
+					coverages, UnstableStateCoverage.class);
+			ComponentInstanceReferences testedComponentsForTrapStates = getCoverageInstances(
+					coverages, TrapStateCoverage.class);
+			ComponentInstanceReferences testedComponentsForDeadlock = getCoverageInstances(
+					coverages, DeadlockCoverage.class);
+			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
+					coverages, NonDeterministicTransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
 					coverages, TransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitionPairs = getCoverageInstances(
@@ -697,8 +760,14 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					TransitionMerging.HIERARCHICAL,
 					transformation.getPropertyPackage(),
 					new AnnotatablePreprocessableElements(
-						testedComponentsForStates, testedComponentsForTransitions,
-						testedComponentsForTransitionPairs, testedComponentsForOutEvents,
+						testedComponentsForStates,
+						testedComponentsForUnstableStates,
+						testedComponentsForTrapStates,
+						testedComponentsForDeadlock,
+						testedComponentsForNondeterministicTransitions,
+						testedComponentsForTransitions,
+						testedComponentsForTransitionPairs,
+						testedComponentsForOutEvents,
 						testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
 						dataflowTestedVariables, dataflowCoverageCriterion,
 						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion
@@ -736,6 +805,14 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			
 			ComponentInstanceReferences testedComponentsForStates = getCoverageInstances(
 					coverages, StateCoverage.class);
+			ComponentInstanceReferences testedComponentsForUnstableStates = getCoverageInstances(
+					coverages, UnstableStateCoverage.class);
+			ComponentInstanceReferences testedComponentsForTrapStates = getCoverageInstances(
+					coverages, TrapStateCoverage.class);
+			ComponentInstanceReferences testedComponentsForDeadlock = getCoverageInstances(
+					coverages, DeadlockCoverage.class);
+			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
+					coverages, NonDeterministicTransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
 					coverages, TransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitionPairs = getCoverageInstances(
@@ -766,8 +843,14 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					TransitionMerging.HIERARCHICAL,
 					transformation.getPropertyPackage(),
 					new AnnotatablePreprocessableElements(
-						testedComponentsForStates, testedComponentsForTransitions,
-						testedComponentsForTransitionPairs, testedComponentsForOutEvents,
+						testedComponentsForStates,
+						testedComponentsForUnstableStates,
+						testedComponentsForTrapStates,
+						testedComponentsForDeadlock,
+						testedComponentsForNondeterministicTransitions,
+						testedComponentsForTransitions,
+						testedComponentsForTransitionPairs,
+						testedComponentsForOutEvents,
 						testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
 						dataflowTestedVariables, dataflowCoverageCriterion,
 						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion
@@ -787,7 +870,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 
 		@Override
 		protected String getQueryFileExtension() {
-			return GammaFileNamer.PROMELA_QUERY_EXTENSION;
+			return GammaFileNamer.NUXMV_QUERY_EXTENSION;
 		}
 	}
 	
@@ -797,24 +880,130 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			ComponentReference componentReference = (ComponentReference) transformation.getModel();
 			List<Expression> arguments = componentReference.getArguments();
 			Component component = componentReference.getComponent();
+			Entry<Integer, Integer> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
+			Integer minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
+			Integer maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
 			
 			String fileName = transformation.getFileName().get(0);
+			targetFolderUri = targetFolderUri + File.separator + "ocra";
+			
+			serializeProperties(transformation.getPropertyPackage(), fileName);
+			
 			
 			Gamma2OcraTransformerSerializer gamma2OcraTransformer =
-					new Gamma2OcraTransformerSerializer(component, arguments, targetFolderUri, fileName);
+					new Gamma2OcraTransformerSerializer(component, arguments, targetFolderUri, fileName, minSchedulingConstraint, maxSchedulingConstraint);
 			gamma2OcraTransformer.execute();
 		}
 
 		@Override
 		protected PropertySerializer getPropertySerializer() {
-			return null; // Invalid in this case
+			return OcraPropertySerializer.INSTANCE; 
 		}
 
 		@Override
 		protected String getQueryFileExtension() {
-			return null; // Invalid in this case
+			return GammaFileNamer.OCRA_CONTRACT_EXTENSION; 
 		}
+		
+		@Override
+		protected void serializeStringProperties(PropertyPackage propertyPackage, String fileName) {
+			if (propertyPackage != null) {
+				PropertySerializer propertySerializer = getPropertySerializer();
+				
+				//String serializedFormulas = propertySerializer.serializeCommentableStateFormulas(propertyPackage.getFormulas());
+		        String serializedContracts = ((OcraPropertySerializer) propertySerializer).serializeContracts(propertyPackage.getContracts(), propertyPackage.getComponent());
+		        //String combinedSerialization = serializedFormulas + "\n" + serializedContracts;
+
+				fileUtil.saveString(targetFolderUri + File.separator + "." +
+						fileName + "." + getQueryFileExtension(), serializedContracts);
+			}
+		}
+		
 	
+	}
+	
+	class Gamma2XstsImlTransformer extends AnalysisModelTransformer {
+		
+		public void execute(AnalysisModelTransformation transformation) throws IOException {
+			ComponentReference reference = (ComponentReference) transformation.getModel();
+			Component component = reference.getComponent();
+			Entry<Integer, Integer> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
+			Integer minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
+			Integer maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
+			String fileName = transformation.getFileName().get(0);
+			// Coverages
+			List<Coverage> coverages = transformation.getCoverages();
+			
+			ComponentInstanceReferences testedComponentsForStates = getCoverageInstances(
+					coverages, StateCoverage.class);
+			ComponentInstanceReferences testedComponentsForUnstableStates = getCoverageInstances(
+					coverages, UnstableStateCoverage.class);
+			ComponentInstanceReferences testedComponentsForTrapStates = getCoverageInstances(
+					coverages, TrapStateCoverage.class);
+			ComponentInstanceReferences testedComponentsForDeadlock = getCoverageInstances(
+					coverages, DeadlockCoverage.class);
+			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
+					coverages, NonDeterministicTransitionCoverage.class);
+			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
+					coverages, TransitionCoverage.class);
+			ComponentInstanceReferences testedComponentsForTransitionPairs = getCoverageInstances(
+					coverages, TransitionPairCoverage.class);
+			ComponentInstancePortReferences testedComponentsForOutEvents = getCoveragePorts(
+					coverages, OutEventCoverage.class);
+			ComponentInstancePortStateTransitionReferences testedInteractions = getCoverageInteractions(
+					coverages, InteractionCoverage.class);
+			Entry<InteractionCoverageCriterion, InteractionCoverageCriterion> criterion = getInteractionCoverageCriteria(coverages);
+			InteractionCoverageCriterion senderCoverageCriterion = criterion.getKey();
+			InteractionCoverageCriterion receiverCoverageCriterion = criterion.getValue();
+			ComponentInstanceVariableReferences dataflowTestedVariables = getDataflowCoverageVariables(
+					coverages, DataflowCoverage.class);
+			DataflowCoverageCriterion dataflowCoverageCriterion = getDataflowCoverageCriterion(coverages);
+			ComponentInstancePortReferences testedComponentsForInteractionDataflow = getCoveragePorts(
+					coverages, InteractionDataflowCoverage.class);
+			DataflowCoverageCriterion interactionDataflowCoverageCriterion =
+				getInteractionDataflowCoverageCriterion(coverages);
+			
+			InitialStateSetting initialStateSetting = transformInitialStateSetting(
+					transformation.getInitialStateSetting());
+			
+			Gamma2XstsImlTransformerSerializer transformer = new Gamma2XstsImlTransformerSerializer(
+					component, reference.getArguments(),
+					targetFolderUri, fileName,
+					minSchedulingConstraint, maxSchedulingConstraint,
+					transformation.isOptimize(),
+					TransitionMerging.HIERARCHICAL,
+					transformation.getPropertyPackage(),
+					new AnnotatablePreprocessableElements(
+						testedComponentsForStates,
+						testedComponentsForUnstableStates,
+						testedComponentsForTrapStates,
+						testedComponentsForDeadlock,
+						testedComponentsForNondeterministicTransitions,
+						testedComponentsForTransitions,
+						testedComponentsForTransitionPairs,
+						testedComponentsForOutEvents,
+						testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
+						dataflowTestedVariables, dataflowCoverageCriterion,
+						testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion
+					),
+					transformation.getInitialState(), initialStateSetting
+			);
+			transformer.execute();
+			// Property serialization
+			serializeProperties(fileName);
+			logger.info("The Gamma -> XSTS-IML transformation has been finished");
+		}
+		
+		@Override
+		protected PropertySerializer getPropertySerializer() {
+			return null; // Not supported yet
+		}
+
+		@Override
+		protected String getQueryFileExtension() {
+			return null; // Not supported yet
+		}
+		
 	}
 	
 }

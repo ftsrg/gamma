@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
 import hu.bme.mit.gamma.action.model.Branch;
 import hu.bme.mit.gamma.action.model.EmptyStatement;
+import hu.bme.mit.gamma.action.model.ExpressionStatement;
 import hu.bme.mit.gamma.action.model.IfStatement;
 import hu.bme.mit.gamma.action.model.SwitchStatement;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
@@ -175,6 +176,25 @@ public class ActionUtil extends ExpressionUtil {
 	
 	//
 	
+
+	public Block createBlock(Collection<? extends Action> actions) {
+		Block block = actionFactory.createBlock();
+		
+		block.getActions().addAll(actions);
+		
+		return block;
+	}
+	
+	public Block getOrCreateBlock(Collection<? extends Action> actions) {
+		if (actions.size() == 1) {
+			Action action = actions.iterator().next();
+			if (action instanceof Block block) {
+				return block;
+			}
+		}
+		return createBlock(actions);
+	}
+	
 	public IfStatement createIfStatement(Expression condition, Action then, Action _else) {
 		IfStatement ifStatement = actionFactory.createIfStatement();
 		ifStatement.getConditionals().add(
@@ -243,6 +263,12 @@ public class ActionUtil extends ExpressionUtil {
 	}
 	
 	//
+	
+	public ExpressionStatement createExpressionStatement(Expression expression) {
+		ExpressionStatement statement = actionFactory.createExpressionStatement();
+		statement.setExpression(expression);
+		return statement;
+	}
 	
 	public VariableDeclarationStatement createDeclarationStatement(Type type, String name) {
 		return createDeclarationStatement(type, name, // Otherwise, the variable is "havoced"

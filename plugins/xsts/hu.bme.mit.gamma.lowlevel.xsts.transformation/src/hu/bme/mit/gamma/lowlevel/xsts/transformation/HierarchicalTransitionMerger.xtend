@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020-2024 Contributors to the Gamma project
+ * Copyright (c) 2020-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -36,7 +36,7 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
-import static extension java.lang.Math.abs
+import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 	
@@ -97,8 +97,9 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		else {
 			val xStsSequentialAction = createSequentialAction
 			
+			val isExecVariableNamePostfix = lowlevelRegions.map[it.uniqueIndex].join // Deterministic name
 			val xStsExecutedVariableAction = createBooleanTypeDefinition
-					.createVariableDeclarationAction('''isExec_«element.hashCode.abs»''',
+					.createVariableDeclarationAction('''isExec_«isExecVariableNamePostfix»''',
 						createFalseExpression)
 			val xStsExecutedVariable = xStsExecutedVariableAction.variableDeclaration
 			xStsSequentialAction.actions += xStsExecutedVariableAction
@@ -290,7 +291,7 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 			choicesWithDefaultBranch += extendable
 		}
 		else if (extendable instanceof SequentialAction) {
-			val lastAction = extendable.actions.last
+			val lastAction = extendable.actions.lastOrNull
 			val ifAction = lastAction as IfAction
 			val thenAction = ifAction.then // See the referenced method
 			// thenAction is EmptyAction the first time it is referenced, however,
@@ -322,8 +323,9 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 			val extractableExpressions = trace.getGuards.values.flatten
 			// trace.getGuards does not contain choice guards
 			
+			var namePostfix = 0 // Deterministic name
 			for (extractableExpression : extractableExpressions) {
-				val name = "_guard_" + extractableExpression.hashCode.abs
+				val name = "_guard_" + namePostfix++
 				val extractedXStsGuardVariable = createBooleanTypeDefinition
 						.extractExpression(name, extractableExpression)
 				extractedXStsGuardVariables += extractedXStsGuardVariable

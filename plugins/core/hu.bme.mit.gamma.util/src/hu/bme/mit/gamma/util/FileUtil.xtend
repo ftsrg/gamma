@@ -83,6 +83,21 @@ class FileUtil {
 		return packageName.replaceAll("\\.", "\\"+ File.separator)
 	}
 	
+//	def getEscapedAbsolutePath(File file) {
+//		return file.absolutePath.escapePath
+//	}
+//	
+//	def escapePath(String path) {
+//		return path.replaceAll("\\s", "\\\\ ")
+//	}
+//	
+//	protected def handlePath(String path) {
+//		if (path.contains(" ")) {
+//			return '''"«path»"'''
+//		}
+//		return path
+//	}
+	
 	def List<File> getAllContainedFiles(File file) {
 		val files = newArrayList
 		

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -29,6 +29,8 @@ class ThetaVerifier extends AbstractVerifier {
 	
 	final String SAFE = "SafetyResult Safe"
 	final String UNSAFE = "SafetyResult Unsafe"
+	
+	final String THETA_TEMPORARY_CEX_FOLDER = ".theta"
 	//
 	
 	override Result verifyQuery(Object traceability, String parameters, File modelFile, String queries) {
@@ -74,6 +76,7 @@ class ThetaVerifier extends AbstractVerifier {
 			// java -jar %THETA_XSTS_CLI_PATH% --model trafficlight.xsts --property red_green.prop
 			val traceFile = new File(modelFile.traceFile)
 			traceFile.delete // So no invalid/old cex is parsed if this actual process does not generate one
+			traceFile.parentFile.mkdirs // Needed by Theta
 			traceFile.deleteOnExit // So the cex with this random name does not remain on disk
 			
 			val splitParameters = parameters.split("\\s+")
@@ -85,7 +88,7 @@ class ThetaVerifier extends AbstractVerifier {
 			}
 			command +=
 				#["--model", modelFile.canonicalPath, "--property", queryFile.canonicalPath,
-					"--cex", traceFile.canonicalPath, "--stacktrace"]
+					"--cexfile", traceFile.canonicalPath, "--stacktrace"]
 			// Executing the command
 			logger.info("Executing command: " + command.join(" "))
 			process = Runtime.getRuntime().exec(command)
@@ -141,13 +144,14 @@ class ThetaVerifier extends AbstractVerifier {
 	}
 	
 	override getTemporaryQueryFilename(File modelFile) {
-		return "." + modelFile.extensionlessName + ".prop"
+		return THETA_TEMPORARY_CEX_FOLDER + File.separator + // temporary folder
+				modelFile.extensionlessName.toHiddenFileName + "-" + Thread.currentThread.name + ".prop" // Needed for thread racing
 	}
 	
 	def getTraceFile(File modelFile) {
 		// Thread.currentThread.name is needed to prevent race conditions
-		return modelFile.parent + File.separator + modelFile.extensionlessName.toHiddenFileName +
-			"-" + Thread.currentThread.name + ".cex"
+		return modelFile.parent + File.separator + THETA_TEMPORARY_CEX_FOLDER + File.separator +
+				modelFile.extensionlessName + "-" + Thread.currentThread.name + ".cex"
 	}
 	
 	override getHelpCommand() {

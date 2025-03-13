@@ -131,11 +131,53 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				}
 			}
 			// Transitions
-			if (context instanceof Transition transition && (reference == StatechartModelPackage.Literals.TRANSITION__SOURCE_STATE
-					|| reference == StatechartModelPackage.Literals.TRANSITION__TARGET_STATE)) {
-				Collection<StateNode> candidates = stateNodesForTransition(transition);
-				return Scopes.scopeFor(candidates);
+			if (reference == StatechartModelPackage.Literals.TRANSITION__TARGET_STATE) {
+				if (context instanceof Transition transition) { // Start
+					StateNode sourceState = transition.getSourceState();
+					Region parentRegion = StatechartModelDerivedFeatures.getParentRegion(sourceState);
+					IScope parentScope = getParentScope(parentRegion.eContainer(), reference);
+					IScope scope = getScope(parentRegion, StatechartModelPackage.Literals.TRANSITION__SOURCE_STATE); // Reusing code
+					return embedScopes(
+							List.of(parentScope, scope));
+				}
+				if (context instanceof StatechartDefinition) { // End
+					return IScope.NULLSCOPE;
+				}
+				if (context instanceof Region region) { // Middle
+					IScope parentScope = getParentScope(context, reference);
+					List<StateNode> stateNodes = region.getStateNodes();
+					return Scopes.scopeFor(stateNodes, parentScope);
+				}
+				else { // Middle (state element)
+					return getParentScope(context, reference);
+				}
 			}
+			if (reference == StatechartModelPackage.Literals.TRANSITION__SOURCE_STATE) {
+				if (context instanceof Transition) {
+					StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
+					return getScope(statechart, reference);
+				}
+				if (context instanceof CompositeElement composite) {
+					List<Region> regions = composite.getRegions();
+					List<IScope> scopes = new ArrayList<IScope>();
+					for (Region region : regions) {
+						IScope scope = getScope(region, reference);
+						scopes.add(scope);
+					}
+					return embedScopes(scopes);
+				}
+				if (context instanceof Region region) {
+					List<StateNode> stateNodes = region.getStateNodes();
+					List<IScope> scopes = new ArrayList<IScope>();
+					for (State state : StatechartModelDerivedFeatures.getStates(region)) {
+						IScope scope = getScope(state, reference);
+						scopes.add(scope);
+					}
+					IScope parentScope = embedScopes(scopes);
+					return Scopes.scopeFor(stateNodes, parentScope);
+				}
+			}
+			//
 			if (context instanceof PortEventReference portEventReference && reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__EVENT) {
 				Port port = portEventReference.getPort();
 				Interface _interface = port.getInterfaceRealization().getInterface();
@@ -333,12 +375,6 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			e.printStackTrace();
 		} 
 		return super.getScope(context, reference);
-	}
-	
-	protected Collection<StateNode> stateNodesForTransition(Transition transition) {
-		StatechartDefinition rootElement = StatechartModelDerivedFeatures.getContainingStatechart(transition);
-		Collection<StateNode> candidates = ecoreUtil.getAllContentsOfType(rootElement, StateNode.class);
-		return candidates;
 	}
 	
 	@Override

@@ -206,10 +206,10 @@ class TestGenerator {
 			«TEST_ANNOTATION»«IF traces.head.isNegativeTest»(expected=AssertionError.class)«ENDIF»
 			public void test() {
 				«FOR trace : traces»
-					«IF traces.last !== trace»try {«ENDIF»
+					«IF traces.lastOrNull !== trace»try {«ENDIF»
 					«traces.addTabIfNeeded(trace)»«FINAL_TEST_PREFIX»«TEST_NAME.toFirstUpper»«traceId++»();
 					«traces.addTabIfNeeded(trace)»return;
-					«IF traces.last !== trace»} catch(AssertionError e) {}«ENDIF»
+					«IF traces.lastOrNull !== trace»} catch(AssertionError e) {}«ENDIF»
 				«ENDFOR»
 			}
 		''')
@@ -252,6 +252,6 @@ class TestGenerator {
 		return builder.toString
 	}
 	
-	private def addTabIfNeeded(List<ExecutionTrace> traces, ExecutionTrace trace) '''«IF traces.last !== trace»	«ENDIF»'''
+	private def addTabIfNeeded(List<ExecutionTrace> traces, ExecutionTrace trace) '''«IF traces.lastOrNull !== trace»	«ENDIF»'''
 	
 }

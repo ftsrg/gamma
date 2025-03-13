@@ -118,6 +118,15 @@ public abstract class TaskHandler {
 				projectLocation + File.separator + targetFolders.get(0));
 	}
 	
+	protected void setFileRelativePaths(Task task) {
+		Resource resource = task.eResource();
+		File file = (resource != null) ?
+				ecoreUtil.getFile(resource).getParentFile() : // If task is contained in a resource
+					fileUtil.toFile(this.file).getParentFile(); // If task is created in Java
+		// Setting the file paths
+		task.getFileName().replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
+	}
+	
 	protected String getNameWithoutExtension(String fileName) {
 		return fileName.substring(0, fileName.lastIndexOf("."));
 	}

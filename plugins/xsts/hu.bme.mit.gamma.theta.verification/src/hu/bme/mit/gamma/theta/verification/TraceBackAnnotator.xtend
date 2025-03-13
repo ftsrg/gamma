@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -162,6 +162,11 @@ class TraceBackAnnotator {
 				}
 				// We parse in every turn
 				line = thetaQueryGenerator.unwrapAll(line)
+				// From v.6.5.4, '(ExplState ' precedes actual values, which has to be removed
+				if (line.startsWith(EXPL_STATE)) {
+					line = line.substring(EXPL_STATE.length).trim
+				}
+				//
 				val split = line.split(" ", 2) // Only the first " " is checked
 				val id = split.get(0)
 				val value = split.get(1)

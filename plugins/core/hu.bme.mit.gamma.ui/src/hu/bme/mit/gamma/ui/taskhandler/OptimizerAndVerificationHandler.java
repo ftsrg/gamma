@@ -94,7 +94,8 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 		checkArgument(analysisLanguages.contains(AnalysisLanguage.THETA) ||
 				analysisLanguages.contains(AnalysisLanguage.XSTS_UPPAAL) ||
 				analysisLanguages.contains(AnalysisLanguage.PROMELA) ||
-				analysisLanguages.contains(AnalysisLanguage.NUXMV),
+				analysisLanguages.contains(AnalysisLanguage.NUXMV) ||
+				analysisLanguages.contains(AnalysisLanguage.IML),
 				analysisLanguage + " is not supported for slicing");
 		
 		List<String> fileNames = verification.getFileName();

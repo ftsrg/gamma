@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -30,6 +30,7 @@ import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.BinaryType
 import hu.bme.mit.gamma.statechart.statechart.EntryState
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.Region
@@ -62,8 +63,22 @@ import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionMo
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class StatechartAnnotator {
+	//
 	protected final Package gammaPackage
 	protected final ViatraQueryEngine engine
+	
+	// Transition coverage
+	protected boolean DEADLOCK_COVERAGE
+	protected final Set<SynchronousComponentInstance> deadlockCoverableComponents = newHashSet
+	protected final Set<Transition> coverableDeadlockTransitions = newHashSet
+	protected final Map<Transition, VariableDeclaration> deadlockTransitionVariables = newHashMap // Boolean variables
+	
+	// Nondeterministic transition coverage
+	protected boolean NONDETERMINISTIC_TRANSITION_COVERAGE
+	protected final Set<SynchronousComponentInstance> nondeterministicTransitionCoverableComponents = newHashSet
+	protected final Set<Transition> coverableNondeterministicTransitions = newHashSet
+	protected final Map<Region, State> nondeterministicTrapStates = newHashMap
+	
 	// Transition coverage
 	protected boolean TRANSITION_COVERAGE
 	protected final Set<SynchronousComponentInstance> transitionCoverableComponents = newHashSet
@@ -137,7 +152,24 @@ class StatechartAnnotator {
 	
 	new(Package gammaPackage, AnnotatableElements annotableElements) {
 		this.gammaPackage = gammaPackage
-		this.engine = ViatraQueryEngine.on(new EMFScope(gammaPackage.eResource.resourceSet))
+		this.engine = ViatraQueryEngine.on(
+			new EMFScope(
+				gammaPackage.eResource.resourceSet))
+		
+		if (!annotableElements.deadlockCoverableComponents.empty) {
+			this.DEADLOCK_COVERAGE = true
+			this.deadlockCoverableComponents += annotableElements.deadlockCoverableComponents
+			this.coverableDeadlockTransitions += deadlockCoverableComponents
+				.map[it.type].filter(StatechartDefinition)
+				.map[it.transitions].flatten.filter[it.sourceState.state]
+		}
+		if (!annotableElements.nondeterministicTransitionCoverableComponents.empty) {
+			this.NONDETERMINISTIC_TRANSITION_COVERAGE = true
+			this.nondeterministicTransitionCoverableComponents += annotableElements.nondeterministicTransitionCoverableComponents
+			this.coverableNondeterministicTransitions += nondeterministicTransitionCoverableComponents
+				.map[it.type].filter(StatechartDefinition)
+				.map[it.transitions].flatten.filter[it.sourceState.outgoingTransitions.size > 1]
+		}
 		if (!annotableElements.transitionCoverableComponents.empty) {
 			this.TRANSITION_COVERAGE = true
 			this.transitionCoverableComponents += annotableElements.transitionCoverableComponents
@@ -177,11 +209,86 @@ class StatechartAnnotator {
 	// Entry point
 	
 	def annotateModel() {
+		annotateModelForDeadlockCoverage
+		annotateModelForNondeterministicTransitionCoverage
 		annotateModelForTransitionCoverage
 		annotateModelForTransitionPairCoverage
 		annotateModelForInteractionCoverage
 		annotateModelForDataFlowCoverage
 		annotateModelForInteractionDataFlowCoverage
+	}
+	
+	// Deadlock coverage
+	
+	def annotateModelForDeadlockCoverage() {
+		if (!DEADLOCK_COVERAGE) {
+			return
+		}
+		for (transition : coverableDeadlockTransitions.filter[it.needsAnnotation]) {
+			val variable = transition.createTransitionVariable(deadlockTransitionVariables)
+			transition.effects += variable.createAssignment(createTrueExpression)
+		}
+	}
+	
+	def getDeadlockTransitionVariables() {
+		return new TransitionAnnotations(this.deadlockTransitionVariables)
+	}
+	
+	// Nondeterministic transition coverage
+	
+	protected def getNondeterministicTrapState(Region region) {
+		if (!nondeterministicTrapStates.containsKey(region)) {
+			val trapState = region.createState(namings.trapStateName)
+			nondeterministicTrapStates += region -> trapState
+		}
+		
+		return nondeterministicTrapStates.get(region)
+	}
+	
+	protected def getNondeterministicTrapState(Transition transition) {
+		val source = transition.sourceState
+		val parentRegion = source.parentRegion
+		
+		return parentRegion.nondeterministicTrapState
+	}
+	
+	def annotateModelForNondeterministicTransitionCoverage() {
+		if (!NONDETERMINISTIC_TRANSITION_COVERAGE) {
+			return
+		}
+		val alreadyCoveredTransitions = newHashSet
+		for (transition : coverableNondeterministicTransitions
+				.filter[it.needsAnnotation].reject[it.^else]) { // No 'else' transitions
+			val statechart = transition.containingStatechart
+			val source = transition.sourceState
+			val potentiallyNondeterministicTransitions = coverableNondeterministicTransitions
+					.filter[it !== transition && it.sourceState === source && !it.^else &&
+						!alreadyCoveredTransitions.contains(transition -> it)]
+			for (potentiallyNondeterministicTransition : potentiallyNondeterministicTransitions) {
+				//
+				alreadyCoveredTransitions += transition -> potentiallyNondeterministicTransition
+				alreadyCoveredTransitions += potentiallyNondeterministicTransition -> transition
+				//
+				val trapState = transition.nondeterministicTrapState // Only if there is a potential transition
+				
+				val mergedTransition = transition.clone
+				statechart.transitions += mergedTransition
+				
+				val otherTrigger = potentiallyNondeterministicTransition.trigger?.clone
+				mergedTransition.extendTrigger(otherTrigger, BinaryType.AND)
+				
+				val otherGuard = potentiallyNondeterministicTransition.guard?.clone
+				mergedTransition.extendGuard(otherGuard, createAndExpression)
+				
+				mergedTransition.effects.clear
+				
+				mergedTransition.targetState = trapState
+			}
+		}
+	}
+	
+	def getTrapStates() {
+		return nondeterministicTrapStates.values
 	}
 	
 	// Transition coverage
@@ -497,7 +604,7 @@ class StatechartAnnotator {
 			// Receiving
 			val inPort = match.inPort
 			val event = match.raisedEvent
-			val inParameter = event.parameterDeclarations.last // It is always the last
+			val inParameter = event.parameterDeclarations.lastElement // It is always the last
 			val receivingTransition = match.receivingTransition
 			
 			// We do not want to duplicate the same assignments to the same variable
@@ -805,14 +912,14 @@ class StatechartAnnotator {
 		// Def
 		for (defReference : defReferences) {
 			val event = defReference.event
-			val defVariable = event.parameterDeclarations.last // Parameter is always the last
+			val defVariable = event.parameterDeclarations.lastElement // Parameter is always the last
 			defReference.saveDefId(defVariable)
 			// Argument addition is in annotateModelForInteractionDataflowCoverage
 		}
 		// Use
 		for (useReference : useReferences) {
 			val event = useReference.event
-			val defVariable = event.parameterDeclarations.last // Parameter is always the last
+			val defVariable = event.parameterDeclarations.lastElement // Parameter is always the last
 			val useVariable = useReference.createUseVariable(interactionUseVariables,
 				namings.getInteractionUseVariableName(useReference))
 			useReference.saveDefUseVariablePair(defVariable, useVariable)

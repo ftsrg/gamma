@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,6 +15,8 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
+import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
+import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.UnaryExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
@@ -24,7 +26,6 @@ import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
-import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.Cycle
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
@@ -37,12 +38,12 @@ import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.List
-import java.util.logging.Level
 import java.util.logging.Logger
 
 import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkNotNull
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class UnfoldedExecutionTraceBackAnnotator {
@@ -59,7 +60,6 @@ class UnfoldedExecutionTraceBackAnnotator {
 	protected final ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension TraceModelFactory traceModelFactory = TraceModelFactory.eINSTANCE
 	protected final extension UnfoldingTraceability traceability = UnfoldingTraceability.INSTANCE
-	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
@@ -167,14 +167,25 @@ class UnfoldedExecutionTraceBackAnnotator {
 	// Asserts
 	
 	protected def dispatch Expression transformAssert(ComponentInstanceStateReferenceExpression assert) {
-		val instance = assert.instance.lastInstance as SynchronousComponentInstance
-		val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
-		val originalState = originalInstance.getOriginalState(assert.state)
-		return compositeModelFactory.createComponentInstanceStateReferenceExpression => [
-			it.instance = originalInstance
-			it.state = originalState
-			it.region = it.state.parentRegion
-		]
+		try {
+			val instance = assert.instance.lastInstance as SynchronousComponentInstance
+			val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
+				val originalState = originalInstance.getOriginalState(assert.state)
+			return compositeModelFactory.createComponentInstanceStateReferenceExpression => [
+				it.instance = originalInstance
+				it.state = originalState
+				it.region = it.state.parentRegion
+			]
+		} catch (IllegalArgumentException e) {
+			val message = e.message.trim
+			if (message.startsWith("Not found state")) {
+				logger.warning(message)
+				val trueExpression = expressionModelFactory.createTrueExpression
+				dummyAsserts += trueExpression
+				return trueExpression
+			}
+			throw e
+		}
 	}
 	
 	protected def dispatch Expression transformAssert(ComponentInstanceVariableReferenceExpression assert) {
@@ -184,7 +195,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 		val originalVariable = try {
 			originalInstance.getOriginalVariable(variable)
 		} catch (IllegalArgumentException e) {
-			logger.log(Level.INFO, "Not found original variable for " + variable)
+			logger.info("Not found original variable for " + variable)
 			null
 		}
 		val variableState = statechartUtil.createVariableReference(
@@ -242,16 +253,38 @@ class UnfoldedExecutionTraceBackAnnotator {
 	
 	//
 	
-	protected def transformExpression(Expression value) {
+	protected def Expression transformExpression(Expression value) {
 		val clonedValue = value.clone
 		
+		// Type declarations
+		val typeDeclarations = newHashSet
+		
 		val typeReferences = clonedValue.getSelfAndAllContentsOfType(TypeReference)
-		for (typeReference : typeReferences) {
-			val typeDeclaration = typeReference.reference
+		typeDeclarations += typeReferences.map[it.reference]
+		val recordLiterals = clonedValue.getSelfAndAllContentsOfType(RecordLiteralExpression)
+		typeDeclarations += recordLiterals.map[it.typeDeclaration]
+		
+		for (typeDeclaration : typeDeclarations) {
 			val originalTypeDeclaration = originalTopComponent
 					.getOriginalTypeDeclaration(typeDeclaration)
-			typeReference.reference = originalTypeDeclaration
+			//
+			typeReferences.filter[it.reference === typeDeclaration]
+					.forEach[it.reference = originalTypeDeclaration]
+			recordLiterals.filter[it.typeDeclaration === typeDeclaration]
+					.forEach[it.typeDeclaration = originalTypeDeclaration]
 		}
+		
+		// Record fields
+		for (recordLiteral : recordLiterals) {
+			val recordType = recordLiteral.typeDeclaration.typeDefinition as RecordTypeDefinition
+			for (fieldAssignment : recordLiteral.fieldAssignments) {
+				val field = fieldAssignment.reference.fieldDeclaration
+				val originalField = recordType.fieldDeclarations.findFirst[it.name == field.name] // TODO getOriginalFieldDeclaration
+				fieldAssignment.reference = originalField.createReferenceExpression
+				fieldAssignment.value = fieldAssignment.value.transformExpression
+			}
+		}
+		
 		// Enum literal setting in addition to the type reference setting
 		if (clonedValue instanceof EnumerationLiteralExpression) {
 			val enumLiteral = clonedValue.reference

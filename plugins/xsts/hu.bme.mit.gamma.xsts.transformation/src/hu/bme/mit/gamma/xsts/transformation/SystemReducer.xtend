@@ -181,7 +181,7 @@ class SystemReducer {
 				else if (variableReferences.size == 2) {
 					val variableReferenceLhs = variableReferences.head
 					val variableLhs = variableReferenceLhs.variableDeclaration
-					val variableReferenceRhs = variableReferences.last
+					val variableReferenceRhs = variableReferences.lastElement
 					val variableRhs = variableReferenceRhs.variableDeclaration
 					
 					val statechart = variableLhs.containingStatechart
@@ -210,7 +210,7 @@ class SystemReducer {
 							val containingTransitions = assignmentsToVariables.map[it.getContainerOfType(Transition)]
 							if (containingTransitions.size == 2) {
 								val transitionLhs = containingTransitions.head
-								val transitionRhs = containingTransitions.last
+								val transitionRhs = containingTransitions.lastElement
 								val connectingNode = transitionLhs.getConnectingStateNode(transitionRhs)
 								
 								if (connectingNode !== null) {

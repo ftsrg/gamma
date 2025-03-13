@@ -1,4 +1,4 @@
-$thetaVersion = "v4.2.2"
+$thetaVersion = "v6.10.0"
 $z3release = "z3-4.5.0"
 $z3version = "z3-4.5.0-x64-win"
 
@@ -14,14 +14,16 @@ function Download {
 	$clnt.DownloadFile($From, $To)
 }
 
-Write-Output "Downloading Theta binary"
+Write-Output "Downloading Theta binary..."
 Download "https://github.com/ftsrg/theta/releases/download/$thetaVersion/theta-xsts-cli.jar" "$currentPath\theta-xsts-cli.jar"
 
-Write-Output "Downloading Z3 solver binaries"
+Write-Output "Downloading Z3 solver binaries..."
 Download "https://github.com/ftsrg/theta/raw/$thetaVersion/lib/libz3.dll" "$currentPath\libz3.dll"
 Download "https://github.com/ftsrg/theta/raw/$thetaVersion/lib/libz3java.dll" "$currentPath\libz3java.dll"
+Download "https://github.com/ftsrg/theta/raw/$thetaVersion/lib/libz3javalegacy.dll" "$currentPath\libz3javalegacy.dll"
+Download "https://github.com/ftsrg/theta/raw/$thetaVersion/lib/libz3legacy.dll" "$currentPath\libz3legacy.dll"
 
-Write-Output "Downloading MSVC++ binaries"
+Write-Output "Downloading MSVC++ binaries..."
 $zipFilePath = "$currentPath\$z3version.zip"
 Download "https://github.com/Z3Prover/z3/releases/download/$z3release/$z3version.zip" $zipFilePath
 
@@ -37,4 +39,4 @@ Copy-Item "$currentPath\$z3version\bin\vcomp110.dll" -Destination $currentPath
 Remove-Item $zipFilePath
 Remove-Item "$currentPath\$z3version" -Recurse
 
-Write-Output "DONE"
+Write-Output "Done"

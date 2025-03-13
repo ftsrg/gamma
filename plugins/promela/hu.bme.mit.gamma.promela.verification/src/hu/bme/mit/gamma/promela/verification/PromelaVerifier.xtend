@@ -24,6 +24,7 @@ import static com.google.common.base.Preconditions.checkState
 
 class PromelaVerifier extends AbstractVerifier {
 	//
+	public static final String SPIN_TEMPORARY_COMMAND_FOLDER = ".spin"
 	protected extension LtlQueryAdapter queryAdapter = null // One needs to be created for every verification task
 	// Save trace to file
 	protected val SAVE_TRACE = false
@@ -44,10 +45,10 @@ class PromelaVerifier extends AbstractVerifier {
 			val modelWithLtl = model + ltl
 			i++
 			
-			val rootGenFolder = new File(modelFile.parent, "." + fileUtil.getExtensionlessName(modelFile))
+			val rootGenFolder = new File(modelFile.parent, SPIN_TEMPORARY_COMMAND_FOLDER)
 			rootGenFolder.mkdirs
 			// Save model with all LTL
-			val tmpGenFolder = new File(rootGenFolder + File.separator +
+			val tmpGenFolder = new File(rootGenFolder,
 					fileUtil.getExtensionlessName(modelFile) + "-" + Thread.currentThread.name)
 			tmpGenFolder.mkdirs
 			
@@ -79,8 +80,7 @@ class PromelaVerifier extends AbstractVerifier {
 		return this.verify(traceability, parameters, modelFile, new BmcData(parameters))
 	}
 	
-	private def Result verify(Object traceability, String parameters, File modelFile,
-			BmcData bmcData) {
+	private def Result verify(Object traceability, String parameters, File modelFile, BmcData bmcData) {
 		var Scanner resultReader = null
 		try {
 			// Directory where executing the command

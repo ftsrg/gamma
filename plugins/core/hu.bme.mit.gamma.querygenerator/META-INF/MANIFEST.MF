@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: UPPAAL Query Generator
+Bundle-Name: Gamma Property Serializer
 Bundle-SymbolicName: hu.bme.mit.gamma.querygenerator;singleton:=true
 Bundle-Version: 2.11.0.qualifier
 Bundle-Vendor: BME-FTSRG
@@ -13,13 +13,16 @@ Require-Bundle: org.eclipse.emf.ecore,
  org.eclipse.viatra.query.runtime.rete,
  org.eclipse.viatra.query.runtime.localsearch,
  org.eclipse.xtext.xbase.lib,
+ hu.bme.mit.gamma.xsts.model,
  hu.bme.mit.gamma.property.model,
  hu.bme.mit.gamma.uppaal.transformation.traceability,
  hu.bme.mit.gamma.uppaal.util,
  hu.bme.mit.gamma.xsts.transformation.util,
  hu.bme.mit.gamma.transformation.util,
  hu.bme.mit.gamma.xsts.promela.transformation,
- hu.bme.mit.gamma.xsts.nuxmv.transformation
+ hu.bme.mit.gamma.xsts.nuxmv.transformation,
+ hu.bme.mit.gamma.xsts.iml.transformation,
+ hu.bme.mit.gamma.xsts.ocra.transformation
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Automatic-Module-Name: hu.bme.mit.gamma.querygenerator
 Import-Package: org.apache.log4j

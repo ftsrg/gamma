@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,12 +12,14 @@ package hu.bme.mit.gamma.querygenerator.serializer
 
 import hu.bme.mit.gamma.expression.model.Comment
 import hu.bme.mit.gamma.property.model.AtomicFormula
+import hu.bme.mit.gamma.property.model.BinaryLogicalOperator
 import hu.bme.mit.gamma.property.model.BinaryOperandLogicalPathFormula
 import hu.bme.mit.gamma.property.model.BinaryOperandPathFormula
 import hu.bme.mit.gamma.property.model.BinaryPathOperator
 import hu.bme.mit.gamma.property.model.PathQuantifier
 import hu.bme.mit.gamma.property.model.QuantifiedFormula
 import hu.bme.mit.gamma.property.model.StateFormula
+import hu.bme.mit.gamma.property.model.UnaryLogicalOperator
 import hu.bme.mit.gamma.property.model.UnaryOperandLogicalPathFormula
 import hu.bme.mit.gamma.property.model.UnaryOperandPathFormula
 import hu.bme.mit.gamma.property.model.UnaryPathOperator
@@ -74,11 +76,13 @@ class ThetaPropertySerializer extends PropertySerializer {
 	protected def dispatch String serializeFormula(UnaryOperandPathFormula formula) {
 		val operator = formula.operator
 		val operand = formula.operand
-		return '''«operator.transform» («operand.serializeFormula»)'''
+		return '''«operator.transform»(«operand.serializeFormula»)'''
 	}
 	
 	protected def dispatch String serializeFormula(UnaryOperandLogicalPathFormula formula) {
-		throw new IllegalArgumentException("Not supported element: " + formula)
+		val operator = formula.operator
+		val operand = formula.operand
+		return '''«operator.transform»(«operand.serializeFormula»)'''
 	}
 	
 	protected def dispatch String serializeFormula(BinaryOperandPathFormula formula) {
@@ -89,10 +93,13 @@ class ThetaPropertySerializer extends PropertySerializer {
 	}
 	
 	protected def dispatch String serializeFormula(BinaryOperandLogicalPathFormula formula) {
-		throw new IllegalArgumentException("Not supported element: " + formula)
+		val operator = formula.operator
+		val leftOperand = formula.leftOperand
+		val rightOperand = formula.rightOperand
+		return '''((«leftOperand.serializeFormula») «operator.transform» («rightOperand.serializeFormula»))'''
 	}
 	
-	// Other CTL* formula expressions are not supported by UPPAAL
+	//
 	
 	protected def String transform(UnaryPathOperator operator) {
 		switch (operator) {
@@ -105,6 +112,14 @@ class ThetaPropertySerializer extends PropertySerializer {
 			default: 
 				throw new IllegalArgumentException("Not supported operator: " + operator)
 		}
+	}
+	
+	protected def String transform(UnaryLogicalOperator operator) {
+		throw new IllegalArgumentException("Not supported operator: " + operator)
+	}
+	
+	protected def String transform(BinaryLogicalOperator operator) {
+		throw new IllegalArgumentException("Not supported operator: " + operator)
 	}
 	
 	protected def String transform(BinaryPathOperator operator) {

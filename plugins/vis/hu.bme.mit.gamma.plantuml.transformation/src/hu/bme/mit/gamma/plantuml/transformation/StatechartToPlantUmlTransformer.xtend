@@ -236,7 +236,7 @@ class StatechartToPlantUmlTransformer {
 						«ENDFOR»
 						«FOR inner: region.stateNodes»
 						«ENDFOR»
-						«IF regionsDispatch(state).length > 1 && region !== regionsDispatch(state).last»
+						«IF regionsDispatch(state).length > 1 && region !== regionsDispatch(state).lastOrNull»
 							--
 						«ENDIF»
 					«ENDFOR»

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -23,8 +23,8 @@ class PropertyLanguageFormatter extends AbstractDeclarativeFormatter {
 		val f = grammarAccess as PropertyLanguageGrammarAccess
 		// Using the basic expression language formatting
 		formatterUtil.formatBracketLess(c, f)
-		c.setWrappedLineIndentation(1);
-		c.setAutoLinewrap(105);
+		c.setWrappedLineIndentation(1)
+		c.setAutoLinewrap(110)
 		// Setting the maximum size of lines
 		c.setLinewrap(1, 1, 2).after(f.propertyPackageAccess.importsAssignment_0_1)
 		c.setLinewrap(1, 1, 2).after(f.propertyPackageAccess.componentAssignment_2)

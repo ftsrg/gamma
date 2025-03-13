@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.expression.util.ExpressionSerializer
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
+import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.SynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode
 
@@ -55,10 +56,10 @@ class CompositeToPlantUmlTransformer {
 	) '''
 		skinparam shadowing false
 		!theme plain
-		«IF lineStyle==LineStyle.Orthogonal»
+		«IF lineStyle == LineStyle.Orthogonal»
 			skinparam linetype ortho
 		«ENDIF»
-		«IF lineStyle==LineStyle.Polyline»
+		«IF lineStyle == LineStyle.Polyline»
 			skinparam linetype polyline
 		«ENDIF»
 		«IF leftToRightDirection»
@@ -81,10 +82,18 @@ class CompositeToPlantUmlTransformer {
 	private def getKindString(CompositeComponent composite) {
 		if (composite instanceof SynchronousCompositeComponent) {
 			return "synchronous"
-		} else if (composite instanceof CascadeCompositeComponent) {
+		}
+		else if (composite instanceof CascadeCompositeComponent) {
 			return "cascade"
-		} else if (composite instanceof AsynchronousCompositeComponent) {
+		}
+		else if (composite instanceof AsynchronousCompositeComponent) {
 			return "asynchronous"
+		}
+		else if (composite instanceof ScheduledAsynchronousCompositeComponent) {
+			return "scheduled-asynchronous"
+		}
+		else {
+			return composite.class.name
 		}
 	}
 

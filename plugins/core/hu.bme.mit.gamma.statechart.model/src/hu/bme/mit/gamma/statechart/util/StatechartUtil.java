@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
@@ -85,6 +86,7 @@ import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.AsynchronousStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger;
 import hu.bme.mit.gamma.statechart.statechart.BinaryType;
+import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
 import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
 import hu.bme.mit.gamma.statechart.statechart.EntryState;
 import hu.bme.mit.gamma.statechart.statechart.InitialState;
@@ -397,18 +399,24 @@ public class StatechartUtil extends ActionUtil {
 	}
 	
 	public void extendTrigger(Transition transition, Trigger trigger, BinaryType type) {
-		if (transition.getTrigger() == null) {
+		Trigger originalTrigger = transition.getTrigger();
+		if (originalTrigger == null) {
 			transition.setTrigger(trigger);
 		}
 		else {
-			BinaryTrigger binaryTrigger = createBinaryTrigger(
-					transition.getTrigger(), trigger, type);
-			transition.setTrigger(binaryTrigger);
+			Trigger newTrigger = createBinaryTrigger(
+					originalTrigger, trigger, type);
+			transition.setTrigger(newTrigger);
 		}
 	}
 	
-	public BinaryTrigger createBinaryTrigger(Trigger oldTrigger,
-			Trigger newTrigger, BinaryType type) {
+	public Trigger createBinaryTrigger(Trigger oldTrigger, Trigger newTrigger, BinaryType type) {
+		if (oldTrigger == null) {
+			return newTrigger;
+		}
+		if (newTrigger == null) {
+			return oldTrigger;
+		}
 		BinaryTrigger binaryTrigger = statechartFactory.createBinaryTrigger();
 		binaryTrigger.setType(type);
 		binaryTrigger.setLeftOperand(oldTrigger);
@@ -417,10 +425,23 @@ public class StatechartUtil extends ActionUtil {
 	}
 	
 	public UnaryTrigger createUnaryTrigger(Trigger trigger, UnaryType type) {
+		if (trigger == null) {
+			return null;
+		}
 		UnaryTrigger unaryTrigger = statechartFactory.createUnaryTrigger();
 		unaryTrigger.setType(type);
 		unaryTrigger.setOperand(trigger);
 		return unaryTrigger;
+	}
+	
+	public void extendGuard(Transition transition, Expression guard, MultiaryExpression container) {
+		Expression originalGuard = transition.getGuard();
+		if (originalGuard == null) {
+			transition.setGuard(guard);
+		}
+		Expression newGuard = wrapIntoMultiaryExpression(
+				originalGuard, guard, container);
+		transition.setGuard(newGuard);
 	}
 	
 	public boolean areDefinitelyFalseArguments(Expression guard, Port port, Event event,
@@ -976,11 +997,47 @@ public class StatechartUtil extends ActionUtil {
 		return state;
 	}
 	
+	public State createState(Region region, String stateName) {
+		State state = statechartFactory.createState();
+		state.setName(stateName);
+		region.getStateNodes().add(state);
+		
+		return state;
+	}
+	
 	public State createRegionWithState(CompositeElement compositeElement,
 			String regionName, String initialStateName, String stateName) {
 		InitialState initialState = createInitialState(initialStateName);
 		return createRegionWithState(compositeElement,
 				initialState, regionName, stateName);
+	}
+	
+	public ChoiceState createChoiceState(Transition incomingTransition, String choiceName,
+			Transition outgoingTransition) {
+		return createChoiceState(incomingTransition, choiceName, List.of(outgoingTransition));
+	}
+	
+	public ChoiceState createChoiceState(Transition incomingTransition, String choiceName,
+			Collection<? extends Transition> outgoingTransitions) {
+		ChoiceState choice = statechartFactory.createChoiceState();
+		choice.setName(choiceName);
+		
+		incomingTransition.setTargetState(choice);
+		for (Transition outgoingTransition : outgoingTransitions) {
+			outgoingTransition.setSourceState(choice);
+		}
+		
+		return choice;
+	}
+	
+	public Transition createChoiceStateWithIncomingTransition(String choiceName, Collection<? extends Transition> outgoingTransitions) {
+		Transition incomingTransition = statechartFactory.createTransition();
+		incomingTransition.setTrigger(
+				statechartFactory.createOnCycleTrigger());
+		
+		createChoiceState(incomingTransition, choiceName, outgoingTransitions);
+		
+		return incomingTransition;
 	}
 
 	public InitialState createInitialState(String name) {

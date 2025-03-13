@@ -279,7 +279,10 @@ class ExpressionTransformer {
 		}
 		
 		// Simple references are returned if indexes are empty
-		return lowlevelVariables.map[it.index(lowlevelIndexes)]
+		val lowlevelReferences = newArrayList
+		lowlevelReferences += lowlevelVariables.map[it.index(lowlevelIndexes)]
+		
+		return lowlevelReferences
 	}
 	
 	// Function access

@@ -63,7 +63,7 @@ class Gamma2XstsUppaalTransformerSerializer {
 		this(component, arguments, targetFolderUri, fileName, schedulingConstraint, schedulingConstraint,
 			true, TransitionMerging.HIERARCHICAL,
 			null, new AnnotatablePreprocessableElements(
-				null, null, null, null, null,
+				null, null, null, null, null, null, null, null, null,
 				InteractionCoverageCriterion.EVERY_INTERACTION,	InteractionCoverageCriterion.EVERY_INTERACTION,
 				null, DataflowCoverageCriterion.ALL_USE,
 				null, DataflowCoverageCriterion.ALL_USE

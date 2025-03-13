@@ -11,5 +11,5 @@ This folder contains plugins for the mapping of high-level Gamma (composite) mod
    - Create an environment variable named `XSAP_HOME` that points to the extracted xSAP root folder (absolute path).
    - Add the `xSAP/bin` folder to the `PATH` environment or default search path (depending on your OS). Make sure that the `extend_model` program is contained in this folder in addition to the xSAP binaries.
 3. Set up the plugins in this folder.
-   - Import all Eclipse projects from the the `safety` folder.
+   - Import all Eclipse projects from this `safety` folder.
    - Generate the necessary artefacts related to the Gamma FEI metamodel and grammar (use the MWE2 workflows of the `setup/hu.bme.mit.gamma.setup` project).

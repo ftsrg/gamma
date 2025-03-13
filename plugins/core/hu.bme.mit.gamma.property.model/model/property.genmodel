@@ -5,7 +5,7 @@
     editDirectory="/hu.bme.mit.gamma.property.model.edit/src-gen" editorDirectory="/hu.bme.mit.gamma.property.model.editor/src-gen"
     modelPluginID="hu.bme.mit.gamma.property.model" modelName="Property" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
     codeFormatting="true" importerID="org.eclipse.emf.importer.ecore" complianceLevel="17.0"
-    copyrightFields="false" usedGenPackages="../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//interface"
+    copyrightFields="false" usedGenPackages="../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model ../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//composite ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//interface ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//statechart"
     operationReflection="true" importOrganizing="true">
   <foreignModel>property.ecore</foreignModel>
   <testsDirectory xsi:nil="true"/>
@@ -15,6 +15,7 @@
       <genEnumLiterals ecoreEnumLiteral="property.ecore#//BinaryPathOperator/UNTIL"/>
       <genEnumLiterals ecoreEnumLiteral="property.ecore#//BinaryPathOperator/RELEASE"/>
       <genEnumLiterals ecoreEnumLiteral="property.ecore#//BinaryPathOperator/WEAK_UNTIL"/>
+      <genEnumLiterals ecoreEnumLiteral="property.ecore#//BinaryPathOperator/STRONG_RELEASE"/>
       <genEnumLiterals ecoreEnumLiteral="property.ecore#//BinaryPathOperator/BEFORE"/>
       <genEnumLiterals ecoreEnumLiteral="property.ecore#//BinaryPathOperator/WEAK_BEFORE"/>
     </genEnums>
@@ -40,12 +41,14 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//PropertyPackage/imports"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//PropertyPackage/component"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//PropertyPackage/formulas"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//PropertyPackage/contracts"/>
     </genClasses>
     <genClasses ecoreClass="property.ecore#//CommentableStateFormula">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//CommentableStateFormula/formula"/>
     </genClasses>
     <genClasses ecoreClass="property.ecore#//PathFormula"/>
     <genClasses ecoreClass="property.ecore#//StateFormula"/>
+    <genClasses image="false" ecoreClass="property.ecore#//TemporalPathFormula"/>
     <genClasses ecoreClass="property.ecore#//UnaryOperandPathFormula">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//UnaryOperandPathFormula/operand"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute property.ecore#//UnaryOperandPathFormula/operator"/>
@@ -70,6 +73,12 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute property.ecore#//BinaryOperandLogicalPathFormula/operator"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//BinaryOperandLogicalPathFormula/leftOperand"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//BinaryOperandLogicalPathFormula/rightOperand"/>
+    </genClasses>
+    <genClasses ecoreClass="property.ecore#//Contract">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute property.ecore#//Contract/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//Contract/assume"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//Contract/guarantee"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//Contract/instance"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

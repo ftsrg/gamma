@@ -6,7 +6,7 @@
   </extension>
   <extension point="org.eclipse.ui.menus">
     <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu">
-       <menu label="Gamma Menu" id="gamma-menu-project">      	
+       <menu label="Gamma Menu" id="gamma-menu-project">
 	   	<menu label="Gamma Submenu" id="gamma-submenu-project">
 		    <command commandId="hu.bme.mit.gamma.plugintemplate" label="Start Transformation" style="push">
            	<visibleWhen checkEnabled="false">
@@ -19,8 +19,9 @@
          </menu>
        </menu>
     </menuContribution>
+	
     <menuContribution allPopups="false" locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
-    <menu label="Gamma Menu" id="gamma-menu-package">      	
+    <menu label="Gamma Menu" id="gamma-menu-package">
 	   	<menu label="Gamma Submenu" id="gamma-submenu-package">
 		    <command commandId="hu.bme.mit.gamma.plugintemplate" label="Start Transformation" style="push">
 		    	<visibleWhen checkEnabled="false">
@@ -33,6 +34,22 @@
 	    </menu>
       </menu>
     </menuContribution>
+	
+	<menuContribution allPopups="false" locationURI="popup:org.eclipse.sirius.ui.tools.views.model.explorer#PopupMenu">
+        <menu label="Gamma Menu" id="gamma-menu-modeling">
+	   	<menu label="Gamma Submenu" id="gamma-submenu-modeling">
+		    <command commandId="hu.bme.mit.gamma.plugintemplate" label="Start Transformation" style="push">
+		    	<visibleWhen checkEnabled="false">
+	            	<iterate ifEmpty="false" operator="or">
+						<test property="org.eclipse.core.resources.name" value="*.gcd">
+					    </test>
+	    			</iterate>
+	            </visibleWhen>
+		    </command>
+	    </menu>
+      </menu>
+    </menuContribution>
+	
   </extension>
   <extension point="org.eclipse.ui.handlers"> 
   	<handler class="hu.bme.mit.gamma.plugintemplate.transformation.commandhandler.CommandHandler" commandId="hu.bme.mit.gamma.plugintemplate"/>

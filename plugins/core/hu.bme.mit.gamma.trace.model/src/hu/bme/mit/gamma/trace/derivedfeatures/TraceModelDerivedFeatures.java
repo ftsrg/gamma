@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.trace.derivedfeatures;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -272,6 +273,24 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static List<ComponentInstanceVariableReferenceExpression> getInstanceVariableStates(Step step) {
 		return ecoreUtil.getAllContentsOfType(step, ComponentInstanceVariableReferenceExpression.class);
+	}
+	
+	public static List<ComponentInstanceVariableReferenceExpression> getUniqueInstanceVariableStates(Step step) {
+		List<ComponentInstanceVariableReferenceExpression> instanceVariableStates = getInstanceVariableStates(step);
+		
+		Set<Expression> topExpressions = new HashSet<Expression>();
+		Iterator<ComponentInstanceVariableReferenceExpression> iterator = instanceVariableStates.iterator();
+		while (iterator.hasNext()) {
+			ComponentInstanceVariableReferenceExpression next = iterator.next();
+			Expression top = ecoreUtil.getSelfOrLastContainerOfType(next, Expression.class);
+			if (topExpressions.contains(top)) {
+				iterator.remove();
+			}
+			else {
+				topExpressions.add(top);
+			}
+		}
+		return instanceVariableStates;
 	}
 	
 	public static List<ComponentInstanceReferenceExpression> getFirstComponentInstanceReferenceExpressions(ExecutionTrace trace) {

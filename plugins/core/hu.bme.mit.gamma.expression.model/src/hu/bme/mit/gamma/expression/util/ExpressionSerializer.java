@@ -10,9 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.expression.util;
 
+import java.util.List;
 import java.util.Objects;
-
-import org.eclipse.emf.common.util.EList;
 
 import hu.bme.mit.gamma.expression.model.AddExpression;
 import hu.bme.mit.gamma.expression.model.AndExpression;
@@ -116,7 +115,7 @@ public class ExpressionSerializer {
 	protected String _serialize(final OrExpression expression) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("(");
-		EList<Expression> operands = expression.getOperands();
+		List<Expression> operands = expression.getOperands();
 		boolean hasElements = false;
 		for (final Expression operand : operands) {
 			if (!hasElements) {
@@ -134,7 +133,7 @@ public class ExpressionSerializer {
 	protected String _serialize(final XorExpression expression) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("(");
-		EList<Expression> operands = expression.getOperands();
+		List<Expression> operands = expression.getOperands();
 		boolean hasElements = false;
 		for (final Expression operand : operands) {
 			if (!hasElements) {
@@ -152,7 +151,7 @@ public class ExpressionSerializer {
 	protected String _serialize(final AndExpression expression) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("(");
-		EList<Expression> operands = expression.getOperands();
+		List<Expression> operands = expression.getOperands();
 		boolean hasElements = false;
 		for (final Expression operand : operands) {
 			if (!hasElements) {
@@ -242,7 +241,7 @@ public class ExpressionSerializer {
 	protected String _serialize(final AddExpression expression) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("(");
-		EList<Expression> operands = expression.getOperands();
+		List<Expression> operands = expression.getOperands();
 		boolean hasElements = false;
 		for (final Expression operand : operands) {
 			if (!hasElements) {
@@ -272,7 +271,7 @@ public class ExpressionSerializer {
 	protected String _serialize(final MultiplyExpression expression) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("(");
-		EList<Expression> operands = expression.getOperands();
+		List<Expression> operands = expression.getOperands();
 		boolean hasElements = false;
 		for (final Expression operand : operands) {
 			if (!hasElements) {
@@ -347,10 +346,10 @@ public class ExpressionSerializer {
 
 	protected String _serialize(final FunctionAccessExpression functionAccessExpression) {
 		String string = "";
-		EList<Expression> _arguments = functionAccessExpression.getArguments();
+		List<Expression> _arguments = functionAccessExpression.getArguments();
 		for (final Expression expression : _arguments) {
 			string = string.concat(this.serialize(expression).toString());
-			EList<Expression> arguments = functionAccessExpression.getArguments();
+			List<Expression> arguments = functionAccessExpression.getArguments();
 			Expression _last = arguments.get(arguments.size() - 1);
 			boolean _notEquals = (!Objects.equals(expression, _last));
 			if (_notEquals) {
@@ -377,7 +376,7 @@ public class ExpressionSerializer {
 
 	protected String _serialize(final ForallExpression forallExpression) {
 		String string = "";
-		EList<ParameterDeclaration> _parameterDeclarations = forallExpression.getParameterDeclarations();
+		List<ParameterDeclaration> _parameterDeclarations = forallExpression.getParameterDeclarations();
 		for (final ParameterDeclaration expression : _parameterDeclarations) {
 			string = string.concat(expression.getType().toString());
 			ParameterDeclaration _last = _parameterDeclarations.get(_parameterDeclarations.size() - 1);
@@ -392,7 +391,7 @@ public class ExpressionSerializer {
 
 	protected String _serialize(final ExistsExpression existsExpression) {
 		String string = "";
-		EList<ParameterDeclaration> _parameterDeclarations = existsExpression.getParameterDeclarations();
+		List<ParameterDeclaration> _parameterDeclarations = existsExpression.getParameterDeclarations();
 		for (final ParameterDeclaration expression : _parameterDeclarations) {
 			string = string.concat(expression.getType().toString());
 			ParameterDeclaration _last = _parameterDeclarations.get(_parameterDeclarations.size() - 1);
@@ -424,7 +423,7 @@ public class ExpressionSerializer {
 
 	protected String _serialize(final ArrayLiteralExpression arrayLiteralExpression) {
 		String string = "";
-		EList<Expression> _operands = arrayLiteralExpression.getOperands();
+		List<Expression> _operands = arrayLiteralExpression.getOperands();
 		for (final Expression expression : _operands) {
 			string = string.concat(this.serialize(expression).toString());
 			Expression _last = _operands.get(_operands.size() - 1);
@@ -444,7 +443,7 @@ public class ExpressionSerializer {
 
 	protected String _serialize(final RecordLiteralExpression recordLiteralExpression) {
 		String string = "";
-		EList<FieldAssignment> _fieldAssignments = recordLiteralExpression.getFieldAssignments();
+		List<FieldAssignment> _fieldAssignments = recordLiteralExpression.getFieldAssignments();
 		for (final FieldAssignment expression : _fieldAssignments) {
 			String _reference = expression.getReference().getFieldDeclaration().getName();
 			String _plus = (_reference + ":=");

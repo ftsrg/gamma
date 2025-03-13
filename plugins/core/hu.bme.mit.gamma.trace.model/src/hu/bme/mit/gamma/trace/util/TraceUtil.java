@@ -329,6 +329,29 @@ public class TraceUtil extends StatechartUtil {
 			trace.getAnnotations().add(newAnnotation);
 		}
 	}
+	
+	public void createCycleIfPossible(ExecutionTrace trace) {
+		List<Step> steps = trace.getSteps();
+		
+		if (steps.size() < 2) {
+			return;
+		}
+		
+		Step last = javaUtil.getLastElement(steps);
+		for (Step step : steps) {
+			if (ecoreUtil.helperEquals(step, last) && step != last) {
+				int i = ecoreUtil.getIndex(step);
+				Cycle cycle = factory.createCycle();
+				trace.setCycle(cycle);
+				while (i < steps.size()) {
+					Step nextStep = steps.get(i);
+					cycle.getSteps().add(nextStep);
+				}
+				ecoreUtil.remove(last);
+				return;
+			}
+		}
+	}
 
 	public boolean isCoveredByStates(ExecutionTrace covered, ExecutionTrace covering) {
 		List<Step> coveredTrace = covered.getSteps();

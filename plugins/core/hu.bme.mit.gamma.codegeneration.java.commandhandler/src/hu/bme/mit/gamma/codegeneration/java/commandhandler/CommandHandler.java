@@ -39,7 +39,6 @@ import hu.bme.mit.gamma.dialog.DialogUtil;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.interface_.Component;
-import hu.bme.mit.gamma.yakindu.transformation.traceability.Y2GTrace;
 
 public class CommandHandler extends AbstractHandler {
 
@@ -57,7 +56,7 @@ public class CommandHandler extends AbstractHandler {
 					if (selection.getFirstElement() instanceof IFile) {
 						IFile file = (IFile) selection.getFirstElement();
 						ResourceSet resSet = new ResourceSetImpl();
-						logger.log(Level.INFO, "Resource set for Java code generation created: " + resSet);
+						logger.info("Resource set for Java code generation created: " + resSet);
 						URI compositeSystemURI = URI.createPlatformResourceURI(file.getFullPath().toString(), true);
 						// Loading the composite system to the resource set
 						Resource resource = loadResource(resSet, compositeSystemURI);
@@ -70,7 +69,7 @@ public class CommandHandler extends AbstractHandler {
 						List<URI> uriList = new ArrayList<URI>();
 						obtainTraceURIs(file.getProject(), simpleStatechartFileNames, uriList);
 						if (simpleStatechartFileNames.size() != uriList.size()) {
-							logger.log(Level.INFO, "Some trace model is not found: " +
+							logger.info("Some trace model is not found: " +
 								simpleStatechartFileNames + System.lineSeparator() + uriList + System.lineSeparator() +
 									"Wrapper is not generated for the Gamma statecharts without trace.");
 						}
@@ -81,12 +80,12 @@ public class CommandHandler extends AbstractHandler {
 						String parentFolder = file.getProject().getLocation() + "/" + folderName;
 						// Decoding so spaces do not stir trouble
 						parentFolder = URI.decode(parentFolder);
-						logger.log(Level.INFO, "Resource set content for Java code generation: " + resSet);
+						logger.info("Resource set content for Java code generation: " + resSet);
 						String packageName = file.getProject().getName().toLowerCase();
 						GlueCodeGenerator generator = new GlueCodeGenerator(resSet, packageName, parentFolder);
 						generator.execute();
 						generator.dispose();
-						logger.log(Level.INFO, "The Java code generation has been finished.");
+						logger.info("The Java code generation has been finished.");
 						return null;
 					}
 				}
@@ -179,8 +178,8 @@ public class CommandHandler extends AbstractHandler {
 	protected Resource loadResource(ResourceSet resSet, URI uri) throws IllegalArgumentException {
 		Resource resource = resSet.getResource(uri, true);
 		EObject object = resource.getContents().get(0);
-		if (!(object instanceof Package || object instanceof Y2GTrace)) {
-			throw new IllegalArgumentException("There can be only Packages and Traces in the selection: " + resource.getContents().get(0));
+		if (!(object instanceof Package)) {
+			throw new IllegalArgumentException("There can be only Packages in the selection: " + resource.getContents().get(0));
 		}
 		return resource;
 	}

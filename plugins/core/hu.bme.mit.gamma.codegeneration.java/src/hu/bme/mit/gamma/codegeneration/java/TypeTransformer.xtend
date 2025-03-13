@@ -30,15 +30,15 @@ class TypeTransformer {
 		return trace;
 	}
 	
-	/**
-	 * Returns the Java type of the given Yakindu type as a string.
-	 */
-	def getEventParameterType(org.yakindu.base.types.Type type) {
-		if (type !== null) {
-			return type.name.transformType
-		}
-		return ""
-	}
+//	/**
+//	 * Returns the Java type of the given Yakindu type as a string.
+//	 */
+//	def getEventParameterType(org.yakindu.base.types.Type type) {
+//		if (type !== null) {
+//			return type.name.transformType
+//		}
+//		return ""
+//	}
 	
 	/**
 	 * Returns the Java type equivalent of the Yakindu type.
@@ -62,19 +62,19 @@ class TypeTransformer {
 	def String transformType(Type type) {
 		switch (type) {
 			IntegerTypeDefinition: {
-				val types = type.getAllValuesOfFrom.filter(org.yakindu.base.types.Type).toSet
-				val strings = types.filter[it.name.equals("string")]
-				val integers = types.filter[it.name.equals("integer")]
-				if (strings.size > 0 && integers.size > 0) {
-					throw new IllegalArgumentException("Integers and string mapped to the same integer type: " + type)
-				}
-				if (strings.size > 0) {
-					return "string"
-				}
-				else {
+//				val types = type.getAllValuesOfFrom.filter(org.yakindu.base.types.Type).toSet
+//				val strings = types.filter[it.name.equals("string")]
+//				val integers = types.filter[it.name.equals("integer")]
+//				if (strings.size > 0 && integers.size > 0) {
+//					throw new IllegalArgumentException("Integers and string mapped to the same integer type: " + type)
+//				}
+//				if (strings.size > 0) {
+//					return "string"
+//				}
+//				else {
 					return INT_TYPE 
-				}
-			}				
+//				}
+			}
 			default:
 				return type.serialize
 		}

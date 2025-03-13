@@ -278,7 +278,7 @@ class VariableCommonizer extends ActionPrimer {
 			Map<VariableDeclaration, List<VariableDeclaration>> primedVariables) {
 		val highestPrimeVariables = newHashSet
 		for (primeVariableList : primedVariables.values) {
-			highestPrimeVariables += primeVariableList.last
+			highestPrimeVariables += primeVariableList.lastOrNull
 		}
 		action.deleteUnnecessaryAssignmentActions(highestPrimeVariables)
 	}

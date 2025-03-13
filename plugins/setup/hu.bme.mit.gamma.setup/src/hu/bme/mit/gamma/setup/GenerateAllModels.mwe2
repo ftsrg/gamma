@@ -19,7 +19,7 @@ Workflow {
     component = @generators.models.GeneratePropertyModel {}
     component = @generators.models.GenerateUppaalTraceabilityModel {}
     component = @generators.models.GenerateGenmodelModel {}
-    component = @generators.models.GenerateYakinduTraceabilityModel {}
+//    component = @generators.models.GenerateYakinduTraceabilityModel {}
     component = @generators.models.GenerateLowlevelModel {}
     component = @generators.models.GenerateXstsModel {}
     component = @generators.models.GenerateLowlevelXstsTraceabilityModel {}

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,7 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.property.language.ui.serializer
 
+import com.google.inject.Injector
 import hu.bme.mit.gamma.language.util.serialization.GammaLanguageSerializer
+import hu.bme.mit.gamma.property.language.PropertyLanguageStandaloneSetupGenerated
 import hu.bme.mit.gamma.property.language.ui.internal.LanguageActivator
 import java.io.File
 import org.eclipse.emf.common.util.URI
@@ -20,10 +22,18 @@ class PropertyLanguageSerializer {
 	
 	def void serialize(EObject rootElem, String parentFolder, String fileName) {
 		// This is how an injected object can be retrieved
-		val injector = LanguageActivator.getInstance()
-				.getInjector(LanguageActivator.HU_BME_MIT_GAMMA_PROPERTY_LANGUAGE_PROPERTYLANGUAGE);
-		val serializer = injector.getInstance(GammaLanguageSerializer);
-		serializer.save(rootElem, URI.decode(parentFolder + File.separator + fileName));
+		var Injector injector = null
+		val activator = LanguageActivator.instance
+		if (activator === null) { // Headless Eclipse
+			val setup = new PropertyLanguageStandaloneSetupGenerated
+			injector = setup.createInjectorAndDoEMFRegistration
+		}
+		else { // "Normal" Eclipse
+			injector = activator.getInjector(
+				LanguageActivator.HU_BME_MIT_GAMMA_PROPERTY_LANGUAGE_PROPERTYLANGUAGE)
+		}
+		val serializer = injector.getInstance(GammaLanguageSerializer)
+		serializer.save(rootElem, URI.decode(parentFolder + File.separator + fileName))
 	}
 	
 }

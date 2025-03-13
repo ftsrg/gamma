@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2024 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -20,6 +20,7 @@ import hu.bme.mit.gamma.action.model.ConstantDeclarationStatement;
 import hu.bme.mit.gamma.action.model.EmptyStatement;
 import hu.bme.mit.gamma.action.model.ExpressionStatement;
 import hu.bme.mit.gamma.action.model.ForStatement;
+import hu.bme.mit.gamma.action.model.HavocStatement;
 import hu.bme.mit.gamma.action.model.IfStatement;
 import hu.bme.mit.gamma.action.model.ReturnStatement;
 import hu.bme.mit.gamma.action.model.SwitchStatement;
@@ -61,6 +62,11 @@ public class ActionSerializer {
 	protected String _serialize(final AssignmentStatement statement) {
 		return expressionSerializer.serialize(statement.getLhs()) + " := "
 				+ expressionSerializer.serialize(statement.getRhs());
+	}
+	
+	protected String _serialize(final HavocStatement statement) {
+		return "havoc " + expressionSerializer.serialize(statement.getLhs()) + " constrain "
+				+ expressionSerializer.serialize(statement.getConstraint());
 	}
 
 	protected String _serialize(final ChoiceStatement statement) {
@@ -129,31 +135,46 @@ public class ActionSerializer {
 	}
 
 	public String serialize(final Action action) {
-		if (action instanceof Block) {
-			return _serialize((Block) action);
-		} else if (action instanceof BreakStatement) {
-			return _serialize((BreakStatement) action);
-		} else if (action instanceof ReturnStatement) {
-			return _serialize((ReturnStatement) action);
-		} else if (action instanceof AssignmentStatement) {
-			return _serialize((AssignmentStatement) action);
-		} else if (action instanceof ChoiceStatement) {
-			return _serialize((ChoiceStatement) action);
-		} else if (action instanceof ConstantDeclarationStatement) {
-			return _serialize((ConstantDeclarationStatement) action);
-		} else if (action instanceof VariableDeclarationStatement) {
-			return _serialize((VariableDeclarationStatement) action);
-		} else if (action instanceof EmptyStatement) {
-			return _serialize((EmptyStatement) action);
-		} else if (action instanceof ExpressionStatement) {
-			return _serialize((ExpressionStatement) action);
-		} else if (action instanceof ForStatement) {
-			return _serialize((ForStatement) action);
-		} else if (action instanceof SwitchStatement) {
-			return _serialize((SwitchStatement) action);
-		} else if (action instanceof IfStatement) {
-			return _serialize((IfStatement) action);
-		} else {
+		if (action instanceof Block _action) {
+			return _serialize(_action);
+		}
+		else if (action instanceof BreakStatement _action) {
+			return _serialize(_action);
+		}
+		else if (action instanceof ReturnStatement _action) {
+			return _serialize(_action);
+		}
+		else if (action instanceof AssignmentStatement _action) {
+			return _serialize(_action);
+		}
+		else if (action instanceof HavocStatement _action) {
+			return _serialize(_action);
+		}
+		else if (action instanceof ChoiceStatement _action) {
+			return _serialize(_action);
+		}
+		else if (action instanceof ConstantDeclarationStatement _action) {
+			return _serialize(_action);
+		}
+		else if (action instanceof VariableDeclarationStatement _action) {
+			return _serialize(_action);
+		}
+		else if (action instanceof EmptyStatement _action) {
+			return _serialize(_action);
+		}
+		else if (action instanceof ExpressionStatement _action) {
+			return _serialize(_action);
+		}
+		else if (action instanceof ForStatement _action) {
+			return _serialize(_action);
+		}
+		else if (action instanceof SwitchStatement _action) {
+			return _serialize(_action);
+		}
+		else if (action instanceof IfStatement _action) {
+			return _serialize(_action);
+		}
+		else {
 			throw new IllegalArgumentException("Unhandled parameter types: " + action);
 		}
 	}

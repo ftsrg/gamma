@@ -1,7 +1,7 @@
-include "Interfaces/Interfaces.ggen"
-include "TrafficLight/TrafficLightCtrl.ggen"
-include "Controller/Controller.ggen"
-include "Monitor/Monitor.ggen"
+//include "Interfaces/Interfaces.ggen"
+//include "TrafficLight/TrafficLightCtrl.ggen"
+//include "Controller/Controller.ggen"
+//include "Monitor/Monitor.ggen"
 include "TrafficLight/AsynchronousTrafficLightCtrl.ggen" // Asynchronous statechart
 include "System/Cascade/Crossroad.ggen"
 include "System/Synchronous/Crossroad.ggen"

@@ -21,7 +21,10 @@ import java.util.logging.Logger
 import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.core.runtime.Path
 import org.eclipse.emf.common.util.URI
+import org.eclipse.emf.ecore.EClass
+import org.eclipse.emf.ecore.EFactory
 import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.EPackage
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.emf.ecore.resource.ResourceSet
@@ -432,6 +435,24 @@ class GammaEcoreUtil {
 		
 		for (object : objects) {
 			contents += object.getSelfAndAllContentsOfType(type)
+		}
+		
+		return contents
+	}
+	
+	def <T extends EObject, E extends EObject> List<E> getAllContentsOfTypeBetweenTypes(EObject object,
+			Class<T> typeRootAndLeaf, Class<E> typeElement) {
+		val root = object.getSelfOrContainerOfType(typeRootAndLeaf)
+		
+		val contents = newArrayList
+		contents += root.getAllContentsOfType(typeElement)
+		
+		// We consider levels of elements between the root and the leaf type
+		for (var iterator = contents.iterator; iterator.hasNext; ) {
+			val elem = iterator.next
+			if (elem.getSelfOrContainerOfType(typeRootAndLeaf) !== root) {
+				iterator.remove
+			}
 		}
 		
 		return contents
@@ -855,7 +876,7 @@ class GammaEcoreUtil {
 		val container = object.eContainer
 		val get = container.eGet(containingFeature)
 		if (get instanceof List) {
-			return get.last == object
+			return get.lastOrNull == object
 		}
 		return true
 	}
@@ -865,7 +886,7 @@ class GammaEcoreUtil {
 		val container = object.eContainer
 		val get = container.eGet(containingFeature)
 		if (get instanceof List) {
-			return get.get(object.index - 1)
+			return get.get(object.index - 1) as EObject
 		}
 		throw new IllegalArgumentException("Not a list: " + get)
 	}
@@ -875,7 +896,7 @@ class GammaEcoreUtil {
 		val container = object.eContainer
 		val get = container.eGet(containingFeature)
 		if (get instanceof List) {
-			return get.get(object.index + 1)
+			return get.get(object.index + 1) as EObject
 		}
 		throw new IllegalArgumentException("Not a list: " + get)
 	}
@@ -914,6 +935,19 @@ class GammaEcoreUtil {
 				}
 			}
 		}
+	}
+	
+	def <T extends EObject> T create(Class<T> clazz, EPackage ePackage, EFactory factory) {
+		val className = clazz.simpleName
+		
+		val classifier = ePackage.getEClassifier(className)
+		if (classifier !== null) {
+			if (classifier instanceof EClass) {
+				return factory.create(classifier) as T
+			}
+		}
+		
+		throw new IllegalArgumentException("Not found class: " + clazz)
 	}
 	
 }

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,7 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.plantuml.transformation
 
-import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
+import hu.bme.mit.gamma.plantuml.serialization.ExpressionSerializer
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.InstanceSchedule
@@ -93,9 +93,12 @@ class TraceToPlantUmlTransformer {
 		«IF step.needsOutEventGroup»end«ENDIF»
 		
 		hnote over System
-		«FOR config : step.instanceStateConfigurations.groupBy[it.instance?.serialize].entrySet.sortBy[it.key]»
-			«config.key» «"in".addKeywordStyle» {«config.value.map[it.state.name].join(", ")»} «IF step.instanceVariableStates.exists[it.instanceReference?.serialize == config.key]»«"with".addKeywordStyle»«ENDIF»
-			«FOR variableConstraint : step.instanceVariableStates.filter[it.instanceReference?.serialize == config.key].sortBy[it.variableDeclaration.name]»
+		«FOR config : step.instanceStateConfigurations
+						.groupBy[it.instance?.serialize].entrySet.sortBy[it.key]»
+			«config.key» «"in".addKeywordStyle» {«config.value.map[
+					it.region.name + "." + it.state.name.addItalicStyle].join(",\n\t")»} «IF step.instanceVariableStates.exists[it.instanceReference?.serialize == config.key]»«"with".addKeywordStyle»«ENDIF»
+			«FOR variableConstraint : step.uniqueInstanceVariableStates
+						.filter[it.instanceReference?.serialize == config.key].sortBy[it.variableDeclaration.name]»
 				«'''  '''»«variableConstraint.variableDeclaration.name» = «variableConstraint.otherOperandIfContainedByEquality.serialize»
 			«ENDFOR»
 		«ENDFOR»
@@ -113,5 +116,6 @@ class TraceToPlantUmlTransformer {
 	//
 	
 	protected def addKeywordStyle(String keyword) '''<b>«keyword»</b>'''
+	protected def addItalicStyle(String string) '''<i>«string»</i>'''
 	
 }

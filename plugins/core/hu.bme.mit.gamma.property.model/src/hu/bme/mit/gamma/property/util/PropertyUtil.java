@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.property.util;
 
+import static hu.bme.mit.gamma.property.derivedfeatures.PropertyModelDerivedFeatures.getDual;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +23,8 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.property.model.AtomicFormula;
 import hu.bme.mit.gamma.property.model.BinaryLogicalOperator;
 import hu.bme.mit.gamma.property.model.BinaryOperandLogicalPathFormula;
+import hu.bme.mit.gamma.property.model.BinaryOperandPathFormula;
+import hu.bme.mit.gamma.property.model.BinaryPathOperator;
 import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PathFormula;
 import hu.bme.mit.gamma.property.model.PathQuantifier;
@@ -28,6 +32,8 @@ import hu.bme.mit.gamma.property.model.PropertyModelFactory;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.QuantifiedFormula;
 import hu.bme.mit.gamma.property.model.StateFormula;
+import hu.bme.mit.gamma.property.model.UnaryLogicalOperator;
+import hu.bme.mit.gamma.property.model.UnaryOperandLogicalPathFormula;
 import hu.bme.mit.gamma.property.model.UnaryOperandPathFormula;
 import hu.bme.mit.gamma.property.model.UnaryPathOperator;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
@@ -132,7 +138,7 @@ public class PropertyUtil extends StatechartUtil {
 				createInstanceReferenceChain(instanceReferences);
 		
 		// Last operand is the declaration reference
-		Expression lastExpression = javaUtil.getLast(expressions);
+		Expression lastExpression = javaUtil.getLastElement(expressions);
 		if (lastExpression instanceof DirectReferenceExpression) {
 			Declaration declaration = getDeclaration(lastExpression);
 			if (declaration instanceof VariableDeclaration) {
@@ -152,10 +158,151 @@ public class PropertyUtil extends StatechartUtil {
 	
 	//
 	
+	public void changeToDual(UnaryOperandPathFormula formula) {
+		UnaryPathOperator operator = formula.getOperator();
+		if (operator == UnaryPathOperator.NEXT) {
+			return;
+		}
+		
+		UnaryOperandLogicalPathFormula notFormula = createNotFormula();
+		if (formula.eContainer() != null) {
+			ecoreUtil.replace(notFormula, formula);
+		}
+		notFormula.setOperand(formula);
+		formula.setOperator(
+				getDual(operator));
+		formula.setOperand(
+				createNot(formula.getOperand()));
+	}
+	
+	public PathFormula createNegationForm(PathFormula formula) {
+		if (formula instanceof BinaryOperandPathFormula _formula) {
+			BinaryPathOperator operator = _formula.getOperator();
+			PathFormula leftOperand = _formula.getLeftOperand();
+			PathFormula rightOperand = _formula.getRightOperand();
+			
+			PathFormula negatedLeftOperand = createNot(
+						ecoreUtil.clone(leftOperand));
+			PathFormula negatedRightOperand = createNot(
+						ecoreUtil.clone(rightOperand));
+			BinaryPathOperator newOperator = getDual(operator);
+			
+			return createBinaryOperandPathFormula(negatedLeftOperand, newOperator, negatedRightOperand);
+		}
+		else if (formula instanceof UnaryOperandPathFormula _formula) {
+			UnaryPathOperator operator = _formula.getOperator();
+			PathFormula operand = _formula.getOperand();
+			
+			PathFormula negatedOperand = createNot(
+						ecoreUtil.clone(operand));
+			UnaryPathOperator newOperator = getDual(operator);
+			
+			return createUnaryOperandPathFormula(newOperator, negatedOperand);
+		}
+		else if (formula instanceof BinaryOperandLogicalPathFormula _formula) {
+			BinaryLogicalOperator operator = _formula.getOperator();
+			PathFormula leftOperand = _formula.getLeftOperand();
+			PathFormula rightOperand = _formula.getRightOperand();
+			
+			PathFormula negatedLeftOperand = createNot(
+						ecoreUtil.clone(leftOperand));
+			PathFormula negatedRightOperand = createNot(
+						ecoreUtil.clone(rightOperand));
+			BinaryLogicalOperator newOperator = getDual(operator);
+			
+			return createBinaryOperandLogicalFormula(negatedLeftOperand, newOperator, negatedRightOperand);
+		}
+		else if (formula instanceof UnaryOperandLogicalPathFormula _formula) {
+			assert _formula.getOperator() == UnaryLogicalOperator.NOT;
+			PathFormula operand = _formula.getOperand();
+			
+			return ecoreUtil.clone(operand);
+		}
+		else if (formula instanceof AtomicFormula _formula) {
+			AtomicFormula clonedAtomicFormula = ecoreUtil.clone(_formula);
+			Expression operand = clonedAtomicFormula.getExpression();
+			clonedAtomicFormula.setExpression(
+					createNotExpression(operand));
+			return clonedAtomicFormula;
+		}
+		// Only LTL now...
+		throw new IllegalArgumentException("Not known formula: " + formula);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <T extends PathFormula> T createNegationNormalForm(T formula) {
+		T clonedFormula = ecoreUtil.clone(formula);
+		if (clonedFormula instanceof UnaryOperandLogicalPathFormula _formula) {
+			assert _formula.getOperator() == UnaryLogicalOperator.NOT;
+			PathFormula operand = _formula.getOperand();
+			
+			clonedFormula = (T) createNegationForm(operand); // Swapping the cloned formula for additional processing
+		}
+		// Processing contained (negated) subformulas
+		for (PathFormula subformula : ecoreUtil.getContentsOfType(clonedFormula, PathFormula.class)) {
+			PathFormula negationNormalFormSubformula = createNegationNormalForm(subformula);
+			ecoreUtil.replace(negationNormalFormSubformula, subformula);
+		}
+		return clonedFormula;
+	}
+	
+	//
+	
 	public AtomicFormula createAtomicFormula(Expression expression) {
 		AtomicFormula atomicFormula = propertyFactory.createAtomicFormula();
 		atomicFormula.setExpression(expression);
 		return atomicFormula;
+	}
+	
+	public UnaryOperandLogicalPathFormula createNotFormula() {
+		UnaryOperandLogicalPathFormula pathFormula = propertyFactory.createUnaryOperandLogicalPathFormula();
+		pathFormula.setOperator(UnaryLogicalOperator.NOT);
+		return pathFormula;
+	}
+	
+	public UnaryOperandLogicalPathFormula createNot(PathFormula formula) {
+		UnaryOperandLogicalPathFormula pathFormula = createNotFormula();
+		pathFormula.setOperand(formula);
+		return pathFormula;
+	}
+	
+	public UnaryOperandPathFormula createG(PathFormula formula) {
+		return createUnaryOperandPathFormula(UnaryPathOperator.GLOBAL, formula);
+	}
+	
+	public UnaryOperandPathFormula createF(PathFormula formula) {
+		return createUnaryOperandPathFormula(UnaryPathOperator.FUTURE, formula);
+	}
+	
+	public UnaryOperandPathFormula createX(PathFormula formula) {
+		return createUnaryOperandPathFormula(UnaryPathOperator.NEXT, formula);
+	}
+	
+	public UnaryOperandPathFormula createUnaryOperandPathFormula(UnaryPathOperator operator, PathFormula operand) {
+		UnaryOperandPathFormula pathFormula = propertyFactory.createUnaryOperandPathFormula();
+		pathFormula.setOperator(operator);
+		pathFormula.setOperand(operand);
+		return pathFormula;
+	}
+	
+	public BinaryOperandPathFormula createU(PathFormula lhs, PathFormula rhs) {
+		return createBinaryOperandPathFormula(lhs, BinaryPathOperator.UNTIL, rhs);
+	}
+	
+	public BinaryOperandPathFormula createBinaryOperandPathFormula(PathFormula lhs, BinaryPathOperator operator, PathFormula rhs) {
+		BinaryOperandPathFormula pathFormula = propertyFactory.createBinaryOperandPathFormula();
+		pathFormula.setOperator(operator);
+		pathFormula.setLeftOperand(lhs);
+		pathFormula.setRightOperand(rhs);
+		return pathFormula;
+	}
+	
+	public BinaryOperandLogicalPathFormula createBinaryOperandLogicalFormula(PathFormula lhs, BinaryLogicalOperator operator, PathFormula rhs) {
+		BinaryOperandLogicalPathFormula pathFormula = propertyFactory.createBinaryOperandLogicalPathFormula();
+		pathFormula.setOperator(operator);
+		pathFormula.setLeftOperand(lhs);
+		pathFormula.setRightOperand(rhs);
+		return pathFormula;
 	}
 	
 	public StateFormula createSimpleCtlFormula(PathQuantifier pathQuantifier,
@@ -218,9 +365,7 @@ public class PropertyUtil extends StatechartUtil {
 		StateFormula formula = createEF(
 			createAtomicFormula(
 				createStateReference(
-					createInstanceReferenceChain(instance), lastState)
-			)
-		);
+					createInstanceReferenceChain(instance), lastState)));
 		return wrapFormula(topContainer, formula);
 	}
 	

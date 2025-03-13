@@ -30,7 +30,7 @@ class Path {
 	}
 	
 	def last() {
-		return transitions.last
+		return transitions.lastOrNull
 	}
 	
 	def extend(Transition transition) {

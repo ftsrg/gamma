@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: XSTS to NuXMv Transformation
+Bundle-Name: XSTS to nuXmv Transformation
 Bundle-SymbolicName: hu.bme.mit.gamma.xsts.nuxmv.transformation
 Bundle-Version: 2.11.0.qualifier
 Automatic-Module-Name: hu.bme.mit.gamma.xsts.nuxmv.transformation

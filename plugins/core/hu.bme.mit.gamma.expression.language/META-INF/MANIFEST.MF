@@ -16,11 +16,12 @@ Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: hu.bme.mit.gamma.expression.language,
  hu.bme.mit.gamma.expression.language.formatting,
  hu.bme.mit.gamma.expression.language.generator,
- hu.bme.mit.gamma.expression.language.scoping,
- hu.bme.mit.gamma.expression.language.validation,
- hu.bme.mit.gamma.expression.language.parser.antlr.internal,
+ hu.bme.mit.gamma.expression.language.parser,
  hu.bme.mit.gamma.expression.language.parser.antlr,
+ hu.bme.mit.gamma.expression.language.parser.antlr.internal,
+ hu.bme.mit.gamma.expression.language.scoping,
+ hu.bme.mit.gamma.expression.language.serializer,
  hu.bme.mit.gamma.expression.language.services,
- hu.bme.mit.gamma.expression.language.serializer
+ hu.bme.mit.gamma.expression.language.validation
 Import-Package: org.apache.log4j
 Automatic-Module-Name: hu.bme.mit.gamma.expression.language

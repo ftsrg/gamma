@@ -8,6 +8,8 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Component"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="formulas" upperBound="-1"
         eType="#//CommentableStateFormula" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="contracts" upperBound="-1"
+        eType="#//Contract" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="CommentableStateFormula" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//CommentableElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="formula" lowerBound="1"
@@ -15,13 +17,15 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="PathFormula" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="StateFormula" abstract="true" eSuperTypes="#//PathFormula"/>
-  <eClassifiers xsi:type="ecore:EClass" name="UnaryOperandPathFormula" eSuperTypes="#//PathFormula">
+  <eClassifiers xsi:type="ecore:EClass" name="TemporalPathFormula" abstract="true"
+      eSuperTypes="#//PathFormula"/>
+  <eClassifiers xsi:type="ecore:EClass" name="UnaryOperandPathFormula" eSuperTypes="#//TemporalPathFormula">
     <eStructuralFeatures xsi:type="ecore:EReference" name="operand" lowerBound="1"
         eType="#//PathFormula" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="operator" lowerBound="1"
         eType="#//UnaryPathOperator"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="BinaryOperandPathFormula" eSuperTypes="#//PathFormula">
+  <eClassifiers xsi:type="ecore:EClass" name="BinaryOperandPathFormula" eSuperTypes="#//TemporalPathFormula">
     <eStructuralFeatures xsi:type="ecore:EReference" name="leftOperand" lowerBound="1"
         eType="#//PathFormula" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="rightOperand" lowerBound="1"
@@ -33,6 +37,7 @@
     <eLiterals name="UNTIL"/>
     <eLiterals name="RELEASE" value="1"/>
     <eLiterals name="WEAK_UNTIL" value="2" literal="WEAK_UNTIL"/>
+    <eLiterals name="STRONG_RELEASE" value="5" literal="STRONG_RELEASE"/>
     <eLiterals name="BEFORE" value="3" literal="BEFORE"/>
     <eLiterals name="WEAK_BEFORE" value="4" literal="WEAK_BEFORE"/>
   </eClassifiers>
@@ -78,5 +83,14 @@
         eType="#//PathFormula" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="rightOperand" lowerBound="1"
         eType="#//PathFormula" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Contract">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="assume" lowerBound="1"
+        eType="#//StateFormula" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="guarantee" lowerBound="1"
+        eType="#//StateFormula" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instance" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceReferenceExpression"
+        containment="true"/>
   </eClassifiers>
 </ecore:EPackage>

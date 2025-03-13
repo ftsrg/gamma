@@ -141,7 +141,7 @@ class MessageQueueOptimizer {
 	
 	protected def getLast(Declaration queue) {
 		val flattenedVariables = queueVariables.getOrCreateList(queue)
-		val last = flattenedVariables.last
+		val last = flattenedVariables.lastElement
 		return last
 	}
 	
