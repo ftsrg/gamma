@@ -25,6 +25,8 @@ import hu.bme.mit.gamma.statechart.interface_.RealizationMode
 import java.util.logging.Level
 import org.eclipse.emf.ecore.EObject
 
+import static ac.soton.scxml.ScxmlModelDerivedFeatures.*
+
 class ActionTransformer extends AtomicElementTransformer {
 
 	protected final extension PortTransformer portTransformer
@@ -43,9 +45,8 @@ class ActionTransformer extends AtomicElementTransformer {
 
 	def Action transformOnentry(ScxmlOnentryType scxmlOnentry) {
 		logger.log(Level.INFO, "Transforming <onentry> element (" + scxmlOnentry + ")")
-
-		// TODO Get list of all children actions, not just <assign>-s
-		val scxmlActions = scxmlOnentry.assign + scxmlOnentry.raise
+		
+		val scxmlActions = getOnentryActions(scxmlOnentry)
 		if (!scxmlActions.nullOrEmpty) {
 			val gammaEntryAction = scxmlActions.transformBlock;
 			return gammaEntryAction
@@ -55,9 +56,8 @@ class ActionTransformer extends AtomicElementTransformer {
 
 	def Action transformOnexit(ScxmlOnexitType scxmlOnexit) {
 		logger.log(Level.INFO, "Transforming <onexit> element (" + scxmlOnexit + ")")
-
-		// TODO Get list of all children actions, not just <assign>-s
-		val scxmlActions = scxmlOnexit.assign + scxmlOnexit.raise
+		
+		val scxmlActions = getOnexitActions(scxmlOnexit)
 		if (!scxmlActions.nullOrEmpty) {
 			val gammaExitAction = scxmlActions.transformBlock;
 			return gammaExitAction
@@ -136,20 +136,19 @@ class ActionTransformer extends AtomicElementTransformer {
 	def dispatch Action transformAction(ScxmlIfType scxmlIf) {
 		logger.log(Level.INFO, "Transforming <if> element (" + scxmlIf + ")")
 
-		// TODO
-		/*
-		 * val gammaIf = createIfStatement
-		 * val cond = scxmlIf.cond
-		 * if (!cond.nullOrEmpty) {
-		 * 	val condExpression = expressionLanguageParser.parse(cond, traceability.variables)
-		 * 	val thenExpression = scxmlIf.
-		 * 	val elseExpression = scxmlIf.
-		 * 	
-		 * 	val gammaConditional = createConditional
-		 * 	gammaIf.conditionals +=
-		 * }
-		 */
-		val gammaIf = createEmptyStatement
+		val gammaIf = createIfStatement
+		val cond = scxmlIf.cond
+		if (!cond.nullOrEmpty) {
+			val condExpression = expressionLanguageParser.parse(cond, traceability.variables)
+
+			val thenStatements = getIfThenActions(scxmlIf);
+			val gammaThenStatements = thenStatements.transformBlock
+
+			val gammaConditional = createBranch
+			gammaConditional.guard = condExpression
+			gammaConditional.action = gammaThenStatements
+			gammaIf.conditionals += gammaConditional
+		}
 		return gammaIf
 	}
 

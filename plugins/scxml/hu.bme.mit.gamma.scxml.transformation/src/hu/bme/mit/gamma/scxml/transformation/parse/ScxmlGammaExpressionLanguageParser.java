@@ -27,21 +27,31 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.OpaqueExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 
+import static java.util.Map.entry;
+
 // TODO rename, e.g. Custom...
 public class ScxmlGammaExpressionLanguageParser {
-
-	ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE;
 	
-	private Injector injector = new ExpressionLanguageStandaloneSetup().createInjectorAndDoEMFRegistration();
+	private static final Map<String, String> preprocessRules = Map.ofEntries(
+			entry("!", "not"),
+			entry("&&", "and"),
+		    entry("||", "or")
+		);
+	
+	private final ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE;
+	
+	private final Injector injector = new ExpressionLanguageStandaloneSetup().createInjectorAndDoEMFRegistration();
 	
 	// Works only if variables in the scope are globally unique and have a global scope
 	public Expression parse(String expression, Map<String, VariableDeclaration> scope) {
+		String preprocessedExpression = preprocessExpression(expression);
+		
 		ScxmlGammaLanguageParser parser = injector.getInstance(ScxmlGammaLanguageParser.class);
-		StringReader reader = new StringReader(expression);
+		StringReader reader = new StringReader(preprocessedExpression);
 		IParseResult result = parser.parse(reader);
 
 		if (result.hasSyntaxErrors()) {
-			return createOpaqueExpression(expression);
+			return createOpaqueExpression(preprocessedExpression);
 		}
 
 		try {
@@ -62,6 +72,20 @@ public class ScxmlGammaExpressionLanguageParser {
 		}
 
 		return createOpaqueExpression(expression);
+	}
+	
+	private String preprocessExpression(String expression) {
+		var preprocessedExpression = preprocess(expression, preprocessRules);
+		return preprocessedExpression;
+	}
+	
+	private String preprocess(String expression, Map<String, String> preprocess) {
+		String preprocessedExpression = expression;
+		for (String key : preprocess.keySet()) {
+			String value = preprocess.get(key);
+			preprocessedExpression = preprocessedExpression.replace(key, value);
+		}
+		return preprocessedExpression;
 	}
 
 	private Expression createOpaqueExpression(String expression) {

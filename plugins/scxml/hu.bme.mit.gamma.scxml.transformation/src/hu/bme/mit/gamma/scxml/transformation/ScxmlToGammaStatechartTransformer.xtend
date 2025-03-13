@@ -584,14 +584,20 @@ class ScxmlToGammaStatechartTransformer extends AtomicElementTransformer {
 		val onentryActions = scxmlState.onentry
 		for (onentryAction : onentryActions) {
 			if (onentryAction !== null) {
-				gammaState.entryActions += onentryAction.transformOnentry
+				val gammaOnEntryActions = onentryAction.transformOnentry
+				if (gammaOnEntryActions !== null) {
+					gammaState.entryActions += gammaOnEntryActions
+				}
 			}
 		}
 
 		val onexitActions = scxmlState.onexit
 		for (onexitAction : onexitActions) {
 			if (onexitAction !== null) {
-				gammaState.exitActions += onexitAction.transformOnexit
+				val gammaOnExitActions = onexitAction.transformOnexit
+				if (gammaOnExitActions !== null) {
+					gammaState.exitActions += gammaOnExitActions
+				}
 			}
 		}
 
