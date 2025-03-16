@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -398,6 +398,10 @@ public class StatechartUtil extends ActionUtil {
 		return triggers;
 	}
 	
+	public void extendTrigger(Transition transition, Trigger trigger) {
+		extendTrigger(transition, trigger, BinaryType.AND);
+	}
+	
 	public void extendTrigger(Transition transition, Trigger trigger, BinaryType type) {
 		Trigger originalTrigger = transition.getTrigger();
 		if (originalTrigger == null) {
@@ -432,6 +436,10 @@ public class StatechartUtil extends ActionUtil {
 		unaryTrigger.setType(type);
 		unaryTrigger.setOperand(trigger);
 		return unaryTrigger;
+	}
+	
+	public void extendGuard(Transition transition, Expression guard) {
+		extendGuard(transition, guard, factory.createAndExpression());
 	}
 	
 	public void extendGuard(Transition transition, Expression guard, MultiaryExpression container) {
