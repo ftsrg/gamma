@@ -20,7 +20,7 @@ import org.eclipse.equinox.app.IApplicationContext;
 // The application class that gets executed and exported as Headless Gamma
 public class Application implements IApplication {
 	//
-	protected Logger logger = Logger.getLogger("GammaLogger");
+	protected final Logger logger = Logger.getLogger("GammaLogger");
 	//
 	@Override
 	public Object start(final IApplicationContext context) throws Exception {

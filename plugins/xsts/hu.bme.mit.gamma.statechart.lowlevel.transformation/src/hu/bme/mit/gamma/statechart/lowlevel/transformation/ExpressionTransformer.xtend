@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -51,6 +51,7 @@ import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.List
+import java.util.logging.Logger
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -67,6 +68,7 @@ class ExpressionTransformer {
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	protected final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
 	protected final extension ArgumentInliner argumentInliner = ArgumentInliner.INSTANCE
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 	// Expression factory
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final StatechartModelFactory statechartModelFactory = StatechartModelFactory.eINSTANCE
@@ -339,9 +341,7 @@ class ExpressionTransformer {
 		for (event : allEvents) {
 			triggerGuards += event.transformToLowlevelGuard
 		}
-		return createOrExpression => [
-			it.operands += triggerGuards
-		]
+		return triggerGuards.wrapIntoOrExpression
 	}
 	
 	def dispatch Expression transformEventReference(ClockTickReference reference) {
@@ -360,19 +360,28 @@ class ExpressionTransformer {
 		// Otherwise it would be very hard to transform the timing approach of Gamma in "compile time", as it is
 		// not known what the actual value of a timeout declaration is due to possible multiple value assignments.
 		// This problem derives from the different approaches to timings: Gamma - time elapses from a certain
-		//  value to 0, whereas in lowlevel - from 0 to infinity.
+		// value to 0, whereas in lowlevel - from 0 to infinity.
 		try {
 			val timeout = reference.timeout
 			val value = timeout.valueOfTimeout
-			val lowlevelTimeoutVar = trace.get(timeout)
+			
+			// Trying optimization first 'after 0 s'
+			if (value.evaluable && value.evaluateInteger == 0) {
+				logger.info("Optimzing 'after 0' timeout trigger")
+				return createTrueExpression
+			}
+			//
+			
 			// The timeouts are TRUE at start according to semantics, that is why they have to set to the highest value
-			if (lowlevelTimeoutVar.expression === null) {
+			val lowlevelTimeoutVar = trace.get(timeout)
+			val lowlevelExpression = lowlevelTimeoutVar.expression
+			if (lowlevelExpression === null) {
 				lowlevelTimeoutVar.expression = value.clone // This is already a low-level expression
 			}
 			else {
 				// Multiple timeouts can be transformed to a single variable (optimization)
 				// We need the max initial value, to make sure each one is true at the beginning
-				val oldValue = lowlevelTimeoutVar.expression
+				val oldValue = lowlevelExpression
 				val newValue = value.clone
 				try {
 					val evaluatedOldValue = oldValue.evaluateInteger
