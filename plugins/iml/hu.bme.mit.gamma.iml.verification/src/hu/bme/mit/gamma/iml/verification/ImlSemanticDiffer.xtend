@@ -338,6 +338,7 @@ class ImlSemanticDiffer {
 		
 		def execute() {
 			val diff = decomposition1.extractDiff(decomposition2)
+						.splitConstraints
 			return diff
 		}
 		
@@ -371,7 +372,7 @@ class ImlSemanticDiffer {
 			invariants1 -= intersection
 			invariants2 -= intersection
 			
-			return Map.entry(invariants1.join(INVARIANT_DELIM), invariants2.join(INVARIANT_DELIM))
+			return Map.entry(invariants1.joinOnDelim, invariants2.joinOnDelim)
 		}
 
 		protected def splitInvariant(String result) {
@@ -380,11 +381,33 @@ class ImlSemanticDiffer {
 			
 			val parsedResult = result.substring(firstI + 1, lastI)
 			val split = newArrayList
-			split += parsedResult.split(ImlApiHelper.CONSTRAINT_DELIM) // See region 'changeExternalSemicolons'
-					.map[it.trim]
-					.reject[it.nullOrEmpty] // Reject "" if any
+			split += parsedResult.splitOnDelim
 					
 			return split
+		}
+		
+		protected def splitConstraints(Map<String, Entry<String, String>> diff) {
+			val diffs = newLinkedHashMap
+			
+			for (constraint : diff.keySet) {
+				val splitConstraint = constraint.splitOnDelim
+						.joinOnDelim
+				val value = diff.get(constraint)
+				
+				diffs += splitConstraint -> value
+			}
+			
+			return diffs
+		}
+		
+		protected def splitOnDelim(String value) {
+			return value.split(ImlApiHelper.CONSTRAINT_DELIM) // See region 'changeExternalSemicolons'
+					.map[it.trim]
+					.reject[it.nullOrEmpty] // Reject "" if any
+		}
+		
+		protected def joinOnDelim(Iterable<String> strings) {
+			return strings.join(INVARIANT_DELIM)
 		}
 		
 		//
@@ -502,16 +525,26 @@ class ImlSemanticDiffer {
 			«TraceBackAnnotator.COUNTEREXAMPLE_TRACE_VAR»
 			«TraceBackAnnotator.STATE_CHANGE2 /*[{*/»
 				«FOR entry : diff.entrySet SEPARATOR DELIM + System.lineSeparator + TraceBackAnnotator.STATE_CHANGE»
-	«««					TODO constraints - input events
+«««						Constraints
 					}«DELIM»
 					«TraceBackAnnotator.STATE_CHANGE /*{*/»
-						«entry.value.key.replace(INVARIANT_DELIM, DELIM + System.lineSeparator)»
+						«entry.key.parseDelim»
+					}«DELIM»
+					«TraceBackAnnotator.STATE_CHANGE /*{*/»
+«««						Invariants
+					}«DELIM»
+					«TraceBackAnnotator.STATE_CHANGE /*{*/»
+						«entry.value.key.parseDelim»
 						«DELIM»
-						«entry.value.value.replace(INVARIANT_DELIM, DELIM + System.lineSeparator)»
+						«entry.value.value.parseDelim»
 					}
 				«ENDFOR»
 			]
 		'''
+		
+		protected def parseDelim(String value) {
+			return value.replace(INVARIANT_DELIM, DELIM + System.lineSeparator)
+		}
 		
 		protected def String getExampleDiff() '''
 			module CX :
