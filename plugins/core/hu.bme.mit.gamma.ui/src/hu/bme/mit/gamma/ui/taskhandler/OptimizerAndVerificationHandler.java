@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -58,15 +58,11 @@ import hu.bme.mit.gamma.xsts.uppaal.transformation.XstsToUppaalTransformer;
 import uppaal.NTA;
 
 public class OptimizerAndVerificationHandler extends TaskHandler {
-	
 	//
-
-	protected boolean serializeTraces; // Denotes whether traces are serialized
+	protected final boolean serializeTraces; // Denotes whether traces are serialized
 	
 	protected VerificationHandler verificationHandler = null;
-	
 	//
-	
 	protected final SystemReducer xStsReducer = SystemReducer.INSTANCE;
 	protected final ActionSerializer xStsSerializer = ActionSerializer.INSTANCE;
 	protected final hu.bme.mit.gamma.xsts.promela.transformation.serializer.ModelSerializer promelaSerializer =
@@ -74,7 +70,6 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 	protected final hu.bme.mit.gamma.xsts.nuxmv.transformation.serializer.ModelSerializer smvSerializer =
 			hu.bme.mit.gamma.xsts.nuxmv.transformation.serializer.ModelSerializer.INSTANCE;
 	protected final VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE;
-	
 	//
 	
 	public OptimizerAndVerificationHandler(IFile file) {
