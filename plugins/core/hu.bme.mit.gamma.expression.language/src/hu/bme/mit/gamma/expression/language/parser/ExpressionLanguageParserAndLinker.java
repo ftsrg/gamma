@@ -43,7 +43,7 @@ public class ExpressionLanguageParserAndLinker {
 	
 	public Expression preprocessAndParse(String expression,
 			Map<String, ? extends Expression> scope, Map<String, String> expressionPreprocess) {
-		return preprocessAndParse(expression, getScope(scope), Map.of());
+		return preprocessAndParse(expression, getScope(scope), expressionPreprocess);
 	}
 	
 	public Expression preprocessAndParse(String expression,
