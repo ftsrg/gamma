@@ -349,7 +349,7 @@ class XstsBackAnnotator {
 		return parser
 	}
 	
-	protected def parseExpression(String value) {
+	def parseExpression(String value) {
 		val parser = getParser
 		val expression = parser.preprocessAndParse(value,
 			new Function<String, Expression> {
