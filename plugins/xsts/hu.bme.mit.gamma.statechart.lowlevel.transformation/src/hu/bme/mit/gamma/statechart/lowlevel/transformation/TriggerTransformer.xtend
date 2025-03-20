@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,10 +15,13 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit
-import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
+import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.OnCycleTrigger
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
+
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 
 class TriggerTransformer {
 	// Auxiliary objects
@@ -84,9 +87,12 @@ class TriggerTransformer {
 	}
 	
 	protected def dispatch Expression transformTrigger(AnyTrigger trigger) {
-		val allEvents = trace.getAllLowlevelEvents(EventDirection.IN) // Considering only IN events
+		val statechart = trigger.containingStatechart
+		val lowlevelStatechart = trace.get(statechart) as StatechartDefinition
+		
+		val allInEvents = lowlevelStatechart.inputEvents // Considering only IN events
 		val triggerGuards = newLinkedList
-		for (event : allEvents) {
+		for (event : allInEvents) {
 			triggerGuards += event.transformToLowlevelGuard
 		}
 		if (triggerGuards.empty) {

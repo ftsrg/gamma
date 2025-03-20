@@ -85,6 +85,7 @@ class TraceToEnvironmentModelTransformer {
 			actualTransition = action.transformTrigger(actualTransition)
 		}
 		// There is an unnecessary empty transition at the end
+		// TODO this transition contains a 'check' for the last action raises (non-det behavior)
 		val lastState = actualTransition.sourceState as State
 		actualTransition.targetState.remove
 		actualTransition.remove

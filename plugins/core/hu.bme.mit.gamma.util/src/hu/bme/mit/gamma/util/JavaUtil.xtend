@@ -193,6 +193,19 @@ class JavaUtil {
 	
 	//
 	
+	def countChar(String string, char character) {
+		var count = 0
+		
+		for (var i = 0; i < string.length; i++) {
+			val actualChar = string.charAt(i)
+			if (actualChar == character) {
+				count++
+			}
+		}
+		
+		return count
+	}
+	
 	def String deleteAll(String string, String regex) {
 		return string.replaceAll(regex, "")
 	}
@@ -238,6 +251,10 @@ class JavaUtil {
 		val trimmedString = builder.toString.trim
 		builder.length = 0
 		builder.append(trimmedString)
+	}
+	
+	def String parenthesize(String string) {
+		return '(' + string + ')'
 	}
 	
 	def String deparenthesize(String string) {
@@ -303,6 +320,8 @@ class JavaUtil {
 	def String simplifyExclamationMarkPairs(String string) {
 		return string.simplifyCharacterPairs('!')
 	}
+	
+	//
 	
 	def boolean isUnstartableProcessException(Throwable throwable) {
 		val message = throwable.message

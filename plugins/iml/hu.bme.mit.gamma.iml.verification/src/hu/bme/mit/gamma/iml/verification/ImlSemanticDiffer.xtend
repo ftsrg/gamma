@@ -178,6 +178,9 @@ class ImlSemanticDiffer {
 	}
 	
 	protected def postprocessSemanticDiff(ExecutionTrace trace) {
+		if (trace.steps.size > 1) {
+			trace.steps.removeFirstElement // No need for 'init'
+		}
 		for (assertion : trace.steps.map[it.asserts].flatten) {
 			for (equality : assertion.getSelfAndAllContentsOfType(EqualityExpression)) {
 				val rhs = equality.rightOperand
@@ -331,6 +334,8 @@ class ImlSemanticDiffer {
 		Decomposition decomposition1
 		Decomposition decomposition2
 		//
+		protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
+		//
 		new(Decomposition decomposition1, Decomposition decomposition2) {
 			this.decomposition1 = decomposition1
 			this.decomposition2 = decomposition2
@@ -338,6 +343,7 @@ class ImlSemanticDiffer {
 		
 		def execute() {
 			val diff = decomposition1.extractDiff(decomposition2)
+						.splitConstraints
 			return diff
 		}
 		
@@ -371,7 +377,7 @@ class ImlSemanticDiffer {
 			invariants1 -= intersection
 			invariants2 -= intersection
 			
-			return Map.entry(invariants1.join(INVARIANT_DELIM), invariants2.join(INVARIANT_DELIM))
+			return Map.entry(invariants1.joinOnDelim, invariants2.joinOnDelim)
 		}
 
 		protected def splitInvariant(String result) {
@@ -380,11 +386,34 @@ class ImlSemanticDiffer {
 			
 			val parsedResult = result.substring(firstI + 1, lastI)
 			val split = newArrayList
-			split += parsedResult.split(ImlApiHelper.CONSTRAINT_DELIM) // See region 'changeExternalSemicolons'
-					.map[it.trim]
-					.reject[it.nullOrEmpty] // Reject "" if any
+			split += parsedResult.splitOnDelim
 					
 			return split
+		}
+		
+		protected def splitConstraints(Map<String, Entry<String, String>> diff) {
+			val diffs = newLinkedHashMap
+			
+			for (constraint : diff.keySet) {
+				val splitConstraint = constraint.splitOnDelim
+						.map[it.parenthesize] // For parsing later
+						.joinOnDelim
+				val value = diff.get(constraint)
+				
+				diffs += splitConstraint -> value
+			}
+			
+			return diffs
+		}
+		
+		protected def splitOnDelim(String value) {
+			return value.split(ImlApiHelper.CONSTRAINT_DELIM) // See region 'changeExternalSemicolons'
+					.map[it.trim]
+					.reject[it.nullOrEmpty] // Reject "" if any
+		}
+		
+		protected def joinOnDelim(Iterable<String> strings) {
+			return strings.join(INVARIANT_DELIM)
 		}
 		
 		//
@@ -423,8 +452,8 @@ class ImlSemanticDiffer {
 					val constraint = semDiffs.get(invariant)
 					
 					println(S + "Constraints:")
-					println(S + constraint.replaceAll(System.lineSeparator, System.lineSeparator + S))
-					println(S + invariant.replaceAll(System.lineSeparator, System.lineSeparator + S))
+					println(S + constraint.replace(System.lineSeparator, System.lineSeparator + S))
+					println(S + invariant.replace(System.lineSeparator, System.lineSeparator + S))
 					println
 				}
 				
@@ -438,7 +467,7 @@ class ImlSemanticDiffer {
 				val invariant2 = value.value
 				
 				println(S + "Constraint:")
-				println(S + S + constraint.replaceAll(System.lineSeparator, System.lineSeparator + S + S))
+				println(S + S + constraint.replace(System.lineSeparator, System.lineSeparator + S + S))
 				println(S + "Original invariant:")
 				println(S + S + invariant1)
 				println(S + "New invariant:")
@@ -457,8 +486,12 @@ class ImlSemanticDiffer {
 		// Check semantics!
 		protected final Map<String, String> preprocessElements = #{
 			''' «REC».''' -> " ",
-			''' «ENV».''' -> " "
+			''' «ENV».''' -> " ",
+			'''(«REC».''' -> "(",
+			'''(«ENV».''' -> "("
 		}
+		//
+		protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 		//
 		
 		def String execute(Map<String, Entry<String, String>> diff) {
@@ -502,16 +535,59 @@ class ImlSemanticDiffer {
 			«TraceBackAnnotator.COUNTEREXAMPLE_TRACE_VAR»
 			«TraceBackAnnotator.STATE_CHANGE2 /*[{*/»
 				«FOR entry : diff.entrySet SEPARATOR DELIM + System.lineSeparator + TraceBackAnnotator.STATE_CHANGE»
-	«««					TODO constraints - input events
+«««						Constraints
+						«entry.key.parseConstraint /* Duplication - we want to parse inputs and states, too */»
 					}«DELIM»
 					«TraceBackAnnotator.STATE_CHANGE /*{*/»
-						«entry.value.key.replace(INVARIANT_DELIM, DELIM + System.lineSeparator)»
+						«entry.key.parseConstraint /* Duplication - we want to parse inputs and states, too */»
+					}«DELIM»
+					«TraceBackAnnotator.STATE_CHANGE /*{*/»
+«««						Invariants
+					}«DELIM»
+					«TraceBackAnnotator.STATE_CHANGE /*{*/»
+						«entry.value.key.parseDelim»
 						«DELIM»
-						«entry.value.value.replace(INVARIANT_DELIM, DELIM + System.lineSeparator)»
+						«entry.value.value.parseDelim»
 					}
 				«ENDFOR»
 			]
 		'''
+		
+		protected def parseConstraint(String constraint) {
+			val constraints = constraint.split(INVARIANT_DELIM)
+					.map[it.trim.deparenthesize]
+			val parsedConstraints = newArrayList
+			
+			// Manually implemented parsing...
+			for (constraintElem : constraints) {
+				var parsedConstraint = constraintElem
+				val equalSignCount = constraintElem.countChar('=')
+				
+				val NOT = "not"
+				val startsWithNot = parsedConstraint.startsWith(NOT)
+				if (startsWithNot) {
+					parsedConstraint = parsedConstraint.substring(NOT.length).trim.deparenthesize
+					if (equalSignCount == 1) {
+						parsedConstraint = parsedConstraint.replace("=", "<>")
+					}
+					// TODO save negation
+				}
+				if (equalSignCount == 0) {
+					parsedConstraint = parsedConstraint + " = " + (startsWithNot ? "false" : "true")
+				}
+				
+				// Final addition to the list
+				if (parsedConstraint.countChar('=') == 1) {
+					parsedConstraints += parsedConstraint
+				}
+			}
+			
+			return parsedConstraints.join(DELIM + System.lineSeparator)
+		}
+		
+		protected def parseDelim(String value) {
+			return value.replace(INVARIANT_DELIM, DELIM + System.lineSeparator)
+		}
 		
 		protected def String getExampleDiff() '''
 			module CX :

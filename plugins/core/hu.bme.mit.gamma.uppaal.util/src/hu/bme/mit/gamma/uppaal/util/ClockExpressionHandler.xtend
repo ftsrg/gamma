@@ -56,7 +56,7 @@ class ClockExpressionHandler {
 		return expression !== null &&
 			expression.getSelfAndAllContentsOfType(LogicalExpression)
 				.filter[it.operator == LogicalOperator.OR]
-				.exists[it.firstExpr.containsClockReference &&
+				.exists[it.firstExpr.containsClockReference ||
 						it.secondExpr.containsClockReference]
 	}
 	

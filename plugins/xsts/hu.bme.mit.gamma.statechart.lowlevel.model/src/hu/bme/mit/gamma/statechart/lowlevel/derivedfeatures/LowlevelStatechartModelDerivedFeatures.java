@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -56,6 +56,22 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 		StatechartDefinition statechart = getStatechart(lowlevelEventDeclaration);
 		List<EventDeclaration> internalEventDeclarations = statechart.getInternalEventDeclarations();
 		return internalEventDeclarations.contains(lowlevelEventDeclaration);
+	}
+	
+	public static boolean isInput(EventDeclaration lowlevelEventDeclaration) {
+		return lowlevelEventDeclaration.getDirection() == EventDirection.IN;
+	}
+	
+	public static boolean isOutput(EventDeclaration lowlevelEventDeclaration) {
+		return lowlevelEventDeclaration.getDirection() == EventDirection.OUT;
+	}
+	
+	public static List<EventDeclaration> getInputEvents(StatechartDefinition statechart) {
+		return statechart.getEventDeclarations().stream().filter(it -> isInput(it)).toList();
+	}
+	
+	public static List<EventDeclaration> getOutputEvents(StatechartDefinition statechart) {
+		return statechart.getEventDeclarations().stream().filter(it -> isOutput(it)).toList();
 	}
 	
 	public static EventDeclaration getInternalEventPair(EventDeclaration lowlevelEventDeclaration) {
