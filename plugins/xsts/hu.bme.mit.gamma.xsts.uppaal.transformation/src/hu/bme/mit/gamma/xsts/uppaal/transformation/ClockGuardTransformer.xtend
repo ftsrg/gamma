@@ -29,9 +29,21 @@ class ClockGuardTransformer {
 	private dispatch def Expression toDnf(Expression exp) {
 		throw new IllegalArgumentException("Unhandled parameter types: " + exp);
 	}
+	
+	private dispatch def Expression toDnf(ReferenceExpression exp){
+		return exp
+    }
+	private dispatch def Expression toDnf(LiteralExpression exp){
+		return exp
+    }
+	private dispatch def Expression toDnf(PredicateExpression exp){
+		return exp
+    }
 
 	private dispatch def Expression toDnf(NotExpression expr) {
 		val innerExpr = expr.operand
+		
+		// A => A
 		if (innerExpr instanceof ReferenceExpression || innerExpr instanceof LiteralExpression ||
 			innerExpr instanceof PredicateExpression) {
 			return expr
