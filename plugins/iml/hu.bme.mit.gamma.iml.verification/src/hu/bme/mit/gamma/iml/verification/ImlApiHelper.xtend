@@ -104,7 +104,7 @@ class ImlApiHelper {
 		""")
 		
 		decomposition = client.decompose("«decomposeFunctionName»"«
-				IF assumingFunctionName !== null», "«assumingFunctionName»"«ENDIF»)
+				IF assumingFunctionName !== null», "«assumingFunctionName»"«ENDIF», prune=True, ctx_simp=True)
 		
 		for n, region in enumerate(decomposition.regions_str):
 			print("«REGION_START»", n, "-" * 10 + "\n«CONSTRAINT_START»")
