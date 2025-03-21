@@ -107,7 +107,7 @@ class ImlSemanticDiffer {
 	
 	protected def execute(File grandparentFile, String cmd) {
 		val parentFile = grandparentFile + File.separator + IMANDRA_TEMPORARY_COMMAND_FOLDER
-		val nameSuffix = Thread.currentThread.name.replaceAll(":", "").replaceAll(" ", "_")
+		val nameSuffix = Thread.currentThread.name.replace(":", "").replace(" ", "_")
 		val pythonFile = new File(parentFile, '''.imandra-commands-«nameSuffix».py''')
 		pythonFile.deleteOnExit
 		pythonFile.saveString(cmd)
@@ -213,7 +213,7 @@ class ImlSemanticDiffer {
 		val newStart = '''let «START_FUNCTION_NAME»2 ='''
 		
 		val newSrc = newStart + src.substring(start + offset, end)
-				.replaceAll('''let «DIFF_FUNCTION_NAME» ''', '''let «NEW_DIFF_FUNCTION_NAME» ''')
+				.replace('''let «DIFF_FUNCTION_NAME» ''', '''let «NEW_DIFF_FUNCTION_NAME» ''')
 		return newSrc
 	}
 	
@@ -492,7 +492,7 @@ class ImlSemanticDiffer {
 			''' «ENV».''' -> " ",
 			'''(«REC».''' -> "(",
 			'''(«ENV».''' -> "("
-		}
+		} // Note: '''«REC».''' -> "" would not work, see e.g., 'M_enum_type_var.ERROR'
 		//
 		protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 		//
@@ -529,44 +529,19 @@ class ImlSemanticDiffer {
 			return preprocessedDiff
 		}
 		
-		protected def String adaptSemanticDiff(Map<String, Entry<String, String>> diff) '''
-			«FOR entry : diff.entrySet»
-				«entry.key.parseDelim»
-				«entry.value.key.parseDelim»
-				«entry.value.value.parseDelim»
-			«ENDFOR»
-		'''
-		
-		protected def parseConstraint(String constraint) {
-			val constraints = constraint.split(INVARIANT_DELIM)
-					.map[it.trim.deparenthesize]
-			val parsedConstraints = newArrayList
-			
-			// Manually implemented parsing...
-			for (constraintElem : constraints) {
-				var parsedConstraint = constraintElem
-				val equalSignCount = constraintElem.countChar('=')
-				
-				val NOT = "not"
-				val startsWithNot = parsedConstraint.startsWith(NOT)
-				if (startsWithNot) {
-					parsedConstraint = parsedConstraint.substring(NOT.length).trim.deparenthesize
-					if (equalSignCount == 1) {
-						parsedConstraint = parsedConstraint.replace("=", "<>")
-					}
-					// TODO save negation
-				}
-				if (equalSignCount == 0) {
-					parsedConstraint = parsedConstraint + " = " + (startsWithNot ? "false" : "true")
-				}
-				
-				// Final addition to the list
-				if (parsedConstraint.countChar('=') == 1) {
-					parsedConstraints += parsedConstraint
-				}
-			}
-			
-			return parsedConstraints.join(DELIM + System.lineSeparator)
+		protected def String adaptSemanticDiff(Map<String, Entry<String, String>> diff) {
+			var count = 1
+			return '''
+				«FOR entry : diff.entrySet»
+					"--- Region «count++» ---"
+					"- Constraints:"
+					«entry.key.parseDelim»
+					"- Original invariant:"
+					«entry.value.key.parseDelim»
+					"- New invariant:"
+					«entry.value.value.parseDelim»
+				«ENDFOR»
+			'''
 		}
 		
 		protected def parseDelim(String value) {

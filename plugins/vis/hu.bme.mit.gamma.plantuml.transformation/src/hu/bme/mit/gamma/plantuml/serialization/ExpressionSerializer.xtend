@@ -25,4 +25,5 @@ class ExpressionSerializer extends hu.bme.mit.gamma.statechart.util.ExpressionSe
 		return '''# {«FOR field : fields BEFORE DELIMETER + INDENT SEPARATOR ',' + DELIMETER + INDENT AFTER DELIMETER»«
 			field.reference.fieldDeclaration.name» := «field.value.serialize»«ENDFOR»}'''
 	}
+	
 }

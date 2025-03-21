@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -95,7 +95,7 @@ public class ExpressionSerializer {
 	}
 
 	protected String _serialize(final OpaqueExpression opaqueExpression) {
-		return opaqueExpression.getExpression();
+		return "\"" + opaqueExpression.getExpression() + "\"";
 	}
 
 	protected String _serialize(final DirectReferenceExpression expression) {
@@ -559,6 +559,8 @@ public class ExpressionSerializer {
 			return _serialize((RecordLiteralExpression) expression);
 		} else if (expression instanceof IntegerRangeLiteralExpression) {
 			return _serialize((IntegerRangeLiteralExpression) expression);
+		} else if (expression == null) {
+			return "null";
 		} else {
 			throw new IllegalArgumentException("Unhandled parameter types: " + expression);
 		}

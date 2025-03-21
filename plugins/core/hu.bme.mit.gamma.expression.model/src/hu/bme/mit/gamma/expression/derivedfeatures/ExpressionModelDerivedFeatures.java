@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -52,6 +52,7 @@ import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.InternalParameterDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.InternalVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration;
+import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ParameterDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
@@ -76,14 +77,13 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.util.JavaUtil;
 
 public class ExpressionModelDerivedFeatures {
-	
+	//
 	protected static final ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	protected static final ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
 	protected static final LiteralExpressionCreator literalCreator = LiteralExpressionCreator.INSTANCE;
 	protected static final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected static final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	protected static final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
-	
 	//
 	
 	public static boolean isContainedByPackage(EObject object) {
@@ -141,6 +141,11 @@ public class ExpressionModelDerivedFeatures {
 				return leftOperand;
 			}
 		}
+		// To support serialization
+		else if (container instanceof NotExpression) {
+			return factory.createFalseExpression();
+		}
+		//
 		return null; // Not contained by equality (other operand cannot be null: 1..1 multiplicity)
 	}
 	
