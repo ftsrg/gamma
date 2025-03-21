@@ -65,19 +65,6 @@ class TraceBuilder {
 	protected final extension ExpressionTypeDeterminator typeDeterminator = ExpressionTypeDeterminator.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	
-	// Add annotation
-	
-	def void addTimeUnitAnnotation(ExecutionTrace trace) {
-		val component = trace.component
-		val _package = component.containingPackage
-		val smallestTimeUnit = _package.smallestTimeUnit
-		
-		val timeUnitAnnotation = createTimeUnitAnnotation => [
-			it.timeUnit = smallestTimeUnit
-		]
-		trace.annotations += timeUnitAnnotation
-	}
-	
 	// Add unraised event negations
 	
 	def addUnraisedEventNegations(ExecutionTrace trace) {
@@ -426,7 +413,7 @@ class TraceBuilder {
 	
 	// Raise event act
 	
-	private def createRaiseEventAct(Port port, Event event) {
+	def createRaiseEventAct(Port port, Event event) {
 		val eventRaise = createRaiseEventAct => [
 			it.port = port
 			it.event = event

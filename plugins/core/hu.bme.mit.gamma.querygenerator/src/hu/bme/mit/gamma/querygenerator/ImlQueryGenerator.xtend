@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Gamma project
+ * Copyright (c) 2024-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -34,6 +34,14 @@ class ImlQueryGenerator extends ThetaQueryGenerator {
 	}
 	
 	// In the XSTS->IML mapping, ID of variable (field) declarations, type declarations and  enum literals are wrapped
+	
+	override protected getTargetTypeDeclarationName(String id) {
+		return id.customizeTypeDeclarationName
+	}
+	
+	override protected getTargetEnumLiteralName(String id) {
+		return id.customizeEnumLiteralName
+	}
 	
 	override protected getSingleTargetStateName(State state, Region parentRegion, SynchronousComponentInstance instance) {
 		val superName = super.getSingleTargetStateName(state, parentRegion, instance)

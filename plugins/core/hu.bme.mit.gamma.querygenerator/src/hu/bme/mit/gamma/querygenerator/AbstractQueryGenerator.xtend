@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,7 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator
 
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.querygenerator.operators.TemporalOperator
 import hu.bme.mit.gamma.querygenerator.patterns.InstanceStates
@@ -24,6 +26,7 @@ import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemInEvents
 import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemOutEvents
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.Triple
 import java.util.List
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
@@ -34,10 +37,12 @@ import static com.google.common.base.Preconditions.checkArgument
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 abstract class AbstractQueryGenerator {
-	
+	//
 	protected final Component component
 	protected final ViatraQueryEngine engine
 	
+	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	//
 	new(Component component) {
 		this.component = component
 		val scope = new EMFScope(component.eResource.resourceSet)
@@ -76,7 +81,7 @@ abstract class AbstractQueryGenerator {
 			val stateName = statesMatch.state.name
 			val entry = getStateName(statesMatch.instance, statesMatch.parentRegion, statesMatch.state)
 			if (!stateName.startsWith("LocalReaction")) {
-				stateNames.add(entry)				
+				stateNames.add(entry)
 			}
 		}
 		return stateNames
@@ -225,6 +230,14 @@ abstract class AbstractQueryGenerator {
 	
 	// Getting target identifiers
 	
+	protected def String getTargetTypeDeclarationName(String id) {
+		return id
+	}
+	
+	protected def String getTargetEnumLiteralName(String id) {
+		return id
+	}
+	
 	protected def String getTargetStateName(String stateName) {
 		val splittedStateName = stateName.unwrap.split("\\.")
 		val matches = InstanceStates.Matcher.on(engine).getAllMatches(null, splittedStateName.get(0),
@@ -275,6 +288,14 @@ abstract class AbstractQueryGenerator {
 	}
 	
 	//
+	
+	protected def String getTargetTypeDeclarationName(TypeDeclaration typeDeclaration) {
+		return typeDeclaration.name.targetTypeDeclarationName
+	}
+	
+	protected def String getTargetEnumLiteralName(EnumerationLiteralDefinition literal) {
+		return literal.name.targetEnumLiteralName
+	}
 	
 	protected abstract def String getTargetStateName(State state, Region parentRegion,
 		SynchronousComponentInstance instance)

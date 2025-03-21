@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,9 +10,11 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator
 
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
 import hu.bme.mit.gamma.expression.model.TypeDefinition
+import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
@@ -100,6 +102,24 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	// Auxiliary methods for back-annotation
 	
 	// Checkers
+	
+	def isSourceTypeDeclaration(String id) {
+		try {
+			id.getSourceTypeDeclaration
+			return true
+		} catch (IllegalArgumentException e) {
+			return false
+		}
+	}
+	
+	def isSourceEnumLiteral(String id) {
+		try {
+			id.getSourceEnumLiteral
+			return true
+		} catch (IllegalArgumentException e) {
+			return false
+		}
+	}
 	
 	def isSourceState(String targetStateName) {
 		try {
@@ -212,6 +232,39 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	// Getters
+	
+	def getSourceTypeDeclaration(String id) {
+		val _package = component.containingPackage
+		val typeDeclarations = _package.importableTypeDeclarationPackages
+				.map[it.typeDeclarations].flatten +
+				ecoreUtil.getAllContentsOfType(_package, TypeReference).map[it.reference]
+		
+		for (typeDeclaration : typeDeclarations) {
+			val name = typeDeclaration.targetTypeDeclarationName
+			if (id == name) {
+				return typeDeclaration
+			}
+		}
+		throw new IllegalArgumentException("Not known id")
+	}
+	
+	def getSourceEnumLiteral(String id) {
+		val _package = component.containingPackage
+		val typeDeclarations = (_package.importableTypeDeclarationPackages.map[it.typeDeclarations].flatten +
+				ecoreUtil.getAllContentsOfType(_package, TypeReference).map[it.reference])
+				.filter[it.typeDefinition instanceof EnumerationTypeDefinition]
+		
+		for (typeDeclaration : typeDeclarations) {
+			val enumType = typeDeclaration.typeDefinition as EnumerationTypeDefinition
+			for (literal : enumType.literals) {
+				val name = literal.targetEnumLiteralName
+				if (id == name) {
+					return literal
+				}
+			}
+		}
+		throw new IllegalArgumentException("Not known id")
+	}
 	
 	def getSourceState(String targetStateName) {
 		for (match : instanceStates) {

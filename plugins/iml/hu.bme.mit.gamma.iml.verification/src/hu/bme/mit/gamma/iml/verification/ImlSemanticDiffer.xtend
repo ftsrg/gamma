@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
+import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
@@ -35,11 +36,12 @@ class ImlSemanticDiffer {
 	//
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
+	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//
 	
-	def execute(Object traceability, File modelFile, File modelFile2) {
+	def ExecutionTrace execute(Object traceability, File modelFile, File modelFile2) {
 		val grandparentFile = modelFile.parentFile
 		val src = modelFile.loadString
 		val src2 = modelFile2.loadString
@@ -89,12 +91,13 @@ class ImlSemanticDiffer {
 			
 			val gammaPackage = traceability as Package
 			val scanner = new Scanner(diffTrace)
-			val backAnnotator = new TraceBackAnnotator(gammaPackage, scanner)
-			val trace = backAnnotator.execute
-			// TODO support state configurations
-			// TODO support constraints
+			val expressionParser = new ImlExpressionParser(gammaPackage, scanner)
 			
-			trace.postprocessSemanticDiff
+			val expressions = expressionParser.execute
+			
+			val trace = gammaPackage.components.head.createTrace
+			val step = trace.addStep
+			step.asserts += expressions
 			
 			return trace
 		}
@@ -527,30 +530,11 @@ class ImlSemanticDiffer {
 		}
 		
 		protected def String adaptSemanticDiff(Map<String, Entry<String, String>> diff) '''
-			«TraceBackAnnotator.CX_START»
-			«TraceBackAnnotator.COUNTEREXAMPLE_INIT_VAR»
-			{
-			
-			}
-			«TraceBackAnnotator.COUNTEREXAMPLE_TRACE_VAR»
-			«TraceBackAnnotator.STATE_CHANGE2 /*[{*/»
-				«FOR entry : diff.entrySet SEPARATOR DELIM + System.lineSeparator + TraceBackAnnotator.STATE_CHANGE»
-«««						Constraints
-						«entry.key.parseConstraint /* Duplication - we want to parse inputs and states, too */»
-					}«DELIM»
-					«TraceBackAnnotator.STATE_CHANGE /*{*/»
-						«entry.key.parseConstraint /* Duplication - we want to parse inputs and states, too */»
-					}«DELIM»
-					«TraceBackAnnotator.STATE_CHANGE /*{*/»
-«««						Invariants
-					}«DELIM»
-					«TraceBackAnnotator.STATE_CHANGE /*{*/»
-						«entry.value.key.parseDelim»
-						«DELIM»
-						«entry.value.value.parseDelim»
-					}
-				«ENDFOR»
-			]
+			«FOR entry : diff.entrySet»
+				«entry.key.parseDelim»
+				«entry.value.key.parseDelim»
+				«entry.value.value.parseDelim»
+			«ENDFOR»
 		'''
 		
 		protected def parseConstraint(String constraint) {
@@ -586,7 +570,7 @@ class ImlSemanticDiffer {
 		}
 		
 		protected def parseDelim(String value) {
-			return value.replace(INVARIANT_DELIM, DELIM + System.lineSeparator)
+			return value.replace(INVARIANT_DELIM, System.lineSeparator)
 		}
 		
 		protected def String getExampleDiff() '''

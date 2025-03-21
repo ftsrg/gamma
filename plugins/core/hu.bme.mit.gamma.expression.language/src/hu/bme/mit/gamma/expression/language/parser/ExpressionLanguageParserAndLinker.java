@@ -25,7 +25,6 @@ import com.google.inject.Injector;
 import hu.bme.mit.gamma.expression.language.ExpressionLanguageStandaloneSetup;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
-import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
@@ -42,12 +41,12 @@ public class ExpressionLanguageParserAndLinker {
 	}
 	
 	public Expression preprocessAndParse(String expression,
-			Map<String, ? extends Expression> scope, Map<String, String> expressionPreprocess) {
+			Map<String, ? extends EObject> scope, Map<String, String> expressionPreprocess) {
 		return preprocessAndParse(expression, getScope(scope), expressionPreprocess);
 	}
 	
 	public Expression preprocessAndParse(String expression,
-			Function<String, ? extends Expression> scope, Map<String, String> expressionPreprocess) {
+			Function<String, ? extends EObject> scope, Map<String, String> expressionPreprocess) {
 		String preprocessedExpression = preprocess(expression, expressionPreprocess);
 		return parse(preprocessedExpression, scope);
 	}
@@ -58,11 +57,11 @@ public class ExpressionLanguageParserAndLinker {
 		return parse(expression, Map.of());
 	}
 	
-	public Expression parse(String expression, Map<String, Expression> scope) {
+	public Expression parse(String expression, Map<String, ? extends EObject> scope) {
 		return parse(expression, getScope(scope));
 	}
 	
-	public Expression parse(String expression, Function<String, ? extends Expression> scope) {
+	public Expression parse(String expression, Function<String, ? extends EObject> scope) {
 		CustomExpressionLanguageParser parser = injector.getInstance(CustomExpressionLanguageParser.class);
 		StringReader reader = new StringReader(expression);
 		IParseResult result = parser.parse(reader);
@@ -76,16 +75,16 @@ public class ExpressionLanguageParserAndLinker {
 			for (INode node : rootNode.getLeafNodes()) {
 				EObject grammarElement = node.getGrammarElement();
 				if (grammarElement instanceof CrossReference) {
-					ReferenceExpression reference = (ReferenceExpression) node.getSemanticElement();
+					EObject reference = node.getSemanticElement();
 
 					String text = node.getText();
-					Expression parsedReference = scope.apply(text);
+					EObject parsedReference = scope.apply(text);
 					if (parsedReference == null) {
 						parsedReference = util.createOpaqueExpression(text);
 					}
 					if (reference.eContainer() == null) {
 						// Replace would not work as it is a single element
-						return parsedReference;
+						return (Expression) parsedReference;
 					}
 					ecoreUtil.replace(parsedReference, reference);
 				}
@@ -98,10 +97,10 @@ public class ExpressionLanguageParserAndLinker {
 	
 	//
 	
-	protected Function<String, Expression> getScope(Map<String, ? extends Expression> scope) {
-		return new Function<String, Expression>() {
+	protected Function<String, EObject> getScope(Map<String, ? extends EObject> scope) {
+		return new Function<String, EObject>() {
 			@Override
-			public Expression apply(String id) {
+			public EObject apply(String id) {
 				return scope.get(id);
 			}
 		};
