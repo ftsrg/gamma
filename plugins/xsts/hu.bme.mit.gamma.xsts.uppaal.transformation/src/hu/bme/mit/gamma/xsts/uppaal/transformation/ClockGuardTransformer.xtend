@@ -19,21 +19,25 @@ class ClockGuardTransformer {
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension ExpressionNegator expressionNegator = ExpressionNegator.INSTANCE
-	
-	protected final extension ExpressionSerializer expressionSerializer=ExpressionSerializer.INSTANCE
-		protected final Logger logger = Logger.getLogger("GammaLogger")
-	
+
+	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 
 	public static final ClockGuardTransformer INSTANCE = new ClockGuardTransformer
 
-	def /*List<Expression>*/ splitByDisjunction(Expression guard) {
-		try {
-			val clone=guard.clone
-			val preservedClone=guard.clone
-			val res = clone.toDnf
-			logger.log(Level.INFO, '''Before: «preservedClone.serialize»; After: «res.serialize»''')
-		} catch (Exception e) {
+	def List<Expression> splitByDisjunction(Expression guard) {
+		val clone = guard.clone
+		val preservedClone = guard.clone
+		if (preservedClone.serialize ==
+			"!((((main_region_of_bJbCOID_allapotgep_coid == Main_region_of_bJbCOID_allapotgep_bJbCOID_allapotgep::Oldas_4) && ((I_CR_h_In_hValue_coid != MyBool::_1) || (I_FT_h_In_hValue_coid != MyBool::_1))) || ((main_region_of_bJbCOID_allapotgep_coid == Main_region_of_bJbCOID_allapotgep_bJbCOID_allapotgep::Celoldas_idozites_nem_fut_5) && (I_CR_h_In_hValue_coid == MyBool::_1) && (I_FT_h_In_hValue_coid == MyBool::_1)) || ((main_region_of_bJbCOID_allapotgep_coid == Main_region_of_bJbCOID_allapotgep_bJbCOID_allapotgep::Celoldas_idozites_fut_8) && (499 <= P_COIDH_Timeout_coid) && (I_CR_h_In_hValue_coid == MyBool::_1) && (I_FT_h_In_hValue_coid == MyBool::_1)) || ((main_region_of_bJbCOID_allapotgep_coid == Main_region_of_bJbCOID_allapotgep_bJbCOID_allapotgep::Celoldas_idozites_fut_8) && ((I_CR_h_In_hValue_coid != MyBool::_1) || (I_FT_h_In_hValue_coid != MyBool::_1)))))") {
+			logger.log(Level.INFO, "foo")
 		}
+		val transformed = clone.toDnf
+		logger.log(Level.INFO, '''Before: «preservedClone.serialize»; After: «transformed.serialize»''')
+		if (transformed instanceof OrExpression) {
+			return transformed.operands
+		}
+		return #[transformed]
 	}
 
 	private dispatch def Expression toDnf(Expression exp) {
@@ -41,49 +45,27 @@ class ClockGuardTransformer {
 	}
 
 	private dispatch def Expression toDnf(ReferenceExpression exp) {
-		return exp
+		return exp.clone
 	}
 
 	private dispatch def Expression toDnf(LiteralExpression exp) {
-		return exp
+		return exp.clone
 	}
 
 	private dispatch def Expression toDnf(PredicateExpression exp) {
-		return exp
+		return exp.clone
 	}
 
 	private dispatch def Expression toDnf(NotExpression expr) {
 		val innerExpr = expr.operand
 
-		// A => A
-		if (innerExpr instanceof ReferenceExpression || innerExpr instanceof LiteralExpression ||
-			innerExpr instanceof PredicateExpression) {
-			return expr
+		// not A => not A
+		// necessary to avoid infinite recursion
+		if (innerExpr instanceof ReferenceExpression) {
+			return expr.clone
 		}
-
-		// not not A => A
-		if (innerExpr instanceof NotExpression) {
-			return toDnf(innerExpr.operand)
-		}
-		// not (A and B) => (not A or not B)
-		if (innerExpr instanceof AndExpression) {
-			return createOrExpression => [
-				it.operands += innerExpr.operands.map [
-					toDnf(it.negate)
-				]
-			]
-		}
-
-		// not (A or B) => (not A and not B)
-		if (innerExpr instanceof OrExpression) {
-			return createAndExpression => [
-				it.operands += innerExpr.operands.map [
-					toDnf(it.negate)
-				]
-			]
-		}
-
-		throw new IllegalArgumentException("Unhandled parameter types: " + expr);
+		// handles DeMorgan transformations
+		return innerExpr.negate.toDnf
 	}
 
 	private dispatch def Expression toDnf(AndExpression expr) {
@@ -91,19 +73,19 @@ class ClockGuardTransformer {
 
 		return distributeAnd(operands)
 	}
-	
-	private dispatch def Expression toDnf(OrExpression expr){
-		val operands=expr.operands.map[toDnf]
-		
-		val flattenedOperands=operands.flatMap[
-			if(it instanceof OrExpression){
+
+	private dispatch def Expression toDnf(OrExpression expr) {
+		val operands = expr.operands.map[toDnf]
+
+		val flattenedOperands = operands.flatMap [
+			if (it instanceof OrExpression) {
 				return it.operands
 			}
 			return #[it]
 		]
-		
-		return createOrExpression=>[
-			it.operands+=flattenedOperands
+
+		return createOrExpression => [
+			it.operands += flattenedOperands.clone
 		]
 	}
 

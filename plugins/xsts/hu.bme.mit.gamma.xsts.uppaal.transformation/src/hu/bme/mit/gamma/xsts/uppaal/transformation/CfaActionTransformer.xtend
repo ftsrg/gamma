@@ -53,6 +53,8 @@ class CfaActionTransformer {
 	protected final extension ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
+	protected final extension ClockGuardTransformer clockGuardTransformer = ClockGuardTransformer.INSTANCE
+	
 	new(NtaBuilder ntaBuilder, Traceability traceability) {
 		this.ntaBuilder = ntaBuilder
 		this.traceability = traceability
@@ -143,11 +145,18 @@ class CfaActionTransformer {
 	}
 	
 	protected def dispatch Location transformAction(AssumeAction action, Location source) {
-		val edge = source.createEdgeCommittedSource(nextCommittedLocationName)
-		val uppaalExpression = action.assumption.transform
-		edge.guard = uppaalExpression
-		
-		return edge.target
+		val target = createLocation(source.parentTemplate) => [
+			it.name = nextCommittedLocationName
+			it.locationTimeKind = LocationKind.COMMITED
+		]
+		val guards = action.assumption.splitByDisjunction.map[transform]
+		for (guard : guards) {
+			source.createEdge(target) => [
+				it.guard = guard
+			]
+		}
+
+		return target
 	}
 	
 	protected def dispatch Location transformAction(SequentialAction action, Location source) {
@@ -187,23 +196,37 @@ class CfaActionTransformer {
 		
 		val condition = action.condition
 		
-		val positiveCondition = condition.transform
+		val positiveCondition = condition
 		val negativeCondition = condition.clone
-				.createNotExpression.transform
+				.createNotExpression
 		
-		val thenEdge = source.createEdgeCommittedSource(nextCommittedLocationName)
-		thenEdge.guard = positiveCondition
-		val thenEdgeTarget = thenEdge.target
+		val thenGuardTarget = createLocation(source.parentTemplate) => [
+			it.name = nextCommittedLocationName
+			it.locationTimeKind = LocationKind.COMMITED
+		]
+		val thenGuards = positiveCondition.splitByDisjunction.map[transform]
+		for (guard : thenGuards) {
+			source.createEdge(thenGuardTarget) => [
+				it.guard = guard
+			]
+		}
 		
 		val thenAction = action.then
-		val thenActionTarget = thenAction.transformAction(thenEdgeTarget)
+		val thenActionTarget = thenAction.transformAction(thenGuardTarget)
 		
-		val elseEdge = source.createEdgeCommittedSource(nextCommittedLocationName)
-		elseEdge.guard = negativeCondition
-		val elseEdgeTarget = elseEdge.target
+		val elseGuardTarget = createLocation(source.parentTemplate) => [
+			it.name = nextCommittedLocationName
+			it.locationTimeKind = LocationKind.COMMITED
+		]
+		val elseGuards = negativeCondition.splitByDisjunction.map[transform]
+		for (guard : elseGuards) {
+			source.createEdge(elseGuardTarget) => [
+				it.guard = guard
+			]
+		}
 		
 		val elseAction = action.^else
-		val elseActionTarget = (elseAction !== null) ? elseAction.transformAction(elseEdgeTarget) : elseEdgeTarget
+		val elseActionTarget = (elseAction !== null) ? elseAction.transformAction(elseGuardTarget) : elseGuardTarget
 		
 		elseActionTarget.createEdge(thenActionTarget)
 		
