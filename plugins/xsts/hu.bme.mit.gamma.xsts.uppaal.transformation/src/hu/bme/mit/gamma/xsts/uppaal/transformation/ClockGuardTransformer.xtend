@@ -11,18 +11,27 @@ import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.LiteralExpression
 import hu.bme.mit.gamma.expression.model.PredicateExpression
 import hu.bme.mit.gamma.expression.util.ExpressionNegator
+import hu.bme.mit.gamma.expression.util.ExpressionSerializer
+import java.util.logging.Logger
+import java.util.logging.Level
 
 class ClockGuardTransformer {
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension ExpressionNegator expressionNegator = ExpressionNegator.INSTANCE
+	
+	protected final extension ExpressionSerializer expressionSerializer=ExpressionSerializer.INSTANCE
+		protected final Logger logger = Logger.getLogger("GammaLogger")
+	
 
 	public static final ClockGuardTransformer INSTANCE = new ClockGuardTransformer
 
 	def /*List<Expression>*/ splitByDisjunction(Expression guard) {
 		try {
-			val res = guard.clone.toDnf
-			true
+			val clone=guard.clone
+			val preservedClone=guard.clone
+			val res = clone.toDnf
+			logger.log(Level.INFO, '''Before: «preservedClone.serialize»; After: «res.serialize»''')
 		} catch (Exception e) {
 		}
 	}
@@ -82,13 +91,28 @@ class ClockGuardTransformer {
 
 		return distributeAnd(operands)
 	}
+	
+	private dispatch def Expression toDnf(OrExpression expr){
+		val operands=expr.operands.map[toDnf]
+		
+		val flattenedOperands=operands.flatMap[
+			if(it instanceof OrExpression){
+				return it.operands
+			}
+			return #[it]
+		]
+		
+		return createOrExpression=>[
+			it.operands+=flattenedOperands
+		]
+	}
 
 	/**
 	 * This method may be used to distribute ANDs over ORs.
 	 * 
 	 * @param operands list of operands
 	 * 
-	 * @returns if distribution was necessary an `OrExpression`, otherwise an `AndExpression` 
+	 * @returns if distribution was necessary an `OrExpression`, otherwise an #[list.head]`AndExpression` 
 	 */
 	private def Expression distributeAnd(List<Expression> operands) {
 		if (!operands.exists[it instanceof OrExpression]) {
