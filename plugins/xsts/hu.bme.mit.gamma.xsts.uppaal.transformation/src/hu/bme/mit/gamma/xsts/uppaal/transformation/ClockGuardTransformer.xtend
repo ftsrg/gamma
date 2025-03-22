@@ -28,10 +28,6 @@ class ClockGuardTransformer {
 	def List<Expression> splitByDisjunction(Expression guard) {
 		val clone = guard.clone
 		val preservedClone = guard.clone
-		if (preservedClone.serialize ==
-			"!((((main_region_of_bJbCOID_allapotgep_coid == Main_region_of_bJbCOID_allapotgep_bJbCOID_allapotgep::Oldas_4) && ((I_CR_h_In_hValue_coid != MyBool::_1) || (I_FT_h_In_hValue_coid != MyBool::_1))) || ((main_region_of_bJbCOID_allapotgep_coid == Main_region_of_bJbCOID_allapotgep_bJbCOID_allapotgep::Celoldas_idozites_nem_fut_5) && (I_CR_h_In_hValue_coid == MyBool::_1) && (I_FT_h_In_hValue_coid == MyBool::_1)) || ((main_region_of_bJbCOID_allapotgep_coid == Main_region_of_bJbCOID_allapotgep_bJbCOID_allapotgep::Celoldas_idozites_fut_8) && (499 <= P_COIDH_Timeout_coid) && (I_CR_h_In_hValue_coid == MyBool::_1) && (I_FT_h_In_hValue_coid == MyBool::_1)) || ((main_region_of_bJbCOID_allapotgep_coid == Main_region_of_bJbCOID_allapotgep_bJbCOID_allapotgep::Celoldas_idozites_fut_8) && ((I_CR_h_In_hValue_coid != MyBool::_1) || (I_FT_h_In_hValue_coid != MyBool::_1)))))") {
-			logger.log(Level.INFO, "foo")
-		}
 		val transformed = clone.toDnf
 		logger.log(Level.INFO, '''Before: «preservedClone.serialize»; After: «transformed.serialize»''')
 		if (transformed instanceof OrExpression) {
