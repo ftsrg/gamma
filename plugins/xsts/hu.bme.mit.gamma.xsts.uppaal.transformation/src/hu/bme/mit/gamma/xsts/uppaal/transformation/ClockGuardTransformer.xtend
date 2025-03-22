@@ -21,7 +21,8 @@ class ClockGuardTransformer {
 
 	def /*List<Expression>*/ splitByDisjunction(Expression guard) {
 		try {
-			guard.toDnf
+			val res = guard.clone.toDnf
+			true
 		} catch (Exception e) {
 		}
 	}
@@ -29,20 +30,22 @@ class ClockGuardTransformer {
 	private dispatch def Expression toDnf(Expression exp) {
 		throw new IllegalArgumentException("Unhandled parameter types: " + exp);
 	}
-	
-	private dispatch def Expression toDnf(ReferenceExpression exp){
+
+	private dispatch def Expression toDnf(ReferenceExpression exp) {
 		return exp
-    }
-	private dispatch def Expression toDnf(LiteralExpression exp){
+	}
+
+	private dispatch def Expression toDnf(LiteralExpression exp) {
 		return exp
-    }
-	private dispatch def Expression toDnf(PredicateExpression exp){
+	}
+
+	private dispatch def Expression toDnf(PredicateExpression exp) {
 		return exp
-    }
+	}
 
 	private dispatch def Expression toDnf(NotExpression expr) {
 		val innerExpr = expr.operand
-		
+
 		// A => A
 		if (innerExpr instanceof ReferenceExpression || innerExpr instanceof LiteralExpression ||
 			innerExpr instanceof PredicateExpression) {
@@ -55,22 +58,83 @@ class ClockGuardTransformer {
 		}
 		// not (A and B) => (not A or not B)
 		if (innerExpr instanceof AndExpression) {
-			createOrExpression => [
+			return createOrExpression => [
 				it.operands += innerExpr.operands.map [
-					return toDnf(it.negate)
+					toDnf(it.negate)
 				]
 			]
 		}
 
 		// not (A or B) => (not A and not B)
 		if (innerExpr instanceof OrExpression) {
-			createAndExpression => [
+			return createAndExpression => [
 				it.operands += innerExpr.operands.map [
-					return toDnf(it.negate)
+					toDnf(it.negate)
 				]
 			]
 		}
 
 		throw new IllegalArgumentException("Unhandled parameter types: " + expr);
+	}
+
+	private dispatch def Expression toDnf(AndExpression expr) {
+		val operands = expr.operands.map[toDnf]
+
+		return distributeAnd(operands)
+	}
+
+	/**
+	 * This method may be used to distribute ANDs over ORs.
+	 * 
+	 * @param operands list of operands
+	 * 
+	 * @returns if distribution was necessary an `OrExpression`, otherwise an `AndExpression` 
+	 */
+	private def Expression distributeAnd(List<Expression> operands) {
+		if (!operands.exists[it instanceof OrExpression]) {
+			return createAndExpression => [
+				it.operands += operands
+			]
+		}
+		val listOfOperands = operands.map [
+			if (it instanceof OrExpression) {
+				return it.operands
+			}
+			return #[it]
+		]
+		val product = listProduct(listOfOperands).map [ ops |
+			createAndExpression => [
+				it.operands += ops
+			]
+		]
+
+		return createOrExpression => [
+			it.operands += product
+		]
+	}
+
+	/**
+	 * Creates a product of the inner lists
+	 * 
+	 * @param list list of lists where each inner list must have at least 1 element
+	 * 
+	 * @return every possible combination of the inner lists
+	 */
+	private def List<List<Expression>> listProduct(List<List<Expression>> list) {
+		if (list.empty) {
+			return #[]
+		}
+		if (list.length == 1) {
+			return list.head.map[#[it]]
+		}
+		val tails = listProduct(list.tail.clone)
+		// combine each current expression with each possible tail
+		return list.head.flatMap [ expr |
+			tails.map [ tail |
+				val product = newArrayList(expr.clone)
+				product += tail.clone
+				product
+			]
+		].clone
 	}
 }
