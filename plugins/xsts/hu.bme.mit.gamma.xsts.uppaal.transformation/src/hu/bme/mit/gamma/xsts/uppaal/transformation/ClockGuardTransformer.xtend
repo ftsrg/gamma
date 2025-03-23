@@ -14,11 +14,16 @@ import hu.bme.mit.gamma.expression.util.ExpressionNegator
 import hu.bme.mit.gamma.expression.util.ExpressionSerializer
 import java.util.logging.Logger
 import java.util.logging.Level
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation
 
 class ClockGuardTransformer {
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension ExpressionNegator expressionNegator = ExpressionNegator.INSTANCE
+	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final Logger logger = Logger.getLogger("GammaLogger")
@@ -28,12 +33,19 @@ class ClockGuardTransformer {
 	def List<Expression> splitByDisjunction(Expression guard) {
 		val clone = guard.clone
 		val preservedClone = guard.clone
-		val transformed = clone.toDnf
+		val transformed = clone.toDnfChecked
 		logger.log(Level.INFO, '''Before: «preservedClone.serialize»; After: «transformed.serialize»''')
 		if (transformed instanceof OrExpression) {
-			return transformed.operands
+			return transformed.operands.reject[it.isDefinitelyFalseExpression].clone
 		}
 		return #[transformed]
+	}
+
+	private def Expression toDnfChecked(Expression exp) {
+		if (exp.containsClockReference) {
+			return toDnf(exp)
+		}
+		return exp.clone
 	}
 
 	private dispatch def Expression toDnf(Expression exp) {
@@ -61,17 +73,17 @@ class ClockGuardTransformer {
 			return expr.clone
 		}
 		// handles DeMorgan transformations
-		return innerExpr.negate.toDnf
+		return innerExpr.negate.toDnfChecked
 	}
 
 	private dispatch def Expression toDnf(AndExpression expr) {
-		val operands = expr.operands.map[toDnf]
+		val operands = expr.operands.map[toDnfChecked]
 
 		return distributeAnd(operands)
 	}
 
 	private dispatch def Expression toDnf(OrExpression expr) {
-		val operands = expr.operands.map[toDnf]
+		val operands = expr.operands.map[toDnfChecked]
 
 		val flattenedOperands = operands.flatMap [
 			if (it instanceof OrExpression) {
@@ -138,5 +150,19 @@ class ClockGuardTransformer {
 				product
 			]
 		].clone
+	}
+
+	private def containsClockReference(Expression expression) {
+		return expression !== null && expression.getSelfAndAllContentsOfType(DirectReferenceExpression).exists [
+			it.clock
+		]
+	}
+
+	private def boolean isClock(DirectReferenceExpression expr) {
+		val declaration = expr.declaration
+		if (declaration instanceof VariableDeclaration) {
+			return declaration.annotations.exists[it instanceof ClockVariableDeclarationAnnotation]
+		}
+		return false
 	}
 }
