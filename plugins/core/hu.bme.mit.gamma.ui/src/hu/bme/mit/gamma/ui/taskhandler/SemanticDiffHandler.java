@@ -25,6 +25,9 @@ import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 
 public class SemanticDiffHandler extends TaskHandler {
+	//
+	protected ExecutionTrace semanticDiff = null;
+	//
 	
 	public SemanticDiffHandler(IFile file) {
 		super(file);
@@ -51,11 +54,11 @@ public class SemanticDiffHandler extends TaskHandler {
 		Package unfoldedPackage = getTraceabilityPackage(fileNames);
 		
 		ImlSemanticDiffer semanticDiffer = new ImlSemanticDiffer();
-		ExecutionTrace trace = semanticDiffer.execute(unfoldedPackage, modelFile1, modelFile2);
+		this.semanticDiff = semanticDiffer.execute(unfoldedPackage, modelFile1, modelFile2);
 		
-		if (trace != null) {
+		if (this.semanticDiff != null) {
 			String traceFileName = fileNamer.getExecutionTraceFileName(modelFile1.getName());
-			serializer.saveModel(trace, targetFolderUri, traceFileName);
+			serializer.saveModel(this.semanticDiff, targetFolderUri, traceFileName);
 		}
 	}
 
@@ -75,6 +78,10 @@ public class SemanticDiffHandler extends TaskHandler {
 			}
 		}
 		return null;
+	}
+	
+	public ExecutionTrace getSemanticDiff() {
+		return semanticDiff;
 	}
 
 }

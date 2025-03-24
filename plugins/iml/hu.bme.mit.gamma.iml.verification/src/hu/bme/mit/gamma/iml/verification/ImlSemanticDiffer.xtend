@@ -384,13 +384,17 @@ class ImlSemanticDiffer {
 		}
 
 		protected def splitInvariant(String result) {
+			if (result.nullOrEmpty) {
+				return newArrayList
+			}
+			
 			val firstI = result.indexOf("{")
 			val lastI = result.lastIndexOf("}")
 			
 			val parsedResult = result.substring(firstI + 1, lastI)
 			val split = newArrayList
 			split += parsedResult.splitOnDelim
-					
+			
 			return split
 		}
 		
