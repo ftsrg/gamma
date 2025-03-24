@@ -15,6 +15,8 @@ import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.util.TraceUtil
+import hu.bme.mit.gamma.transformation.util.StatechartEcoreUtil
+import hu.bme.mit.gamma.transformation.util.UnfoldedExecutionTraceBackAnnotator
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
@@ -38,6 +40,7 @@ class ImlSemanticDiffer {
 	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final StatechartEcoreUtil statechartEcoreUtil = StatechartEcoreUtil.INSTANCE
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//
 	
@@ -99,7 +102,14 @@ class ImlSemanticDiffer {
 			val step = trace.addStep
 			step.asserts += expressions
 			
-			return trace
+			// Back-annotating trace
+			val unfoldedComponent = trace.component
+			val originalComponent = statechartEcoreUtil.loadAndReplaceToOriginalComponent(unfoldedComponent)
+			val backAnnotator = new UnfoldedExecutionTraceBackAnnotator(trace, originalComponent)
+			val orignalTrace = backAnnotator.execute
+			//
+			
+			return orignalTrace
 		}
 		
 		return null
@@ -278,7 +288,7 @@ class ImlSemanticDiffer {
 		String invariant
 		//
 		new(String constraints, String invariant) {
-			this.constraints = constraints.trimLine
+			this.constraints = constraints.trimLine.sort // We use this as key; must be sorted: 'canonical' representation
 			this.invariant = invariant.trimLine.changeTopmostSemicolons
 		}
 		
@@ -330,6 +340,16 @@ class ImlSemanticDiffer {
 			return builder.toString
 		}
 		
+		//
+		
+		protected def sort(String line) {
+			val sortable = newArrayList
+			sortable += line.split(ImlApiHelper.CONSTRAINT_DELIM).map[it.trim]
+			sortable.sortInplace
+			val result = sortable.join(ImlApiHelper.CONSTRAINT_DELIM)
+			return result
+		}
+		
 	}
 	
 	static class SemanticDiffParser {
@@ -357,7 +377,7 @@ class ImlSemanticDiffer {
 			val diffs = newLinkedHashMap
 			
 			for (constraints1 : result1.constraints) {
-				val invariant2 = result2.getInvariant(constraints1)
+				val invariant2 = result2.getInvariant(constraints1) // Constraints shall be 'canonically' represented
 				if (invariant2 !== null) {
 					val invariant1 = result1.getInvariant(constraints1)
 					// Found an entry where constraints are the same

@@ -10,7 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.iml.verification
 
-import hu.bme.mit.gamma.expression.model.EqualityExpression
+import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.querygenerator.ImlQueryGenerator
@@ -112,7 +112,7 @@ class ImlExpressionParser {
 		for (expression : expressions) {
 			var filtered = false
 			
-			if (expression instanceof EqualityExpression) {
+			if (expression instanceof BinaryExpression) {
 				val left = expression.leftOperand
 				val right = expression.rightOperand
 				if (left instanceof OpaqueExpression) {
