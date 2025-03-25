@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.OpaqueExpression
+import hu.bme.mit.gamma.expression.model.UnaryExpression
 import hu.bme.mit.gamma.querygenerator.ImlQueryGenerator
 import hu.bme.mit.gamma.querygenerator.ThetaQueryGenerator
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression
@@ -119,14 +120,21 @@ class ImlExpressionParser {
 		for (expression : expressions) {
 			var filtered = false
 			
-			if (expression instanceof BinaryExpression) {
-				val left = expression.leftOperand
-				val right = expression.rightOperand
-				if (left instanceof OpaqueExpression) {
+			var checkableExpression = expression
+			if (expression instanceof UnaryExpression) {
+				checkableExpression = expression.operand
+			}
+			// Note: no 'else'
+			if (checkableExpression instanceof BinaryExpression) {
+				val left = checkableExpression.leftOperand
+				val right = checkableExpression.rightOperand
+				if (left.needsFiltering) {
 					filtered = true // Intermediate variables
 				}
 				else if (right instanceof OpaqueExpression) {
-					right.expression = "Anything" // Are more checks needed to identify havocs?
+					if (right.havoc) {
+						right.expression = "Anything"
+					}
 				}
 			}
 			
@@ -159,6 +167,19 @@ class ImlExpressionParser {
 		}
 		
 		return expression
+	}
+	
+	protected def needsFiltering(Expression expression) {
+		expression.getSelfAndAllContentsOfType(OpaqueExpression)
+				.forall[it.expression.matches(".+_[0-9]+")]
+	}
+	
+	protected def isHavoc(Expression expression) {
+		if (expression instanceof OpaqueExpression) {
+			val text = expression.expression
+			return text.contains(".") // Are more checks needed to identify havocs?
+		}
+		return false
 	}
 	
 }
