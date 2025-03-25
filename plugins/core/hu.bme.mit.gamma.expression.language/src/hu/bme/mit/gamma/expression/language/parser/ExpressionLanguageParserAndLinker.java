@@ -26,6 +26,7 @@ import hu.bme.mit.gamma.expression.language.ExpressionLanguageStandaloneSetup;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
+import hu.bme.mit.gamma.expression.model.OpaqueExpression;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
@@ -77,7 +78,7 @@ public class ExpressionLanguageParserAndLinker {
 		}
 
 		try {
-			String typeReferenceId = "";
+			String typeReferenceId = null;
 			ICompositeNode rootNode = result.getRootNode();
 			for (ILeafNode node : rootNode.getLeafNodes()) {
 				EObject grammarElement = node.getGrammarElement();
@@ -96,20 +97,23 @@ public class ExpressionLanguageParserAndLinker {
 						return (Expression) parsedReference;
 					}
 					
-					/// Enum literals
-					if (reference instanceof TypeReference && container instanceof EnumerationLiteralExpression) {
-						typeReferenceId = text;
-						continue; // Next node is the literal id
-					}
-					else if (reference instanceof EnumerationLiteralExpression) {
-						String enumId = typeReferenceId + "::" + text;
-						parsedReference = util.createOpaqueExpression(enumId);
+					/// Unparsable enum literals (e.g., state references)
+					if (parsedReference instanceof OpaqueExpression) { // I.e., 'parsedReference' was 'null'
+						if (reference instanceof TypeReference && container instanceof EnumerationLiteralExpression) {
+							typeReferenceId = text;
+							continue; // Next node is the literal id
+						}
+						else if (reference instanceof EnumerationLiteralExpression) {
+							String enumId = typeReferenceId + "::" + text;
+							parsedReference = util.createOpaqueExpression(enumId);
+						}
 					}
 					///
 					
 					ecoreUtil.replace(parsedReference, reference);
 				}
 			}
+			
 			return (Expression) result.getRootASTElement();
 		} catch (Exception e) {
 			return util.createOpaqueExpression(expression);
