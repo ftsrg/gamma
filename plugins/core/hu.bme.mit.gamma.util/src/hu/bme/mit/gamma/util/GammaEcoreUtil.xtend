@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -16,6 +16,7 @@ import java.util.Collections
 import java.util.Comparator
 import java.util.Iterator
 import java.util.List
+import java.util.function.Predicate
 import java.util.logging.Level
 import java.util.logging.Logger
 import org.eclipse.core.resources.ResourcesPlugin
@@ -899,6 +900,24 @@ class GammaEcoreUtil {
 			return get.get(object.index + 1) as EObject
 		}
 		throw new IllegalArgumentException("Not a list: " + get)
+	}
+	
+	def EObject getNextOf(EObject object, Predicate<EObject> predicate) {
+		val next = object.next
+		if (predicate.test(next)) {
+			return next
+		}
+		return next.getNextOf(predicate)
+	}
+	
+	def <T extends EObject> T getNextOfType(EObject object, Class<T> clazz) {
+		return object.getNextOf(
+				[clazz.isInstance(it)]) as T
+	}
+	
+	def EObject getNextOfNotType(EObject object, Class<?> clazz) {
+		return object.getNextOf(
+				[!clazz.isInstance(it)])
 	}
 	
 	def <T extends EObject> List<T> sortAccordingToReferences(List<T> list) {

@@ -84,6 +84,12 @@ class JavaUtil {
 		return true
 	}
 	
+	def uniquate(Iterable<?> collection) {
+		val set = newLinkedHashSet
+		set += collection
+		return set
+	}
+	
 	def boolean containsAny(Collection<?> lhs, Iterable<?> rhs) {
 		for (element : rhs) {
 			if (lhs.contains(element)) {

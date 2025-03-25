@@ -210,9 +210,16 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 			return getInstanceReference(operand);
 		}
 		else if (expression instanceof BinaryExpression binaryExpression) {
-			ComponentInstanceElementReferenceExpression elementReference =
-					getOperandOfType(binaryExpression, ComponentInstanceElementReferenceExpression.class);
-			return getInstanceReference(elementReference);
+			Expression leftOperand = binaryExpression.getLeftOperand();
+			try {
+				return getInstanceReference(leftOperand);
+			} catch (IllegalArgumentException e) {
+				Expression rightOperand = binaryExpression.getRightOperand();
+				return getInstanceReference(rightOperand);
+			}
+//			ComponentInstanceElementReferenceExpression elementReference =
+//					getOperandOfType(binaryExpression, ComponentInstanceElementReferenceExpression.class);
+//			return getInstanceReference(elementReference);
 		}
 		throw new IllegalArgumentException("Not known instance state: " + expression);
 	}
