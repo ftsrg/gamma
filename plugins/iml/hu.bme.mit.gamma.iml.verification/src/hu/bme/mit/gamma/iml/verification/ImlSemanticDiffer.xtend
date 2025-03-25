@@ -104,12 +104,15 @@ class ImlSemanticDiffer {
 			
 			// Back-annotating trace
 			val unfoldedComponent = trace.component
-			val originalComponent = statechartEcoreUtil.loadAndReplaceToOriginalComponent(unfoldedComponent)
-			val backAnnotator = new UnfoldedExecutionTraceBackAnnotator(trace, originalComponent)
-			val orignalTrace = backAnnotator.execute
+			if (statechartEcoreUtil.existsOriginalComponent(unfoldedComponent)) {
+				val originalComponent = statechartEcoreUtil.loadAndReplaceToOriginalComponent(unfoldedComponent)
+				val backAnnotator = new UnfoldedExecutionTraceBackAnnotator(trace, originalComponent)
+				val orignalTrace = backAnnotator.execute
+				return orignalTrace
+			}
 			//
 			
-			return orignalTrace
+			return trace
 		}
 		
 		return null

@@ -171,13 +171,12 @@ class ImlExpressionParser {
 	
 	protected def needsFiltering(Expression expression) {
 		expression.getSelfAndAllContentsOfType(OpaqueExpression)
-				.forall[it.expression.matches(".+_[0-9]+")]
+				.exists[it.expression.matches(".+_[0-9]+")]
 	}
 	
 	protected def isHavoc(Expression expression) {
 		if (expression instanceof OpaqueExpression) {
-			val text = expression.expression
-			return text.contains(".") // Are more checks needed to identify havocs?
+			return expression.needsFiltering // Are more checks needed to identify havocs?
 		}
 		return false
 	}
