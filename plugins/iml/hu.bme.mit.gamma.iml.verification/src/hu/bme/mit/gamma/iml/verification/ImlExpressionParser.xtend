@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.iml.verification
 
 import hu.bme.mit.gamma.expression.model.BinaryExpression
+import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.querygenerator.ImlQueryGenerator
@@ -86,18 +87,24 @@ class ImlExpressionParser {
 	protected def parse(String text) {
 		val expression = xStsBackAnnotator.parseExpression(text)
 		
-		if (expression instanceof OpaqueExpression) {
-			val opaque = expression.expression.deparenthesize.trim
-			
-			val potentialStateString = opaque.replace("::", ".") // Preprocessed IML '.' to Gamma '::' in enums
-			if (imlQueryGenerator.isSourceState(potentialStateString)) {
-				val stateInstance = imlQueryGenerator.getSourceState(potentialStateString)
-				val state = stateInstance.key
-				val instance = stateInstance.value
-				
-				val stateExpression = instance.createInstanceReference.createStateReference(state)
-				
-				return stateExpression
+		if (expression instanceof EqualityExpression) {
+			val left = expression.leftOperand
+			val right = expression.rightOperand
+			if (left instanceof OpaqueExpression) {
+				if (right instanceof OpaqueExpression) {
+					val opaque = left.expression + " == " + right.expression
+					
+					val potentialStateString = opaque.replace("::", ".") // Preprocessed IML '.' to Gamma '::' in enums
+					if (imlQueryGenerator.isSourceState(potentialStateString)) {
+						val stateInstance = imlQueryGenerator.getSourceState(potentialStateString)
+						val state = stateInstance.key
+						val instance = stateInstance.value
+						
+						val stateExpression = instance.createInstanceReference.createStateReference(state)
+						
+						return stateExpression
+					}
+				}
 			}
 		}
 		

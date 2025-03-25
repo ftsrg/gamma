@@ -17,22 +17,26 @@ import java.util.function.Function;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.CrossReference;
 import org.eclipse.xtext.nodemodel.ICompositeNode;
-import org.eclipse.xtext.nodemodel.INode;
+import org.eclipse.xtext.nodemodel.ILeafNode;
 import org.eclipse.xtext.parser.IParseResult;
 
 import com.google.inject.Injector;
 
 import hu.bme.mit.gamma.expression.language.ExpressionLanguageStandaloneSetup;
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
+import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
+import hu.bme.mit.gamma.util.JavaUtil;
 
 public class ExpressionLanguageParserAndLinker {
 	//
 	protected final Injector injector = new ExpressionLanguageStandaloneSetup().createInjectorAndDoEMFRegistration();
 	protected final ExpressionUtil util = ExpressionUtil.INSTANCE;
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	protected final ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE;
 	//
 
@@ -62,8 +66,10 @@ public class ExpressionLanguageParserAndLinker {
 	}
 	
 	public Expression parse(String expression, Function<String, ? extends EObject> scope) {
+		String trimmedExpression = javaUtil.deparenthesize(expression);
+		StringReader reader = new StringReader(trimmedExpression);
+		
 		CustomExpressionLanguageParser parser = injector.getInstance(CustomExpressionLanguageParser.class);
-		StringReader reader = new StringReader(expression);
 		IParseResult result = parser.parse(reader);
 
 		if (result.hasSyntaxErrors()) {
@@ -71,8 +77,9 @@ public class ExpressionLanguageParserAndLinker {
 		}
 
 		try {
+			String typeReferenceId = "";
 			ICompositeNode rootNode = result.getRootNode();
-			for (INode node : rootNode.getLeafNodes()) {
+			for (ILeafNode node : rootNode.getLeafNodes()) {
 				EObject grammarElement = node.getGrammarElement();
 				if (grammarElement instanceof CrossReference) {
 					EObject reference = node.getSemanticElement();
@@ -82,10 +89,24 @@ public class ExpressionLanguageParserAndLinker {
 					if (parsedReference == null) {
 						parsedReference = util.createOpaqueExpression(text);
 					}
-					if (reference.eContainer() == null) {
+					
+					EObject container = reference.eContainer();
+					if (container == null) {
 						// Replace would not work as it is a single element
 						return (Expression) parsedReference;
 					}
+					
+					/// Enum literals
+					if (reference instanceof TypeReference && container instanceof EnumerationLiteralExpression) {
+						typeReferenceId = text;
+						continue; // Next node is the literal id
+					}
+					else if (reference instanceof EnumerationLiteralExpression) {
+						String enumId = typeReferenceId + "::" + text;
+						parsedReference = util.createOpaqueExpression(enumId);
+					}
+					///
+					
 					ecoreUtil.replace(parsedReference, reference);
 				}
 			}
