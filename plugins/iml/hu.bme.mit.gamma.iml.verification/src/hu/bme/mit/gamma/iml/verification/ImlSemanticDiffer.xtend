@@ -14,6 +14,9 @@ import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
+import hu.bme.mit.gamma.trace.util.TraceUtil
+import hu.bme.mit.gamma.transformation.util.StatechartEcoreUtil
+import hu.bme.mit.gamma.transformation.util.UnfoldedExecutionTraceBackAnnotator
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
@@ -35,11 +38,13 @@ class ImlSemanticDiffer {
 	//
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
+	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final StatechartEcoreUtil statechartEcoreUtil = StatechartEcoreUtil.INSTANCE
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//
 	
-	def execute(Object traceability, File modelFile, File modelFile2) {
+	def ExecutionTrace execute(Object traceability, File modelFile, File modelFile2) {
 		val grandparentFile = modelFile.parentFile
 		val src = modelFile.loadString
 		val src2 = modelFile2.loadString
@@ -89,12 +94,23 @@ class ImlSemanticDiffer {
 			
 			val gammaPackage = traceability as Package
 			val scanner = new Scanner(diffTrace)
-			val backAnnotator = new TraceBackAnnotator(gammaPackage, scanner)
-			val trace = backAnnotator.execute
-			// TODO support state configurations
-			// TODO support constraints
+			val expressionParser = new ImlExpressionParser(gammaPackage, scanner)
 			
-			trace.postprocessSemanticDiff
+			val expressions = expressionParser.execute
+			
+			val trace = gammaPackage.components.head.createTrace
+			val step = trace.addStep
+			step.asserts += expressions
+			
+			// Back-annotating trace
+			val unfoldedComponent = trace.component
+			if (statechartEcoreUtil.existsOriginalComponent(unfoldedComponent)) {
+				val originalComponent = statechartEcoreUtil.loadAndReplaceToOriginalComponent(unfoldedComponent)
+				val backAnnotator = new UnfoldedExecutionTraceBackAnnotator(trace, originalComponent)
+				val orignalTrace = backAnnotator.execute
+				return orignalTrace
+			}
+			//
 			
 			return trace
 		}
@@ -104,7 +120,7 @@ class ImlSemanticDiffer {
 	
 	protected def execute(File grandparentFile, String cmd) {
 		val parentFile = grandparentFile + File.separator + IMANDRA_TEMPORARY_COMMAND_FOLDER
-		val nameSuffix = Thread.currentThread.name.replaceAll(":", "").replaceAll(" ", "_")
+		val nameSuffix = Thread.currentThread.name.replace(":", "").replace(" ", "_")
 		val pythonFile = new File(parentFile, '''.imandra-commands-«nameSuffix».py''')
 		pythonFile.deleteOnExit
 		pythonFile.saveString(cmd)
@@ -210,7 +226,7 @@ class ImlSemanticDiffer {
 		val newStart = '''let «START_FUNCTION_NAME»2 ='''
 		
 		val newSrc = newStart + src.substring(start + offset, end)
-				.replaceAll('''let «DIFF_FUNCTION_NAME» ''', '''let «NEW_DIFF_FUNCTION_NAME» ''')
+				.replace('''let «DIFF_FUNCTION_NAME» ''', '''let «NEW_DIFF_FUNCTION_NAME» ''')
 		return newSrc
 	}
 	
@@ -275,7 +291,7 @@ class ImlSemanticDiffer {
 		String invariant
 		//
 		new(String constraints, String invariant) {
-			this.constraints = constraints.trimLine
+			this.constraints = constraints.trimLine.sort // We use this as key; must be sorted: 'canonical' representation
 			this.invariant = invariant.trimLine.changeTopmostSemicolons
 		}
 		
@@ -327,6 +343,16 @@ class ImlSemanticDiffer {
 			return builder.toString
 		}
 		
+		//
+		
+		protected def sort(String line) {
+			val sortable = newArrayList
+			sortable += line.split(ImlApiHelper.CONSTRAINT_DELIM).map[it.trim]
+			sortable.sortInplace
+			val result = sortable.join(ImlApiHelper.CONSTRAINT_DELIM)
+			return result
+		}
+		
 	}
 	
 	static class SemanticDiffParser {
@@ -354,7 +380,7 @@ class ImlSemanticDiffer {
 			val diffs = newLinkedHashMap
 			
 			for (constraints1 : result1.constraints) {
-				val invariant2 = result2.getInvariant(constraints1)
+				val invariant2 = result2.getInvariant(constraints1) // Constraints shall be 'canonically' represented
 				if (invariant2 !== null) {
 					val invariant1 = result1.getInvariant(constraints1)
 					// Found an entry where constraints are the same
@@ -381,13 +407,17 @@ class ImlSemanticDiffer {
 		}
 
 		protected def splitInvariant(String result) {
+			if (result.nullOrEmpty) {
+				return newArrayList
+			}
+			
 			val firstI = result.indexOf("{")
 			val lastI = result.lastIndexOf("}")
 			
 			val parsedResult = result.substring(firstI + 1, lastI)
 			val split = newArrayList
 			split += parsedResult.splitOnDelim
-					
+			
 			return split
 		}
 		
@@ -489,7 +519,7 @@ class ImlSemanticDiffer {
 			''' «ENV».''' -> " ",
 			'''(«REC».''' -> "(",
 			'''(«ENV».''' -> "("
-		}
+		} // Note: '''«REC».''' -> "" would not work, see e.g., 'M_enum_type_var.ERROR'
 		//
 		protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 		//
@@ -526,67 +556,23 @@ class ImlSemanticDiffer {
 			return preprocessedDiff
 		}
 		
-		protected def String adaptSemanticDiff(Map<String, Entry<String, String>> diff) '''
-			«TraceBackAnnotator.CX_START»
-			«TraceBackAnnotator.COUNTEREXAMPLE_INIT_VAR»
-			{
-			
-			}
-			«TraceBackAnnotator.COUNTEREXAMPLE_TRACE_VAR»
-			«TraceBackAnnotator.STATE_CHANGE2 /*[{*/»
-				«FOR entry : diff.entrySet SEPARATOR DELIM + System.lineSeparator + TraceBackAnnotator.STATE_CHANGE»
-«««						Constraints
-						«entry.key.parseConstraint /* Duplication - we want to parse inputs and states, too */»
-					}«DELIM»
-					«TraceBackAnnotator.STATE_CHANGE /*{*/»
-						«entry.key.parseConstraint /* Duplication - we want to parse inputs and states, too */»
-					}«DELIM»
-					«TraceBackAnnotator.STATE_CHANGE /*{*/»
-«««						Invariants
-					}«DELIM»
-					«TraceBackAnnotator.STATE_CHANGE /*{*/»
-						«entry.value.key.parseDelim»
-						«DELIM»
-						«entry.value.value.parseDelim»
-					}
+		protected def String adaptSemanticDiff(Map<String, Entry<String, String>> diff) {
+			var count = 1
+			return '''
+				«FOR entry : diff.entrySet»
+					"--- Region «count++» ---"
+					"- Constraints:"
+					«entry.key.parseDelim»
+					"- Original invariant:"
+					«entry.value.key.parseDelim»
+					"- New invariant:"
+					«entry.value.value.parseDelim»
 				«ENDFOR»
-			]
-		'''
-		
-		protected def parseConstraint(String constraint) {
-			val constraints = constraint.split(INVARIANT_DELIM)
-					.map[it.trim.deparenthesize]
-			val parsedConstraints = newArrayList
-			
-			// Manually implemented parsing...
-			for (constraintElem : constraints) {
-				var parsedConstraint = constraintElem
-				val equalSignCount = constraintElem.countChar('=')
-				
-				val NOT = "not"
-				val startsWithNot = parsedConstraint.startsWith(NOT)
-				if (startsWithNot) {
-					parsedConstraint = parsedConstraint.substring(NOT.length).trim.deparenthesize
-					if (equalSignCount == 1) {
-						parsedConstraint = parsedConstraint.replace("=", "<>")
-					}
-					// TODO save negation
-				}
-				if (equalSignCount == 0) {
-					parsedConstraint = parsedConstraint + " = " + (startsWithNot ? "false" : "true")
-				}
-				
-				// Final addition to the list
-				if (parsedConstraint.countChar('=') == 1) {
-					parsedConstraints += parsedConstraint
-				}
-			}
-			
-			return parsedConstraints.join(DELIM + System.lineSeparator)
+			'''
 		}
 		
 		protected def parseDelim(String value) {
-			return value.replace(INVARIANT_DELIM, DELIM + System.lineSeparator)
+			return value.replace(INVARIANT_DELIM, System.lineSeparator)
 		}
 		
 		protected def String getExampleDiff() '''

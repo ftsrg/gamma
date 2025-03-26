@@ -12,7 +12,6 @@ package hu.bme.mit.gamma.theta.verification
 
 import hu.bme.mit.gamma.expression.language.parser.ExpressionLanguageParserAndLinker
 import hu.bme.mit.gamma.expression.model.Declaration
-import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.expression.util.IndexHierarchy
@@ -34,6 +33,7 @@ import java.util.List
 import java.util.Map
 import java.util.Set
 import java.util.function.Function
+import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -349,10 +349,10 @@ class XstsBackAnnotator {
 		return parser
 	}
 	
-	protected def parseExpression(String value) {
+	def parseExpression(String value) {
 		val parser = getParser
 		val expression = parser.preprocessAndParse(value,
-			new Function<String, Expression> {
+			new Function<String, EObject> {
 				override apply(String id) {
 					return id.parseReference
 				}
@@ -394,8 +394,16 @@ class XstsBackAnnotator {
 			
 			instance.createInstanceReference.createParameterReference(port, event, parameter)
 		}
+		else if (xStsQueryGenerator.isSourceTypeDeclaration(id)) {
+			val typeDeclaration = xStsQueryGenerator.getSourceTypeDeclaration(id)
+			typeDeclaration.createTypeReference
+		}
+		else if (xStsQueryGenerator.isSourceEnumLiteral(id)) {
+			val literal = xStsQueryGenerator.getSourceEnumLiteral(id)
+			literal.createEnumerationLiteralExpression
+		}
 		else {
-			return null // As expected by the parser
+			null // As expected by the parser
 		}
 	}
 	

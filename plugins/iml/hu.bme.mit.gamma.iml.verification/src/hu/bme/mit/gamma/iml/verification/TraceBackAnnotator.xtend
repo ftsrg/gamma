@@ -43,8 +43,7 @@ class TraceBackAnnotator {
 	public static final String COUNTEREXAMPLE_INIT_VAR = RETURN_VALUE + "t =" // Used to be 'module CX :' before refactor
 	public static final String COUNTEREXAMPLE_TRACE_VAR = RETURN_VALUE + "t list ="
 	
-	protected val preprocessExpressions = #{ "&&" -> "and", "||" -> "or", "<>" -> "!=",
-			"+." -> "+", "-." -> "-", "*." -> "*", "/." -> "/" }
+	protected val preprocessExpressions = ImlExpressionParser.preprocessExpressions
 	
 	//
 	protected final Scanner traceScanner
@@ -65,6 +64,7 @@ class TraceBackAnnotator {
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	protected final Logger logger = Logger.getLogger("GammaLogger")
+	//
 	
 	new(Package gammaPackage, Scanner traceScanner) {
 		this(gammaPackage, traceScanner, true)

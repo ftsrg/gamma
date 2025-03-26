@@ -62,6 +62,17 @@ class StatechartEcoreUtil {
 		return originalComponent
 	}
 	
+	def existsOriginalComponent(Component unfoldedComponent) {
+		val unfoldedPackageFile = unfoldedComponent.eResource.file
+		val unfoldedPackagePath = unfoldedPackageFile.absolutePath
+		
+		val originalGsmComponentAbsoluteUri = unfoldedPackagePath.originalGsmComponentUri
+		val originalGcdComponentAbsoluteUri = unfoldedPackagePath.originalGcdComponentUri
+		
+		return new File(originalGsmComponentAbsoluteUri).exists ||
+				new File(originalGcdComponentAbsoluteUri).exists
+	}
+	
 	private def checkUriTypes(Iterable<? extends Resource> resources) {
 		return resources.forall[it.hasPlatformUri] || // All platform, or
 				resources.forall[!it.hasPlatformUri] // All absolute

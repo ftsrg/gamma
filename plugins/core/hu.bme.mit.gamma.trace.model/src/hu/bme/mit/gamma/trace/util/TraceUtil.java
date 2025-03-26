@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -31,6 +31,7 @@ import hu.bme.mit.gamma.statechart.contract.ScenarioAllowedWaitAnnotation;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
 import hu.bme.mit.gamma.statechart.statechart.Region;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
@@ -44,6 +45,7 @@ import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Reset;
 import hu.bme.mit.gamma.trace.model.Schedule;
 import hu.bme.mit.gamma.trace.model.Step;
+import hu.bme.mit.gamma.trace.model.TimeUnitAnnotation;
 import hu.bme.mit.gamma.trace.model.TraceModelFactory;
 
 public class TraceUtil extends StatechartUtil {
@@ -134,6 +136,45 @@ public class TraceUtil extends StatechartUtil {
 			}
 			return 0;
 		}
+	}
+	
+	public ExecutionTrace createTrace(Component component) {
+		ExecutionTrace trace = factory.createExecutionTrace();
+		
+		trace.setImport(
+				StatechartModelDerivedFeatures.getContainingPackage(component));
+		trace.setComponent(component);
+		trace.setName(component.getName() + "Trace");
+		
+		addTimeUnitAnnotation(trace);
+		
+		List<Expression> arguments = StatechartModelDerivedFeatures.getTopComponentArguments(
+				trace.getImport());
+		trace.getArguments().addAll(
+				ecoreUtil.clone(arguments));
+		
+		return trace;
+	}
+	
+	public void addTimeUnitAnnotation(ExecutionTrace trace) {
+		Component component = trace.getComponent();
+		Package _package = StatechartModelDerivedFeatures.getContainingPackage(component);
+		TimeUnit smallestTimeUnit = StatechartModelDerivedFeatures.getSmallestTimeUnit(_package);
+		
+		TimeUnitAnnotation timeUnitAnnotation = factory.createTimeUnitAnnotation();
+		timeUnitAnnotation.setTimeUnit(smallestTimeUnit);
+		
+		trace.getAnnotations()
+				.add(timeUnitAnnotation);
+	}
+	
+	public Step addStep(ExecutionTrace trace) {
+		Step step = factory.createStep();
+		
+		trace.getSteps()
+				.add(step);
+		
+		return step;
 	}
 	
 	public void sortInstanceStates(ExecutionTrace executionTrace) {

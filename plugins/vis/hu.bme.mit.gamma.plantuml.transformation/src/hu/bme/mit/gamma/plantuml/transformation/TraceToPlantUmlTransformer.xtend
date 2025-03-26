@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.trace.model.InstanceSchedule
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TimeElapse
+import hu.bme.mit.gamma.util.JavaUtil
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -27,6 +28,7 @@ class TraceToPlantUmlTransformer {
 	protected final ExecutionTrace trace
 	// Utility
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	//
 	
 	new(ExecutionTrace trace) {
@@ -96,7 +98,8 @@ class TraceToPlantUmlTransformer {
 		«FOR config : step.instanceStateConfigurations
 						.groupBy[it.instance?.serialize].entrySet.sortBy[it.key]»
 			«config.key» «"in".addKeywordStyle» {«config.value.map[
-					it.region.name + "." + it.state.name.addItalicStyle].join(",\n\t")»} «IF step.instanceVariableStates.exists[it.instanceReference?.serialize == config.key]»«"with".addKeywordStyle»«ENDIF»
+					it.region.name + "." + it.state.name.addItalicStyle].uniquate.join(",\n\t")»} «
+						IF step.instanceVariableStates.exists[it.instanceReference?.serialize == config.key]»«"with".addKeywordStyle»«ENDIF»
 			«FOR variableConstraint : step.uniqueInstanceVariableStates
 						.filter[it.instanceReference?.serialize == config.key].sortBy[it.variableDeclaration.name]»
 				«'''  '''»«variableConstraint.variableDeclaration.name» = «variableConstraint.otherOperandIfContainedByEquality.serialize»
