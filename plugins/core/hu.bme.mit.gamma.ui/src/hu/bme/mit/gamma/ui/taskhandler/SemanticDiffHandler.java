@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IFile;
 
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.SemanticDiff;
+import hu.bme.mit.gamma.iml.verification.ImlComposerSemanticDiffer;
 import hu.bme.mit.gamma.iml.verification.ImlSemanticDiffer;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
@@ -53,7 +54,7 @@ public class SemanticDiffHandler extends TaskHandler {
 		
 		Package unfoldedPackage = getTraceabilityPackage(fileNames);
 		
-		ImlSemanticDiffer semanticDiffer = new ImlSemanticDiffer();
+		ImlSemanticDiffer semanticDiffer = new ImlComposerSemanticDiffer();
 		this.semanticDiff = semanticDiffer.execute(unfoldedPackage, modelFile1, modelFile2);
 		
 		if (this.semanticDiff != null) {

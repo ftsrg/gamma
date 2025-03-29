@@ -94,7 +94,7 @@ class ImlApiHelper {
 	/**
 	 * For this call, the IMANDRA_API_KEY variable has to be set.
 	 */
-	static def String getDecompoiseCall(String model, String decomposeFunctionName, String assumingFunctionName) '''
+	static def String getDecomposeCall(String model, String decomposeFunctionName, String assumingFunctionName) '''
 		from imandra.core import Client
 		
 		client = Client()

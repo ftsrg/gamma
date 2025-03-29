@@ -28,11 +28,11 @@ import java.util.Map.Entry
 import java.util.Scanner
 import java.util.logging.Logger
 
-class ImlSemanticDiffer {
+abstract class ImlSemanticDiffer {
 	//
 	public static final String IMANDRA_TEMPORARY_COMMAND_FOLDER = ".imandra"
-	final String DIFF_FUNCTION_NAME = "trans"
-	final String NEW_DIFF_FUNCTION_NAME = DIFF_FUNCTION_NAME + 2
+	protected final String DIFF_FUNCTION_NAME = "trans"
+	protected final String NEW_DIFF_FUNCTION_NAME = DIFF_FUNCTION_NAME + 2
 	//
 	protected static final String INVARIANT_DELIM = " " + ImlApiHelper.CONSTRAINT_DELIM + System.lineSeparator
 	//
@@ -65,13 +65,13 @@ class ImlSemanticDiffer {
 				DIFF_FUNCTION_NAME» «diffArguments») <> («NEW_DIFF_FUNCTION_NAME» «diffArguments»));;
 		'''
 		
-		val cmd1 = ImlApiHelper.getDecompoiseCall(
+		val cmd1 = ImlApiHelper.getDecomposeCall(
 		'''
 			«model»
 			«diffFunction»
 		''', DIFF_FUNCTION_NAME, DIFF_PREDICATE_NAME)
 		
-		val cmd2 = ImlApiHelper.getDecompoiseCall(
+		val cmd2 = ImlApiHelper.getDecomposeCall(
 		'''
 			«model»
 			«diffFunction»
