@@ -216,6 +216,11 @@ class JavaUtil {
 		return string.replaceAll(regex, "")
 	}
 	
+	def String deleteFirstAndLast(String string) {
+		return string.trim
+				.substring(1, string.length - 1)
+	}
+	
 	def String deleteFirst(String string, String regex) {
 		return string.replaceFirst(regex, "")
 	}

@@ -68,6 +68,14 @@ class ImlComposerSemanticDiffer extends ImlSemanticDiffer {
 		
 		val decomposition = grandparentFile.execute(cmd)
 		
+		val parser = new SemanticDiffParser(decomposition)
+		val diff = parser.execute
+		parser.print(diff)
+		
+		if (traceability !== null) {
+			return diff.backAnnotate(traceability)
+		}
+		
 		return null
 	}
 	

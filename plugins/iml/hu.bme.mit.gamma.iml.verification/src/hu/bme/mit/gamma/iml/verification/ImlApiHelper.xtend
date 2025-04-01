@@ -95,6 +95,7 @@ class ImlApiHelper {
 	 * For this call, the IMANDRA_API_KEY variable has to be set.
 	 */
 	static def String getDecomposeCall(String model, String decomposeFunctionName, String assumingFunctionName) '''
+		import imandrax_api.lib as xtypes
 		from imandra.core import Client
 		
 		client = Client()
@@ -105,12 +106,26 @@ class ImlApiHelper {
 		
 		decomposition = client.decompose("«decomposeFunctionName»"«
 				IF assumingFunctionName !== null», "«assumingFunctionName»"«ENDIF», prune=True, ctx_simp=True)
+		art = xtypes.read_artifact_data(data=decomposition.artifact.data, kind=decomposition.artifact.kind)
+		regions = []
 		
-		for n, region in enumerate(decomposition.regions_str):
+		for region in art.regions:
+			raw = dict(dict(region.meta).get('str').arg)
+			parsed_region = {
+				'constraints': [c.arg for c in raw['constraints'].arg],
+				'invariant': raw['invariant'].arg,
+				'model': dict([(k,v.arg) for (k,v) in raw['model'].arg]),
+				'model_eval': raw['model_eval'].arg
+			}
+			regions.append(parsed_region)
+		
+		n = 0
+		for region in regions:
+			n = n + 1
 			print("«REGION_START»", n, "-" * 10 + "\n«CONSTRAINT_START»")
-			for c in region.constraints_str:
-				print("  ", c.strip(), "«CONSTRAINT_DELIM»")
-			print("«INVARIANT_START»", "\n  ", region.invariant_str.strip())
+			for constraint in region['constraints']:
+				print("  ", constraint.strip(), "«CONSTRAINT_DELIM»")
+			print("«INVARIANT_START»", "\n  ", region['invariant'])
 	'''
 	
 }
