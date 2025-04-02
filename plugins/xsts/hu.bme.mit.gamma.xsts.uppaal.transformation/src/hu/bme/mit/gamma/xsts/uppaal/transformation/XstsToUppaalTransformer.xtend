@@ -102,7 +102,7 @@ class XstsToUppaalTransformer {
 		optimizelIntegerCodomains
 		//
 		val nta = ntaBuilder.nta
-		//nta.transformClockExpressions CFA transformer handles it
+		//nta.transformClockExpressions // CFA transformer handles it
 		//
 		
 		ntaBuilder.instantiateTemplates
