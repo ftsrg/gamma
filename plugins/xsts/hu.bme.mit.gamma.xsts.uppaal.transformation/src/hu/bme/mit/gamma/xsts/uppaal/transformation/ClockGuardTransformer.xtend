@@ -19,6 +19,14 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation
 
+
+/**
+ * A utility class that brings guard expressions to DNF form in regard to clock variables.
+ * 
+ * UPPAAL requires, that 'A guard must be a conjunction of simple conditions on clocks, 
+ * differences between clocks, and boolean expressions not involving clocks.'
+ * This class can bring an expression to DNF form so it may be split across edges. 
+ */
 class ClockGuardTransformer {
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
@@ -28,19 +36,33 @@ class ClockGuardTransformer {
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 
+	/// Singleton class instance
 	public static final ClockGuardTransformer INSTANCE = new ClockGuardTransformer
 
+	/**
+	 * Split expression into expressions, which used as parallel edges are equivalent to the original.
+	 * Clock comparisons may only be in the top level of the expression by itself or in a top level `and` expression.
+	 * 
+	 * @param guard expression can only contain: AndExpression, LiteralExpression, NotExpression, OrExpression, 
+	 * 	PredicateExpression, ReferenceExpression
+	 * 
+	 * @return List of expressions. May be empty if all created expressions are definitely false.
+	 */
 	def List<Expression> splitByDisjunction(Expression guard) {
 		val clone = guard.clone
-		val preservedClone = guard.clone
 		val transformed = clone.toDnfChecked
-		logger.log(Level.INFO, '''Before: «preservedClone.serialize»; After: «transformed.serialize»''')
+		logger.log(Level.INFO, '''Before: «guard.serialize»; After: «transformed.serialize»''')
 		if (transformed instanceof OrExpression) {
 			return transformed.operands.reject[it.isDefinitelyFalseExpression].clone
 		}
 		return #[transformed]
 	}
-
+	
+	/**
+	 * Function to transform expression into DNF form only if it contains references to clock variables.
+	 * 
+	 * @param exp Limitations listed at splitByDisjunction
+	 */
 	private def Expression toDnfChecked(Expression exp) {
 		if (exp.containsClockReference) {
 			return toDnf(exp)
@@ -48,6 +70,10 @@ class ClockGuardTransformer {
 		return exp.clone
 	}
 
+	/**
+	 * Dispatch recursive function (through toDnfChecked) to bring an expression into DNF form. 
+	 * @param exp Limitations listed at splitByDisjunction
+	 */
 	private dispatch def Expression toDnf(Expression exp) {
 		throw new IllegalArgumentException("Unhandled parameter types: " + exp);
 	}
@@ -85,6 +111,8 @@ class ClockGuardTransformer {
 	private dispatch def Expression toDnf(OrExpression expr) {
 		val operands = expr.operands.map[toDnfChecked]
 
+		// Bring up inner `or`s
+		// A or (B or C) => A or B or C
 		val flattenedOperands = operands.flatMap [
 			if (it instanceof OrExpression) {
 				return it.operands
@@ -100,9 +128,9 @@ class ClockGuardTransformer {
 	/**
 	 * This method may be used to distribute ANDs over ORs.
 	 * 
-	 * @param operands list of operands
+	 * @param operands list of operands of the original AND expression. Doesn't have to contain any ORs.
 	 * 
-	 * @returns if distribution was necessary an `OrExpression`, otherwise an #[list.head]`AndExpression` 
+	 * @returns if distribution was necessary an `OrExpression`, otherwise an `AndExpression` 
 	 */
 	private def Expression distributeAnd(List<Expression> operands) {
 		if (!operands.exists[it instanceof OrExpression]) {
@@ -152,12 +180,18 @@ class ClockGuardTransformer {
 		].clone
 	}
 
+	/**
+	 * Check if the expression contains a reference to a clock variable
+	 */
 	private def containsClockReference(Expression expression) {
 		return expression !== null && expression.getSelfAndAllContentsOfType(DirectReferenceExpression).exists [
 			it.clock
 		]
 	}
 
+	/**
+	 * Check if the referenced variable is a clock
+	 */
 	private def boolean isClock(DirectReferenceExpression expr) {
 		val declaration = expr.declaration
 		if (declaration instanceof VariableDeclaration) {
