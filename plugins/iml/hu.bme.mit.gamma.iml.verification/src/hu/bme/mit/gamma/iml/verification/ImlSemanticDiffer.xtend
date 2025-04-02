@@ -363,7 +363,7 @@ abstract class ImlSemanticDiffer {
 				val constraints = region.getConstraints
 				
 				val invariants = region.invariant
-				val parsedInvariants  = invariants.deleteFirstAndLast
+				val parsedInvariants = invariants.deleteFirstAndLast
 				
 				val splitInvariants = parsedInvariants.splitOnDelim
 				val originalInvariant = splitInvariants.head

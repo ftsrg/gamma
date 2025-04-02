@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -436,7 +436,8 @@ DeepHistoryState returns DeepHistoryState:
  
 Component returns InterfaceModel::Component:
 	SynchronousComponent |
-	AsynchronousComponent
+	AsynchronousComponent |
+	CoordinationStatechartDefinition
 ;
 
 SynchronousComponent returns CompositeModel::SynchronousComponent:
@@ -733,6 +734,35 @@ ComponentInstanceEventParameterReferenceExpression returns CompositeModel::Compo
 
 ComponentInstanceReflectiveElementReferenceExpression returns CompositeModel::ComponentInstanceReflectiveElementReferenceExpression:
 	'element' instance=ComponentInstanceReferenceExpression ('.' identifier+=ID) ('::' identifier+=ID)*
+;
+
+//
+
+CoordinationStatechartDefinition returns CoordinationStatechartDefinition:
+	'@Coordination'
+	(
+		('@RegionSchedule' '=' schedulingOrder=SchedulingOrder)? &
+		('@OrthogonalRegionSchedule' '=' orthogonalRegionSchedulingOrder=OrthogonalRegionSchedulingOrder)? &
+		('@TransitionPriority' '=' transitionPriority=TransitionPriority)? &
+		('@GuardEvaluation' '=' guardEvaluation=GuardEvaluation)? &
+		(	annotations+=ComponentAnnotation |
+			annotations+=StatechartContractAnnotation
+		)*
+	)
+	'statechart' name=ID 
+	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
+		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')? '{'
+			(
+				variableDeclarations+=VariableDeclaration |
+				timeoutDeclarations+=TimeoutDeclaration |
+				('invariant' invariants+=Expression)
+			)*
+			(
+				regions+=Region |
+				transitions+=Transition
+			)*
+			functionDeclarations+=FunctionDeclaration*
+	'}'
 ;
 
 //

@@ -397,5 +397,7 @@
     <genClasses ecoreClass="statechart.ecore#//TimeoutReferenceExpression">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statechart.ecore#//TimeoutReferenceExpression/timeout"/>
     </genClasses>
+    <genClasses ecoreClass="statechart.ecore#//CoordinationStatechartDefinition"/>
+    <genClasses ecoreClass="statechart.ecore#//CoordinationTransition"/>
   </genPackages>
 </genmodel:GenModel>
