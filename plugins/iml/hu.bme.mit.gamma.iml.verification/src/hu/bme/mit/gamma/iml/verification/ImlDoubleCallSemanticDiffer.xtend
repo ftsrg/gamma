@@ -12,15 +12,7 @@ package hu.bme.mit.gamma.iml.verification
 
 import java.io.File
 
-class ImlComposerSemanticDiffer extends ImlSemanticDiffer {
-	//
-	protected final String C = "c"
-	protected final String O = "o"
-	protected final String V = "v"
-	protected final String T = "t"
-	protected final String R = "r"
-	protected final String COMPOSITE_DIFF_FUNCTION_NAME = DIFF_FUNCTION_NAME + "_" + NEW_DIFF_FUNCTION_NAME
-	//
+class ImlDoubleCallSemanticDiffer extends ImlSemanticDiffer {
 	
 	override execute(Object traceability, File modelFile, File modelFile2) {
 		val grandparentFile = modelFile.parentFile
@@ -37,37 +29,30 @@ class ImlComposerSemanticDiffer extends ImlSemanticDiffer {
 		val diffParameters = src.extractTransFunctionParameters
 		val diffArguments = diffParameters.extractTransFunctionArguments
 		
-		val composition = '''
-			 type «C» = {
-			   «O» : «T»;
-			   «V» : «T»;
-			 }
-			 
-			 let «COMPOSITE_DIFF_FUNCTION_NAME» «diffParameters» = {
-			 	«O» = «DIFF_FUNCTION_NAME» «diffArguments»;
-			 	«V» = «NEW_DIFF_FUNCTION_NAME» «diffArguments»;
-			 }
-		'''
-		
 		val DIFF_PREDICATE_NAME = "diff"
 		val diffFunction = '''
-			let «DIFF_PREDICATE_NAME» «diffParameters» =
-				match «COMPOSITE_DIFF_FUNCTION_NAME» «diffArguments» with
-				| { «O»; «V»; } -> «O» <> «V»;;
+			let «DIFF_PREDICATE_NAME» «diffParameters» = ((«
+				DIFF_FUNCTION_NAME» «diffArguments») <> («NEW_DIFF_FUNCTION_NAME» «diffArguments»));;
 		'''
 		
-		val cmd = ImlApiHelper.getDecomposeCall(
+		val cmd1 = ImlApiHelper.getDecomposeCall(
 		'''
 			«model»
-			«composition»
 			«diffFunction»
-		''', COMPOSITE_DIFF_FUNCTION_NAME, DIFF_PREDICATE_NAME)
+		''', DIFF_FUNCTION_NAME, DIFF_PREDICATE_NAME)
+		
+		val cmd2 = ImlApiHelper.getDecomposeCall(
+		'''
+			«model»
+			«diffFunction»
+		''', NEW_DIFF_FUNCTION_NAME, DIFF_PREDICATE_NAME)
 		
 		///
 		
-		val decomposition = grandparentFile.execute(cmd)
+		val decomposition1 = grandparentFile.execute(cmd1)
+		val decomposition2 = grandparentFile.execute(cmd2)
 		
-		val parser = new SemanticDiffParser(decomposition)
+		val parser = new SemanticDiffParser(decomposition1, decomposition2)
 		val diff = parser.execute
 		parser.print(diff)
 		

@@ -44,54 +44,9 @@ abstract class ImlSemanticDiffer {
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//
 	
-	def ExecutionTrace execute(Object traceability, File modelFile, File modelFile2) {
-		val grandparentFile = modelFile.parentFile
-		val src = modelFile.loadString
-		val src2 = modelFile2.loadString
-		
-		val trans2 = src2.extractTransFunction
-		
-		val model = '''
-			«src»
-			«trans2»
-		'''
-		
-		val diffParameters = src.extractTransFunctionParameters
-		val diffArguments = diffParameters.extractTransFunctionArguments
-		
-		val DIFF_PREDICATE_NAME = "diff"
-		val diffFunction = '''
-			let «DIFF_PREDICATE_NAME» «diffParameters» = ((«
-				DIFF_FUNCTION_NAME» «diffArguments») <> («NEW_DIFF_FUNCTION_NAME» «diffArguments»));;
-		'''
-		
-		val cmd1 = ImlApiHelper.getDecomposeCall(
-		'''
-			«model»
-			«diffFunction»
-		''', DIFF_FUNCTION_NAME, DIFF_PREDICATE_NAME)
-		
-		val cmd2 = ImlApiHelper.getDecomposeCall(
-		'''
-			«model»
-			«diffFunction»
-		''', NEW_DIFF_FUNCTION_NAME, DIFF_PREDICATE_NAME)
-		
-		///
-		
-		val decomposition1 = grandparentFile.execute(cmd1)
-		val decomposition2 = grandparentFile.execute(cmd2)
-		
-		val parser = new SemanticDiffParser(decomposition1, decomposition2)
-		val diff = parser.execute
-		parser.print(diff)
-		
-		if (traceability !== null) {
-			return diff.backAnnotate(traceability)
-		}
-		
-		return null
-	}
+	abstract def ExecutionTrace execute(Object traceability, File modelFile, File modelFile2)
+	
+	//
 	
 	protected def execute(File grandparentFile, String cmd) {
 		val parentFile = grandparentFile + File.separator + IMANDRA_TEMPORARY_COMMAND_FOLDER
@@ -300,7 +255,7 @@ abstract class ImlSemanticDiffer {
 		String invariant
 		//
 		new(String constraints, String invariant) {
-			this.constraints = constraints.trimLine.sort // We use this as key; must be sorted: 'canonical' representation
+			this.constraints = constraints.trimLine.sort // We use this as key in one of the subclasses; must be sorted: 'canonical' representation
 			this.invariant = invariant.trimLine.changeTopmostSemicolons
 		}
 		
@@ -499,7 +454,7 @@ abstract class ImlSemanticDiffer {
 			println("Semantic diff:")
 			val S = "  "
 			
-			val invert = true // If true, the same invariants are not duplicated for different constraints
+			val invert = false // If true, the same invariants are not duplicated for different constraints
 			if (invert) {
 				val C = "- "
 				val semDiffs = newLinkedHashMap
@@ -572,7 +527,7 @@ abstract class ImlSemanticDiffer {
 		//
 		
 		def String execute(Map<String, Entry<String, String>> diff) {
-			// TODO validation
+			// Potential validation could be added here
 			val preprocessedDiff = diff.preprocessSemanticDiff
 			val adaptedSemanticDiff = preprocessedDiff.adaptSemanticDiff
 			return adaptedSemanticDiff
@@ -623,25 +578,13 @@ abstract class ImlSemanticDiffer {
 		}
 		
 		protected def String getExampleDiff() '''
-			module CX :
-			- : t =
-			{
+			"--- Region 1 ---"
+			"- Constraints:"
 			
-			}
-			- : t list =
-			[{
-					};
-				{
-					_subtraffic_light_Example_ControllerStatechart = M_Subtraffic_light_Example_ControllerStatechart.L_red_on;
-					_red_light_state_Example_ControllerStatechart = true <> false
-				};
-				{
-					};
-				{
-					_subtraffic_light_Example_ControllerStatechart = M_Subtraffic_light_Example_ControllerStatechart.L_red_on;
-					_green_light_state_Example_ControllerStatechart = _red_light_state_Example_ControllerStatechart + 1
-				}
-			]
+			"- Original invariant:"
+			
+			"- New invariant:"
+			
 		'''
 		
 	}
