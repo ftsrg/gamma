@@ -461,10 +461,7 @@ abstract class ImlSemanticDiffer {
 				return newArrayList
 			}
 			
-			val firstI = result.indexOf("{")
-			val lastI = result.lastIndexOf("}")
-			
-			val parsedResult = result.substring(firstI + 1, lastI)
+			val parsedResult = result.getStringBetweenChars("{", "}")
 			val split = newArrayList
 			split += parsedResult.splitOnDelim
 			
