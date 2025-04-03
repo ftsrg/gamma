@@ -164,4 +164,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="timeout" lowerBound="1"
         eType="#//TimeoutDeclaration"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="CoordinationStatechartDefinition" eSuperTypes="#//StatechartDefinition"/>
+  <eClassifiers xsi:type="ecore:EClass" name="CoordinationTransition" eSuperTypes="#//Transition"/>
 </ecore:EPackage>

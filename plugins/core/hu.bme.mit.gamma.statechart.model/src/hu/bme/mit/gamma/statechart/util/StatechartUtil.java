@@ -1064,16 +1064,16 @@ public class StatechartUtil extends ActionUtil {
 		return expression;
 	}
 	
-	public RaiseEventAction createRaiseEventAction(Port port, Event event, Expression parameter) {
-		return createRaiseEventAction(port, event, List.of(parameter));
+	public RaiseEventAction createRaiseEventAction(Port port, Event event, Expression argument) {
+		return createRaiseEventAction(port, event, List.of(argument));
 	}
 	
 	public RaiseEventAction createRaiseEventAction(
-			Port port, Event event, List<? extends Expression> parameters) {
+			Port port, Event event, List<? extends Expression> arguments) {
 		RaiseEventAction raiseEventAction = statechartFactory.createRaiseEventAction();
 		raiseEventAction.setPort(port);
 		raiseEventAction.setEvent(event);
-		raiseEventAction.getArguments().addAll(parameters);
+		raiseEventAction.getArguments().addAll(arguments);
 		return raiseEventAction;
 	}
 	

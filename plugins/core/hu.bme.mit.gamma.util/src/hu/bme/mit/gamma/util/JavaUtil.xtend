@@ -199,6 +199,17 @@ class JavaUtil {
 	
 	//
 	
+	def getStringBetweenChars(String string, char character) {
+		return string.getStringBetweenChars(character, character)
+	}
+	
+	def getStringBetweenChars(String string, char first, char last) {
+		val firstI = string.indexOf(first)
+		val lastI = string.lastIndexOf(last)
+		
+		return string.substring(firstI + 1, lastI)
+	}
+	
 	def countChar(String string, char character) {
 		var count = 0
 		
@@ -214,6 +225,11 @@ class JavaUtil {
 	
 	def String deleteAll(String string, String regex) {
 		return string.replaceAll(regex, "")
+	}
+	
+	def String deleteFirstAndLast(String string) {
+		return string.trim
+				.substring(1, string.length - 1)
 	}
 	
 	def String deleteFirst(String string, String regex) {

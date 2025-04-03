@@ -28,11 +28,11 @@ import java.util.Map.Entry
 import java.util.Scanner
 import java.util.logging.Logger
 
-class ImlSemanticDiffer {
+abstract class ImlSemanticDiffer {
 	//
 	public static final String IMANDRA_TEMPORARY_COMMAND_FOLDER = ".imandra"
-	final String DIFF_FUNCTION_NAME = "trans"
-	final String NEW_DIFF_FUNCTION_NAME = DIFF_FUNCTION_NAME + 2
+	protected final String DIFF_FUNCTION_NAME = "trans"
+	protected final String NEW_DIFF_FUNCTION_NAME = DIFF_FUNCTION_NAME + 2
 	//
 	protected static final String INVARIANT_DELIM = " " + ImlApiHelper.CONSTRAINT_DELIM + System.lineSeparator
 	//
@@ -44,79 +44,9 @@ class ImlSemanticDiffer {
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//
 	
-	def ExecutionTrace execute(Object traceability, File modelFile, File modelFile2) {
-		val grandparentFile = modelFile.parentFile
-		val src = modelFile.loadString
-		val src2 = modelFile2.loadString
-		
-		val trans2 = src2.extractTransFunction
-		
-		val model = '''
-			«src»
-			«trans2»
-		'''
-		
-		val diffParameters = src.extractTransFunctionParameters
-		val diffArguments = diffParameters.extractTransFunctionArguments
-		
-		val DIFF_PREDICATE_NAME = "diff"
-		val diffFunction = '''
-			let «DIFF_PREDICATE_NAME» «diffParameters» = ((«
-				DIFF_FUNCTION_NAME» «diffArguments») <> («NEW_DIFF_FUNCTION_NAME» «diffArguments»));;
-		'''
-		
-		val cmd1 = ImlApiHelper.getDecompoiseCall(
-		'''
-			«model»
-			«diffFunction»
-		''', DIFF_FUNCTION_NAME, DIFF_PREDICATE_NAME)
-		
-		val cmd2 = ImlApiHelper.getDecompoiseCall(
-		'''
-			«model»
-			«diffFunction»
-		''', NEW_DIFF_FUNCTION_NAME, DIFF_PREDICATE_NAME)
-		
-		///
-		
-		val decomposition1 = grandparentFile.execute(cmd1)
-		val decomposition2 = grandparentFile.execute(cmd2)
-		
-		val parser = new SemanticDiffParser(decomposition1, decomposition2)
-		val diff = parser.execute
-		parser.print(diff)
-		
-		if (traceability !== null) {
-			val diffAdapter = new SemanticDiffAdapter
-			val diffTrace = diffAdapter.execute(diff)
-//			val diffTrace = diffAdapter.exampleDiff // Test
-			println(diffTrace)
-			
-			val gammaPackage = traceability as Package
-			val scanner = new Scanner(diffTrace)
-			val expressionParser = new ImlExpressionParser(gammaPackage, scanner)
-			
-			val expressions = expressionParser.execute
-			
-			val trace = gammaPackage.components.head.createTrace
-			val step = trace.addStep
-			step.asserts += expressions
-			
-			// Back-annotating trace
-			val unfoldedComponent = trace.component
-			if (statechartEcoreUtil.existsOriginalComponent(unfoldedComponent)) {
-				val originalComponent = statechartEcoreUtil.loadAndReplaceToOriginalComponent(unfoldedComponent)
-				val backAnnotator = new UnfoldedExecutionTraceBackAnnotator(trace, originalComponent)
-				val orignalTrace = backAnnotator.execute
-				return orignalTrace
-			}
-			//
-			
-			return trace
-		}
-		
-		return null
-	}
+	abstract def ExecutionTrace execute(Object traceability, File modelFile, File modelFile2)
+	
+	//
 	
 	protected def execute(File grandparentFile, String cmd) {
 		val parentFile = grandparentFile + File.separator + IMANDRA_TEMPORARY_COMMAND_FOLDER
@@ -158,6 +88,39 @@ class ImlSemanticDiffer {
 		}
 	}
 	
+	protected def backAnnotate(Map<String, Entry<String, String>> diff, Object traceability) {
+		if (traceability !== null) {
+			val diffAdapter = new SemanticDiffAdapter
+			val diffTrace = diffAdapter.execute(diff)
+//			val diffTrace = diffAdapter.exampleDiff // Test
+			println(diffTrace)
+			
+			val gammaPackage = traceability as Package
+			val scanner = new Scanner(diffTrace)
+			val expressionParser = new ImlExpressionParser(gammaPackage, scanner)
+			
+			val expressions = expressionParser.execute
+			
+			val trace = gammaPackage.components.head.createTrace
+			val step = trace.addStep
+			step.asserts += expressions
+			
+			// Back-annotating trace
+			val unfoldedComponent = trace.component
+			if (statechartEcoreUtil.existsOriginalComponent(unfoldedComponent)) {
+				val originalComponent = statechartEcoreUtil.loadAndReplaceToOriginalComponent(unfoldedComponent)
+				val backAnnotator = new UnfoldedExecutionTraceBackAnnotator(trace, originalComponent)
+				val orignalTrace = backAnnotator.execute
+				return orignalTrace
+			}
+			//
+			
+			return trace
+		}
+		
+		return null
+	}
+	
 	enum ParseRegionStates { CONSTRAINT, INVARIANT }
 	protected def parseRegion(Scanner result) {
 		val decomposition = new Decomposition
@@ -169,6 +132,7 @@ class ImlSemanticDiffer {
 		val invariant = new StringBuilder
 		while (result.hasNextLine) {
 			val line = result.nextLine.trim
+			
 			if (line.startsWith(ImlApiHelper.REGION_START)) {
 				if (!constraints.empty) {
 					regions += new Region(constraints.toString, invariant.toString)
@@ -291,7 +255,7 @@ class ImlSemanticDiffer {
 		String invariant
 		//
 		new(String constraints, String invariant) {
-			this.constraints = constraints.trimLine.sort // We use this as key; must be sorted: 'canonical' representation
+			this.constraints = constraints.trimLine.sort // We use this as key in one of the subclasses; must be sorted: 'canonical' representation
 			this.invariant = invariant.trimLine.changeTopmostSemicolons
 		}
 		
@@ -314,7 +278,7 @@ class ImlSemanticDiffer {
 		}
 		
 		// Needed for invariant parsing
-		protected def changeTopmostSemicolons(String string) {
+		protected static def changeTopmostSemicolons(String string) {
 			val builder = new StringBuilder
 			
 			val char semicolon = ';'
@@ -362,18 +326,59 @@ class ImlSemanticDiffer {
 		//
 		protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 		//
+		
+		new(Decomposition decomposition) {
+			this(decomposition, decomposition)
+		}
+		
 		new(Decomposition decomposition1, Decomposition decomposition2) {
 			this.decomposition1 = decomposition1
 			this.decomposition2 = decomposition2
 		}
 		
 		def execute() {
-			val diff = decomposition1.extractDiff(decomposition2)
+			if (decomposition1 === decomposition2) {
+				return executeSameRegions
+			}
+			return executeDifferentRegions
+		}
+		
+		def executeSameRegions() {
+			return decomposition1.extractDiff
+					.splitConstraints
+		}
+		
+		def executeDifferentRegions() {
+			return decomposition1.extractDiff(decomposition2)
 						.splitConstraints
-			return diff
 		}
 		
 		//
+		
+		protected def extractDiff(Decomposition decomposition) {
+			val diffs = newLinkedHashMap
+			
+			val regions = decomposition.getRegions
+			for (region : regions) {
+				val constraints = region.getConstraints
+				
+				val invariants = region.invariant
+				val parsedInvariants = invariants.deleteFirstAndLast
+				
+				val splitInvariants = parsedInvariants.splitOnDelim
+				val originalInvariant = splitInvariants.head
+				val newInvariant = splitInvariants.lastElement
+				
+				val parsedOriginalInvariants = Region.changeTopmostSemicolons(originalInvariant)
+				val parsedNewInvariants = Region.changeTopmostSemicolons(newInvariant)
+				
+				val invariantDiff = parsedOriginalInvariants.extractDiff(parsedNewInvariants) // Diffing the invariants
+				
+				diffs += constraints -> invariantDiff
+			}
+			
+			return diffs
+		}
 		
 		protected def extractDiff(Decomposition result1, Decomposition result2) {
 			// Maybe a standalone Diff lib would work better?
@@ -411,10 +416,7 @@ class ImlSemanticDiffer {
 				return newArrayList
 			}
 			
-			val firstI = result.indexOf("{")
-			val lastI = result.lastIndexOf("}")
-			
-			val parsedResult = result.substring(firstI + 1, lastI)
+			val parsedResult = result.getStringBetweenChars("{", "}")
 			val split = newArrayList
 			split += parsedResult.splitOnDelim
 			
@@ -452,7 +454,7 @@ class ImlSemanticDiffer {
 			println("Semantic diff:")
 			val S = "  "
 			
-			val invert = true // If true, the same invariants are not duplicated for different constraints
+			val invert = false // If true, the same invariants are not duplicated for different constraints
 			if (invert) {
 				val C = "- "
 				val semDiffs = newLinkedHashMap
@@ -525,7 +527,7 @@ class ImlSemanticDiffer {
 		//
 		
 		def String execute(Map<String, Entry<String, String>> diff) {
-			// TODO validation
+			// Potential validation could be added here
 			val preprocessedDiff = diff.preprocessSemanticDiff
 			val adaptedSemanticDiff = preprocessedDiff.adaptSemanticDiff
 			return adaptedSemanticDiff
@@ -576,25 +578,13 @@ class ImlSemanticDiffer {
 		}
 		
 		protected def String getExampleDiff() '''
-			module CX :
-			- : t =
-			{
+			"--- Region 1 ---"
+			"- Constraints:"
 			
-			}
-			- : t list =
-			[{
-					};
-				{
-					_subtraffic_light_Example_ControllerStatechart = M_Subtraffic_light_Example_ControllerStatechart.L_red_on;
-					_red_light_state_Example_ControllerStatechart = true <> false
-				};
-				{
-					};
-				{
-					_subtraffic_light_Example_ControllerStatechart = M_Subtraffic_light_Example_ControllerStatechart.L_red_on;
-					_green_light_state_Example_ControllerStatechart = _red_light_state_Example_ControllerStatechart + 1
-				}
-			]
+			"- Original invariant:"
+			
+			"- New invariant:"
+			
 		'''
 		
 	}
