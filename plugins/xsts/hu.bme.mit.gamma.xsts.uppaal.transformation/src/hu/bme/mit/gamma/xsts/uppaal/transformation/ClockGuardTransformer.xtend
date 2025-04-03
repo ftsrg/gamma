@@ -34,7 +34,9 @@ class ClockGuardTransformer {
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 
-	/// Singleton class instance
+	/**
+	 *  Singleton class instance
+	 */
 	public static final ClockGuardTransformer INSTANCE = new ClockGuardTransformer
 
 	/**
@@ -54,7 +56,7 @@ class ClockGuardTransformer {
 		}
 		return #[transformed]
 	}
-	
+
 	/**
 	 * Function to transform expression into DNF form only if it contains references to clock variables.
 	 * 
