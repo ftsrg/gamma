@@ -1,24 +1,22 @@
 package hu.bme.mit.gamma.xsts.uppaal.transformation
 
-import hu.bme.mit.gamma.expression.model.Expression
-import java.util.List
-import hu.bme.mit.gamma.expression.model.NotExpression
-import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.expression.model.AndExpression
+import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.expression.model.OrExpression
-import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.LiteralExpression
+import hu.bme.mit.gamma.expression.model.NotExpression
+import hu.bme.mit.gamma.expression.model.OrExpression
 import hu.bme.mit.gamma.expression.model.PredicateExpression
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.ExpressionNegator
 import hu.bme.mit.gamma.expression.util.ExpressionSerializer
+import hu.bme.mit.gamma.util.GammaEcoreUtil
+import java.util.List
 import java.util.logging.Logger
-import java.util.logging.Level
-import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.expression.model.ClockVariableDeclarationAnnotation
-
 
 /**
  * A utility class that brings guard expressions to DNF form in regard to clock variables.
@@ -51,7 +49,6 @@ class ClockGuardTransformer {
 	def List<Expression> splitByDisjunction(Expression guard) {
 		val clone = guard.clone
 		val transformed = clone.toDnfChecked
-		logger.log(Level.INFO, '''Before: «guard.serialize»; After: «transformed.serialize»''')
 		if (transformed instanceof OrExpression) {
 			return transformed.operands.reject[it.isDefinitelyFalseExpression].clone
 		}
