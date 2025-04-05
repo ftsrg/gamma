@@ -13,7 +13,14 @@ code {
 
 analysis {
 	component : TrafficLightWrapper (1, true)
-	language : UPPAAL
+	file : "TrafficLightWrapper-XTA"
+	language : XSTS-UPPAAL
+	transition-coverage
+}
+
+analysis {
+	component : TrafficLightWrapper (1, true)
+	file : "TrafficLightWrapper-XSTS"
 	language : Theta
 	transition-coverage
 }
@@ -25,18 +32,18 @@ analysis {
 }
 
 verification {
-	language : UPPAAL
-	file : "TrafficLightWrapper.xml"
-	query-file : "TrafficLightWrapper.q"
+	language : XSTS-UPPAAL
+	file : "TrafficLightWrapper-XTA.xml"
+	property-file : ".TrafficLightWrapper-XTA.gpd"
 	optimize : true
 	test-language : java
 }
 
 verification {
 	language : Theta
-	file : "TrafficLightWrapper.xsts"
-	query-file : "CustomQueries.prop"
-	query-file : "TrafficLightWrapper.prop"
+	file : "TrafficLightWrapper-XSTS.xsts"
+	property-file : ".TrafficLightWrapper-XSTS.gpd"
+	optimize : true
 	test-language : java
 }
 
