@@ -27,10 +27,6 @@ class ImlComposerSemanticDiffer extends ImlSemanticDiffer {
 		val src = modelFile.loadString
 		val src2 = modelFile2.loadString
 		
-		///
-//		println(modelAligner.execute)
-		///
-		
 		val modelAligner = new SignatureAligner(src, src2)
 		val model = modelAligner.execute
 		

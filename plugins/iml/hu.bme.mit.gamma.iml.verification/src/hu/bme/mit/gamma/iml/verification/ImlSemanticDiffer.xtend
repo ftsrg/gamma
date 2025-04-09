@@ -179,21 +179,6 @@ abstract class ImlSemanticDiffer {
 	
 	//
 	
-//	protected def extractTransFunction(String src) {
-//		val START_FUNCTION_NAME = "init"
-//		val START_STRING = '''let «START_FUNCTION_NAME» ='''
-//		
-//		val start = src.indexOf(START_STRING)
-//		val offset = START_STRING.length
-//		val end = src.indexOf("let env ")
-//		
-//		val newStart = '''let «START_FUNCTION_NAME»2 ='''
-//		
-//		val newSrc = newStart + src.substring(start + offset, end)
-//				.replace('''let «DIFF_FUNCTION_NAME» ''', '''let «NEW_DIFF_FUNCTION_NAME» ''')
-//		return newSrc
-//	}
-	
 	protected def extractTransFunctionParameters(String src) {
 		val FUNCTION_NAME = DIFF_FUNCTION_NAME
 		val START_STRING = '''let «FUNCTION_NAME»'''
