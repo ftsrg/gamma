@@ -37,6 +37,7 @@ import static hu.bme.mit.gamma.uppaal.util.XstsNamings.*
 import static extension de.uni_paderborn.uppaal.derivedfeatures.UppaalModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension java.lang.Math.*
+import hu.bme.mit.gamma.expression.model.Expression
 
 class CfaActionTransformer {
 	
@@ -145,18 +146,7 @@ class CfaActionTransformer {
 	}
 	
 	protected def dispatch Location transformAction(AssumeAction action, Location source) {
-		val target = createLocation(source.parentTemplate) => [
-			it.name = nextCommittedLocationName
-			it.locationTimeKind = LocationKind.COMMITED
-		]
-		val guards = action.assumption.splitByDisjunction.map[transform]
-		for (guard : guards) {
-			source.createEdge(target) => [
-				it.guard = guard
-			]
-		}
-
-		return target
+		return action.assumption.transformGuard(source)
 	}
 	
 	protected def dispatch Location transformAction(SequentialAction action, Location source) {
@@ -200,30 +190,12 @@ class CfaActionTransformer {
 		val negativeCondition = condition.clone
 				.createNotExpression
 		
-		val thenGuardTarget = createLocation(source.parentTemplate) => [
-			it.name = nextCommittedLocationName
-			it.locationTimeKind = LocationKind.COMMITED
-		]
-		val thenGuards = positiveCondition.splitByDisjunction.map[transform]
-		for (guard : thenGuards) {
-			source.createEdge(thenGuardTarget) => [
-				it.guard = guard
-			]
-		}
+		val thenGuardTarget = positiveCondition.transformGuard(source)
 		
 		val thenAction = action.then
 		val thenActionTarget = thenAction.transformAction(thenGuardTarget)
 		
-		val elseGuardTarget = createLocation(source.parentTemplate) => [
-			it.name = nextCommittedLocationName
-			it.locationTimeKind = LocationKind.COMMITED
-		]
-		val elseGuards = negativeCondition.splitByDisjunction.map[transform]
-		for (guard : elseGuards) {
-			source.createEdge(elseGuardTarget) => [
-				it.guard = guard
-			]
-		}
+		val elseGuardTarget = negativeCondition.transformGuard(source)
 		
 		val elseAction = action.^else
 		val elseActionTarget = (elseAction !== null) ? elseAction.transformAction(elseGuardTarget) : elseGuardTarget
@@ -293,6 +265,20 @@ class CfaActionTransformer {
 		for (transientVariable : transientVariables) {
 			edge.update += transientVariable.createResetingAssignmentExpression
 		}
+	}
+	
+	protected def Location transformGuard(Expression guard, Location source){
+		val target = createLocation(source.parentTemplate) => [
+			it.name = nextCommittedLocationName
+			it.locationTimeKind = LocationKind.COMMITED
+		]
+		val transformedGuards = guard.splitByDisjunction.map[transform]
+		for (transformedGuard : transformedGuards) {
+			source.createEdge(target) => [
+				it.guard = transformedGuard
+			]
+		}
+		return target
 	}
 	
 //	// Variable binding
