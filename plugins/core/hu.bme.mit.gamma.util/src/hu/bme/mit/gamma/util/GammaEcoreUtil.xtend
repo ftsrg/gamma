@@ -334,6 +334,16 @@ class GammaEcoreUtil {
 				.toList
 	}
 	
+	def List<EObject> getAllContainersUntil(EObject object, EObject top) {
+		val container = object.eContainer
+		if (container === top) { // Note: excluding top
+			return newArrayList
+		}
+		val containers = container.getAllContainersUntil(top)
+		containers += container
+		return containers
+	}
+	
 	def <T extends EObject> List<T> getSelfAndAllContainersOfType(T object, Class<T> type) {
 		val elements = newArrayList
 		elements += object.getAllContainersOfType(type)

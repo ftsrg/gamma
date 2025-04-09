@@ -1025,6 +1025,12 @@ public class XstsActionUtil extends ExpressionUtil {
 		}
 	}
 	
+	public void replaceWithEmptyActions(Iterable<? extends Action> actions) {
+		for (Action action : actions) {
+			replaceWithEmptyAction(action);
+		}
+	}
+	
 	public void replaceWithEmptyAction(Action action) {
 		EObject container = action.eContainer();
 		if (container != null) {
