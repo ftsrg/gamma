@@ -50,7 +50,6 @@ class XstsBackAnnotator {
 	//
 	protected final Map<String, String> expressionPreprocess
 	protected final XstsReferenceBackAnnotator referenceBackAnnotator
-	protected static final Function<List<?>, String> targetStateAdapter = [it.get(0) + " == " + it.get(1) + "." + it.get(2)]
 	//
 	protected final String SCHEDULING_VARIABLE_PREFIX
 	//
@@ -77,18 +76,19 @@ class XstsBackAnnotator {
 	
 	new(ThetaQueryGenerator queryGenerator, XstsArrayParser arrayParser,
 			String schedulingVariablePrefix, Map<String, String> expressionPreprocess) {
-		this(queryGenerator, arrayParser, schedulingVariablePrefix, expressionPreprocess, targetStateAdapter)
+		this(queryGenerator, arrayParser, schedulingVariablePrefix, expressionPreprocess,
+			new XstsReferenceBackAnnotator(queryGenerator, [it.get(0) + " == " + it.get(1) + "." + it.get(2)]))
 	}
 	
 	new(ThetaQueryGenerator queryGenerator, XstsArrayParser arrayParser,
 			String schedulingVariablePrefix, Map<String, String> expressionPreprocess,
-			Function<List<?>, String> targetStateAdapter) {
+			XstsReferenceBackAnnotator referenceBackAnnotator) {
 		this.component = queryGenerator.component
 		this.xStsQueryGenerator = queryGenerator
 		this.arrayParser = arrayParser
 		this.SCHEDULING_VARIABLE_PREFIX = schedulingVariablePrefix // E.g., _ in IML
 		this.expressionPreprocess = expressionPreprocess
-		this.referenceBackAnnotator = new XstsReferenceBackAnnotator(queryGenerator, targetStateAdapter)
+		this.referenceBackAnnotator = referenceBackAnnotator
 	}
 	
 	//
