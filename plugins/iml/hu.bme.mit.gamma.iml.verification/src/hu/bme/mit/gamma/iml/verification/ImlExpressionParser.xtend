@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.querygenerator.ImlQueryGenerator
 import hu.bme.mit.gamma.querygenerator.ThetaQueryGenerator
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.theta.verification.XstsBackAnnotator
@@ -92,19 +93,8 @@ class ImlExpressionParser {
 			val left = expression.leftOperand
 			val right = expression.rightOperand
 			if (left instanceof OpaqueExpression) {
-				if (right instanceof OpaqueExpression) {
-					val opaque = left.expression + " == " + right.expression
-					
-					val potentialStateString = opaque.replace("::", ".") // Preprocessed IML '.' to Gamma '::' in enums
-					if (imlQueryGenerator.isSourceState(potentialStateString)) {
-						val stateInstance = imlQueryGenerator.getSourceState(potentialStateString)
-						val state = stateInstance.key
-						val instance = stateInstance.value
-						
-						val stateExpression = instance.createInstanceReference.createStateReference(state)
-						
-						return stateExpression
-					}
+				if (right instanceof ComponentInstanceStateReferenceExpression) {
+					return right
 				}
 			}
 		}

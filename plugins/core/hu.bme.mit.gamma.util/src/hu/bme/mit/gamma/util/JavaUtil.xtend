@@ -59,6 +59,16 @@ class JavaUtil {
 		return last
 	}
 	
+	def <T> T getBeforeLastElement(Iterable<T> collection) {
+		var T beforeLast = null
+		var T last = null
+		for (element : collection) {
+			beforeLast = last
+			last = element
+		}
+		return beforeLast
+	}
+	
 	def <T> T removeFirstElement(List<T> list) {
 		return list.remove(0)
 	}

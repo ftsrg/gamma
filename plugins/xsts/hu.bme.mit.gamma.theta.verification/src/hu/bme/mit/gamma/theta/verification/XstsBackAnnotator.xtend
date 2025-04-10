@@ -27,6 +27,7 @@ import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.verification.util.TraceBuilder
 import hu.bme.mit.gamma.xsts.transformation.util.Namings
 import java.util.List
@@ -61,6 +62,7 @@ class XstsBackAnnotator {
 	protected final extension TraceBuilder traceBuilder = TraceBuilder.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	
 	new(ThetaQueryGenerator queryGenerator, XstsArrayParser arrayParser) {
 		this(queryGenerator, arrayParser, "")
@@ -362,6 +364,8 @@ class XstsBackAnnotator {
 		return expression
 	}
 	
+	protected final List<String> unparsableIds = newArrayList
+	
 	protected def parseReference(String id) {
 		// TODO field hierarchies
 		return if (xStsQueryGenerator.isSourceVariable(id)) {
@@ -398,13 +402,45 @@ class XstsBackAnnotator {
 			val typeDeclaration = xStsQueryGenerator.getSourceTypeDeclaration(id)
 			typeDeclaration.createTypeReference
 		}
+		else if (id.isSourceState) { // Before enums as an enum literal can have the same id as a state
+			val instanceState = id.getSourceState
+			unparsableIds.clear
+			
+			val instance = instanceState.value
+			val state = instanceState.key
+			
+			instance.createInstanceReference.createStateReference(state)
+		}
 		else if (xStsQueryGenerator.isSourceEnumLiteral(id)) {
 			val literal = xStsQueryGenerator.getSourceEnumLiteral(id)
 			literal.createEnumerationLiteralExpression
 		}
 		else {
+			unparsableIds += id
 			null // As expected by the parser
 		}
+	}
+	
+	protected def isSourceState(String id) {
+		try {
+			id.getSourceState
+			return true
+		} catch (IllegalArgumentException e) {
+			return false
+		}
+	}
+	
+	protected def getSourceState(String id) {
+		if (unparsableIds.size < 2) {
+			throw new IllegalArgumentException
+		}
+		
+		val beforeLast = unparsableIds.beforeLastElement
+		val last = unparsableIds.lastElement
+		
+		val potentialStateString = beforeLast + " == " + last + "." + id // TODO extract
+		
+		return xStsQueryGenerator.getSourceState(potentialStateString)
 	}
 	
 	///
