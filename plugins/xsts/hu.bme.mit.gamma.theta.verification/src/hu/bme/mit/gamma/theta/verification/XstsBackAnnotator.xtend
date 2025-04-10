@@ -47,7 +47,10 @@ class XstsBackAnnotator {
 	protected final Component component
 	protected final ThetaQueryGenerator xStsQueryGenerator
 	protected final extension XstsArrayParser arrayParser
+	//
 	protected final Map<String, String> expressionPreprocess
+	protected final XstsReferenceBackAnnotator referenceBackAnnotator
+	protected static final Function<List<?>, String> targetStateAdapter = [it.get(0) + " == " + it.get(1) + "." + it.get(2)]
 	//
 	protected final String SCHEDULING_VARIABLE_PREFIX
 	//
@@ -74,11 +77,18 @@ class XstsBackAnnotator {
 	
 	new(ThetaQueryGenerator queryGenerator, XstsArrayParser arrayParser,
 			String schedulingVariablePrefix, Map<String, String> expressionPreprocess) {
+		this(queryGenerator, arrayParser, schedulingVariablePrefix, expressionPreprocess, targetStateAdapter)
+	}
+	
+	new(ThetaQueryGenerator queryGenerator, XstsArrayParser arrayParser,
+			String schedulingVariablePrefix, Map<String, String> expressionPreprocess,
+			Function<List<?>, String> targetStateAdapter) {
 		this.component = queryGenerator.component
 		this.xStsQueryGenerator = queryGenerator
 		this.arrayParser = arrayParser
 		this.SCHEDULING_VARIABLE_PREFIX = schedulingVariablePrefix // E.g., _ in IML
 		this.expressionPreprocess = expressionPreprocess
+		this.referenceBackAnnotator = new XstsReferenceBackAnnotator(queryGenerator, targetStateAdapter)
 	}
 	
 	//
@@ -356,7 +366,7 @@ class XstsBackAnnotator {
 		val expression = parser.preprocessAndParse(value,
 			new Function<String, EObject> {
 				override apply(String id) {
-					return id.parseReference
+					return referenceBackAnnotator.parseReference(id)
 				}
 			},
 			expressionPreprocess)
@@ -364,83 +374,104 @@ class XstsBackAnnotator {
 		return expression
 	}
 	
-	protected final List<String> unparsableIds = newArrayList
-	
-	protected def parseReference(String id) {
-		// TODO field hierarchies
-		return if (xStsQueryGenerator.isSourceVariable(id)) {
-			val instanceVariable = xStsQueryGenerator.getSourceVariable(id)
-			val instance = instanceVariable.value
-			val variable = instanceVariable.key
-			
-			instance.createInstanceReference.createVariableReference(variable)
-		}
-		else if (xStsQueryGenerator.isSourceOutEvent(id) ||
-					xStsQueryGenerator.isSynchronousSourceInEvent(id) /* Only sync, no support for queues */) {
-			val instanceEvent = xStsQueryGenerator.isSourceOutEvent(id) ?
-				xStsQueryGenerator.getSourceOutEvent(id):
-				xStsQueryGenerator.getSynchronousSourceInEvent(id)
-			val event = instanceEvent.head as Event
-			val port = instanceEvent.get(1) as Port
-			val instance = instanceEvent.lastOrNull as ComponentInstance
-			
-			instance.createInstanceReference.createEventReference(port, event)
-		}
-		else if (xStsQueryGenerator.isSourceOutEventParameter(id) ||
-					xStsQueryGenerator.isSynchronousSourceInEventParameter(id) /* Only sync, no support for queues */) {
-			val instanceEvent = xStsQueryGenerator.isSourceOutEventParameter(id) ?
-				xStsQueryGenerator.getSourceOutEventParameter(id) :
-				xStsQueryGenerator.getSynchronousSourceInEventParameter(id)
-			val event = instanceEvent.head as Event
-			val port = instanceEvent.get(1) as Port
-			val parameter = instanceEvent.get(2) as ParameterDeclaration
-			val instance = instanceEvent.lastOrNull as ComponentInstance
-			
-			instance.createInstanceReference.createParameterReference(port, event, parameter)
-		}
-		else if (xStsQueryGenerator.isSourceTypeDeclaration(id)) {
-			val typeDeclaration = xStsQueryGenerator.getSourceTypeDeclaration(id)
-			typeDeclaration.createTypeReference
-		}
-		else if (id.isSourceState) { // Before enums as an enum literal can have the same id as a state
-			val instanceState = id.getSourceState
-			unparsableIds.clear
-			
-			val instance = instanceState.value
-			val state = instanceState.key
-			
-			instance.createInstanceReference.createStateReference(state)
-		}
-		else if (xStsQueryGenerator.isSourceEnumLiteral(id)) {
-			val literal = xStsQueryGenerator.getSourceEnumLiteral(id)
-			literal.createEnumerationLiteralExpression
-		}
-		else {
-			unparsableIds += id
-			null // As expected by the parser
-		}
-	}
-	
-	protected def isSourceState(String id) {
-		try {
-			id.getSourceState
-			return true
-		} catch (IllegalArgumentException e) {
-			return false
-		}
-	}
-	
-	protected def getSourceState(String id) {
-		if (unparsableIds.size < 2) {
-			throw new IllegalArgumentException
+	static class XstsReferenceBackAnnotator {
+		//
+		protected final List<String> unparsableIds = newArrayList
+		
+		protected final ThetaQueryGenerator xStsQueryGenerator
+		protected final Function<List<?>, String> targetStateAdapter
+		
+		protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
+		protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
+		//
+		
+		new(ThetaQueryGenerator xStsQueryGenerator) {
+			this(xStsQueryGenerator, null)
 		}
 		
-		val beforeLast = unparsableIds.beforeLastElement
-		val last = unparsableIds.lastElement
+		new(ThetaQueryGenerator xStsQueryGenerator, Function<List<?>, String> targetStateAdapter) {
+			this.xStsQueryGenerator = xStsQueryGenerator
+			this.targetStateAdapter = targetStateAdapter
+		}
 		
-		val potentialStateString = beforeLast + " == " + last + "." + id // TODO extract
+		//
+		protected def parseReference(String id) {
+			// TODO field hierarchies
+			return if (xStsQueryGenerator.isSourceVariable(id)) {
+				val instanceVariable = xStsQueryGenerator.getSourceVariable(id)
+				val instance = instanceVariable.value
+				val variable = instanceVariable.key
+				
+				instance.createInstanceReference.createVariableReference(variable)
+			}
+			else if (xStsQueryGenerator.isSourceOutEvent(id) ||
+						xStsQueryGenerator.isSynchronousSourceInEvent(id) /* Only sync, no support for queues */) {
+				val instanceEvent = xStsQueryGenerator.isSourceOutEvent(id) ?
+					xStsQueryGenerator.getSourceOutEvent(id):
+					xStsQueryGenerator.getSynchronousSourceInEvent(id)
+				val event = instanceEvent.head as Event
+				val port = instanceEvent.get(1) as Port
+				val instance = instanceEvent.lastOrNull as ComponentInstance
+				
+				instance.createInstanceReference.createEventReference(port, event)
+			}
+			else if (xStsQueryGenerator.isSourceOutEventParameter(id) ||
+						xStsQueryGenerator.isSynchronousSourceInEventParameter(id) /* Only sync, no support for queues */) {
+				val instanceEvent = xStsQueryGenerator.isSourceOutEventParameter(id) ?
+					xStsQueryGenerator.getSourceOutEventParameter(id) :
+					xStsQueryGenerator.getSynchronousSourceInEventParameter(id)
+				val event = instanceEvent.head as Event
+				val port = instanceEvent.get(1) as Port
+				val parameter = instanceEvent.get(2) as ParameterDeclaration
+				val instance = instanceEvent.lastOrNull as ComponentInstance
+				
+				instance.createInstanceReference.createParameterReference(port, event, parameter)
+			}
+			else if (xStsQueryGenerator.isSourceTypeDeclaration(id)) {
+				val typeDeclaration = xStsQueryGenerator.getSourceTypeDeclaration(id)
+				typeDeclaration.createTypeReference
+			}
+			else if (id.isSourceState) { // Before enums as an enum literal can have the same id as a state
+				val instanceState = id.getSourceState
+				unparsableIds.clear
+				
+				val instance = instanceState.value
+				val state = instanceState.key
+				
+				instance.createInstanceReference.createStateReference(state)
+			}
+			else if (xStsQueryGenerator.isSourceEnumLiteral(id)) {
+				val literal = xStsQueryGenerator.getSourceEnumLiteral(id)
+				literal.createEnumerationLiteralExpression
+			}
+			else {
+				unparsableIds += id
+				null // As expected by the parser
+			}
+		}
 		
-		return xStsQueryGenerator.getSourceState(potentialStateString)
+		protected def isSourceState(String id) {
+			try {
+				id.getSourceState
+				return true
+			} catch (IllegalArgumentException e) {
+				return false
+			}
+		}
+		
+		protected def getSourceState(String id) {
+			if (unparsableIds.size < 2) {
+				throw new IllegalArgumentException
+			}
+			
+			val beforeLast = unparsableIds.beforeLastElement
+			val last = unparsableIds.lastElement
+			
+			val potentialStateString = targetStateAdapter.apply(#[beforeLast, last, id])
+			
+			return xStsQueryGenerator.getSourceState(potentialStateString)
+		}
+		
 	}
 	
 	///
