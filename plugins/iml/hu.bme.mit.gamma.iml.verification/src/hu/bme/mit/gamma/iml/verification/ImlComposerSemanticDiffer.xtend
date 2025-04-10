@@ -69,6 +69,8 @@ class ImlComposerSemanticDiffer extends ImlSemanticDiffer {
 		
 		val trace = diff.backAnnotate(traceability)
 		
+		trace.printJson
+		
 		return trace
 	}
 	

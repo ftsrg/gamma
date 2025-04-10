@@ -10,9 +10,12 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.iml.verification
 
+import com.google.gson.GsonBuilder
 import hu.bme.mit.gamma.expression.model.EqualityExpression
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.transformation.util.StatechartEcoreUtil
@@ -216,6 +219,56 @@ abstract class ImlSemanticDiffer {
 	
 	//
 	
+	protected def printJson(ExecutionTrace trace) {
+		val gson = new GsonBuilder().disableHtmlEscaping().create();
+		val regions = trace.parseRegions
+		
+		val jsonRegions = gson.toJson(regions)
+		return jsonRegions
+	}
+	
+	protected def parseRegions(ExecutionTrace trace) {
+		val elements = trace.steps.head.asserts
+		return elements.parseRegions
+	}
+	
+	protected def parseRegions(Iterable<? extends Expression> elements) {
+		val extension serializer = ExpressionSerializer.INSTANCE
+		
+		val regions = newArrayList
+		
+		val constraints = new StringBuilder
+		val invariants = new StringBuilder
+		
+		var currentBuilder = constraints
+		
+		for (element : elements) {
+			val string = element.serialize
+					.deleteAll("\"")
+			switch (string) {
+				case string.startsWith(SemanticDiffAdapter.REGION): {
+					regions += Region.of(constraints.toString, invariants.toString)
+					constraints.length = 0
+					invariants.length = 0
+				}
+				case SemanticDiffAdapter.CONSTRAINTS:
+					currentBuilder = constraints
+				case SemanticDiffAdapter.O_INVARIANT:
+					currentBuilder = invariants
+				case SemanticDiffAdapter.V_INVARIANT:
+					currentBuilder = invariants
+				default:
+					currentBuilder.append(string + ";")
+			}
+		}
+		regions.removeFirstElement // Empty region
+		regions += Region.of(constraints.toString, invariants.toString) // Last region
+		
+		return regions
+	}
+	
+	//
+	
 	static class SignatureAligner {
 		//
 		protected final String src
@@ -386,6 +439,14 @@ abstract class ImlSemanticDiffer {
 		
 		def void setInvariant(String invariant) {
 			this.invariant = invariant
+		}
+		
+		//
+		
+		def static of(String constraints, String invariant) { // No changes
+			val region = new Region(constraints, invariant)
+			region.invariant = invariant
+			return region
 		}
 		
 		//
@@ -629,6 +690,12 @@ abstract class ImlSemanticDiffer {
 	
 	static class SemanticDiffAdapter {
 		//
+		protected static final String REGION = "--- Region "
+		protected static final String CONSTRAINTS = "- Constraints:"
+		protected static final String O_INVARIANT = "- Original invariant:"
+		protected static final String V_INVARIANT = "- New invariant:"
+		
+		//
 		protected final String REC = "r"
 		protected final String ENV = "e"
 		protected final String DELIM = ";"
@@ -679,12 +746,12 @@ abstract class ImlSemanticDiffer {
 			var count = 1
 			return '''
 				«FOR entry : diff.entrySet»
-					"--- Region «count++» ---"
-					"- Constraints:"
+					"«REGION»«count++» ---"
+					"«CONSTRAINTS»"
 					«entry.key.parseDelim»
-					"- Original invariant:"
+					"«O_INVARIANT»"
 					«entry.value.key.parseDelim»
-					"- New invariant:"
+					"«V_INVARIANT»"
 					«entry.value.value.parseDelim»
 				«ENDFOR»
 			'''
