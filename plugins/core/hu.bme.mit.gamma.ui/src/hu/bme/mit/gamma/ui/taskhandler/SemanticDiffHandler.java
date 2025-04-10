@@ -58,8 +58,15 @@ public class SemanticDiffHandler extends TaskHandler {
 		this.semanticDiff = semanticDiffer.execute(unfoldedPackage, modelFile1, modelFile2);
 		
 		if (this.semanticDiff != null) {
-			String traceFileName = fileNamer.getExecutionTraceFileName(modelFile1.getName());
+			String fileName = modelFile1.getName();
+			
+			String traceFileName = fileNamer.getExecutionTraceFileName(fileName);
 			serializer.saveModel(this.semanticDiff, targetFolderUri, traceFileName);
+			
+			String json = semanticDiffer.printJson(this.semanticDiff);
+			String jsonFileName = fileUtil.getExtensionlessName(fileName) + ".json";
+			File jsonFile = new File(targetFolderUri, jsonFileName);
+			fileUtil.saveString(jsonFile, json);
 		}
 	}
 

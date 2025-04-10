@@ -219,7 +219,7 @@ abstract class ImlSemanticDiffer {
 	
 	//
 	
-	protected def printJson(ExecutionTrace trace) {
+	def printJson(ExecutionTrace trace) {
 		val gson = new GsonBuilder().disableHtmlEscaping().create();
 		val regions = trace.parseRegions
 		
