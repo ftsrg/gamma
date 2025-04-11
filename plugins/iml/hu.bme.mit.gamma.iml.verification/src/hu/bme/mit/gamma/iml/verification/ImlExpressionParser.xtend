@@ -31,13 +31,15 @@ import hu.bme.mit.gamma.verification.util.TraceBuilder
 import java.util.Scanner
 import java.util.logging.Logger
 
+import static hu.bme.mit.gamma.xsts.iml.transformation.util.Namings.*
+
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class ImlExpressionParser {
 	//
 	public static val preprocessExpressions = #{ "&&" -> "and", "||" -> "or", "=" -> "==", "<>" -> "!=",
-			"+." -> "+", "-." -> "-", "*." -> "*", "/." -> "/", "." -> "::" }
-	//
+			"+." -> "+", "-." -> "-", "*." -> "*", "/." -> "/", "." + ENUM_LITERAL_PREFIX -> "::" + ENUM_LITERAL_PREFIX /* Only for enums, not records */}
+	// TODO arrays?
 	protected final ThetaQueryGenerator imlQueryGenerator
 	protected final extension XstsBackAnnotator xStsBackAnnotator
 	protected static final Object engineSynchronizationObject = new Object // For the VIATRA engine in the query generator

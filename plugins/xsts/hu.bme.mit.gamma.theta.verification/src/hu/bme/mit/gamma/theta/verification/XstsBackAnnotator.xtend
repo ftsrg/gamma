@@ -12,7 +12,9 @@ package hu.bme.mit.gamma.theta.verification
 
 import hu.bme.mit.gamma.expression.language.parser.ExpressionLanguageParserAndLinker
 import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.expression.util.IndexHierarchy
 import hu.bme.mit.gamma.querygenerator.ThetaQueryGenerator
@@ -397,6 +399,7 @@ class XstsBackAnnotator {
 		
 		protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 		protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
+		protected final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
 		//
 		
 		new(ThetaQueryGenerator xStsQueryGenerator) {
@@ -410,17 +413,20 @@ class XstsBackAnnotator {
 		
 		//
 		protected def parseReference(String id) {
-			// TODO field hierarchies
+			// TODO arrays
 			return if (xStsQueryGenerator.isSourceVariable(id)) {
 				val instanceVariable = xStsQueryGenerator.getSourceVariable(id)
 				val instance = instanceVariable.value
 				val variable = instanceVariable.key
 				
-				instance.createInstanceReference.createVariableReference(variable)
+				val reference = instance.createInstanceReference.createVariableReference(variable)
+				
+				reference.handleFields([xStsQueryGenerator.getSourceVariableFieldHierarchy(id)])
 			}
 			else if (xStsQueryGenerator.isSourceOutEvent(id) ||
 						xStsQueryGenerator.isSynchronousSourceInEvent(id) /* Only sync, no support for queues */) {
-				val instanceEvent = xStsQueryGenerator.isSourceOutEvent(id) ?
+				val isOut = xStsQueryGenerator.isSourceOutEvent(id)
+				val instanceEvent = isOut ?
 					xStsQueryGenerator.getSourceOutEvent(id):
 					xStsQueryGenerator.getSynchronousSourceInEvent(id)
 				val event = instanceEvent.head as Event
@@ -431,7 +437,8 @@ class XstsBackAnnotator {
 			}
 			else if (xStsQueryGenerator.isSourceOutEventParameter(id) ||
 						xStsQueryGenerator.isSynchronousSourceInEventParameter(id) /* Only sync, no support for queues */) {
-				val instanceEvent = xStsQueryGenerator.isSourceOutEventParameter(id) ?
+				val isOut = xStsQueryGenerator.isSourceOutEventParameter(id)
+				val instanceEvent = isOut ?
 					xStsQueryGenerator.getSourceOutEventParameter(id) :
 					xStsQueryGenerator.getSynchronousSourceInEventParameter(id)
 				val event = instanceEvent.head as Event
@@ -439,7 +446,10 @@ class XstsBackAnnotator {
 				val parameter = instanceEvent.get(2) as ParameterDeclaration
 				val instance = instanceEvent.lastOrNull as ComponentInstance
 				
-				instance.createInstanceReference.createParameterReference(port, event, parameter)
+				val reference = instance.createInstanceReference.createParameterReference(port, event, parameter)
+				
+				reference.handleFields(isOut ? [xStsQueryGenerator.getSourceOutEventParameterFieldHierarchy(id)] :
+						[xStsQueryGenerator.getSynchronousSourceInEventParameterFieldHierarchy(id)])
 			}
 			else if (xStsQueryGenerator.isSourceTypeDeclaration(id)) {
 				val typeDeclaration = xStsQueryGenerator.getSourceTypeDeclaration(id)
@@ -484,6 +494,16 @@ class XstsBackAnnotator {
 			val potentialStateString = targetStateAdapter.apply(#[beforeLast, last, id])
 			
 			return xStsQueryGenerator.getSourceState(potentialStateString)
+		}
+		
+		protected def handleFields(Expression reference, Supplier<FieldHierarchy> fieldComputer) {
+			val fields = fieldComputer.get
+			return if (fields.empty) {
+				reference
+			}
+			else {
+				reference.createAccess(fields)
+			}
 		}
 		
 	}

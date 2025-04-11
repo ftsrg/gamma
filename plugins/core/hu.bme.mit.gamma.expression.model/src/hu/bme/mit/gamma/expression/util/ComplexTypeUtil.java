@@ -227,9 +227,17 @@ public class ComplexTypeUtil {
 		}
 	}
 	
+	public Expression createAccess(Declaration declaration, FieldHierarchy fieldHierarchy) {
+		return createAccess(declaration, fieldHierarchy, null);
+	}
+	
 	public Expression createAccess(Declaration declaration, FieldHierarchy fieldHierarchy, IndexHierarchy indexHierarchy) {
 		DirectReferenceExpression reference = expressionUtil.createReferenceExpression(declaration);
 		return createAccess(reference, fieldHierarchy, indexHierarchy);
+	}
+	
+	public Expression createAccess(Expression reference, FieldHierarchy fieldHierarchy) {
+		return createAccess(reference, fieldHierarchy, null);
 	}
 	
 	public Expression createAccess(Expression reference, FieldHierarchy fieldHierarchy, IndexHierarchy indexHierarchy) {
