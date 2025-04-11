@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -20,6 +20,7 @@ import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.FieldAssignment;
@@ -44,6 +45,7 @@ public class ComplexTypeUtil {
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	protected final ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
+	protected final ExpressionTypeDeterminator2 typeDeterminator = ExpressionTypeDeterminator2.INSTANCE;
 	
 	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 	
@@ -198,8 +200,7 @@ public class ComplexTypeUtil {
 			fieldAssignment = fieldAssignments.stream().filter(it -> 
 				it.getReference().getFieldDeclaration() == field).findFirst().get();
 			Expression fieldValue = fieldAssignment.getValue();
-			if (fieldValue instanceof RecordLiteralExpression) {
-				RecordLiteralExpression subrecord = (RecordLiteralExpression) fieldValue;
+			if (fieldValue instanceof RecordLiteralExpression subrecord) {
 				fieldAssignments = subrecord.getFieldAssignments();
 			}
 		}
@@ -208,16 +209,14 @@ public class ComplexTypeUtil {
 	
 	public Expression getValue(Expression literal /* Has to contain valid expression in each field or index */, 
 			FieldHierarchy fieldHierarchy, IndexHierarchy indexHierarchy) {
-		if (literal instanceof RecordLiteralExpression) {
-			RecordLiteralExpression record = (RecordLiteralExpression) literal;
+		if (literal instanceof RecordLiteralExpression record) {
 			FieldHierarchy clonedHierarchy = fieldHierarchy.clone();
 			FieldDeclaration field = clonedHierarchy.removeFirst();
 			Expression value = record.getFieldAssignments().stream().filter(it -> 
 				it.getReference().getFieldDeclaration() == field).findFirst().get().getValue();
 			return getValue(value, clonedHierarchy, indexHierarchy);
 		}
-		else if (literal instanceof ArrayLiteralExpression) {
-			ArrayLiteralExpression array = (ArrayLiteralExpression) literal;
+		else if (literal instanceof ArrayLiteralExpression array) {
 			IndexHierarchy clonedIndexHierarchy = indexHierarchy.clone();
 			int index = clonedIndexHierarchy.removeFirst();
 			Expression value = array.getOperands().get(index);
@@ -226,6 +225,30 @@ public class ComplexTypeUtil {
 		else {
 			return literal;
 		}
+	}
+	
+	public Expression createAccess(Declaration declaration, FieldHierarchy fieldHierarchy, IndexHierarchy indexHierarchy) {
+		DirectReferenceExpression reference = expressionUtil.createReferenceExpression(declaration);
+		return createAccess(reference, fieldHierarchy, indexHierarchy);
+	}
+	
+	public Expression createAccess(Expression reference, FieldHierarchy fieldHierarchy, IndexHierarchy indexHierarchy) {
+		TypeDefinition type = typeDeterminator.getTypeDefinition(reference);
+		if (type instanceof RecordTypeDefinition) {
+			FieldHierarchy clonedHierarchy = fieldHierarchy.clone();
+			FieldDeclaration field = clonedHierarchy.removeFirst();
+			
+			RecordAccessExpression access = expressionUtil.createRecordAccessExpression(reference, field);
+			return createAccess(access, clonedHierarchy, indexHierarchy);
+		}
+		if (type instanceof ArrayTypeDefinition) {
+			IndexHierarchy clonedIndexHierarchy = indexHierarchy.clone();
+			int index = clonedIndexHierarchy.removeFirst();
+			ArrayAccessExpression access = expressionUtil.createArrayAccessExpression(reference, index);
+			return createAccess(access, fieldHierarchy, clonedIndexHierarchy);
+		}
+		// Nothing to wrap
+		return reference;
 	}
 	
 	public List<Expression> getAccesses(Expression expression) {
