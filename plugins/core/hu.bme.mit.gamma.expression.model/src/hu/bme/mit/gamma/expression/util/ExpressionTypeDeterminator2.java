@@ -16,6 +16,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.eclipse.emf.ecore.EObject;
+
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.AddExpression;
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
@@ -67,6 +69,7 @@ import hu.bme.mit.gamma.expression.model.UnaryMinusExpression;
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression;
 import hu.bme.mit.gamma.expression.model.VoidTypeDefinition;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
+import hu.bme.mit.gamma.util.JavaUtil;
 
 public class ExpressionTypeDeterminator2 {
 	// Singleton
@@ -75,6 +78,7 @@ public class ExpressionTypeDeterminator2 {
 	//
 	
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 	//
 	
@@ -217,6 +221,15 @@ public class ExpressionTypeDeterminator2 {
 		if (expression == null) {
 			return factory.createVoidTypeDefinition();
 		}
+		// Else trying to fetch auxiliary info
+		List<EObject> references = expression.eCrossReferences();
+		if (references.stream().anyMatch(it -> it instanceof Declaration)) {
+			Declaration declaration = javaUtil.getFirstOfType(references, Declaration.class);
+			Type type = declaration.getType();
+			return ecoreUtil.clone(type);
+		}
+		//
+		
 		throw new IllegalArgumentException("Unknown type: " + expression);
 	}
 	
