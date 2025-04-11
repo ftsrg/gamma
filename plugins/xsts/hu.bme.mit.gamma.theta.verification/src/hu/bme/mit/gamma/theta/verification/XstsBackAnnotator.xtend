@@ -34,6 +34,7 @@ import java.util.List
 import java.util.Map
 import java.util.Set
 import java.util.function.Function
+import java.util.function.Supplier
 import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
@@ -135,9 +136,10 @@ class XstsBackAnnotator {
 		val variable = instanceVariable.key
 		// Getting fields and indexes regardless of primitive or complex types
 		// In the case of primitive types, these hierarchies will be empty
-		val field = xStsQueryGenerator.getSourceVariableFieldHierarchy(id)
-		val indexPairs = id.parseArray(value)
-		variable.handleOneCapacityArrayValues(field, indexPairs)
+		val fieldIndex = variable.handleFields(id, value,
+				[xStsQueryGenerator.getSourceVariableFieldHierarchy(id)])
+		val field = fieldIndex.key
+		val indexPairs = fieldIndex.value
 		for (indexPair : indexPairs) {
 			val index = indexPair.key
 			val parsedValue = indexPair.value
@@ -173,9 +175,10 @@ class XstsBackAnnotator {
 		val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 		val parameter = systemOutEvent.get(2) as ParameterDeclaration
 		// Getting fields and indexes regardless of primitive or complex types
-		val field = xStsQueryGenerator.getSourceOutEventParameterFieldHierarchy(id)
-		val indexPairs = id.parseArray(value)
-		parameter.handleOneCapacityArrayValues(field, indexPairs)
+		val fieldIndex = parameter.handleFields(id, value,
+				[xStsQueryGenerator.getSourceOutEventParameterFieldHierarchy(id)])
+		val field = fieldIndex.key
+		val indexPairs = fieldIndex.value
 		//
 		for (indexPair : indexPairs) {
 			val index = indexPair.key
@@ -210,9 +213,10 @@ class XstsBackAnnotator {
 		val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 		val parameter = systemInEvent.get(2) as ParameterDeclaration
 		// Getting fields and indexes regardless of primitive or complex types
-		val field = xStsQueryGenerator.getSynchronousSourceInEventParameterFieldHierarchy(id)
-		val indexPairs = id.parseArray(value)
-		parameter.handleOneCapacityArrayValues(field, indexPairs)
+		val fieldIndex = parameter.handleFields(id, value,
+				[xStsQueryGenerator.getSynchronousSourceInEventParameterFieldHierarchy(id)])
+		val field = fieldIndex.key
+		val indexPairs = fieldIndex.value
 		//
 		for (indexPair : indexPairs) {
 			val index = indexPair.key
@@ -293,9 +297,10 @@ class XstsBackAnnotator {
 		if (component.contains(systemPort)) {
 			val parameter = systemInEvent.get(2) as ParameterDeclaration
 			// Getting fields and indexes regardless of primitive or complex types
-			val field = xStsQueryGenerator.getAsynchronousSourceInEventParameterFieldHierarchy(id)
-			val indexPairs = id.parseArray(value)
-			parameter.handleOneCapacityArrayValues(field, indexPairs)
+			val fieldIndex = parameter.handleFields(id, value,
+					[xStsQueryGenerator.getAsynchronousSourceInEventParameterFieldHierarchy(id)])
+			val field = fieldIndex.key
+			val indexPairs = fieldIndex.value
 			
 			var firstElement = indexPairs.findFirst[it.key == new IndexHierarchy(0)]
 			// Note that 'id' might be a single value instead of an array due to optimization
@@ -350,6 +355,15 @@ class XstsBackAnnotator {
 				targetType = targetType.arrayElementType.typeDefinition
 			}
 		}
+	}
+	
+	protected def handleFields(Declaration declaration, String id, String value,
+			Supplier<FieldHierarchy> fieldComputer) {
+		val field =  fieldComputer.get
+		val indexPairs = id.parseArray(value)
+		declaration.handleOneCapacityArrayValues(field, indexPairs)
+		
+		return field -> indexPairs
 	}
 	
 	///
