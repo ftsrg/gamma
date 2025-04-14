@@ -14,10 +14,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 
+import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.SemanticDiff;
 import hu.bme.mit.gamma.iml.verification.ImlComposerSemanticDiffer;
@@ -68,6 +70,28 @@ public class SemanticDiffHandler extends TaskHandler {
 			File jsonFile = new File(targetFolderUri, jsonFileName);
 			fileUtil.saveString(jsonFile, json);
 		}
+		//
+		List<Package> traceabilityPackages = getTraceabilityPackages(fileNames);
+		Package package1 = traceabilityPackages.get(0);
+		Package package2 = traceabilityPackages.get(1);
+		
+		Package mergedPackage = ecoreUtil.cloneAndMerge(package1, package2,
+				((a, b) -> {
+					if (a instanceof NamedElement an) {
+						if (b instanceof NamedElement bn) {
+							return an.getName().equals(bn.getName()) && a.eClass() == b.eClass();
+						}
+					}
+					return ecoreUtil.helperEquals(a, b);
+				}),
+				(it) -> { return it instanceof NamedElement; });
+		
+		String fileName = fileUtil.getUnhiddenExtensionlessName(fileUtil.getFileName(fileNames.get(0))) +
+				"_" + fileUtil.getUnhiddenExtensionlessName(fileUtil.getFileName(fileNames.get(1)));
+		
+		String mergedPackageFileName = fileNamer.getUnfoldedPackageFileName(fileName);
+		serializer.saveModel(mergedPackage, targetFolderUri, mergedPackageFileName);
+		//
 	}
 
 	private void setSemanticDiffHandler(SemanticDiff semanticDiff) {
@@ -86,6 +110,19 @@ public class SemanticDiffHandler extends TaskHandler {
 			}
 		}
 		return null;
+	}
+	
+	protected List<Package> getTraceabilityPackages(Iterable<String> fileNames) {
+		List<Package> packages = new ArrayList<Package>();
+		
+		for (String fileName : fileNames) {
+			String unfoldedPackageFileName = fileNamer.getUnfoldedPackageUri(fileName);
+			File unfoldedPackageFile = new File(unfoldedPackageFileName);
+			if (unfoldedPackageFile.exists()) {
+				packages.add((Package) ecoreUtil.normalLoad(unfoldedPackageFile));
+			}
+		}
+		return packages;
 	}
 	
 	public ExecutionTrace getSemanticDiff() {
