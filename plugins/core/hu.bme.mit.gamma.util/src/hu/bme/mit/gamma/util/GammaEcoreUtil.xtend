@@ -1007,11 +1007,14 @@ class GammaEcoreUtil {
 			}
 		}
 		
+		
 		for (mergableContent : mergableContents) {
-			val containmentFeature = mergableContent.eContainmentFeature
-			val clone = mergableContent.clone
-			
-			root.add(containmentFeature, clone)
+			if (mergableContent.eCrossReferences.empty) { // TODO Check?
+				val containmentFeature = mergableContent.eContainmentFeature
+				val clone = mergableContent.clone
+				
+				root.add(containmentFeature, clone)
+			}
 		}
 	}
 	

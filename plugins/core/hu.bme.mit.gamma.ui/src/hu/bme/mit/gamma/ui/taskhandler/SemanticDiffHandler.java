@@ -54,22 +54,6 @@ public class SemanticDiffHandler extends TaskHandler {
 		File modelFile1 = new File(fileNames.get(0));
 		File modelFile2 = new File(fileNames.get(1));
 		
-		Package unfoldedPackage = getTraceabilityPackage(fileNames);
-		
-		ImlSemanticDiffer semanticDiffer = new ImlComposerSemanticDiffer();
-		this.semanticDiff = semanticDiffer.execute(unfoldedPackage, modelFile1, modelFile2);
-		
-		if (this.semanticDiff != null) {
-			String fileName = modelFile1.getName();
-			
-			String traceFileName = fileNamer.getExecutionTraceFileName(fileName);
-			serializer.saveModel(this.semanticDiff, targetFolderUri, traceFileName);
-			
-			String json = semanticDiffer.printJson(this.semanticDiff);
-			String jsonFileName = fileUtil.getExtensionlessName(fileName) + ".json";
-			File jsonFile = new File(targetFolderUri, jsonFileName);
-			fileUtil.saveString(jsonFile, json);
-		}
 		//
 		List<Package> traceabilityPackages = getTraceabilityPackages(fileNames);
 		Package package1 = traceabilityPackages.get(0);
@@ -91,7 +75,22 @@ public class SemanticDiffHandler extends TaskHandler {
 		
 		String mergedPackageFileName = fileNamer.getUnfoldedPackageFileName(fileName);
 		serializer.saveModel(mergedPackage, targetFolderUri, mergedPackageFileName);
+		Package mergedPackage1 = (Package) ecoreUtil.normalLoad(new File(targetFolderUri, mergedPackageFileName)); // Needed for some reason
 		//
+		
+		ImlSemanticDiffer semanticDiffer = new ImlComposerSemanticDiffer();
+		this.semanticDiff = semanticDiffer.execute(mergedPackage1, modelFile1, modelFile2);
+		
+		if (this.semanticDiff != null) {
+			String traceFileName = fileNamer.getExecutionTraceFileName(fileName);
+			serializer.saveModel(this.semanticDiff, targetFolderUri, traceFileName);
+			
+			String json = semanticDiffer.printJson(this.semanticDiff);
+			String jsonFileName = fileUtil.getExtensionlessName(fileName) + ".json";
+			File jsonFile = new File(targetFolderUri, jsonFileName);
+			fileUtil.saveString(jsonFile, json);
+		}
+
 	}
 
 	private void setSemanticDiffHandler(SemanticDiff semanticDiff) {
