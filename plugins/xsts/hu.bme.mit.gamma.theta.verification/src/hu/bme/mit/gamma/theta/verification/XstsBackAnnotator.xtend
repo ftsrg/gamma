@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.language.parser.StatechartExpressionLanguageParserAndLinker
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.InstanceSchedule
@@ -372,7 +373,7 @@ class XstsBackAnnotator {
 	
 	protected def getParser() {
 		if (parser === null) {
-			parser = new ExpressionLanguageParserAndLinker
+			parser = new StatechartExpressionLanguageParserAndLinker
 		}
 		return parser
 	}
