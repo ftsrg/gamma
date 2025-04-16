@@ -91,16 +91,6 @@ class ImlExpressionParser {
 	protected def parse(String text) {
 		val expression = xStsBackAnnotator.parseExpression(text)
 		
-		if (expression instanceof EqualityExpression) {
-			val left = expression.leftOperand
-			val right = expression.rightOperand
-			if (left instanceof OpaqueExpression) {
-				if (right instanceof ComponentInstanceStateReferenceExpression) {
-					return right
-				}
-			}
-		}
-		
 		return expression
 	}
 	
@@ -150,6 +140,15 @@ class ImlExpressionParser {
 			val systemPort = port.boundTopComponentPort
 			
 			return systemPort.createEventParameterReference(expression.parameterDeclaration)
+		}
+		else if (expression instanceof EqualityExpression) {
+			val left = expression.leftOperand
+			val right = expression.rightOperand
+			if (left instanceof OpaqueExpression) {
+				if (right instanceof ComponentInstanceStateReferenceExpression) {
+					return right // No else
+				}
+			}
 		}
 		
 		val subexpressions = expression.getAllContentsOfType(Expression)
