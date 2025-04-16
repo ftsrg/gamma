@@ -69,6 +69,8 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			hu.bme.mit.gamma.xsts.promela.transformation.serializer.ModelSerializer.INSTANCE;
 	protected final hu.bme.mit.gamma.xsts.nuxmv.transformation.serializer.ModelSerializer smvSerializer =
 			hu.bme.mit.gamma.xsts.nuxmv.transformation.serializer.ModelSerializer.INSTANCE;
+	protected final hu.bme.mit.gamma.xsts.iml.transformation.serialization.ModelSerializer imlSerializer =
+			hu.bme.mit.gamma.xsts.iml.transformation.serialization.ModelSerializer.INSTANCE;
 	protected final VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE;
 	//
 	
@@ -264,6 +266,15 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 				nuxmvTransformer.execute();
 				// XSTS
 				String xStsString = xStsSerializer.serializeXsts(xSts, true);
+				String xStsFile = fileUtil.changeExtension(
+						analysisFile.toString(), GammaFileNamer.XSTS_XTEXT_EXTENSION);
+				fileUtil.saveString(xStsFile, xStsString);
+			}
+			if (analysisLanguages.contains(AnalysisLanguage.IML)) {
+				String imlString = imlSerializer.serializeIml(xSts);
+				fileUtil.saveString(analysisFile, imlString);
+				
+				String xStsString = xStsSerializer.serializeXsts(xSts);
 				String xStsFile = fileUtil.changeExtension(
 						analysisFile.toString(), GammaFileNamer.XSTS_XTEXT_EXTENSION);
 				fileUtil.saveString(xStsFile, xStsString);
