@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.verification.util.TraceBuilder
 import java.util.NoSuchElementException
 import java.util.Scanner
@@ -48,6 +49,7 @@ class TraceBackAnnotator {
 	protected final extension TraceModelFactory trFact = TraceModelFactory.eINSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension TraceBuilder traceBuilder = TraceBuilder.INSTANCE
+	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	
 	protected final Logger logger = Logger.getLogger("GammaLogger")
@@ -126,7 +128,7 @@ class TraceBackAnnotator {
 						}
 						// Adding reset
 						step.actions += createReset
-						line = traceScanner.nextLine.trim
+						
 						state = BackAnnotatorState.STATE_CHECK
 					}
 					case line.startsWith(XSTS_STATE): {
@@ -155,18 +157,19 @@ class TraceBackAnnotator {
 							default:
 								throw new IllegalArgumentException("Not know state: " + state)
 						}
-						// Skipping two lines
-						line = traceScanner.nextLine
-						line = traceScanner.nextLine.trim
 					}
 				}
 				// We parse in every turn
-				line = thetaQueryGenerator.unwrapAll(line)
+				if (line.countChar(')') <= 0) { // I.e., has no a var-value pair
+					line = traceScanner.nextLine.trim
+				}
 				// From v.6.5.4, '(ExplState ' precedes actual values, which has to be removed
 				if (line.startsWith(EXPL_STATE)) {
 					line = line.substring(EXPL_STATE.length).trim
 				}
 				//
+				line = thetaQueryGenerator.unwrapAll(line)
+				
 				val split = line.split(" ", 2) // Only the first " " is checked
 				val id = split.get(0)
 				val value = split.get(1)

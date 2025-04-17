@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -23,18 +23,23 @@ import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeature
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
+import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.ExpressionPackage;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
+import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
+import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
+import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageScopeProvider {
 
+	protected final ExpressionTypeDeterminator2 typeDeterminator = ExpressionTypeDeterminator2.INSTANCE;
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected ExpressionUtil util = ExpressionUtil.INSTANCE; // Redefinable
 	
@@ -48,6 +53,12 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 			TypeDeclaration typeDeclaration = null; 
 			RecordLiteralExpression literal = ecoreUtil.getSelfOrContainerOfType(context, RecordLiteralExpression.class);
 			if (literal == null) {
+				RecordAccessExpression access = ecoreUtil.getSelfOrContainerOfType(context, RecordAccessExpression.class);
+				Expression recordTypeExpression = access.getOperand();
+				TypeDefinition typeDefinition = typeDeterminator.getTypeDefinition(recordTypeExpression);
+				if (typeDefinition instanceof RecordTypeDefinition recordType) {
+					return Scopes.scopeFor(recordType.getFieldDeclarations());
+				}
 				return super.getScope(context, reference);
 			}
 			else {

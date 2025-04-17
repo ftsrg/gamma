@@ -19,12 +19,8 @@ class ImlDoubleCallSemanticDiffer extends ImlSemanticDiffer {
 		val src = modelFile.loadString
 		val src2 = modelFile2.loadString
 		
-		val trans2 = src2.extractTransFunction
-		
-		val model = '''
-			«src»
-			«trans2»
-		'''
+		val modelAligner = new SignatureAligner(src, src2)
+		val model = modelAligner.execute
 		
 		val diffParameters = src.extractTransFunctionParameters
 		val diffArguments = diffParameters.extractTransFunctionArguments

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,7 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util.reducer
 
-import hu.bme.mit.gamma.action.model.AssignmentStatement
+import hu.bme.mit.gamma.action.model.AbstractAssignmentStatement
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
@@ -152,7 +152,7 @@ class SystemReducer implements Reducer {
 		val setTimeoutActions = newHashSet
 		for (statechart : statecharts) {
 			referencedTimeouts += statechart
-				.getAllContentsOfType(TimeoutEventReference).map[it.timeout]
+					.getAllContentsOfType(TimeoutEventReference).map[it.timeout]
 			setTimeoutActions += statechart.getAllContentsOfType(SetTimeoutAction)
 		}
 		val removableTimeouts = newHashSet
@@ -166,7 +166,7 @@ class SystemReducer implements Reducer {
 		}
 		for (removableTimeout : removableTimeouts) {
 			info("Removing timeout declaration " + removableTimeout.name + " of " + 
-				removableTimeout.containingStatechart.name)
+					removableTimeout.containingStatechart.name)
 			removableTimeout.remove
 		}
 	}
@@ -194,7 +194,8 @@ class SystemReducer implements Reducer {
 					states.forall[(!it.composite && it.outgoingTransitions.empty &&
 							it.incomingTransitions.forall[states.contains(it.sourceState)] && // Considering transitions via regions
 							it.entryActions.forall[it.effectlessAction] &&
-							it.exitActions.forall[it.effectlessAction]) ||
+							it.exitActions.forall[it.effectlessAction] // && it.invariants.forall[it.definitelyTrueExpression]
+							) ||
 							it.allIncomingTransitions.empty]) { // Never true due to initial transition?
 				// First, removing all related transitions (as otherwise nullptr exceptions are generated in incomingTransitions)
 				val statechart = region.containingStatechart
@@ -228,7 +229,7 @@ class SystemReducer implements Reducer {
 				info("Removing statechart instance " + instance.name)
 				// Port binding remover
 				val unnecessaryPortBindings = container.portBindings
-					.filter[it.instancePortReference.instance === instance].toList
+						.filter[it.instancePortReference.instance === instance].toList
 				container.portBindings -= unnecessaryPortBindings
 				// Channel remover
 				val channels = container.channels
@@ -279,10 +280,15 @@ class SystemReducer implements Reducer {
 						for (region : regions) {
 							val regionStates = region.allStates
 							val transitions = regionStates.map[it.outgoingTransitionsUntilState].flatten
-							val referencedVariables = transitions.map[it.getAllContentsOfType(DirectReferenceExpression)].flatten
+							val objectsOfInterest = transitions +
+										regionStates.map[it.entryActions + it.exitActions + it.invariants].flatten
+							val referencedVariables = objectsOfInterest
+									.map[it.getSelfAndAllContentsOfType(DirectReferenceExpression)].flatten
 									.map[it.declaration].toSet
-							val writtenVariables = transitions.map[it.getAllContentsOfType(AssignmentStatement)].flatten
-									.map[it.rhs.getSelfAndAllContentsOfType(DirectReferenceExpression)].flatten.map[it.declaration].toSet
+							val writtenVariables = objectsOfInterest
+									.map[it.getSelfAndAllContentsOfType(AbstractAssignmentStatement)].flatten
+									.map[it.lhs.getSelfAndAllContentsOfType(DirectReferenceExpression)].flatten
+									.map[it.declaration].toSet
 							regionReadWrite += region -> (referencedVariables -> writtenVariables)
 							
 							val raisedEvents = transitions.map[it.getAllContentsOfType(RaiseEventAction)].flatten.toSet

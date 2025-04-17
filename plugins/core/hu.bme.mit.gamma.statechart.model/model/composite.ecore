@@ -118,7 +118,7 @@
     <eLiterals name="OLDEST" value="1"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceElementReferenceExpression"
-      abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression">
+      abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="instance" eType="#//ComponentInstanceReferenceExpression"
         containment="true"/>
   </eClassifiers>

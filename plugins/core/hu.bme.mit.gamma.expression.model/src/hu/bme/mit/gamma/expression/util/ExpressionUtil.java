@@ -1123,6 +1123,10 @@ public class ExpressionUtil {
 		return createRecordAccessExpression(declaration, List.of(field));
 	}
 	
+	public RecordAccessExpression createRecordAccessExpression(Expression operand, FieldDeclaration field) {
+		return createRecordAccessExpression(operand, createReferenceExpression(field));
+	}
+	
 	public RecordAccessExpression createRecordAccessExpression(Declaration declaration, Collection<? extends FieldDeclaration> fields) {
 		return createRecordAccessExpression(
 				createReferenceExpression(declaration),
@@ -1150,6 +1154,14 @@ public class ExpressionUtil {
 		}
 		
 		return recordAccess;
+	}
+	
+	public ArrayAccessExpression createArrayAccessExpression(Expression operand, int index) {
+		ArrayAccessExpression access = factory.createArrayAccessExpression();
+		access.setOperand(operand);
+		access.setIndex(
+				toIntegerLiteral(index));
+		return access;
 	}
 	
 	public DirectReferenceExpression createReferenceExpression(Declaration declaration) {

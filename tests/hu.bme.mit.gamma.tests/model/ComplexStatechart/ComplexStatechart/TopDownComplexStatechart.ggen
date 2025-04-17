@@ -8,14 +8,21 @@ code {
 analysis {
 	component : TopDown
 	language : UPPAAL
+	file : "TopDownComplexStatechart-XTA"
+	transition-coverage
+}
+
+analysis {
+	component : TopDown
 	language : Theta
+	file : "TopDownComplexStatechart-XSTS"
 	transition-coverage
 }
 
 verification {
 	language : UPPAAL
-	file : "TopDownComplexStatechart.xml"
-	query-file : "TopDownComplexStatechart.q"
+	file : "TopDownComplexStatechart-XTA.xml"
+	query-file : "TopDownComplexStatechart-XTA.q"
 	optimize : true
 	test-language : java
 	optimize : true
@@ -23,8 +30,8 @@ verification {
 
 verification {
 	language : Theta
-	file : "TopDownComplexStatechart.xsts"
-	query-file : "TopDownComplexStatechart.prop"
+	file : "TopDownComplexStatechart-XSTS.xsts"
+	query-file : "TopDownComplexStatechart-XSTS.prop"
 	test-language : java
 	optimize : true
 }

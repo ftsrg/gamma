@@ -7,15 +7,22 @@ code {
 
 analysis {
 	component : BottomUp
-	language : UPPAAL
+	language : XSTS-UPPAAL
+	file : "BottomUpComplexStatechart-XTA"
+	transition-coverage
+}
+
+analysis {
+	component : BottomUp
 	language : Theta
+	file : "BottomUpComplexStatechart-XSTS"
 	transition-coverage
 }
 
 verification {
-	language : UPPAAL
-	file : "BottomUpComplexStatechart.xml"
-	query-file : "BottomUpComplexStatechart.q"
+	language : XSTS-UPPAAL
+	file : "BottomUpComplexStatechart-XTA.xml"
+	query-file : "BottomUpComplexStatechart-XTA.q"
 	optimize : true
 	test-language : java
 	optimize : true
@@ -23,8 +30,8 @@ verification {
 
 verification {
 	language : Theta
-	file : "BottomUpComplexStatechart.xsts"
-	query-file : "BottomUpComplexStatechart.prop"
+	file : "BottomUpComplexStatechart-XSTS.xsts"
+	query-file : "BottomUpComplexStatechart-XSTS.prop"
 	test-language : java
 	optimize : true
 }

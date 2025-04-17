@@ -10,9 +10,12 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.iml.verification
 
+import com.google.gson.GsonBuilder
 import hu.bme.mit.gamma.expression.model.EqualityExpression
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.transformation.util.StatechartEcoreUtil
@@ -31,8 +34,8 @@ import java.util.logging.Logger
 abstract class ImlSemanticDiffer {
 	//
 	public static final String IMANDRA_TEMPORARY_COMMAND_FOLDER = ".imandra"
-	protected final String DIFF_FUNCTION_NAME = "trans"
-	protected final String NEW_DIFF_FUNCTION_NAME = DIFF_FUNCTION_NAME + 2
+	protected static final String DIFF_FUNCTION_NAME = "trans"
+	protected static final String NEW_DIFF_FUNCTION_NAME = DIFF_FUNCTION_NAME + 2
 	//
 	protected static final String INVARIANT_DELIM = " " + ImlApiHelper.CONSTRAINT_DELIM + System.lineSeparator
 	//
@@ -179,23 +182,8 @@ abstract class ImlSemanticDiffer {
 	
 	//
 	
-	protected def extractTransFunction(String src) {
-		val START_FUNCTION_NAME = "init"
-		val START_STRING = '''let «START_FUNCTION_NAME» ='''
-		
-		val start = src.indexOf(START_STRING)
-		val offset = START_STRING.length
-		val end = src.indexOf("let env ")
-		
-		val newStart = '''let «START_FUNCTION_NAME»2 ='''
-		
-		val newSrc = newStart + src.substring(start + offset, end)
-				.replace('''let «DIFF_FUNCTION_NAME» ''', '''let «NEW_DIFF_FUNCTION_NAME» ''')
-		return newSrc
-	}
-	
 	protected def extractTransFunctionParameters(String src) {
-		val FUNCTION_NAME = "trans"
+		val FUNCTION_NAME = DIFF_FUNCTION_NAME
 		val START_STRING = '''let «FUNCTION_NAME»'''
 		val END_STRING = "="
 		
@@ -230,6 +218,188 @@ abstract class ImlSemanticDiffer {
 	}
 	
 	//
+	
+	def printJson(ExecutionTrace trace) {
+		val gson = new GsonBuilder().disableHtmlEscaping().create();
+		val regions = trace.parseRegions
+		
+		val jsonRegions = gson.toJson(regions)
+		return jsonRegions
+	}
+	
+	protected def parseRegions(ExecutionTrace trace) {
+		val elements = trace.steps.head.asserts
+		return elements.parseRegions
+	}
+	
+	protected def parseRegions(Iterable<? extends Expression> elements) {
+		val extension serializer = ExpressionSerializer.INSTANCE
+		
+		val regions = newArrayList
+		
+		val constraints = new StringBuilder
+		val invariants = new StringBuilder
+		
+		var currentBuilder = constraints
+		
+		for (element : elements) {
+			val string = element.serialize
+					.deleteAll("\"")
+			switch (string) {
+				case string.startsWith(SemanticDiffAdapter.REGION): {
+					regions += Region.of(constraints.toString, invariants.toString)
+					constraints.length = 0
+					invariants.length = 0
+				}
+				case SemanticDiffAdapter.CONSTRAINTS:
+					currentBuilder = constraints
+				case SemanticDiffAdapter.O_INVARIANT:
+					currentBuilder = invariants
+				case SemanticDiffAdapter.V_INVARIANT:
+					currentBuilder = invariants
+				default:
+					currentBuilder.append(string + ";")
+			}
+		}
+		regions.removeFirstElement // Empty region
+		regions += Region.of(constraints.toString, invariants.toString) // Last region
+		
+		return regions
+	}
+	
+	//
+	
+	static class SignatureAligner {
+		//
+		protected final String src
+		protected final String src2
+		//
+		
+		new(String src, String src2) {
+			this.src = src
+			this.src2 = src2
+		}
+		
+		def execute() '''
+			«mergeEnums.serializeModules»
+			
+			«mergeRecords.serializeRecords»
+			
+			«trans»
+			«trans2»
+		'''
+		
+		protected def mergeEnums() {
+			val scanner = new Scanner(src)
+			val scanner2 = new Scanner(src2)
+			
+			val modules = scanner.parseModules
+			val modules2 = scanner2.parseModules
+			
+			return modules.mergeStructures(modules2)
+		}
+		
+		protected def parseModules(Scanner scanner) {
+			val M = "module"
+			
+			val modules = newHashMap
+			var line = ""
+			while (scanner.hasNextLine && (line = scanner.nextLine).startsWith(M)) {
+				val name = line.substring(M.length, line.indexOf('=')).trim
+				val literals =  line.substring(line.lastIndexOf('=') + 1, line.indexOf("end"))
+					.split('\\|').map[it.trim].reject[it.nullOrEmpty].toList
+				
+				modules += name -> literals
+			}
+			
+			return modules
+		}
+		
+		protected def mergeRecords() {
+			val scanner = new Scanner(src)
+			val scanner2 = new Scanner(src2)
+			
+			val records = scanner.parseRecords
+			val records2 = scanner2.parseRecords
+			
+			return records.mergeStructures(records2)
+		}
+		
+		protected def parseRecords(Scanner scanner) {
+			val records = newHashMap
+			
+			var insideRecord = false
+			var line = ""
+			var fields = #[]
+			while (scanner.hasNextLine) {
+				line = scanner.nextLine.trim
+				if (line.startsWith("type")) {
+					insideRecord = true
+					val name = line.substring("type nonrec".length, line.indexOf("=")).trim
+					fields = newArrayList
+					records += name -> fields
+				}
+				else if (line.startsWith("}")) {
+					insideRecord = false
+				}
+				else if (insideRecord) {
+					fields += line // ';' remains at the end
+				}
+			}
+			
+			return records
+		}
+		
+		protected def mergeStructures(Map<String, ? extends List<String>> lhs, Map<String, ? extends List<String>> rhs) {
+			val merge = newHashMap
+			
+			for (name : lhs.keySet) {
+				val mergedLiterals = newLinkedHashSet
+				mergedLiterals += lhs.get(name)
+				if (rhs.containsKey(name)) {
+					mergedLiterals += rhs.get(name)
+				}
+				merge += name -> mergedLiterals
+			}
+			
+			return merge
+		}
+		
+		protected def serializeModules(Map<String, ? extends Iterable<String>> modules) '''
+			«FOR name : modules.keySet»
+				module «name» = struct type t = «FOR literal : modules.get(name) SEPARATOR ' | '»«literal»«ENDFOR» end
+			«ENDFOR»
+		'''
+		
+		protected def serializeRecords(Map<String, ? extends Iterable<String>> records) '''
+			«FOR name : records.keySet SEPARATOR System.lineSeparator»
+				type nonrec «name» = {
+					«FOR literal : records.get(name)»
+						«literal»
+					«ENDFOR»
+				}
+			«ENDFOR»
+		'''
+		
+		protected def getTrans() {
+			src.behavior
+		}
+		
+		protected def getTrans2() {
+			val template = '''let «DIFF_FUNCTION_NAME» ('''
+			val newTemplate = '''let «NEW_DIFF_FUNCTION_NAME» ('''
+			
+			return src2.behavior
+					.replace(template, newTemplate)
+		}
+		
+		protected def getBehavior(String src) {
+			val start = src.indexOf("let h_") // Omitting "init"
+			val end = src.indexOf("let env (")
+			return src.substring(start, end)
+		}
+		
+	}
 	
 	static class Decomposition {
 		//
@@ -269,6 +439,14 @@ abstract class ImlSemanticDiffer {
 		
 		def void setInvariant(String invariant) {
 			this.invariant = invariant
+		}
+		
+		//
+		
+		def static of(String constraints, String invariant) { // No changes
+			val region = new Region(constraints, invariant)
+			region.invariant = invariant
+			return region
 		}
 		
 		//
@@ -512,6 +690,12 @@ abstract class ImlSemanticDiffer {
 	
 	static class SemanticDiffAdapter {
 		//
+		protected static final String REGION = "--- Region "
+		protected static final String CONSTRAINTS = "- Constraints:"
+		protected static final String O_INVARIANT = "- Original invariant:"
+		protected static final String V_INVARIANT = "- New invariant:"
+		
+		//
 		protected final String REC = "r"
 		protected final String ENV = "e"
 		protected final String DELIM = ";"
@@ -562,12 +746,12 @@ abstract class ImlSemanticDiffer {
 			var count = 1
 			return '''
 				«FOR entry : diff.entrySet»
-					"--- Region «count++» ---"
-					"- Constraints:"
+					"«REGION»«count++» ---"
+					"«CONSTRAINTS»"
 					«entry.key.parseDelim»
-					"- Original invariant:"
+					"«O_INVARIANT»"
 					«entry.value.key.parseDelim»
-					"- New invariant:"
+					"«V_INVARIANT»"
 					«entry.value.value.parseDelim»
 				«ENDFOR»
 			'''

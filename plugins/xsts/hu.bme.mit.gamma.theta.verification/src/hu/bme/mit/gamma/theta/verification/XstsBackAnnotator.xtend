@@ -12,7 +12,9 @@ package hu.bme.mit.gamma.theta.verification
 
 import hu.bme.mit.gamma.expression.language.parser.ExpressionLanguageParserAndLinker
 import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.expression.util.IndexHierarchy
 import hu.bme.mit.gamma.querygenerator.ThetaQueryGenerator
@@ -20,6 +22,7 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.language.parser.StatechartExpressionLanguageParserAndLinker
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.InstanceSchedule
@@ -27,12 +30,14 @@ import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.verification.util.TraceBuilder
 import hu.bme.mit.gamma.xsts.transformation.util.Namings
 import java.util.List
 import java.util.Map
 import java.util.Set
 import java.util.function.Function
+import java.util.function.Supplier
 import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
@@ -46,7 +51,9 @@ class XstsBackAnnotator {
 	protected final Component component
 	protected final ThetaQueryGenerator xStsQueryGenerator
 	protected final extension XstsArrayParser arrayParser
+	//
 	protected final Map<String, String> expressionPreprocess
+	protected final XstsReferenceBackAnnotator referenceBackAnnotator
 	//
 	protected final String SCHEDULING_VARIABLE_PREFIX
 	//
@@ -61,6 +68,7 @@ class XstsBackAnnotator {
 	protected final extension TraceBuilder traceBuilder = TraceBuilder.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	
 	new(ThetaQueryGenerator queryGenerator, XstsArrayParser arrayParser) {
 		this(queryGenerator, arrayParser, "")
@@ -72,11 +80,19 @@ class XstsBackAnnotator {
 	
 	new(ThetaQueryGenerator queryGenerator, XstsArrayParser arrayParser,
 			String schedulingVariablePrefix, Map<String, String> expressionPreprocess) {
+		this(queryGenerator, arrayParser, schedulingVariablePrefix, expressionPreprocess,
+			new XstsReferenceBackAnnotator(queryGenerator, [it.get(0) + " == " + it.get(1) + "." + it.get(2)]))
+	}
+	
+	new(ThetaQueryGenerator queryGenerator, XstsArrayParser arrayParser,
+			String schedulingVariablePrefix, Map<String, String> expressionPreprocess,
+			XstsReferenceBackAnnotator referenceBackAnnotator) {
 		this.component = queryGenerator.component
 		this.xStsQueryGenerator = queryGenerator
 		this.arrayParser = arrayParser
 		this.SCHEDULING_VARIABLE_PREFIX = schedulingVariablePrefix // E.g., _ in IML
 		this.expressionPreprocess = expressionPreprocess
+		this.referenceBackAnnotator = referenceBackAnnotator
 	}
 	
 	//
@@ -123,9 +139,10 @@ class XstsBackAnnotator {
 		val variable = instanceVariable.key
 		// Getting fields and indexes regardless of primitive or complex types
 		// In the case of primitive types, these hierarchies will be empty
-		val field = xStsQueryGenerator.getSourceVariableFieldHierarchy(id)
-		val indexPairs = id.parseArray(value)
-		variable.handleOneCapacityArrayValues(field, indexPairs)
+		val fieldIndex = variable.handleFields(id, value,
+				[xStsQueryGenerator.getSourceVariableFieldHierarchy(id)])
+		val field = fieldIndex.key
+		val indexPairs = fieldIndex.value
 		for (indexPair : indexPairs) {
 			val index = indexPair.key
 			val parsedValue = indexPair.value
@@ -161,9 +178,10 @@ class XstsBackAnnotator {
 		val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 		val parameter = systemOutEvent.get(2) as ParameterDeclaration
 		// Getting fields and indexes regardless of primitive or complex types
-		val field = xStsQueryGenerator.getSourceOutEventParameterFieldHierarchy(id)
-		val indexPairs = id.parseArray(value)
-		parameter.handleOneCapacityArrayValues(field, indexPairs)
+		val fieldIndex = parameter.handleFields(id, value,
+				[xStsQueryGenerator.getSourceOutEventParameterFieldHierarchy(id)])
+		val field = fieldIndex.key
+		val indexPairs = fieldIndex.value
 		//
 		for (indexPair : indexPairs) {
 			val index = indexPair.key
@@ -198,9 +216,10 @@ class XstsBackAnnotator {
 		val systemPort = port.boundTopComponentPort // Back-tracking to the system port
 		val parameter = systemInEvent.get(2) as ParameterDeclaration
 		// Getting fields and indexes regardless of primitive or complex types
-		val field = xStsQueryGenerator.getSynchronousSourceInEventParameterFieldHierarchy(id)
-		val indexPairs = id.parseArray(value)
-		parameter.handleOneCapacityArrayValues(field, indexPairs)
+		val fieldIndex = parameter.handleFields(id, value,
+				[xStsQueryGenerator.getSynchronousSourceInEventParameterFieldHierarchy(id)])
+		val field = fieldIndex.key
+		val indexPairs = fieldIndex.value
 		//
 		for (indexPair : indexPairs) {
 			val index = indexPair.key
@@ -281,9 +300,10 @@ class XstsBackAnnotator {
 		if (component.contains(systemPort)) {
 			val parameter = systemInEvent.get(2) as ParameterDeclaration
 			// Getting fields and indexes regardless of primitive or complex types
-			val field = xStsQueryGenerator.getAsynchronousSourceInEventParameterFieldHierarchy(id)
-			val indexPairs = id.parseArray(value)
-			parameter.handleOneCapacityArrayValues(field, indexPairs)
+			val fieldIndex = parameter.handleFields(id, value,
+					[xStsQueryGenerator.getAsynchronousSourceInEventParameterFieldHierarchy(id)])
+			val field = fieldIndex.key
+			val indexPairs = fieldIndex.value
 			
 			var firstElement = indexPairs.findFirst[it.key == new IndexHierarchy(0)]
 			// Note that 'id' might be a single value instead of an array due to optimization
@@ -340,11 +360,20 @@ class XstsBackAnnotator {
 		}
 	}
 	
+	protected def handleFields(Declaration declaration, String id, String value,
+			Supplier<FieldHierarchy> fieldComputer) {
+		val field =  fieldComputer.get
+		val indexPairs = id.parseArray(value)
+		declaration.handleOneCapacityArrayValues(field, indexPairs)
+		
+		return field -> indexPairs
+	}
+	
 	///
 	
 	protected def getParser() {
 		if (parser === null) {
-			parser = new ExpressionLanguageParserAndLinker
+			parser = new StatechartExpressionLanguageParserAndLinker
 		}
 		return parser
 	}
@@ -354,7 +383,7 @@ class XstsBackAnnotator {
 		val expression = parser.preprocessAndParse(value,
 			new Function<String, EObject> {
 				override apply(String id) {
-					return id.parseReference
+					return referenceBackAnnotator.parseReference(id)
 				}
 			},
 			expressionPreprocess)
@@ -362,49 +391,122 @@ class XstsBackAnnotator {
 		return expression
 	}
 	
-	protected def parseReference(String id) {
-		// TODO field hierarchies
-		return if (xStsQueryGenerator.isSourceVariable(id)) {
-			val instanceVariable = xStsQueryGenerator.getSourceVariable(id)
-			val instance = instanceVariable.value
-			val variable = instanceVariable.key
+	static class XstsReferenceBackAnnotator {
+		//
+		protected final List<String> unparsableIds = newArrayList
+		
+		protected final ThetaQueryGenerator xStsQueryGenerator
+		protected final Function<List<?>, String> targetStateAdapter
+		
+		protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
+		protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
+		protected final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
+		//
+		
+		new(ThetaQueryGenerator xStsQueryGenerator) {
+			this(xStsQueryGenerator, null)
+		}
+		
+		new(ThetaQueryGenerator xStsQueryGenerator, Function<List<?>, String> targetStateAdapter) {
+			this.xStsQueryGenerator = xStsQueryGenerator
+			this.targetStateAdapter = targetStateAdapter
+		}
+		
+		//
+		protected def parseReference(String id) {
+			// TODO arrays
+			return if (xStsQueryGenerator.isSourceVariable(id)) {
+				val instanceVariable = xStsQueryGenerator.getSourceVariable(id)
+				val instance = instanceVariable.value
+				val variable = instanceVariable.key
+				
+				val reference = instance.createInstanceReference.createVariableReference(variable)
+				
+				reference.handleFields([xStsQueryGenerator.getSourceVariableFieldHierarchy(id)])
+			}
+			else if (xStsQueryGenerator.isSourceOutEvent(id) ||
+						xStsQueryGenerator.isSynchronousSourceInEvent(id) /* Only sync, no support for queues */) {
+				val isOut = xStsQueryGenerator.isSourceOutEvent(id)
+				val instanceEvent = isOut ?
+					xStsQueryGenerator.getSourceOutEvent(id):
+					xStsQueryGenerator.getSynchronousSourceInEvent(id)
+				val event = instanceEvent.head as Event
+				val port = instanceEvent.get(1) as Port
+				val instance = instanceEvent.lastOrNull as ComponentInstance
+				
+				instance.createInstanceReference.createEventReference(port, event)
+			}
+			else if (xStsQueryGenerator.isSourceOutEventParameter(id) ||
+						xStsQueryGenerator.isSynchronousSourceInEventParameter(id) /* Only sync, no support for queues */) {
+				val isOut = xStsQueryGenerator.isSourceOutEventParameter(id)
+				val instanceEvent = isOut ?
+					xStsQueryGenerator.getSourceOutEventParameter(id) :
+					xStsQueryGenerator.getSynchronousSourceInEventParameter(id)
+				val event = instanceEvent.head as Event
+				val port = instanceEvent.get(1) as Port
+				val parameter = instanceEvent.get(2) as ParameterDeclaration
+				val instance = instanceEvent.lastOrNull as ComponentInstance
+				
+				val reference = instance.createInstanceReference.createParameterReference(port, event, parameter)
+				
+				reference.handleFields(isOut ? [xStsQueryGenerator.getSourceOutEventParameterFieldHierarchy(id)] :
+						[xStsQueryGenerator.getSynchronousSourceInEventParameterFieldHierarchy(id)])
+			}
+			else if (xStsQueryGenerator.isSourceTypeDeclaration(id)) {
+				val typeDeclaration = xStsQueryGenerator.getSourceTypeDeclaration(id)
+				typeDeclaration.createTypeReference
+			}
+			else if (id.isSourceState) { // Before enums as an enum literal can have the same id as a state
+				val instanceState = id.getSourceState
+				unparsableIds.clear
+				
+				val instance = instanceState.value
+				val state = instanceState.key
+				
+				instance.createInstanceReference.createStateReference(state)
+			}
+			else if (xStsQueryGenerator.isSourceEnumLiteral(id)) {
+				val literal = xStsQueryGenerator.getSourceEnumLiteral(id)
+				literal.createEnumerationLiteralExpression
+			}
+			else {
+				unparsableIds += id
+				null // As expected by the parser
+			}
+		}
+		
+		protected def isSourceState(String id) {
+			try {
+				id.getSourceState
+				return true
+			} catch (IllegalArgumentException e) {
+				return false
+			}
+		}
+		
+		protected def getSourceState(String id) {
+			if (unparsableIds.size < 2) {
+				throw new IllegalArgumentException
+			}
 			
-			instance.createInstanceReference.createVariableReference(variable)
-		}
-		else if (xStsQueryGenerator.isSourceOutEvent(id) ||
-					xStsQueryGenerator.isSynchronousSourceInEvent(id) /* Only sync, no support for queues */) {
-			val instanceEvent = xStsQueryGenerator.isSourceOutEvent(id) ?
-				xStsQueryGenerator.getSourceOutEvent(id):
-				xStsQueryGenerator.getSynchronousSourceInEvent(id)
-			val event = instanceEvent.head as Event
-			val port = instanceEvent.get(1) as Port
-			val instance = instanceEvent.lastOrNull as ComponentInstance
+			val beforeLast = unparsableIds.beforeLastElement
+			val last = unparsableIds.lastElement
 			
-			instance.createInstanceReference.createEventReference(port, event)
-		}
-		else if (xStsQueryGenerator.isSourceOutEventParameter(id) ||
-					xStsQueryGenerator.isSynchronousSourceInEventParameter(id) /* Only sync, no support for queues */) {
-			val instanceEvent = xStsQueryGenerator.isSourceOutEventParameter(id) ?
-				xStsQueryGenerator.getSourceOutEventParameter(id) :
-				xStsQueryGenerator.getSynchronousSourceInEventParameter(id)
-			val event = instanceEvent.head as Event
-			val port = instanceEvent.get(1) as Port
-			val parameter = instanceEvent.get(2) as ParameterDeclaration
-			val instance = instanceEvent.lastOrNull as ComponentInstance
+			val potentialStateString = targetStateAdapter.apply(#[beforeLast, last, id])
 			
-			instance.createInstanceReference.createParameterReference(port, event, parameter)
+			return xStsQueryGenerator.getSourceState(potentialStateString)
 		}
-		else if (xStsQueryGenerator.isSourceTypeDeclaration(id)) {
-			val typeDeclaration = xStsQueryGenerator.getSourceTypeDeclaration(id)
-			typeDeclaration.createTypeReference
+		
+		protected def handleFields(Expression reference, Supplier<FieldHierarchy> fieldComputer) {
+			val fields = fieldComputer.get
+			return if (fields.empty) {
+				reference
+			}
+			else {
+				reference.createAccess(fields)
+			}
 		}
-		else if (xStsQueryGenerator.isSourceEnumLiteral(id)) {
-			val literal = xStsQueryGenerator.getSourceEnumLiteral(id)
-			literal.createEnumerationLiteralExpression
-		}
-		else {
-			null // As expected by the parser
-		}
+		
 	}
 	
 	///

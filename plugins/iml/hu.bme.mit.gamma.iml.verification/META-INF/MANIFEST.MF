@@ -1,12 +1,13 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: NuXMV Verifier
+Bundle-Name: Imandra Verifier
 Bundle-SymbolicName: hu.bme.mit.gamma.iml.verification
 Bundle-Version: 2.11.0.qualifier
 Automatic-Module-Name: hu.bme.mit.gamma.nuxmv.verification
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: BME-FTSRG
 Require-Bundle: com.google.guava,
+ com.google.gson,
  org.eclipse.xtext.xbase.lib,
  org.eclipse.xtend.lib,
  org.eclipse.xtend.lib.macro,

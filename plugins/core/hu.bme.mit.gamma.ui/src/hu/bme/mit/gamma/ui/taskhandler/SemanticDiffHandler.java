@@ -14,10 +14,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 
+import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.SemanticDiff;
 import hu.bme.mit.gamma.iml.verification.ImlComposerSemanticDiffer;
@@ -52,15 +54,24 @@ public class SemanticDiffHandler extends TaskHandler {
 		File modelFile1 = new File(fileNames.get(0));
 		File modelFile2 = new File(fileNames.get(1));
 		
-		Package unfoldedPackage = getTraceabilityPackage(fileNames);
-		
+		String fileName = fileUtil.getUnhiddenExtensionlessName(fileUtil.getFileName(fileNames.get(0))) +
+				"_" + fileUtil.getUnhiddenExtensionlessName(fileUtil.getFileName(fileNames.get(1)));
+		//
+		Package mergedPackage = mergePackages(fileNames);
+		//
 		ImlSemanticDiffer semanticDiffer = new ImlComposerSemanticDiffer();
-		this.semanticDiff = semanticDiffer.execute(unfoldedPackage, modelFile1, modelFile2);
+		this.semanticDiff = semanticDiffer.execute(mergedPackage, modelFile1, modelFile2);
 		
 		if (this.semanticDiff != null) {
-			String traceFileName = fileNamer.getExecutionTraceFileName(modelFile1.getName());
+			String traceFileName = fileNamer.getExecutionTraceFileName(fileName);
 			serializer.saveModel(this.semanticDiff, targetFolderUri, traceFileName);
+			
+			String json = semanticDiffer.printJson(this.semanticDiff);
+			String jsonFileName = fileUtil.getExtensionlessName(fileName) + ".json";
+			File jsonFile = new File(targetFolderUri, jsonFileName);
+			fileUtil.saveString(jsonFile, json);
 		}
+
 	}
 
 	private void setSemanticDiffHandler(SemanticDiff semanticDiff) {
@@ -69,6 +80,8 @@ public class SemanticDiffHandler extends TaskHandler {
 			analysisLanguages.add(AnalysisLanguage.IML);
 		}
 	}
+	
+	//
 	
 	protected Package getTraceabilityPackage(Iterable<String> fileNames) {
 		for (String fileName : fileNames) {
@@ -80,6 +93,49 @@ public class SemanticDiffHandler extends TaskHandler {
 		}
 		return null;
 	}
+	
+	protected List<Package> getTraceabilityPackages(Iterable<String> fileNames) {
+		List<Package> packages = new ArrayList<Package>();
+		
+		for (String fileName : fileNames) {
+			String unfoldedPackageFileName = fileNamer.getUnfoldedPackageUri(fileName);
+			File unfoldedPackageFile = new File(unfoldedPackageFileName);
+			if (unfoldedPackageFile.exists()) {
+				packages.add((Package) ecoreUtil.normalLoad(unfoldedPackageFile));
+			}
+		}
+		return packages;
+	}
+	
+	protected Package mergePackages(List<String> fileNames) throws IOException {
+		List<Package> traceabilityPackages = getTraceabilityPackages(fileNames);
+		Package package1 = traceabilityPackages.get(0);
+		Package package2 = traceabilityPackages.get(1);
+		
+		Package mergedPackage = ecoreUtil.cloneAndMerge(package1, package2,
+				((a, b) -> {
+					if (a instanceof NamedElement an) {
+						if (b instanceof NamedElement bn) {
+							return an.getName().equals(bn.getName()) && a.eClass() == b.eClass();
+						}
+					}
+					return ecoreUtil.helperEquals(a, b);
+				}),
+				(it) -> { return it instanceof NamedElement; });
+		
+		String fileName = fileUtil.getUnhiddenExtensionlessName(fileUtil.getFileName(fileNames.get(0))) +
+				"_" + fileUtil.getUnhiddenExtensionlessName(fileUtil.getFileName(fileNames.get(1)));
+		
+		String mergedPackageFileName = fileNamer.getUnfoldedPackageFileName(fileName);
+		serializer.saveModel(mergedPackage, targetFolderUri, mergedPackageFileName);
+		// Needed for some reason (VIATRA queries are returned correctly like this)
+		Package reloadedMergedPackage = (Package) ecoreUtil.normalLoad(
+				new File(targetFolderUri, mergedPackageFileName));
+		//
+		return reloadedMergedPackage;
+	}
+	
+	//
 	
 	public ExecutionTrace getSemanticDiff() {
 		return semanticDiff;

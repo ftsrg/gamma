@@ -605,7 +605,19 @@ class ActionOptimizer {
 		val xStsActions = action.actions
 		val removeableXStsActions = <AbstractAssignmentAction>newArrayList
 		for (var i = 0; i < xStsActions.size; i++) {
-			val xStsFirstAction = xStsActions.get(i)
+			var xStsFirstAction = xStsActions.get(i)
+			
+			// More sophisticated assignment action retrieval should be implemented
+			val xStsFirstAssignments = xStsFirstAction.getAllContentsOfType(AbstractAssignmentAction) // No 'self'
+			if (xStsFirstAssignments.size == 1) { // Not a simple action
+				val xStsFirstAssignment = xStsFirstAssignments.head
+				if (xStsFirstAssignment.getAllContainersUntil(xStsFirstAction).forall[it.last]) {
+					xStsFirstAction = xStsFirstAssignment
+					logger.info("Potentially optimizable assignment in composite action found: " + xStsFirstAssignment.lhs.declaration.name)
+				}
+			}
+			//
+			
 			if (xStsFirstAction instanceof AbstractAssignmentAction) {
 				val lhs = xStsFirstAction.lhs
 				val variable = lhs.accessedDeclaration
@@ -633,9 +645,9 @@ class ActionOptimizer {
 			}
 		}
 		// Removing unnecessary assignments
-		xStsActions -= removeableXStsActions
+		removeableXStsActions.replaceWithEmptyActions
 		// Recursion
-		for (xStsAction : action.actions.filter(CompositeAction)) {
+		for (xStsAction : xStsActions.filter(CompositeAction)) {
 			xStsAction.optimizeAssignmentActions
 		}
 	}

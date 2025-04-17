@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -471,24 +471,37 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static Set<Package> getImportableAnnotationPackages(Component component) {
 		Set<Package> importablePackages = new LinkedHashSet<Package>();
-		for (AdaptiveContractAnnotation annotation :
-				ecoreUtil.getContentsOfType(component, AdaptiveContractAnnotation.class)) {
+		
+		List<ComponentAnnotation> componentAnnotations = ecoreUtil.getContentsOfType(
+				component, ComponentAnnotation.class);
+		for (AdaptiveContractAnnotation annotation : javaUtil.filterIntoList(
+					componentAnnotations, AdaptiveContractAnnotation.class)) {
 			Component monitoredComponent = annotation.getMonitoredComponent();
 			Package containingPackage = getContainingPackage(monitoredComponent);
 			importablePackages.add(containingPackage);
 		}
-		for (ScenarioContractAnnotation annotation :
-				ecoreUtil.getContentsOfType(component, ScenarioContractAnnotation.class)) {
+		for (ScenarioContractAnnotation annotation : javaUtil.filterIntoList(
+					componentAnnotations, ScenarioContractAnnotation.class)) {
 			Component monitoredComponent = annotation.getMonitoredComponent();
 			Package containingPackage = getContainingPackage(monitoredComponent);
 			importablePackages.add(containingPackage);
 		}
-		for (StateContractAnnotation annotation :
-				ecoreUtil.getContentsOfType(component, StateContractAnnotation.class)) {
+		
+		List<StateAnnotation> stateAnnotations = ecoreUtil.getContentsOfType(component, StateAnnotation.class);
+		for (StateContractAnnotation annotation : javaUtil.filterIntoList(
+					stateAnnotations, StateContractAnnotation.class)) {
 			StatechartDefinition contract = annotation.getContractStatechart();
 			Package containingPackage = getContainingPackage(contract);
 			importablePackages.add(containingPackage);
 		}
+		for (MissionPhaseStateAnnotation annotation : javaUtil.filterIntoList(
+					stateAnnotations, MissionPhaseStateAnnotation.class)) {
+			ComponentInstance componentInstance = annotation.getComponent();
+			Component type = StatechartModelDerivedFeatures.getDerivedType(componentInstance);
+			Package containingPackage = getContainingPackage(type);
+			importablePackages.add(containingPackage);
+		}
+		
 		return importablePackages;
 	}
 	

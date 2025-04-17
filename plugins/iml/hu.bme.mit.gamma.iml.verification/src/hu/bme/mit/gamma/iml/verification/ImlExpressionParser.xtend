@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.querygenerator.ImlQueryGenerator
 import hu.bme.mit.gamma.querygenerator.ThetaQueryGenerator
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.theta.verification.XstsBackAnnotator
@@ -30,13 +31,15 @@ import hu.bme.mit.gamma.verification.util.TraceBuilder
 import java.util.Scanner
 import java.util.logging.Logger
 
+import static hu.bme.mit.gamma.xsts.iml.transformation.util.Namings.*
+
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class ImlExpressionParser {
 	//
 	public static val preprocessExpressions = #{ "&&" -> "and", "||" -> "or", "=" -> "==", "<>" -> "!=",
-			"+." -> "+", "-." -> "-", "*." -> "*", "/." -> "/", "." -> "::" }
-	//
+			"+." -> "+", "-." -> "-", "*." -> "*", "/." -> "/", "." + ENUM_LITERAL_PREFIX -> "::" + ENUM_LITERAL_PREFIX /* Only for enums, not records */}
+	// TODO arrays?
 	protected final ThetaQueryGenerator imlQueryGenerator
 	protected final extension XstsBackAnnotator xStsBackAnnotator
 	protected static final Object engineSynchronizationObject = new Object // For the VIATRA engine in the query generator
@@ -88,27 +91,6 @@ class ImlExpressionParser {
 	protected def parse(String text) {
 		val expression = xStsBackAnnotator.parseExpression(text)
 		
-		if (expression instanceof EqualityExpression) {
-			val left = expression.leftOperand
-			val right = expression.rightOperand
-			if (left instanceof OpaqueExpression) {
-				if (right instanceof OpaqueExpression) {
-					val opaque = left.expression + " == " + right.expression
-					
-					val potentialStateString = opaque.replace("::", ".") // Preprocessed IML '.' to Gamma '::' in enums
-					if (imlQueryGenerator.isSourceState(potentialStateString)) {
-						val stateInstance = imlQueryGenerator.getSourceState(potentialStateString)
-						val state = stateInstance.key
-						val instance = stateInstance.value
-						
-						val stateExpression = instance.createInstanceReference.createStateReference(state)
-						
-						return stateExpression
-					}
-				}
-			}
-		}
-		
 		return expression
 	}
 	
@@ -158,6 +140,15 @@ class ImlExpressionParser {
 			val systemPort = port.boundTopComponentPort
 			
 			return systemPort.createEventParameterReference(expression.parameterDeclaration)
+		}
+		else if (expression instanceof EqualityExpression) {
+			val left = expression.leftOperand
+			val right = expression.rightOperand
+			if (left instanceof OpaqueExpression) {
+				if (right instanceof ComponentInstanceStateReferenceExpression) {
+					return right // No else
+				}
+			}
 		}
 		
 		val subexpressions = expression.getAllContentsOfType(Expression)

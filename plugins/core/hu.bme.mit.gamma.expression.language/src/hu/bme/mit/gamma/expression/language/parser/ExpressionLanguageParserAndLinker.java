@@ -19,6 +19,7 @@ import org.eclipse.xtext.CrossReference;
 import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.ILeafNode;
 import org.eclipse.xtext.parser.IParseResult;
+import org.eclipse.xtext.parser.antlr.AbstractAntlrParser;
 
 import com.google.inject.Injector;
 
@@ -34,11 +35,27 @@ import hu.bme.mit.gamma.util.JavaUtil;
 
 public class ExpressionLanguageParserAndLinker {
 	//
-	protected final Injector injector = new ExpressionLanguageStandaloneSetup().createInjectorAndDoEMFRegistration();
+	protected final Injector injector;
 	protected final ExpressionUtil util = ExpressionUtil.INSTANCE;
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	protected final ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE;
+	//
+	
+	public ExpressionLanguageParserAndLinker() {
+		injector = getInjector();
+	}
+	
+	// Needs overriding in derived classes
+	protected Injector getInjector() {
+		return new ExpressionLanguageStandaloneSetup().createInjectorAndDoEMFRegistration();
+	}
+	
+	// Needs overriding in derived classes
+	protected Class<? extends AbstractAntlrParser> getParserClass() {
+		return CustomExpressionLanguageParser.class;
+	}
+	
 	//
 
 	public Expression preprocessAndParse(String expression, Map<String, String> expressionPreprocess) {
@@ -70,7 +87,7 @@ public class ExpressionLanguageParserAndLinker {
 		String trimmedExpression = javaUtil.deparenthesize(expression);
 		StringReader reader = new StringReader(trimmedExpression);
 		
-		CustomExpressionLanguageParser parser = injector.getInstance(CustomExpressionLanguageParser.class);
+		AbstractAntlrParser parser = injector.getInstance(getParserClass());
 		IParseResult result = parser.parse(reader);
 
 		if (result.hasSyntaxErrors()) {
