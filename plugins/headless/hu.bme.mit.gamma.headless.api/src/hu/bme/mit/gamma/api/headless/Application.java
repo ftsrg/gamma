@@ -68,6 +68,9 @@ public class Application implements IApplication {
 			logger.severe(t.getMessage());
 			t.printStackTrace();
 		}
+		// Manual stopping may be needed
+		stop();
+		//
 		return IApplication.EXIT_OK;
 	}
 

@@ -367,7 +367,7 @@ class ExpressionTransformer {
 			
 			// Trying optimization first 'after 0 s'
 			if (value.evaluable && value.evaluateInteger == 0) {
-				logger.info("Optimzing 'after 0' timeout trigger")
+				logger.info("Optimizing 'after 0' timeout trigger")
 				return createTrueExpression
 			}
 			//

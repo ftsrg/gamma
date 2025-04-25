@@ -159,6 +159,6 @@ Compliance level '17' is incompatible with target level '21'. A compliance level
 
 This means that the compiler compliance level is set too high. Open the Eclipse IDE, select `Window > Preferences > Java > Compiler`, and under `JDK Compliance`, set the `Compiler compliance level` to 17. After this, export the products again, and the problem should be resolved.
 
-**The execution of the invokedheadless Eclipse process stops without any messages or exceptions**
+**The execution of the invoked headless Eclipse process stops without any messages or exceptions**
 
 This error can occur when the plugins you are trying to export into a product (i.e., the Gamma plugins imported into the workspace, containing the source code) rely on old Java execution environments in their _MANIFEST.MF_ files, e.g., Java 1.8. The plugins should either not specify the execution environment explicitly, or rely on Java 17.
