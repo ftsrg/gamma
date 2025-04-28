@@ -271,13 +271,22 @@ abstract class ImlSemanticDiffer {
 	
 	static class SignatureAligner {
 		//
+		protected final boolean addFinalOptimizations // 'let r = { r with _port_event_In_component = false; ...'
 		protected final String src
 		protected final String src2
 		//
+		protected final String R = 'r'
+		protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
+		//
 		
 		new(String src, String src2) {
+			this(src, src2, true)
+		}
+		
+		new(String src, String src2, boolean addFinalOptimizations) {
 			this.src = src
 			this.src2 = src2
+			this.addFinalOptimizations = addFinalOptimizations
 		}
 		
 		def execute() '''
@@ -307,7 +316,7 @@ abstract class ImlSemanticDiffer {
 			while (scanner.hasNextLine && (line = scanner.nextLine).startsWith(M)) {
 				val name = line.substring(M.length, line.indexOf('=')).trim
 				val literals =  line.substring(line.lastIndexOf('=') + 1, line.indexOf("end"))
-					.split('\\|').map[it.trim].reject[it.nullOrEmpty].toList
+						.split('\\|').map[it.trim].reject[it.nullOrEmpty].toList
 				
 				modules += name -> literals
 			}
@@ -382,21 +391,82 @@ abstract class ImlSemanticDiffer {
 		'''
 		
 		protected def getTrans() {
-			src.behavior
+			val trans = src.behavior
+			
+			if (addFinalOptimizations) {
+				val trans2 = src2.behavior
+				val optTrans = trans.addFinalOptimization(trans2)
+				return optTrans
+			}
+			
+			return trans
 		}
 		
 		protected def getTrans2() {
 			val template = '''let «DIFF_FUNCTION_NAME» ('''
 			val newTemplate = '''let «NEW_DIFF_FUNCTION_NAME» ('''
 			
-			return src2.behavior
+			val trans2 = src2.behavior
 					.replace(template, newTemplate)
+					
+			if (addFinalOptimizations) {
+				val trans = src.behavior
+				val optTrans2 = trans2.addFinalOptimization(trans)
+				return optTrans2
+			}
+			
+			return trans2
 		}
 		
 		protected def getBehavior(String src) {
 			val start = src.indexOf("let h_") // Omitting "init"
 			val end = src.indexOf("let env (")
 			return src.substring(start, end)
+		}
+		
+		//
+		
+		protected def extractFinalOptimization(String src) {
+			var index = -1 // Not found optimization (yet)
+			// Note: fragile; relies on generated IML structure
+			try (val scanner = new Scanner(src)) {
+				while (scanner.hasNext) {
+					val line = scanner.nextLine.trim
+					// Checking if final optimization part starts
+					if (line.startsWith("let r = { r with ") && line.contains("_In")) { // See Namings
+						index = src.indexOf(line)
+					}
+					else if (index >= 0) {
+						if (!(line.contains("_In") || line.nullOrEmpty || line.contains("choice_") || line == R)) { // Not final opt
+							index = -1
+						}
+					}
+				}
+			}
+			
+			if (index >= 0) { // Found optimization
+				return src.substring(index)
+			}
+			
+			return null
+		}
+		
+		protected def addFinalOptimization(String base, String other) {
+			val C = "(* Other opt *)" + System.lineSeparator
+			
+			val transOpt = base.extractFinalOptimization
+			val trans2Opt = other.extractFinalOptimization
+			
+			if (transOpt.trimLine != trans2Opt.trimLine) {
+				val optTrans = base.replaceLast(R, C + trans2Opt)
+				return optTrans
+			}
+			
+			return base
+		}
+		
+		protected def trimLine(String line) {
+			return line.trim.replaceAll("\\s+", " ")
 		}
 		
 	}
