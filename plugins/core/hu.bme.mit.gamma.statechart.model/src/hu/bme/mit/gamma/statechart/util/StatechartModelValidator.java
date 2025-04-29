@@ -107,6 +107,7 @@ import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
 import hu.bme.mit.gamma.statechart.statechart.ComplexTrigger;
+import hu.bme.mit.gamma.statechart.statechart.CoordinationTransition;
 import hu.bme.mit.gamma.statechart.statechart.EntryState;
 import hu.bme.mit.gamma.statechart.statechart.ForkState;
 import hu.bme.mit.gamma.statechart.statechart.InitialState;
@@ -706,6 +707,10 @@ public class StatechartModelValidator extends ActionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkTransitionTriggers(Transition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		if (transition instanceof CoordinationTransition) {
+			// TODO
+			return validationResultMessages;		
+		}
 		if (!StatechartModelDerivedFeatures.needsTrigger(transition)) {
 			return validationResultMessages;
 		}

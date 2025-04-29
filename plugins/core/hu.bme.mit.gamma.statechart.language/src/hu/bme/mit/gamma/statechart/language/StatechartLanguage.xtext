@@ -436,7 +436,7 @@ DeepHistoryState returns DeepHistoryState:
  
 Component returns InterfaceModel::Component:
 	SynchronousComponent |
-	AsynchronousComponent |
+	AsynchronousComponent | 
 	CoordinationStatechartDefinition
 ;
 
@@ -749,20 +749,59 @@ CoordinationStatechartDefinition returns CoordinationStatechartDefinition:
 			annotations+=StatechartContractAnnotation
 		)*
 	)
-	'statechart' name=ID 
+	'coordination-statechart' name=ID
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
-		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')? '{'
-			(
-				variableDeclarations+=VariableDeclaration |
-				timeoutDeclarations+=TimeoutDeclaration |
-				('invariant' invariants+=Expression)
-			)*
-			(
-				regions+=Region |
-				transitions+=Transition
-			)*
-			functionDeclarations+=FunctionDeclaration*
+	('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
+	'composition' '{'
+		(
+			components+=ComponentInstance |
+			portBindings+=PortBinding |
+			channels+=Channel
+		)*
 	'}'
+	'coordination' '{'
+		(
+			variableDeclarations+=VariableDeclaration |
+			timeoutDeclarations+=TimeoutDeclaration |
+			('invariant' invariants+=Expression)
+		)*
+		(
+			regions+=Region |
+			coordinationTransitions+=CoordinationTransition
+		)*
+		functionDeclarations+=FunctionDeclaration*
+	'}'
+;
+
+AbstractCoordinationReferenceExpression returns AbstractCoordinationReferenceExpression:
+	ComponentCoordinationReferenceExpression 
+	| SequentialCoordinationReferenceExpression
+	| UnorderedCoordinationReferenceExpression
+;
+
+ComponentCoordinationReferenceExpression returns ComponentCoordinationReferenceExpression:
+	instance=ComponentInstanceReferenceExpression
+;
+
+SequentialCoordinationReferenceExpression returns SequentialCoordinationReferenceExpression:
+	'seq' '{' instances+=ComponentInstanceReferenceExpression((',') instances+=ComponentInstanceReferenceExpression)* '}' | instances+=ComponentInstanceReferenceExpression
+;
+
+UnorderedCoordinationReferenceExpression returns UnorderedCoordinationReferenceExpression:
+	'unord' '{' instances+=ComponentInstanceReferenceExpression ((',') instances+=ComponentInstanceReferenceExpression)* '}'
+;
+
+CoordinationTransition returns CoordinationTransition:
+
+	(annotations+=TransitionAnnotation)*
+	'transition' ('(' priority=INTEGER ')')?
+	'from' sourceState=[StateNode] 'to' targetState=[StateNode]
+	
+	('when' trigger=Trigger)?
+	('[' guard=Expression ']')?
+	('execute' coordinatedComponent=AbstractCoordinationReferenceExpression)?
+	('/' ( => effects+=Action)* )?
+	
 ;
 
 //

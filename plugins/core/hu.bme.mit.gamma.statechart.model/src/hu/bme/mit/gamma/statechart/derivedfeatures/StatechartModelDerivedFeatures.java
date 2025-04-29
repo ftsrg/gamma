@@ -111,6 +111,7 @@ import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger;
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
 import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
+import hu.bme.mit.gamma.statechart.statechart.CoordinationStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.DeepHistoryState;
 import hu.bme.mit.gamma.statechart.statechart.EntryState;
 import hu.bme.mit.gamma.statechart.statechart.ForkState;
@@ -2299,6 +2300,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<Transition> getOutgoingTransitions(StateNode node) {
 		StatechartDefinition statechart = getContainingStatechart(node);
+		if (statechart instanceof CoordinationStatechartDefinition) {
+			// TODO CoordinationStatechart Validation
+			return ((CoordinationStatechartDefinition) statechart).getCoordinationTransitions().stream().filter(it -> it.getSourceState() == node)
+					.collect(Collectors.toList());
+		}
 		return statechart.getTransitions().stream().filter(it -> it.getSourceState() == node)
 				.collect(Collectors.toList());
 	}
@@ -2346,6 +2352,12 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<Transition> getIncomingTransitions(StateNode node) {
 		StatechartDefinition statechart = getContainingStatechart(node);
+		if (statechart instanceof CoordinationStatechartDefinition) {
+			// TODO CoordinationStatechart Validation
+			return ((CoordinationStatechartDefinition) statechart).getCoordinationTransitions().stream().filter(it -> it.getTargetState() == node)
+					.collect(Collectors.toList());
+		}
+		
 		return statechart.getTransitions().stream().filter(it -> it.getTargetState() == node)
 				.collect(Collectors.toList());
 	}

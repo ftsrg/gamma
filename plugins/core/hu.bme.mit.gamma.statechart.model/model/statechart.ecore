@@ -164,6 +164,34 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="timeout" lowerBound="1"
         eType="#//TimeoutDeclaration"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="CoordinationStatechartDefinition" eSuperTypes="#//StatechartDefinition"/>
-  <eClassifiers xsi:type="ecore:EClass" name="CoordinationTransition" eSuperTypes="#//Transition"/>
+  <eClassifiers xsi:type="ecore:EClass" name="CoordinationStatechartDefinition" eSuperTypes="#//StatechartDefinition composite.ecore#//CompositeComponent">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="components" upperBound="-1"
+        eType="ecore:EClass composite.ecore#//ComponentInstance" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="coordinationTransitions"
+        upperBound="-1" eType="#//CoordinationTransition" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="CoordinationTransition" eSuperTypes="#//Transition">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="coordinatedComponent" eType="#//AbstractCoordinationReferenceExpression"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AbstractCoordinationReferenceExpression"
+      abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ComponentCoordinationReferenceExpression"
+      eSuperTypes="#//AbstractCoordinationReferenceExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instance" lowerBound="1"
+        eType="ecore:EClass composite.ecore#//ComponentInstanceReferenceExpression"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SequentialCoordinationReferenceExpression"
+      eSuperTypes="#//AbstractCoordinationReferenceExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instances" lowerBound="1"
+        upperBound="-1" eType="ecore:EClass composite.ecore#//ComponentInstanceReferenceExpression"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="UnorderedCoordinationReferenceExpression"
+      eSuperTypes="#//AbstractCoordinationReferenceExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instances" lowerBound="1"
+        upperBound="-1" eType="ecore:EClass composite.ecore#//ComponentInstanceReferenceExpression"
+        containment="true"/>
+  </eClassifiers>
 </ecore:EPackage>
