@@ -24,12 +24,17 @@ import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.util.ScannerLogger
+import hu.bme.mit.gamma.xsts.transformation.util.Namings
 import java.io.File
+import java.util.Collection
 import java.util.List
 import java.util.Map
 import java.util.Map.Entry
 import java.util.Scanner
 import java.util.logging.Logger
+
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 abstract class ImlSemanticDiffer {
 	//
@@ -271,23 +276,52 @@ abstract class ImlSemanticDiffer {
 	
 	static class SignatureAligner {
 		//
-		protected final boolean addFinalOptimizations // 'let r = { r with _port_event_In_component = false; ...'
 		protected final String src
 		protected final String src2
+		protected final Package gammaPackage
+		protected final boolean addFinalOptimizations // 'let r = { r with _port_event_In_component = false; ...'
+		//
+		protected final Collection<String> fieldIds = newHashSet
 		//
 		protected final String R = 'r'
 		protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 		//
 		
 		new(String src, String src2) {
-			this(src, src2, true)
+			this(src, src2, null)
 		}
 		
-		new(String src, String src2, boolean addFinalOptimizations) {
+		new(String src, String src2, Object gammaPackage) {
 			this.src = src
 			this.src2 = src2
-			this.addFinalOptimizations = addFinalOptimizations
+			this.gammaPackage = gammaPackage as Package
+			this.addFinalOptimizations = gammaPackage !== null
+			this.parseAllFieldIds
 		}
+		
+		//
+		
+		private def parseAllFieldIds() {
+			src.parseFieldIds
+			src2.parseFieldIds
+		}
+		
+		private def void parseFieldIds(String src) {
+			val S = "type nonrec t = {"
+			
+			val firstIndex = src.indexOf(S) + S.length
+			val lastIndex = src.indexOf("}", firstIndex)
+			
+			val completeFields = src.substring(firstIndex, lastIndex)
+			val fields = completeFields.split(";")
+					.map[it.removeWhitespaces]
+					.reject[it.nullOrEmpty]
+					.map[it.substring(0, it.indexOf(":"))]
+					
+			this.fieldIds += fields
+		}
+		
+		//
 		
 		def execute() '''
 			«mergeEnums.serializeModules»
@@ -394,8 +428,7 @@ abstract class ImlSemanticDiffer {
 			val trans = src.behavior
 			
 			if (addFinalOptimizations) {
-				val trans2 = src2.behavior
-				val optTrans = trans.addFinalOptimization(trans2)
+				val optTrans = trans.addFinalOptimization
 				return optTrans
 			}
 			
@@ -410,8 +443,7 @@ abstract class ImlSemanticDiffer {
 					.replace(template, newTemplate)
 					
 			if (addFinalOptimizations) {
-				val trans = src.behavior
-				val optTrans2 = trans2.addFinalOptimization(trans)
+				val optTrans2 = trans2.addFinalOptimization
 				return optTrans2
 			}
 			
@@ -426,47 +458,90 @@ abstract class ImlSemanticDiffer {
 		
 		//
 		
-		protected def extractFinalOptimization(String src) {
-			var index = -1 // Not found optimization (yet)
-			// Note: fragile; relies on generated IML structure
-			try (val scanner = new Scanner(src)) {
-				while (scanner.hasNext) {
-					val line = scanner.nextLine.trim
-					// Checking if final optimization part starts
-					if (line.startsWith("let r = { r with ") && line.contains("_In")) { // See Namings
-						index = src.indexOf(line)
+//		protected def extractFinalOptimization(String src) {
+//			var index = -1 // Not found optimization (yet)
+//			// Note: fragile; relies on generated IML structure
+//			try (val scanner = new Scanner(src)) {
+//				while (scanner.hasNext) {
+//					val line = scanner.nextLine.trim
+//					// Checking if final optimization part starts
+//					if (line.startsWith("let r = { r with ") && line.contains("_In")) { // See Namings
+//						index = src.indexOf(line)
+//					}
+//					else if (index >= 0) {
+//						if (!(line.contains("_In") || line.nullOrEmpty || line.contains("choice_") || line == R)) { // Not final opt
+//							index = -1
+//						}
+//					}
+//				}
+//			}
+//			
+//			if (index >= 0) { // Found optimization
+//				return src.substring(index)
+//			}
+//			
+//			return ""
+//		}
+		
+		protected def addFinalOptimization(String base) {
+			val extension expressionSerializer = hu.bme.mit.gamma.xsts.iml.transformation.serialization.ExpressionSerializer.INSTANCE
+			
+			val C = "(* Cross-optimization *)" + System.lineSeparator
+			val inputs = newLinkedHashSet
+			
+			val component = gammaPackage.firstComponent
+			val simplePorts = component.allBoundSimplePorts
+			for (port : simplePorts) {
+				val instance = port.containingComponentInstance
+				for (inputEvent : port.inputEvents) {
+					val xStsId = Namings.customizeInputName(inputEvent, port, instance)
+					val imlId = hu.bme.mit.gamma.xsts.iml.transformation.util.Namings.customizeDeclarationName(xStsId)
+					
+					if (imlId.fieldId) {
+						val imlAssignment = imlId + " = false"
+						inputs += imlAssignment
 					}
-					else if (index >= 0) {
-						if (!(line.contains("_In") || line.nullOrEmpty || line.contains("choice_") || line == R)) { // Not final opt
-							index = -1
+					
+					if (inputEvent.transient) {
+						for (parameter : inputEvent.parameterDeclarations) {
+							val xStsIds = Namings.customizeInNames(parameter, port, instance)
+							val imlIds = xStsIds.map[
+									hu.bme.mit.gamma.xsts.iml.transformation.util.Namings.customizeDeclarationName(it)]
+							
+							for (_imlId : imlIds) {
+								if (_imlId.fieldId) {
+									val _imlAssignment = _imlId + " = " + parameter.defaultExpression.serialize
+									inputs += _imlAssignment
+								}
+							}
 						}
 					}
 				}
 			}
 			
-			if (index >= 0) { // Found optimization
-				return src.substring(index)
+			// TODO choices
+			
+			if (inputs.empty) {
+				return base
 			}
 			
-			return null
+			return base.replaceLast("r", '''
+				«C»
+				let r = { r with
+					«FOR input : inputs SEPARATOR ";"»
+						«input»
+					«ENDFOR»
+				} in
+				r
+			''')
 		}
 		
-		protected def addFinalOptimization(String base, String other) {
-			val C = "(* Other opt *)" + System.lineSeparator
-			
-			val transOpt = base.extractFinalOptimization
-			val trans2Opt = other.extractFinalOptimization
-			
-			if (transOpt.trimLine != trans2Opt.trimLine) {
-				val optTrans = base.replaceLast(R, C + trans2Opt)
-				return optTrans
-			}
-			
-			return base
+		protected def isFieldId(String id) {
+			return fieldIds.contains(id)
 		}
 		
-		protected def trimLine(String line) {
-			return line.trim.replaceAll("\\s+", " ")
+		protected def removeWhitespaces(String string) {
+			return string.trim.replaceAll("\\s+", "")
 		}
 		
 	}
