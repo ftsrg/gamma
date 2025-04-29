@@ -77,7 +77,7 @@ class Namings {
 		if (object.eContainer === null) {
 			return object.randomizeName
 		}
-		val containers = object.getAllContainersOfType(EObject)
+		val containers = object.getSelfAndAllContainersOfType(EObject)
 		val index = containers.map[it.indexOrZero].join
 		return index
 	}
