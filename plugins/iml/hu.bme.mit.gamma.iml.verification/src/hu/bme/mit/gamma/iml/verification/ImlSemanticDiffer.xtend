@@ -458,31 +458,6 @@ abstract class ImlSemanticDiffer {
 		
 		//
 		
-//		protected def extractFinalOptimization(String src) {
-//			var index = -1 // Not found optimization (yet)
-//			// Note: fragile; relies on generated IML structure
-//			try (val scanner = new Scanner(src)) {
-//				while (scanner.hasNext) {
-//					val line = scanner.nextLine.trim
-//					// Checking if final optimization part starts
-//					if (line.startsWith("let r = { r with ") && line.contains("_In")) { // See Namings
-//						index = src.indexOf(line)
-//					}
-//					else if (index >= 0) {
-//						if (!(line.contains("_In") || line.nullOrEmpty || line.contains("choice_") || line == R)) { // Not final opt
-//							index = -1
-//						}
-//					}
-//				}
-//			}
-//			
-//			if (index >= 0) { // Found optimization
-//				return src.substring(index)
-//			}
-//			
-//			return ""
-//		}
-		
 		protected def addFinalOptimization(String base) {
 			val extension expressionSerializer = hu.bme.mit.gamma.xsts.iml.transformation.serialization.ExpressionSerializer.INSTANCE
 			
