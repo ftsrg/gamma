@@ -24,7 +24,7 @@ import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.util.ScannerLogger
-import hu.bme.mit.gamma.xsts.transformation.util.Namings
+import hu.bme.mit.gamma.xsts.iml.transformation.util.Namings
 import java.io.File
 import java.util.Collection
 import java.util.List
@@ -494,8 +494,8 @@ abstract class ImlSemanticDiffer {
 			for (port : simplePorts) {
 				val instance = port.containingComponentInstance
 				for (inputEvent : port.inputEvents) {
-					val xStsId = Namings.customizeInputName(inputEvent, port, instance)
-					val imlId = hu.bme.mit.gamma.xsts.iml.transformation.util.Namings.customizeDeclarationName(xStsId)
+					val xStsId = hu.bme.mit.gamma.xsts.transformation.util.Namings.customizeInputName(inputEvent, port, instance)
+					val imlId = Namings.customizeDeclarationName(xStsId)
 					
 					if (imlId.fieldId) {
 						val imlAssignment = imlId + " = false"
@@ -504,9 +504,9 @@ abstract class ImlSemanticDiffer {
 					
 					if (inputEvent.transient) {
 						for (parameter : inputEvent.parameterDeclarations) {
-							val xStsIds = Namings.customizeInNames(parameter, port, instance)
+							val xStsIds = hu.bme.mit.gamma.xsts.transformation.util.Namings.customizeInNames(parameter, port, instance)
 							val imlIds = xStsIds.map[
-									hu.bme.mit.gamma.xsts.iml.transformation.util.Namings.customizeDeclarationName(it)]
+									Namings.customizeDeclarationName(it)]
 							
 							for (_imlId : imlIds) {
 								if (_imlId.fieldId) {
@@ -519,7 +519,11 @@ abstract class ImlSemanticDiffer {
 				}
 			}
 			
-			// TODO choices
+			// Resetting choices
+			for (choice : fieldIds.filter[it.startsWith(Namings.NONDET_IDENTIFIER_PREFIX)]) {
+				inputs += choice + " = 0"
+			}
+			//
 			
 			if (inputs.empty) {
 				return base
