@@ -425,7 +425,7 @@ class XstsBackAnnotator {
 				reference.handleFields([xStsQueryGenerator.getSourceVariableFieldHierarchy(id)])
 			}
 			else if (xStsQueryGenerator.isSourceOutEvent(id) ||
-						xStsQueryGenerator.isSynchronousSourceInEvent(id) /* Only sync, no support for queues */) {
+						xStsQueryGenerator.isSynchronousStatechartSourceInEvent(id) /* Only sync, no support for queues */) {
 				val isOut = xStsQueryGenerator.isSourceOutEvent(id)
 				val instanceEvent = isOut ?
 					xStsQueryGenerator.getSourceOutEvent(id):
@@ -437,7 +437,7 @@ class XstsBackAnnotator {
 				instance.createInstanceReference.createEventReference(port, event)
 			}
 			else if (xStsQueryGenerator.isSourceOutEventParameter(id) ||
-						xStsQueryGenerator.isSynchronousSourceInEventParameter(id) /* Only sync, no support for queues */) {
+						xStsQueryGenerator.isSynchronousStatechartSourceInEventParameter(id) /* Only sync, no support for queues */) {
 				val isOut = xStsQueryGenerator.isSourceOutEventParameter(id)
 				val instanceEvent = isOut ?
 					xStsQueryGenerator.getSourceOutEventParameter(id) :

@@ -197,10 +197,14 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	def isSynchronousSourceInEvent(String targetInEventName) {
+		if (!component.synchronous) {
+			return false
+		}
+		return targetInEventName.isSynchronousStatechartSourceInEvent
+	}
+	
+	def isSynchronousStatechartSourceInEvent(String targetInEventName) {
 		try {
-			if (!component.synchronous) {
-				return false
-			}
 			targetInEventName.getSynchronousSourceInEvent
 			return true
 		} catch (IllegalArgumentException e) {
@@ -209,10 +213,14 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	def isSynchronousSourceInEventParameter(String targetInEventParameterName) {
+		if (!component.synchronous) {
+			return false
+		}
+		return targetInEventParameterName.isSynchronousStatechartSourceInEventParameter
+	}
+	
+	def isSynchronousStatechartSourceInEventParameter(String targetInEventParameterName) {
 		try {
-			if (!component.synchronous) {
-				return false
-			}
 			targetInEventParameterName.getSynchronousSourceInEventParameter
 			return true
 		} catch (IllegalArgumentException e) {

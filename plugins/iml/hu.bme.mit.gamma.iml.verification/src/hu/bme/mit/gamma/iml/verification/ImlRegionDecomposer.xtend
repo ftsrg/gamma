@@ -21,7 +21,7 @@ class ImlRegionDecomposer extends ImlSemanticDiffer {
 	override execute(Object traceability, File modelFile, File modelFile2) {
 		val grandparentFile = modelFile.parentFile
 		val src = modelFile.loadString
-		
+		// TODO add assumption expression
 		val cmd = ImlApiHelper.getDecomposeCall(src, DIFF_FUNCTION_NAME)
 		
 		///
