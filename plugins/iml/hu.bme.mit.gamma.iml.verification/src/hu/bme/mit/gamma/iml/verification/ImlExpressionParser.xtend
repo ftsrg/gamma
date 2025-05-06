@@ -133,7 +133,9 @@ class ImlExpressionParser {
 			val port = expression.port
 			val systemPort = port.boundTopComponentPort
 			
-			return systemPort.createRaiseEventAct(expression.event)
+			val raiseAct = systemPort.createRaiseEventAct(expression.event)
+			raiseAct.arguments.clear
+			return raiseAct
 		}
 		else if (expression instanceof ComponentInstanceEventParameterReferenceExpression) {
 			val port = expression.port
