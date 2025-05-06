@@ -91,6 +91,10 @@ class ImlApiHelper {
 	public static val INVARIANT_START = "Invariant:"
 	public static val CONSTRAINT_DELIM = "@"
 	
+	static def String getDecomposeCall(String model, String decomposeFunctionName) {
+		return model.getDecomposeCall(decomposeFunctionName, null)
+	}
+	
 	/**
 	 * For this call, the IMANDRA_API_KEY variable has to be set.
 	 */

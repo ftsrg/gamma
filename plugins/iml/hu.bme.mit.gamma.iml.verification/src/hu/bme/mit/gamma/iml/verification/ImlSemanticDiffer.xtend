@@ -117,9 +117,11 @@ abstract class ImlSemanticDiffer {
 			val unfoldedComponent = trace.component
 			if (statechartEcoreUtil.existsOriginalComponent(unfoldedComponent)) {
 				val originalComponent = statechartEcoreUtil.loadAndReplaceToOriginalComponent(unfoldedComponent)
-				val backAnnotator = new UnfoldedExecutionTraceBackAnnotator(trace, originalComponent)
-				val orignalTrace = backAnnotator.execute
-				return orignalTrace
+				if (!originalComponent.statechart) {
+					val backAnnotator = new UnfoldedExecutionTraceBackAnnotator(trace, originalComponent)
+					val orignalTrace = backAnnotator.execute
+					return orignalTrace
+				}
 			}
 			//
 			
@@ -541,6 +543,13 @@ abstract class ImlSemanticDiffer {
 			return regions.findFirst[it.constraints == constraints]?.invariant
 		}
 		
+		override clone() {
+			val decomposition = new Decomposition
+			for (region : regions) {
+				decomposition.regions += region.clone as Region
+			}
+			return decomposition
+		}
 	}
 	
 	static class Region {
@@ -563,6 +572,10 @@ abstract class ImlSemanticDiffer {
 		
 		def void setInvariant(String invariant) {
 			this.invariant = invariant
+		}
+		
+		override clone() {
+			new Region(constraints, invariant)
 		}
 		
 		//
@@ -623,8 +636,9 @@ abstract class ImlSemanticDiffer {
 	
 	static class SemanticDiffParser {
 		//
-		Decomposition decomposition1
-		Decomposition decomposition2
+		protected final Decomposition decomposition1
+		protected final Decomposition decomposition2
+		protected final boolean computeDiff
 		//
 		protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 		//
@@ -633,9 +647,18 @@ abstract class ImlSemanticDiffer {
 			this(decomposition, decomposition)
 		}
 		
+		new(Decomposition decomposition, boolean computeDiff) {
+			this(decomposition, decomposition, computeDiff)
+		}
+		
 		new(Decomposition decomposition1, Decomposition decomposition2) {
+			this(decomposition1, decomposition2, true)
+		}
+		
+		new(Decomposition decomposition1, Decomposition decomposition2, boolean computeDiff) {
 			this.decomposition1 = decomposition1
 			this.decomposition2 = decomposition2
+			this.computeDiff = computeDiff
 		}
 		
 		def execute() {
@@ -653,6 +676,20 @@ abstract class ImlSemanticDiffer {
 		def executeDifferentRegions() {
 			return decomposition1.extractDiff(decomposition2)
 						.splitConstraints
+		}
+		
+		def executeSingleRegion() {
+			val diffs = newLinkedHashMap
+			
+			for (region : decomposition1.regions) {
+				val constraints = region.getConstraints
+				val invariants = region.invariant
+				
+				val invariantDiff = invariants.extractDiff(invariants) // Diffing with itself
+				diffs += constraints -> invariantDiff
+			}
+			
+			return diffs.splitConstraints
 		}
 		
 		//
@@ -707,8 +744,10 @@ abstract class ImlSemanticDiffer {
 			intersection += invariants1
 			intersection.retainAll(invariants2)
 			
-			invariants1 -= intersection
-			invariants2 -= intersection
+			if (computeDiff) {
+				invariants1 -= intersection
+				invariants2 -= intersection
+			}
 			
 			return Map.entry(invariants1.joinOnDelim, invariants2.joinOnDelim)
 		}

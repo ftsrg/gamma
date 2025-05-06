@@ -257,6 +257,17 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		validationResultMessages.addAll(
 				checkRelativeFilePaths(regionDecomp, fileNames, GenmodelModelPackage.Literals.TASK__FILE_NAME));
 		
+		List<AnalysisLanguage> analysisLanguages = regionDecomp.getAnalysisLanguages();
+		for (int i = 0; i < analysisLanguages.size(); i++) {
+			AnalysisLanguage analysisLanguage = analysisLanguages.get(i);
+			if (analysisLanguage != AnalysisLanguage.IML) {
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR,
+						"Currently, only Imandra supports this functionality",
+							new ReferenceInfo(GenmodelModelPackage.Literals.REGION_DECOMPOSITION__ANALYSIS_LANGUAGES, i)));
+			}
+		}
+		
 		return validationResultMessages;
 	}
 	
@@ -266,16 +277,18 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		List<String> fileNames = semanticDiff.getFileName();
 		if (fileNames.size() > 1) {
 			File anchor = ecoreUtil.getFile(semanticDiff.eResource());
-			boolean hasTraceability = false;
+			boolean hasTraceability = true;
 			for (String fileName : fileNames) {
 				String unfoldedPackageFileName = fileNamer.getUnfoldedPackageFileName(fileName);
+				int index = fileNames.indexOf(fileName);
 				if (fileUtil.isValidRelativeFile(anchor, unfoldedPackageFileName)) {
-					hasTraceability = true;
 					validationResultMessages.add(
 						new ValidationResultMessage(ValidationResult.INFO,
 							"Back-annotation will be conducted using " + unfoldedPackageFileName,
-								new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME)));
-					break;
+								new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, index)));
+				}
+				else {
+					hasTraceability = false;
 				}
 			}
 			if (!hasTraceability) {
