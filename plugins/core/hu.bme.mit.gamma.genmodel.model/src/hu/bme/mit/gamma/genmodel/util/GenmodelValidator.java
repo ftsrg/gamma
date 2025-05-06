@@ -54,6 +54,7 @@ import hu.bme.mit.gamma.genmodel.model.ModelReference;
 import hu.bme.mit.gamma.genmodel.model.MutationBasedTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint;
 import hu.bme.mit.gamma.genmodel.model.PhaseStatechartGeneration;
+import hu.bme.mit.gamma.genmodel.model.RegionDecomposition;
 import hu.bme.mit.gamma.genmodel.model.SafetyAssessment;
 import hu.bme.mit.gamma.genmodel.model.SchedulingConstraint;
 import hu.bme.mit.gamma.genmodel.model.SemanticDiff;
@@ -249,19 +250,21 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
+	public Collection<ValidationResultMessage> checkTasks(RegionDecomposition regionDecomp) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		List<String> fileNames = regionDecomp.getFileName();
+		validationResultMessages.addAll(
+				checkRelativeFilePaths(regionDecomp, fileNames, GenmodelModelPackage.Literals.TASK__FILE_NAME));
+		
+		return validationResultMessages;
+	}
+	
 	public Collection<ValidationResultMessage> checkTasks(SemanticDiff semanticDiff) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
 		List<String> fileNames = semanticDiff.getFileName();
-		validationResultMessages.addAll(
-				checkRelativeFilePaths(semanticDiff, fileNames, GenmodelModelPackage.Literals.TASK__FILE_NAME));
-		
 		if (fileNames.size() > 1) {
-			validationResultMessages.add(
-				new ValidationResultMessage(ValidationResult.INFO,
-					"Make sure that this new model variant does not contain new states, inputs or variables compared to the original version",
-						new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, 1)));
-			
 			File anchor = ecoreUtil.getFile(semanticDiff.eResource());
 			boolean hasTraceability = false;
 			for (String fileName : fileNames) {
@@ -271,7 +274,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 					validationResultMessages.add(
 						new ValidationResultMessage(ValidationResult.INFO,
 							"Back-annotation will be conducted using " + unfoldedPackageFileName,
-								new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, 0)));
+								new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME)));
 					break;
 				}
 			}
@@ -279,13 +282,18 @@ public class GenmodelValidator extends ExpressionModelValidator {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.WARNING,
 						"Back-annotation will not be carried out as a corresponding Gamma model is not found",
-							new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, 0)));
+							new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME)));
 			}
+		}
+		else {
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.ERROR,
+					"Two files are expected among which semantic diff is computed",
+						new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME)));
 		}
 		
 		return validationResultMessages;
 	}
-
 	
 	public Collection<ValidationResultMessage> checkTasks(AbstractComplementaryTestGeneration testGeneration) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();

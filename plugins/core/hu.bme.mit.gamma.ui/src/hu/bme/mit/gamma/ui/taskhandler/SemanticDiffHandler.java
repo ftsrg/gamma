@@ -50,7 +50,7 @@ public class SemanticDiffHandler extends TaskHandler {
 		checkArgument(programmingLanguage == AnalysisLanguage.IML, "Currently only IML is supported");
 		
 		List<String> fileNames = semanticDiff.getFileName();
-		checkArgument(fileNames.size() == 2, "2 files are expected among which diff is computed");
+		checkArgument(fileNames.size() == 2, "Two files are expected among which semantic diff is computed");
 		File modelFile1 = new File(fileNames.get(0));
 		File modelFile2 = new File(fileNames.get(1));
 		
@@ -101,7 +101,8 @@ public class SemanticDiffHandler extends TaskHandler {
 			String unfoldedPackageFileName = fileNamer.getUnfoldedPackageUri(fileName);
 			File unfoldedPackageFile = new File(unfoldedPackageFileName);
 			if (unfoldedPackageFile.exists()) {
-				packages.add((Package) ecoreUtil.normalLoad(unfoldedPackageFile));
+				packages.add(
+						(Package) ecoreUtil.normalLoad(unfoldedPackageFile));
 			}
 		}
 		return packages;

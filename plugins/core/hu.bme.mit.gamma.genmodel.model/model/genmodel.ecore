@@ -346,8 +346,9 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="patternClassNames" upperBound="-1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="SemanticDiff" eSuperTypes="#//Task">
+  <eClassifiers xsi:type="ecore:EClass" name="RegionDecomposition" eSuperTypes="#//Task">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="analysisLanguages" lowerBound="1"
         upperBound="-1" eType="#//AnalysisLanguage"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SemanticDiff" eSuperTypes="#//RegionDecomposition"/>
 </ecore:EPackage>
