@@ -96,6 +96,14 @@ abstract class ImlSemanticDiffer {
 		}
 	}
 	
+	protected def backAnnotateForRegionDecomposition(Map<String, String> diff, Object traceability) {
+		val trace = diff.mapValues[Map.entry(it, "")]
+				.backAnnotate(traceability)
+		trace.removeNewInvariants
+		
+		return trace
+	}
+	
 	protected def backAnnotate(Map<String, Entry<String, String>> diff, Object traceability) {
 		if (traceability !== null) {
 			val diffAdapter = new SemanticDiffAdapter
@@ -129,6 +137,22 @@ abstract class ImlSemanticDiffer {
 		}
 		
 		return null
+	}
+	
+	protected def removeNewInvariants(ExecutionTrace trace) {
+		val expressions = newArrayList
+		expressions += trace.steps.map[it.asserts].flatten
+		expressions.removeNewInvariants
+	}
+	
+	protected def removeNewInvariants(Iterable<? extends Expression> expressions) {
+		for (assertion : expressions) {
+			if (assertion instanceof OpaqueExpression) {
+				if (assertion.expression == SemanticDiffAdapter.V_INVARIANT) {
+					assertion.remove
+				}
+			}
+		}
 	}
 	
 	enum ParseRegionStates { CONSTRAINT, INVARIANT }
@@ -663,22 +687,22 @@ abstract class ImlSemanticDiffer {
 		
 		def execute() {
 			if (decomposition1 === decomposition2) {
-				return executeSameRegions
+				return executeForCompositeRegions
 			}
-			return executeDifferentRegions
+			return executeForDifferentRegions
 		}
 		
-		def executeSameRegions() {
+		protected def executeForCompositeRegions() { // See ComposerSemanticDiffer
 			return decomposition1.extractDiff
 					.splitConstraints
 		}
 		
-		def executeDifferentRegions() {
+		protected def executeForDifferentRegions() { // See DoubleCallSemanticDiffer
 			return decomposition1.extractDiff(decomposition2)
 						.splitConstraints
 		}
 		
-		def executeSingleRegion() {
+		def executeForRegionDecomposition() { // See ImlRegionDecomposer
 			val diffs = newLinkedHashMap
 			
 			for (region : decomposition1.regions) {
@@ -686,7 +710,7 @@ abstract class ImlSemanticDiffer {
 				val invariants = region.invariant
 				
 				val invariantDiff = invariants.extractDiff(invariants) // Diffing with itself
-				diffs += constraints -> invariantDiff
+				diffs += constraints -> invariantDiff.key
 			}
 			
 			return diffs.splitConstraints
@@ -764,7 +788,7 @@ abstract class ImlSemanticDiffer {
 			return split
 		}
 		
-		protected def splitConstraints(Map<String, Entry<String, String>> diff) {
+		protected def <T> splitConstraints(Map<String, T> diff) {
 			val diffs = newLinkedHashMap
 			
 			for (constraint : diff.keySet) {

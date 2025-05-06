@@ -29,10 +29,9 @@ class ImlRegionDecomposer extends ImlSemanticDiffer {
 		val decomposition = grandparentFile.execute(cmd)
 		
 		val parser = new SemanticDiffParser(decomposition, false)
-		val diff = parser.executeSingleRegion
-		parser.print(diff)
+		val diff = parser.executeForRegionDecomposition
 		
-		val trace = diff.backAnnotate(traceability)
+		val trace = diff.backAnnotateForRegionDecomposition(traceability)
 		
 		return trace
 	}

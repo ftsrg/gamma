@@ -48,9 +48,11 @@ public class RegionDecompositionHandler extends TaskHandler {
 		
 		List<String> fileNames = regionDecomp.getFileName();
 		checkArgument(fileNames.size() == 1, "One file is expected");
-		File modelFile1 = new File(fileNames.get(0));
+		String firstFileName = fileNames.get(0);
+		File modelFile1 = new File(firstFileName);
 		
-		String fileName = fileNamer.getUnfoldedPackageFileName(fileUtil.getFileName(fileNames.get(0)));
+		String fileName = fileNamer.getUnfoldedPackageFileName(
+				fileUtil.getFileName(firstFileName));
 		//
 		Package _package = (Package) ecoreUtil.normalLoad(
 				new File(targetFolderUri, fileName));
