@@ -148,6 +148,18 @@ class ImlExpressionParser {
 				if (right instanceof ComponentInstanceStateReferenceExpression) {
 					return right // No else
 				}
+				if (right instanceof OpaqueExpression) {
+					// "_subtraffic_light_Example_ControllerStatechart" = "_subtraffic_light_Example_ControllerStatechart";
+					val string = left.expression
+					if (string == right.expression) {
+						if (imlQueryGenerator.isSourceRegion(string)) {
+							val regionInstance = imlQueryGenerator.getSourceRegion(string)
+							val region = regionInstance.key
+							val instance = regionInstance.value
+							return '''Region '«region.name»' of '«instance.name»' remains the same'''.createOpaqueExpression
+						}
+					}
+				}
 			}
 		}
 		

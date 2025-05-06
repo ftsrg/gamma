@@ -93,4 +93,10 @@ class UppaalQueryGenerator extends AbstractQueryGenerator {
 		return #[getOutValueOfName(event, port, parameter, instance)]
 	}
 	
+	override protected getTargetRegionName(Region parentRegion, SynchronousComponentInstance instance) {
+		val templateName = parentRegion.getTemplateName(instance)
+		val processName = templateName.processName
+		return processName
+	}
+	
 }

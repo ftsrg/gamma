@@ -44,12 +44,12 @@ class ImlQueryGenerator extends ThetaQueryGenerator {
 	}
 	
 	override protected getSingleTargetStateName(State state, Region parentRegion, SynchronousComponentInstance instance) {
-		val superName = super.getSingleTargetStateName(state, parentRegion, instance)
-		val split = superName.split(" == ")
-		val variable = split.head
-		
-		return '''«variable.customizeDeclarationName» == «Namings.customizeRegionTypeName(parentRegion).customizeTypeDeclarationName».«Namings.customizeName(state).customizeEnumLiteralName»'''
-	} 
+		return '''«parentRegion.getTargetRegionName(instance)» == «Namings.customizeRegionTypeName(parentRegion).customizeTypeDeclarationName».«Namings.customizeName(state).customizeEnumLiteralName»'''
+	}
+	
+	override protected getTargetRegionName(Region parentRegion, SynchronousComponentInstance instance) {
+		return super.getTargetRegionName(parentRegion, instance).customizeDeclarationName
+	}
 	
 	override protected getTargetVariableNames(VariableDeclaration variable, SynchronousComponentInstance instance) {
 		return super.getTargetVariableNames(variable, instance).map[it.customizeDeclarationName]
@@ -78,50 +78,5 @@ class ImlQueryGenerator extends ThetaQueryGenerator {
 	override protected getTargetSlaveQueueName(Event event, Port port, ParameterDeclaration parameter, AsynchronousComponentInstance instance) {
 		return super.getTargetSlaveQueueName(event, port, parameter, instance).map[it.customizeDeclarationName]
 	}
-	
-//	override getSourceVariable(String id) {
-//		val backAnnotatedId = id.substring(DECLARATION_NAME_PREFIX.length)
-//		return super.getSourceVariable(backAnnotatedId)
-//	}
-//	
-//	override getSourceVariableFieldHierarchy(String id) {
-//		val backAnnotatedId = id.substring(DECLARATION_NAME_PREFIX.length)
-//		return super.getSourceVariableFieldHierarchy(backAnnotatedId)
-//	}
-//	
-//	override getSynchronousSourceInEventParameterFieldHierarchy(String id) {
-//		val backAnnotatedId = id.substring(DECLARATION_NAME_PREFIX.length)
-//		return super.getSynchronousSourceInEventParameterFieldHierarchy(backAnnotatedId)
-//	}
-//	
-//	override getSynchronousSourceOutEvent(String id) {
-//		val backAnnotatedId = id.substring(DECLARATION_NAME_PREFIX.length)
-//		return super.getSynchronousSourceOutEvent(backAnnotatedId)
-//	}
-//	
-//	override getSourceOutEventParameterFieldHierarchy(String id) {
-//		val backAnnotatedId = id.substring(DECLARATION_NAME_PREFIX.length)
-//		return super.getSourceOutEventParameterFieldHierarchy(backAnnotatedId)
-//	}
-//	
-//	override getAsynchronousSourceMessageQueue(String id) {
-//		val backAnnotatedId = id.substring(DECLARATION_NAME_PREFIX.length)
-//		return super.getAsynchronousSourceMessageQueue(backAnnotatedId)
-//	}
-//	
-//	override getAsynchronousSourceInEventParameter(String id) {
-//		val backAnnotatedId = id.substring(DECLARATION_NAME_PREFIX.length)
-//		return super.getAsynchronousSourceInEventParameter(backAnnotatedId)
-//	}
-//	
-//	override getAsynchronousSourceInEventParameterFieldHierarchy(String id) {
-//		val backAnnotatedId = id.substring(DECLARATION_NAME_PREFIX.length)
-//		return super.getAsynchronousSourceInEventParameterFieldHierarchy(backAnnotatedId)
-//	}
-//	
-//	override getAsynchronousSourceOutEvent(String id) {
-//		val backAnnotatedId = id.substring(DECLARATION_NAME_PREFIX.length)
-//		return super.getAsynchronousSourceOutEvent(backAnnotatedId)
-//	}
 	
 }

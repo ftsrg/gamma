@@ -68,7 +68,11 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	def protected getSingleTargetStateName(State state, Region parentRegion, SynchronousComponentInstance instance) {
-		return '''«parentRegion.customizeName(instance)» == «parentRegion.customizeRegionTypeName».«state.customizeName»'''
+		return '''«parentRegion.getTargetRegionName(instance)» == «parentRegion.customizeRegionTypeName».«state.customizeName»'''
+	}
+	
+	override protected getTargetRegionName(Region parentRegion, SynchronousComponentInstance instance) {
+		return '''«parentRegion.customizeName(instance)»'''
 	}
 	
 	override protected getTargetVariableNames(VariableDeclaration variable, SynchronousComponentInstance instance) {
@@ -124,6 +128,15 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	def isSourceState(String targetStateName) {
 		try {
 			targetStateName.getSourceState
+			return true
+		} catch (IllegalArgumentException e) {
+			return false
+		}
+	}
+	
+	def isSourceRegion(String targetRegionName) {
+		try {
+			targetRegionName.getSourceRegion
 			return true
 		} catch (IllegalArgumentException e) {
 			return false
@@ -271,6 +284,16 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 			val name = getSingleTargetStateName(match.state, match.parentRegion, match.instance)
 			if (name == targetStateName) {
 				return match.state -> match.instance
+			}
+		}
+		throw new IllegalArgumentException("Not known id")
+	}
+	
+	def getSourceRegion(String targetRegionName) {
+		for (match : instanceStates) {
+			val name = getTargetRegionName(match.parentRegion, match.instance)
+			if (name == targetRegionName) {
+				return match.parentRegion -> match.instance
 			}
 		}
 		throw new IllegalArgumentException("Not known id")
