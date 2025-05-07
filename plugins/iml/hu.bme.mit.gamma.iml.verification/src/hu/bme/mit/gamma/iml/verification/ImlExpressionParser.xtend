@@ -11,15 +11,11 @@
 package hu.bme.mit.gamma.iml.verification
 
 import hu.bme.mit.gamma.expression.model.BinaryExpression
-import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.expression.model.UnaryExpression
 import hu.bme.mit.gamma.querygenerator.ImlQueryGenerator
 import hu.bme.mit.gamma.querygenerator.ThetaQueryGenerator
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.theta.verification.XstsBackAnnotator
@@ -121,57 +117,11 @@ class ImlExpressionParser {
 			}
 			
 			if (!filtered) {
-				newExpressions += expression.postprocess
+				newExpressions += xStsBackAnnotator.postprocess(expression)
 			}
 		}
 		
 		return newExpressions
-	}
-	
-	protected def Expression postprocess(Expression expression) {
-		if (expression instanceof ComponentInstanceEventReferenceExpression) {
-			val port = expression.port
-			val systemPort = port.boundTopComponentPort
-			
-			val raiseAct = systemPort.createRaiseEventAct(expression.event)
-			raiseAct.arguments.clear
-			return raiseAct
-		}
-		else if (expression instanceof ComponentInstanceEventParameterReferenceExpression) {
-			val port = expression.port
-			val systemPort = port.boundTopComponentPort
-			
-			return systemPort.createEventParameterReference(expression.parameterDeclaration)
-		}
-		else if (expression instanceof EqualityExpression) {
-			val left = expression.leftOperand
-			val right = expression.rightOperand
-			if (left instanceof OpaqueExpression) {
-				if (right instanceof ComponentInstanceStateReferenceExpression) {
-					return right // No else
-				}
-				if (right instanceof OpaqueExpression) {
-					// "_subtraffic_light_Example_ControllerStatechart" = "_subtraffic_light_Example_ControllerStatechart";
-					val string = left.expression
-					if (string == right.expression) {
-						if (imlQueryGenerator.isSourceRegion(string)) {
-							val regionInstance = imlQueryGenerator.getSourceRegion(string)
-							val region = regionInstance.key
-							val instance = regionInstance.value
-							return '''Region '«region.name»' of '«instance.name»' remains the same'''.createOpaqueExpression
-						}
-					}
-				}
-			}
-		}
-		
-		val subexpressions = expression.getAllContentsOfType(Expression)
-		for (subexpression : subexpressions) {
-			val newSubexpression = subexpression.postprocess
-			newSubexpression.replace(subexpression)
-		}
-		
-		return expression
 	}
 	
 	protected def needsFiltering(Expression expression) {

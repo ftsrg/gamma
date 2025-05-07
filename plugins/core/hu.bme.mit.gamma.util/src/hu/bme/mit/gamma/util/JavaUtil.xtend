@@ -16,6 +16,7 @@ import java.util.List
 import java.util.Map
 import java.util.Map.Entry
 import java.util.Set
+import java.util.function.Predicate
 
 class JavaUtil {
 	// Singleton
@@ -218,6 +219,26 @@ class JavaUtil {
 		val lastI = string.lastIndexOf(last)
 		
 		return string.substring(firstI + 1, lastI)
+	}
+	
+	def substring(String string, Predicate<Character> predicate) {
+		for (var i = 0; i < string.length; i++) {
+			val character = string.charAt(i)
+			if (predicate.test(character)) {
+				return string.substring(i)
+			}
+		}
+		return string
+	}
+	
+	def isAlfaNumerical(char character) {
+		val String string = character.toString
+		return string.matches("[A-Za-z0-9]")
+	}
+	
+	def isIdChar(char character) {
+		val String string = character.toString
+		return string.matches("[_A-Za-z0-9]")
 	}
 	
 	def countChar(String string, char character) {
