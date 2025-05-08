@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -45,30 +45,30 @@ class ReflectiveComponentCodeGenerator {
 		
 		«component.generateReflectiveImports»
 		
-		public class «component.getReflectiveClassName» implements «Namings.REFLECTIVE_INTERFACE» {
+		public class «component.reflectiveClassName» implements «Namings.REFLECTIVE_INTERFACE» {
 			
-			private «component.getComponentClassName» «Namings.REFLECTIVE_WRAPPED_COMPONENT»;
+			private «component.componentClassName» «Namings.REFLECTIVE_WRAPPED_COMPONENT»;
 			// Wrapped contained components
 			«IF component instanceof CompositeComponent»
 				«FOR containedComponent : component.derivedComponents»
 					private «Namings.REFLECTIVE_INTERFACE» «containedComponent.name.toFirstLower» = null;
 				«ENDFOR»
 			«ELSEIF component instanceof AsynchronousAdapter»
-				private «Namings.REFLECTIVE_INTERFACE» «component.getWrappedComponentName» = null;
+				private «Namings.REFLECTIVE_INTERFACE» «component.wrappedComponentName» = null;
 			«ENDIF»
 			
 			«IF component.needTimer»
-				public «component.getReflectiveClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«Namings.UNIFIED_TIMER_INTERFACE» timer) {
+				public «component.reflectiveClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«Namings.UNIFIED_TIMER_INTERFACE» timer) {
 					this(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.name»«ENDFOR»);
 					«Namings.REFLECTIVE_WRAPPED_COMPONENT».setTimer(timer);
 				}
 			«ENDIF»
 			
-			public «component.getReflectiveClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType» «parameter.name»«ENDFOR») {
-				«Namings.REFLECTIVE_WRAPPED_COMPONENT» = new «component.getComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.name»«ENDFOR»);
+			public «component.reflectiveClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType» «parameter.name»«ENDFOR») {
+				«Namings.REFLECTIVE_WRAPPED_COMPONENT» = new «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.name»«ENDFOR»);
 			}
 			
-			public «component.getReflectiveClassName»(«component.getComponentClassName» «Namings.REFLECTIVE_WRAPPED_COMPONENT») {
+			public «component.reflectiveClassName»(«component.componentClassName» «Namings.REFLECTIVE_WRAPPED_COMPONENT») {
 				this.«Namings.REFLECTIVE_WRAPPED_COMPONENT» = «Namings.REFLECTIVE_WRAPPED_COMPONENT»;
 			}
 			
@@ -76,7 +76,7 @@ class ReflectiveComponentCodeGenerator {
 				«Namings.REFLECTIVE_WRAPPED_COMPONENT».reset();
 			}
 			
-			public «component.getComponentClassName» get«Namings.REFLECTIVE_WRAPPED_COMPONENT.toFirstUpper»() {
+			public «component.componentClassName» get«Namings.REFLECTIVE_WRAPPED_COMPONENT.toFirstUpper»() {
 				return «Namings.REFLECTIVE_WRAPPED_COMPONENT»;
 			}
 			
@@ -134,9 +134,7 @@ class ReflectiveComponentCodeGenerator {
 													Objects.deepEquals(parameters[«i»], «port.generateEventParameterValuesGetter(outEvent.parameterDeclarations.get(i))»)
 												«ENDFOR»;
 										}
-										else {
-											return true;
-										}
+										return true;
 									«ENDIF»
 								}
 								break;
@@ -269,7 +267,7 @@ class ReflectiveComponentCodeGenerator {
 	
 	protected def generateComponentGetters(Component component) '''
 		public String[] getComponents() {
-			return new String[] { «IF component instanceof CompositeComponent»«FOR containedComponent : component.derivedComponents SEPARATOR ", "»"«containedComponent.name»"«ENDFOR»«ELSEIF component instanceof AsynchronousAdapter»"«component.getWrappedComponentName»"«ENDIF»};
+			return new String[] { «IF component instanceof CompositeComponent»«FOR containedComponent : component.derivedComponents SEPARATOR ", "»"«containedComponent.name»"«ENDFOR»«ELSEIF component instanceof AsynchronousAdapter»"«component.wrappedComponentName»"«ENDIF»};
 		}
 	'''
 	
@@ -280,20 +278,20 @@ class ReflectiveComponentCodeGenerator {
 					«FOR containedComponent : component.derivedComponents»
 						case "«containedComponent.name»":
 							if («containedComponent.name.toFirstLower» == null) {
-								«containedComponent.name.toFirstLower» = new «containedComponent.derivedType.getReflectiveClassName»(«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«containedComponent.name.toFirstUpper»());
+								«containedComponent.name.toFirstLower» = new «containedComponent.derivedType.reflectiveClassName»(«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«containedComponent.name.toFirstUpper»());
 							}
 							return «containedComponent.name.toFirstLower»;
 					«ENDFOR»
 				«ELSEIF component instanceof AsynchronousAdapter»
-					case "«component.getWrappedComponentName»":
-						if («component.getWrappedComponentName» == null) {
-							«component.getWrappedComponentName» = new «component.wrappedComponent.type.getReflectiveClassName»(«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«component.getWrappedComponentName.toFirstUpper»());
+					case "«component.wrappedComponentName»":
+						if («component.wrappedComponentName» == null) {
+							«component.wrappedComponentName» = new «component.wrappedComponent.type.reflectiveClassName»(«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«component.wrappedComponentName.toFirstUpper»());
 						}
-						return «component.getWrappedComponentName»;
+						return «component.wrappedComponentName»;
 				«ENDIF»
 				«IF component instanceof StatechartDefinition || component instanceof AsynchronousAdapter»
 					// If the class name is given, then it will return itself
-					case "«component.getComponentClassName»":
+					case "«component.componentClassName»":
 						return this;
 				«ENDIF»
 			}
