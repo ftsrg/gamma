@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -167,10 +167,11 @@ class UnfoldedExecutionTraceBackAnnotator {
 	// Asserts
 	
 	protected def dispatch Expression transformAssert(ComponentInstanceStateReferenceExpression assert) {
+		val newState = assert.state
 		try {
 			val instance = assert.instance.lastInstance as SynchronousComponentInstance
 			val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
-				val originalState = originalInstance.getOriginalState(assert.state)
+			val originalState = originalInstance.getOriginalState(newState)
 			return compositeModelFactory.createComponentInstanceStateReferenceExpression => [
 				it.instance = originalInstance
 				it.state = originalState
@@ -179,6 +180,11 @@ class UnfoldedExecutionTraceBackAnnotator {
 		} catch (IllegalArgumentException e) {
 			val message = e.message.trim
 			if (message.startsWith("Not found state")) {
+				// Injected state for checking nondeterministic behavior
+				if (newState.name == "_TrapState_") {
+					return "Trap state entered".createOpaqueExpression
+				}
+				
 				logger.warning(message)
 				val trueExpression = expressionModelFactory.createTrueExpression
 				dummyAsserts += trueExpression
