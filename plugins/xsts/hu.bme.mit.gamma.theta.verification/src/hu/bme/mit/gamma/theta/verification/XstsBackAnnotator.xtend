@@ -599,12 +599,8 @@ class XstsBackAnnotator {
 		
 		protected def handleFields(Expression reference, Supplier<FieldHierarchy> fieldComputer) {
 			val fields = fieldComputer.get
-			return if (fields.empty) {
-				reference
-			}
-			else {
-				reference.createAccess(fields)
-			}
+			return (fields.empty) ? reference :
+					reference.createAccess(fields)
 		}
 		
 	}
