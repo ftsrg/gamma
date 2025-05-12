@@ -437,7 +437,8 @@ DeepHistoryState returns DeepHistoryState:
 Component returns InterfaceModel::Component:
 	SynchronousComponent |
 	AsynchronousComponent | 
-	CoordinationStatechartDefinition
+	SynchronousCoordinationStatechartDefinition |
+	AsynchronousCoordinationStatechartDefinition
 ;
 
 SynchronousComponent returns CompositeModel::SynchronousComponent:
@@ -738,7 +739,7 @@ ComponentInstanceReflectiveElementReferenceExpression returns CompositeModel::Co
 
 //
 
-CoordinationStatechartDefinition returns CoordinationStatechartDefinition:
+SynchronousCoordinationStatechartDefinition returns SynchronousCoordinationStatechartDefinition:
 	'@Coordination'
 	(
 		('@RegionSchedule' '=' schedulingOrder=SchedulingOrder)? &
@@ -752,14 +753,14 @@ CoordinationStatechartDefinition returns CoordinationStatechartDefinition:
 	'coordination-statechart' name=ID
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
 	('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
-	'composition' '{'
+	'{'
 		(
-			components+=ComponentInstance |
+			components+=SynchronousComponentInstance |
 			portBindings+=PortBinding |
 			channels+=Channel
 		)*
 	'}'
-	'coordination' '{'
+	'<'
 		(
 			variableDeclarations+=VariableDeclaration |
 			timeoutDeclarations+=TimeoutDeclaration |
@@ -770,17 +771,48 @@ CoordinationStatechartDefinition returns CoordinationStatechartDefinition:
 			coordinationTransitions+=CoordinationTransition
 		)*
 		functionDeclarations+=FunctionDeclaration*
+	'>'
+;
+
+AsynchronousCoordinationStatechartDefinition returns AsynchronousCoordinationStatechartDefinition:
+	'@Coordination'
+	'@Asynchronous'
+	(
+		('@RegionSchedule' '=' schedulingOrder=SchedulingOrder)? &
+		('@OrthogonalRegionSchedule' '=' orthogonalRegionSchedulingOrder=OrthogonalRegionSchedulingOrder)? &
+		('@TransitionPriority' '=' transitionPriority=TransitionPriority)? &
+		('@GuardEvaluation' '=' guardEvaluation=GuardEvaluation)? &
+		(	annotations+=ComponentAnnotation |
+			annotations+=StatechartContractAnnotation
+		)*
+	)
+	'coordination-statechart' name=ID
+	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
+	('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
+	'{'
+		(
+			components+=AsynchronousComponentInstance |
+			portBindings+=PortBinding |
+			channels+=Channel
+		)*
 	'}'
+	'<'
+		(
+			variableDeclarations+=VariableDeclaration |
+			timeoutDeclarations+=TimeoutDeclaration |
+			('invariant' invariants+=Expression)
+		)*
+		(
+			regions+=Region |
+			coordinationTransitions+=CoordinationTransition
+		)*
+		functionDeclarations+=FunctionDeclaration*
+	'>'
 ;
 
 AbstractCoordinationReferenceExpression returns AbstractCoordinationReferenceExpression:
-	ComponentCoordinationReferenceExpression 
-	| SequentialCoordinationReferenceExpression
+	SequentialCoordinationReferenceExpression
 	| UnorderedCoordinationReferenceExpression
-;
-
-ComponentCoordinationReferenceExpression returns ComponentCoordinationReferenceExpression:
-	instance=ComponentInstanceReferenceExpression
 ;
 
 SequentialCoordinationReferenceExpression returns SequentialCoordinationReferenceExpression:
