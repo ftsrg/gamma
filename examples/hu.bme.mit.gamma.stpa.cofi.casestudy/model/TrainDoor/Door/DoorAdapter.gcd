@@ -1,9 +1,9 @@
 package packagename
 
-import "Environment.gcd"
+import "Door.gcd"
 
 
-adapter EnvironmentAdapter of component environment : Environment [] {
+adapter DoorAdapter of component door : Door [] {
 	
 	when any / run
 

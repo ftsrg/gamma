@@ -1,0 +1,7 @@
+import "Conformance.gcd"
+import "Interface/Interface.gcd"
+
+component Conformance
+
+A G [ { ( event _stateMachine -> controller.ControlActions.controlDoor imply
+	event _statechart -> controller.ControlActions.controlDoor) } ]

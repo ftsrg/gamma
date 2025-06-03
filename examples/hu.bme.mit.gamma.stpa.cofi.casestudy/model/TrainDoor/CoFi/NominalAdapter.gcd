@@ -1,0 +1,18 @@
+package traindoorcontrol
+
+import "Nominal.gcd"
+
+adapter NominalControllerAdapter of component controller : NominalController {
+
+	when any / run
+	
+	queue internalQueue(priority = 2, capacity = 4) {
+		FeedbackDoorState.any
+	}
+
+	queue environmentalQueue(priority = 1, capacity = 4) {
+		ExternalCommunication.any, FeedbackPresence.any,
+		OpenTimeout.any
+	}
+
+}
