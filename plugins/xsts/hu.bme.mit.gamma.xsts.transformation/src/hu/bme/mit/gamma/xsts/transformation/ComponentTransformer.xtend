@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -161,7 +161,7 @@ class ComponentTransformer {
 			
 			// inEventActions later
 			// Filtering events can be used (internal ones and ones led out to the environment)
-			// Not necessary as the component instances do this, but this a reset here could save resource
+			// Not necessary as the component instances do this, but a reset here could save resource
 //			outEventAction.actions += adapterXsts.outEventTransition.action
 		}
 		
@@ -668,7 +668,7 @@ class ComponentTransformer {
 			// A value should be inserted into the queue if
 			// (size + (higher1Size + ... + higher(N-1)Size) < theoreticalTotalCapacity))
 			val isThereTheoreticalCapacityExpression = queueSizes.wrapIntoAddExpression.createLessExpression(
-					queueTheoreticalCapacities.toIntegerLiteral) // TODO ?? remove itself ??
+					queueTheoreticalCapacities.toIntegerLiteral) // ?? remove itself ??
 			// And the actual queue is not full
 			val isMasterQueueNotFull = xStsMasterQueue.isMasterQueueNotFull(xStsMasterSizeVariable)
 			// The first part is necessary if there are more queues
@@ -687,7 +687,7 @@ class ComponentTransformer {
 			// Queue capacity can be greater than 1 if a component is executed multiple times in execution lists
 			for (var i = 0; i < queue.getCapacity(systemPorts); i++) {
 				// queue.getCapacity(systemPorts) is 1 most of the time, so i remains 0
-				xStsQueueHandlingAction.actions += xStsEventIdVariable.createHavocAction
+				xStsQueueHandlingAction.actions += xStsEventIdVariable.createHavocAction // TODO bind same-topmost-port events
 				
 //				val storesOnlySystemPort = systemPorts.containsAll(
 //						queue.storedPorts.map[it.boundTopComponentPort])
@@ -769,7 +769,7 @@ class ComponentTransformer {
 							}
 							else {
 								// Assigning a random value
-								xStsSlaveQueueSetting.actions += xStsRandomVariable.createHavocAction
+								xStsSlaveQueueSetting.actions += xStsRandomVariable.createHavocAction // TODO bind same-topmost-port events
 							}
 							xStsRandomValues += xStsRandomVariable.createReferenceExpression
 						}
@@ -804,7 +804,6 @@ class ComponentTransformer {
 			createEmptyAction.replace(internalInvariant)
 			mergedClockAction.actions += internalInvariant
 		}
-		//
 		
 		xSts.changeTransitions(mergedClockAction.wrap)
 		
@@ -812,7 +811,6 @@ class ComponentTransformer {
 		// after the construction of the entire XSTS to handle in events and merged events, too
 		xStsDeletableSlaveQueues.changeAssignmentsAndReadingAssignmentsToEmptyActions(xSts)
 		xStsDeletableSlaveQueues.forEach[it.deleteDeclaration] // Variable groups
-		//
 		
 		return xSts
 	}
@@ -973,7 +971,6 @@ class ComponentTransformer {
 			
 			// Encode asynchronous component instances
 			instance.encodeAsynchronousComponentInstances(action)
-			//
 		}
 		
 		return asynchronousCompositeAction

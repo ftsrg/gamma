@@ -28,7 +28,7 @@ import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class EventConnector {
 	// Singleton
-	public static final EventConnector INSTANCE =  new EventConnector
+	public static final EventConnector INSTANCE = new EventConnector
 	protected new() {}
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil expressionUtil = GammaEcoreUtil.INSTANCE

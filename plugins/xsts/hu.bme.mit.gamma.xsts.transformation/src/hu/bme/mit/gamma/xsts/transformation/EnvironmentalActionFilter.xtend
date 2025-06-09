@@ -40,7 +40,7 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 
 class EnvironmentalActionFilter {
 	// Singleton
-	public static final EnvironmentalActionFilter INSTANCE =  new EnvironmentalActionFilter
+	public static final EnvironmentalActionFilter INSTANCE = new EnvironmentalActionFilter
 	protected new() {}
 	// Auxiliary objects
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
