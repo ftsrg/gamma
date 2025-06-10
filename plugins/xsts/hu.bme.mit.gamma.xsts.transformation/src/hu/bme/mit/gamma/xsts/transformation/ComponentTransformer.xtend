@@ -218,52 +218,45 @@ class ComponentTransformer {
 					val event = portEvent.value
 					val List<MessageQueueStruct> slaveQueues = newArrayList
 					
-					// Potentially the same as port and event; makes a difference only in the case of EventPassings
-					val targetPortEvent = queue.getTargetPortEvent(portEvent)
-					val targetPort = targetPortEvent.key
-					val targetEvent = targetPortEvent.value
-					//
-					
-					// Edit: optimization removed for bound slave queue handling: "Important optimization - we create a queue only if the event is used"
-//					if (eventReferenceMapper.hasInputEventVariable(targetEvent, targetPort)) { // TODO slave queue check
-						for (parameter : event.parameterDeclarations) {
-							val parameterType = parameter.type
-							val parameterTypeDefinition = parameterType.typeDefinition
-							// Optimization - we compare the type definitions of parameters
-							val typeSlaveQueues = typeSlaveQueuesMap.getOrCreateList(parameterTypeDefinition)
+					// Edit: optimization removed for bound slave queue handling: ("Important optimization - we create a queue only if the event is used")
+					for (parameter : event.parameterDeclarations) {
+						val parameterType = parameter.type
+						val parameterTypeDefinition = parameterType.typeDefinition
+						// Optimization - we compare the type definitions of parameters
+						val typeSlaveQueues = typeSlaveQueuesMap.getOrCreateList(parameterTypeDefinition)
+						
+						val index = parameter.indexOfParametersWithSameTypeDefinition
+						// Indexing works: parameters of an event are not deleted separately
+						if (queue.isEnvironmentalAndCheck(systemPorts) || // Traceability reasons: NO optimization for system parameters
+								typeSlaveQueues.size <= index) {
+							// index is less at most by 1 - creating a new slave queue for type
+							val slaveQueueType = createArrayTypeDefinition => [
+								it.elementType = parameterType.clone // Not type definition due to enums
+								it.size = evaluatedCapacity.toIntegerLiteral
+							]
+							val slaveQueueName = parameter.getSlaveQueueName(port, adapterInstance)
+							val slaveQueue = slaveQueueType.createVariableDeclaration(slaveQueueName)
 							
-							val index = parameter.indexOfParametersWithSameTypeDefinition
-							// Indexing works: parameters of an event are not deleted separately
-							if (queue.isEnvironmentalAndCheck(systemPorts) || // Traceability reasons: NO optimization for system parameters
-									typeSlaveQueues.size <= index) {
-								// index is less at most by 1 - creating a new slave queue for type
-								val slaveQueueType = createArrayTypeDefinition => [
-									it.elementType = parameterType.clone // Not type definition due to enums
-									it.size = evaluatedCapacity.toIntegerLiteral
-								]
-								val slaveQueueName = parameter.getSlaveQueueName(port, adapterInstance)
-								val slaveQueue = slaveQueueType.createVariableDeclaration(slaveQueueName)
-								
-								val slaveSizeVariableName = parameter.getSlaveSizeVariableName(port, adapterInstance)
-								// Slave queue size variables cannot be optimized as 0 can be a valid value
-								val slaveSizeVariable = (masterSizeVariable === null) ? null : createIntegerTypeDefinition
-										.createVariableDeclaration(slaveSizeVariableName)
-								
-								val isInternal = parameter.isInternal
-								
-								val messageQueueStruct = new MessageQueueStruct(slaveQueue, slaveSizeVariable, isInternal)
-								slaveQueues += messageQueueStruct
-								typeSlaveQueues += messageQueueStruct
-								logger.info( '''Created a slave queue for «port.name».«event.name»::«parameter.name»''')
-							}
-							else {
-								// Internal queue, we do not care about traceability here
-								val messageQueueStruct = typeSlaveQueues.get(index)
-								slaveQueues += messageQueueStruct // Optimization - reusing an existing slave queue
-								logger.info( '''Found a slave queue for «port.name».«event.name»::«parameter.name»''')
-							}
+							val slaveSizeVariableName = parameter.getSlaveSizeVariableName(port, adapterInstance)
+							// Slave queue size variables cannot be optimized as 0 can be a valid value
+							val slaveSizeVariable = (masterSizeVariable === null) ? null : createIntegerTypeDefinition
+									.createVariableDeclaration(slaveSizeVariableName)
+							
+							val isInternal = parameter.isInternal
+							
+							val messageQueueStruct = new MessageQueueStruct(slaveQueue, slaveSizeVariable, isInternal)
+							slaveQueues += messageQueueStruct
+							typeSlaveQueues += messageQueueStruct
+							logger.info( '''Created a slave queue for «port.name».«event.name»::«parameter.name»''')
 						}
-//					} // If no input event variable - slaveQueues is empty
+						else {
+							// Internal queue, we do not care about traceability here
+							val messageQueueStruct = typeSlaveQueues.get(index)
+							slaveQueues += messageQueueStruct // Optimization - reusing an existing slave queue
+							logger.info( '''Found a slave queue for «port.name».«event.name»::«parameter.name»''')
+						}
+					}
+					
 					slaveQueuesMap += portEvent -> slaveQueues
 				}
 				
@@ -319,12 +312,11 @@ class ComponentTransformer {
 						// The type might not be correct here and later has to be reassigned to handle enums
 					}
 				}
-				//
+				
 				val messageQueueGroup = xSts.masterMessageQueueGroup // Slaves must not be retrieved here: exception in type declaration opt. part
 				val xStsTypeDeclarations = messageQueueGroup.variables.map[it.elementTypeDefinition]
 						.filter[it.isContainedBy(TypeDeclaration)].map[it.typeDeclaration]
 				xSts.typeDeclarations += xStsTypeDeclarations
-				//
 			}
 		}
 		
@@ -356,7 +348,6 @@ class ComponentTransformer {
 				// Retrieving the event ID enumeration type
 				val xStsEventIdType = xStsMasterQueue.elementTypeDefinition as EnumerationTypeDefinition
 				val xStsEventIdTypeDeclaration = xStsEventIdType.typeDeclaration
-				//
 				
 				val block = createSequentialAction
 				// if (0 < size) { ... }
@@ -561,7 +552,6 @@ class ComponentTransformer {
 				// We have to move it to the start of the final merged action
 				mergedClockAction.actions.add(0, clockActions)
 			}
-			//
 			
 			// Dispatching events to connected message queues
 			val eventDispatches = createSequentialAction // For caching
@@ -581,7 +571,6 @@ class ComponentTransformer {
 			
 			// Caching
 			queueHandlingMergedActions += adapterInstance -> (inputIfAction.clone /* Crucial */ -> eventDispatches)
-			//
 		}
 		
 		// Initializing message queue related variables - done here and not in initial expression
@@ -1133,7 +1122,6 @@ class ComponentTransformer {
 		xSts.resetOutEventsBeforeMergedAction(wrappedType)
 		xSts.resetInEventsAfterMergedAction(wrappedType)
 		xSts.addInternalEventResetingActionsInMergedAction(wrappedType)
-		//
 		
 		// Internal event handling not required - event dispatch will tend to the addition
 		
@@ -1210,7 +1198,6 @@ class ComponentTransformer {
 			val xStsInternalInEventPrameters = xSts.inEventParameterVariableGroup.variables
 					.filter[it.internal].toList
 			xStsInternalInEventPrameters.changeAssignmentsToEmptyActions(newInEventAction)
-			//
 			
 			xSts.inEventTransition = newInEventAction.wrap
 		}
@@ -1244,7 +1231,6 @@ class ComponentTransformer {
 			if (subcomponentType.statechart) {
 				newXSts.addInternalEventHandlingActions(subcomponentType)
 			}
-			//
 			
 			// Adding new elements
 			xSts.merge(newXSts)
