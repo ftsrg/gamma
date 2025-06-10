@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.AssignmentActions
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.NotReadVariables
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
+import hu.bme.mit.gamma.xsts.model.SlaveMessageQueueGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
@@ -35,7 +36,8 @@ class RemovableVariableRemover {
 	//
 	
 	def void removeTransientVariables(XSTS xSts) {
-		val engine = ViatraQueryEngine.on(new EMFScope(xSts))
+		val engine = ViatraQueryEngine.on(
+				new EMFScope(xSts))
 		
 		val unreadXStsVariableMatcher = NotReadVariables.Matcher.on(engine)
 		val unreadTransientXStsVariables = unreadXStsVariableMatcher.allValuesOfvariable
@@ -49,6 +51,27 @@ class RemovableVariableRemover {
 			}
 			// Deleting the potential containing VariableDeclarationAction too
 			unreadTransientXStsVariable.deleteDeclaration
+		}
+	}
+	
+	def void removeUnusedSlaveQueueVariables(XSTS xSts) {
+		val engine = ViatraQueryEngine.on(
+				new EMFScope(xSts))
+		
+		val unreadXStsVariableMatcher = NotReadVariables.Matcher.on(engine)
+		val unreadVariablesXStsSlaveQueueVariables = newHashSet
+		unreadVariablesXStsSlaveQueueVariables += xSts.variableGroups
+				.filter[it.annotation instanceof SlaveMessageQueueGroup].map[it.variables].flatten
+		unreadVariablesXStsSlaveQueueVariables.retainAll(unreadXStsVariableMatcher.allValuesOfvariable)
+		
+		val xStsAssignmentMatcher = AssignmentActions.Matcher.on(engine)
+		for (xStsVariable : unreadVariablesXStsSlaveQueueVariables) {
+			val xStsAssignments = xStsAssignmentMatcher.getAllValuesOfaction(null, xStsVariable)
+			for (xStsAssignment : xStsAssignments) {
+				xStsAssignment.replaceWithEmptyAction
+			}
+			// Deleting the potential containing VariableDeclarationAction too
+			xStsVariable.deleteDeclaration
 		}
 	}
 	

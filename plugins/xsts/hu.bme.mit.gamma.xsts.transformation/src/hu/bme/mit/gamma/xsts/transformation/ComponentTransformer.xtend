@@ -224,8 +224,8 @@ class ComponentTransformer {
 					val targetEvent = targetPortEvent.value
 					//
 					
-					// Important optimization - we create a queue only if the event is used
-					if (eventReferenceMapper.hasInputEventVariable(targetEvent, targetPort)) { // TODO slave queue check
+					// Edit: optimization removed for bound slave queue handling: "Important optimization - we create a queue only if the event is used"
+//					if (eventReferenceMapper.hasInputEventVariable(targetEvent, targetPort)) { // TODO slave queue check
 						for (parameter : event.parameterDeclarations) {
 							val parameterType = parameter.type
 							val parameterTypeDefinition = parameterType.typeDefinition
@@ -234,7 +234,7 @@ class ComponentTransformer {
 							
 							val index = parameter.indexOfParametersWithSameTypeDefinition
 							// Indexing works: parameters of an event are not deleted separately
-							if (queue.isEnvironmentalAndCheck(systemPorts) || // Traceability reasons: no optimization for system parameters
+							if (queue.isEnvironmentalAndCheck(systemPorts) || // Traceability reasons: NO optimization for system parameters
 									typeSlaveQueues.size <= index) {
 								// index is less at most by 1 - creating a new slave queue for type
 								val slaveQueueType = createArrayTypeDefinition => [
@@ -263,7 +263,7 @@ class ComponentTransformer {
 								logger.info( '''Found a slave queue for «port.name».«event.name»::«parameter.name»''')
 							}
 						}
-					} // If no input event variable - slaveQueues is empty
+//					} // If no input event variable - slaveQueues is empty
 					slaveQueuesMap += portEvent -> slaveQueues
 				}
 				
@@ -768,8 +768,8 @@ class ComponentTransformer {
 						
 						xStsBranchAction.actions += xStsBoundMasterQueue.isMasterQueueNotFull(
 							xStsBoundMasterSizeVariable).createIfAction(
-								 xStsMasterQueue.addAndPotentiallyIncrement(
-										xStsMasterSizeVariable, boundEventId.createEnumerationLiteralExpression))
+								 xStsBoundMasterQueue.addAndPotentiallyIncrement(
+										xStsBoundMasterSizeVariable, boundEventId.createEnumerationLiteralExpression))
 					}
 					
 					// Handling "normal" parameters
@@ -832,10 +832,9 @@ class ComponentTransformer {
 									variableTrace.getAll(slaveSizeVariable).onlyElement
 							
 							logger.info("Binding parameter queue: " + slaveQueue.name)
-							val xStsRandomValues = xStsSavedRandomValues.get(k)
+							val xStsRandomValues = xStsSavedRandomValues.get(k) // Always good size: no optimization for system in event slave queues
 							xStsSlaveQueueSetting.actions += xStsSlaveQueues
 									.addAllAndPotentiallyIncrement(xStsSlaveSizeVariable, xStsRandomValues.clone) // Note the clone
-							// TODO set for non-existing slave queues
 						}
 					}
 				}
