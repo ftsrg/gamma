@@ -1422,6 +1422,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return queues;
 	}
 	
+	public static boolean isHighestPriorityQueue(MessageQueue queue) {
+		List<MessageQueue> higherPriorityQueues = getHigherPriorityQueues(queue);
+		return higherPriorityQueues.isEmpty();
+	}
+	
 	public static List<MessageQueue> getStoringMessageQueues(Clock clock) {
 		List<MessageQueue> queues = new ArrayList<MessageQueue>();
 		

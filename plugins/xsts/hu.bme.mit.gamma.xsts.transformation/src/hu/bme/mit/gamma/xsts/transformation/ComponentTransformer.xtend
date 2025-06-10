@@ -620,215 +620,228 @@ class ComponentTransformer {
 				}
 			}
 		}
+		
 		val xStsDeletableSlaveQueues = newHashSet
+		val handledBoundQueuePortEvents = newLinkedHashSet
 		for (queue : environmentalQueues) {
-			val adapter = queue.containingComponent
-			
-			val queueMapping = queueTraceability.get(queue)
-			val masterQueue = queueMapping.masterQueue.arrayVariable
-			val masterSizeVariable = queueMapping.masterQueue.sizeVariable
-			val slaveQueues = queueMapping.slaveQueues
-			
-			val xStsMasterQueue = variableTrace.getAll(masterQueue).onlyElement
-			val xStsMasterSizeVariable = (masterSizeVariable === null) ? null :
-					variableTrace.getAll(masterSizeVariable).onlyElement
-			
-			val xStsEventIdType = xStsMasterQueue.elementTypeDefinition as EnumerationTypeDefinition
-			val xStsEmptyId = xStsEventIdType.emptyLiteral
-			
-			val xStsQueueHandlingAction = createSequentialAction
-			
-			val queueSizes = newArrayList(
-					xStsMasterQueue.getMasterQueueSize(xStsMasterSizeVariable) /* current queue size */)
-			val queueTheoreticalCapacities = adapter.scheduleCount // Max message processing in a turn
-			// Calculating size and theoretical capacity for higher priority queues
-			for (higherPriorityQueue : queue.higherPriorityQueues) {
-				val higherPriorityQueueMapping = queueTraceability.get(higherPriorityQueue)
-				val higherPriorityMasterQueue = higherPriorityQueueMapping.masterQueue.arrayVariable
-				val higherPriorityMasterQueueSizeVariable =
-						higherPriorityQueueMapping.masterQueue.sizeVariable
+			if (!handledBoundQueuePortEvents.containsAll(queue.storedEvents)) { // Else, completely "bound" queue, we already handled all events
+				val adapter = queue.containingComponent
 				
-				val xStsHigherPriorityMasterQueue = variableTrace.getAll(higherPriorityMasterQueue).onlyElement
-				val xStsHigherPriorityMasterQueueSizeVariable = (higherPriorityMasterQueueSizeVariable === null) ? null :
-						variableTrace.getAll(higherPriorityMasterQueueSizeVariable).onlyElement
+				val queueMapping = queueTraceability.get(queue)
+				val masterQueue = queueMapping.masterQueue.arrayVariable
+				val masterSizeVariable = queueMapping.masterQueue.sizeVariable
+				val slaveQueues = queueMapping.slaveQueues
 				
-				queueSizes += xStsHigherPriorityMasterQueue.getMasterQueueSize(xStsHigherPriorityMasterQueueSizeVariable)
-			}
-			// A value should be inserted into the queue if
-			// (size + (higher1Size + ... + higher(N-1)Size) < theoreticalTotalCapacity))
-			val isThereTheoreticalCapacityExpression = queueSizes.wrapIntoAddExpression.createLessExpression(
-					queueTheoreticalCapacities.toIntegerLiteral) // ?? remove itself ??
-			// And the actual queue is not full
-			val isMasterQueueNotFull = xStsMasterQueue.isMasterQueueNotFull(xStsMasterSizeVariable)
-			// The first part is necessary if there are more queues
-			val isQueueInsertableExpression = (queueSizes.size == 1) ? isMasterQueueNotFull : 
-					isMasterQueueNotFull.wrapIntoAndExpression(isThereTheoreticalCapacityExpression)
-			val xStsQueueInsertionAction = isQueueInsertableExpression.createIfAction(xStsQueueHandlingAction)
-			// If queue is insertable
-			inEventAction.actions += xStsQueueInsertionAction
-			
-			val xStsEventIdVariableAction = xStsMasterQueue.createVariableDeclarationActionForArray(
-					xStsMasterQueue.eventIdLocalVariableName)
-			val xStsEventIdVariable = xStsEventIdVariableAction.variableDeclaration
-			
-			xStsQueueHandlingAction.actions += xStsEventIdVariableAction
-			
-			// Queue capacity can be greater than 1 if a component is executed multiple times in execution lists
-			for (var i = 0; i < queue.getCapacity(systemPorts); i++) {
-				// queue.getCapacity(systemPorts) is 1 most of the time, so i remains 0
-				xStsQueueHandlingAction.actions += xStsEventIdVariable.createHavocAction
+				val xStsMasterQueue = variableTrace.getAll(masterQueue).onlyElement
+				val xStsMasterSizeVariable = (masterSizeVariable === null) ? null :
+						variableTrace.getAll(masterSizeVariable).onlyElement
 				
-//				val storesOnlySystemPort = systemPorts.containsAll(
-//						queue.storedPorts.map[it.boundTopComponentPort])
-				// Semantically equivalent but maybe the second interval is easier to handle by SMT solvers
-//				val isValidIdExpression = if (!storesOnlySystemPort) {
-//					// (0 < eventId && eventId <= maxPotentialEventId) does not work now with internal events
-//					val eventIds = queue.getEventIdsOfPorts(systemPorts)
-//					
-//					// (eventId == 1 || eventId == 3 || ...)
-//					val idComparisons = eventIds.map[
-//						xStsEventIdVariable.createReferenceExpression
-//							.createEqualityExpression(
-//								it.toIntegerLiteral)]
-//					idComparisons.wrapIntoOrExpression
-//				}
-//				else {
-//					val emptyValue = xStsEventIdVariable.defaultExpression
-//					val maxEventId = queue.maxEventId.toIntegerLiteral
-//					// 0 < eventId && eventId <= maxPotentialEventId
-//					val leftInterval = emptyValue.createLessExpression(
-//							xStsEventIdVariable.createReferenceExpression)
-//					val rightInterval = xStsEventIdVariable.createReferenceExpression
-//							.createLessEqualExpression(maxEventId)
-//					#[leftInterval, rightInterval].wrapIntoAndExpression
-//				}
-				// If the id is a valid event
-				val isValidIdExpression = xStsEventIdVariable.createReferenceExpression
-							.createInequalityExpression(xStsEmptyId.createEnumerationLiteralExpression)
+				val xStsEventIdType = xStsMasterQueue.elementTypeDefinition as EnumerationTypeDefinition
+				val xStsEmptyId = xStsEventIdType.emptyLiteral
 				
-				val xStsSetQueuesAction = createSequentialAction
-				xStsSetQueuesAction.actions += xStsMasterQueue.addAndPotentiallyIncrement(
-						xStsMasterSizeVariable, xStsEventIdVariable.createReferenceExpression)
+				val xStsQueueHandlingAction = createSequentialAction
 				
-				val xStsEventIdHandlingAction = isValidIdExpression.createIfAction( // If the generated id is valid
-							xStsSetQueuesAction)
-				xStsQueueHandlingAction.actions += (i == 0 /* First iteration - surely insertable */) ? xStsEventIdHandlingAction : 
-					isQueueInsertableExpression.clone.createIfAction( // If it is still insertable (check the containing loop)
-						xStsEventIdHandlingAction)
-				
-				val branchExpressions = <Expression>newArrayList
-				val xStsBranchActions = <Action>newArrayList
-				for (portEvent : queueMapping
-							.portEvents.filter[systemInEvents.contains(it)]) { // Only system in events
-					val topmostPort = portEvent.key.boundTopComponentPort // Topmost system in port
-					val asynchronousBoundPorts = topmostPort.allBoundAsynchronousSimplePorts
-					val event = portEvent.value
+				val queueSizes = newArrayList(
+						xStsMasterQueue.getMasterQueueSize(xStsMasterSizeVariable) /* current queue size */)
+				val queueTheoreticalCapacities = adapter.scheduleCount // Max message processing in a turn
+				// Calculating size and theoretical capacity for higher priority queues
+				for (higherPriorityQueue : queue.higherPriorityQueues) {
+					val higherPriorityQueueMapping = queueTraceability.get(higherPriorityQueue)
+					val higherPriorityMasterQueue = higherPriorityQueueMapping.masterQueue.arrayVariable
+					val higherPriorityMasterQueueSizeVariable =
+							higherPriorityQueueMapping.masterQueue.sizeVariable
 					
-					val eventIntegerId = queueTraceability.get(portEvent)
-					val eventId = xStsEventIdType.addOrGetEventIdLiteral(eventIntegerId)
-					branchExpressions += xStsEventIdVariable
-							.createEqualityExpression(eventId.createEnumerationLiteralExpression)
-					val xStsBranchAction = createSequentialAction
-					xStsBranchActions += xStsBranchAction
+					val xStsHigherPriorityMasterQueue = variableTrace.getAll(higherPriorityMasterQueue).onlyElement
+					val xStsHigherPriorityMasterQueueSizeVariable = (higherPriorityMasterQueueSizeVariable === null) ? null :
+							variableTrace.getAll(higherPriorityMasterQueueSizeVariable).onlyElement
 					
-					// Handling "bound" master message queues
-					val boundSlaveQueueStructs = newArrayList
-					val nextEnvironmentalQueues = environmentalQueues.subCollectionExclusive(queue)
-					for (boundQueue : nextEnvironmentalQueues.filter[
-									asynchronousBoundPorts.containsAny(it.storedPorts)]) {
-						val storedEvents = boundQueue.storedEvents
-						val boundPortEvent = storedEvents
-								.filter[asynchronousBoundPorts.contains(it.key) && it.value === event].onlyElement
-						logger.info('''Found queue «boundQueue.containingComponent.name».«boundQueue.name» bound to «queue.containingComponent.name».«queue.name» via «boundPortEvent.key.name».«boundPortEvent.value.name»''')
-						
-						val boundQueueMapping = queueTraceability.get(boundQueue)
-						val boundMasterQueue = boundQueueMapping.masterQueue.arrayVariable
-						val boundMasterSizeVariable = boundQueueMapping.masterQueue.sizeVariable
-						val boundSlaveQueues = boundQueueMapping.slaveQueues
-						boundSlaveQueueStructs += boundSlaveQueues.get(boundPortEvent)
-						
-						val xStsBoundMasterQueue = variableTrace.getAll(boundMasterQueue).onlyElement
-						val xStsBoundMasterSizeVariable = (boundMasterSizeVariable === null) ? null :
-								variableTrace.getAll(boundMasterSizeVariable).onlyElement
-						
-						val xStsBoundEventIdType = xStsBoundMasterQueue.elementTypeDefinition as EnumerationTypeDefinition
-						val boundEventIntegerId = queueTraceability.get(boundPortEvent)
-						val boundEventId = xStsBoundEventIdType.addOrGetEventIdLiteral(boundEventIntegerId)
-						
-						xStsBranchAction.actions += xStsBoundMasterQueue.isMasterQueueNotFull(
-							xStsBoundMasterSizeVariable).createIfAction(
-								 xStsBoundMasterQueue.addAndPotentiallyIncrement(
-										xStsBoundMasterSizeVariable, boundEventId.createEnumerationLiteralExpression))
-					}
+					queueSizes += xStsHigherPriorityMasterQueue.getMasterQueueSize(xStsHigherPriorityMasterQueueSizeVariable)
+				}
+				// A value should be inserted into the queue if
+				// (size + (higher1Size + ... + higher(N-1)Size) < theoreticalTotalCapacity))
+				val isThereTheoreticalCapacityExpression = queueSizes.wrapIntoAddExpression.createLessExpression(
+						queueTheoreticalCapacities.toIntegerLiteral) // ?? remove itself ??
+				// And the actual queue is not full
+				val isMasterQueueNotFull = xStsMasterQueue.isMasterQueueNotFull(xStsMasterSizeVariable)
+				// The first part is necessary if there are more queues
+				val isQueueInsertableExpression = (queueSizes.size == 1) ? isMasterQueueNotFull : 
+						isMasterQueueNotFull.wrapIntoAndExpression(isThereTheoreticalCapacityExpression)
+				val xStsQueueInsertionAction = isQueueInsertableExpression.createIfAction(xStsQueueHandlingAction)
+				// If queue is insertable
+				inEventAction.actions += xStsQueueInsertionAction
+				
+				val xStsEventIdVariableAction = xStsMasterQueue.createVariableDeclarationActionForArray(
+						xStsMasterQueue.eventIdLocalVariableName)
+				val xStsEventIdVariable = xStsEventIdVariableAction.variableDeclaration
+				
+				xStsQueueHandlingAction.actions += xStsEventIdVariableAction
+				
+				// Queue capacity can be greater than 1 if a component is executed multiple times in execution lists
+				val queueCapacity = queue.getCapacity(systemPorts)
+				for (var i = 0; i < queueCapacity; i++) {
+					// queue.getCapacity(systemPorts) is 1 most of the time, so i remains 0
+					xStsQueueHandlingAction.actions += xStsEventIdVariable.createHavocAction
 					
-					// Handling "normal" parameters
-					if (slaveQueues.containsKey(portEvent)) {
-						val slaveQueueStructs = slaveQueues.get(portEvent)
-						val xStsSlaveQueueSetting = createSequentialAction
-						xStsBranchAction.actions += xStsSlaveQueueSetting
+//					val storesOnlySystemPort = systemPorts.containsAll(
+//							queue.storedPorts.map[it.boundTopComponentPort])
+//					 Semantically equivalent but maybe the second interval is easier to handle by SMT solvers
+//					val isValidIdExpression = if (!storesOnlySystemPort) {
+//						// (0 < eventId && eventId <= maxPotentialEventId) does not work now with internal events
+//						val eventIds = queue.getEventIdsOfPorts(systemPorts)
+//						
+//						// (eventId == 1 || eventId == 3 || ...)
+//						val idComparisons = eventIds.map[
+//							xStsEventIdVariable.createReferenceExpression
+//								.createEqualityExpression(
+//									it.toIntegerLiteral)]
+//						idComparisons.wrapIntoOrExpression
+//					}
+//					else {
+//						val emptyValue = xStsEventIdVariable.defaultExpression
+//						val maxEventId = queue.maxEventId.toIntegerLiteral
+//						// 0 < eventId && eventId <= maxPotentialEventId
+//						val leftInterval = emptyValue.createLessExpression(
+//								xStsEventIdVariable.createReferenceExpression)
+//						val rightInterval = xStsEventIdVariable.createReferenceExpression
+//								.createLessEqualExpression(maxEventId)
+//						#[leftInterval, rightInterval].wrapIntoAndExpression
+//					}
+					// If the id is a valid event
+					val isValidIdExpression = xStsEventIdVariable.createReferenceExpression
+								.createInequalityExpression(xStsEmptyId.createEnumerationLiteralExpression)
+					
+					val xStsSetQueuesAction = createSequentialAction
+					xStsSetQueuesAction.actions += xStsMasterQueue.addAndPotentiallyIncrement(
+							xStsMasterSizeVariable, xStsEventIdVariable.createReferenceExpression)
+					
+					val xStsEventIdHandlingAction = isValidIdExpression.createIfAction( // If the generated random event is valid
+								xStsSetQueuesAction)
+					xStsQueueHandlingAction.actions += (i == 0 /* First iteration - surely insertable */) ? xStsEventIdHandlingAction : 
+						isQueueInsertableExpression.clone.createIfAction( // If it is still insertable (check the containing loop)
+							xStsEventIdHandlingAction)
+					
+					val branchExpressions = <Expression>newArrayList
+					val xStsBranchActions = <Action>newArrayList
+					for (portEvent : (queueMapping
+								.portEvents.filter[systemInEvents.contains(it) && // Only system in events
+									!handledBoundQueuePortEvents.contains(it)])) { // That have not yet been handled by previous bound queues
+						val topmostPort = portEvent.key.boundTopComponentPort // Topmost system in port
+						val asynchronousBoundPorts = topmostPort.allBoundAsynchronousSimplePorts
+						val event = portEvent.value
 						
-						val xStsSavedRandomValues = <List<? extends Expression>>newArrayList
-						for (slaveQueueStruct : slaveQueueStructs) {
-							val slaveQueue = slaveQueueStruct.arrayVariable
-							val slaveSizeVariable = slaveQueueStruct.sizeVariable
+						val eventIntegerId = queueTraceability.get(portEvent)
+						val eventId = xStsEventIdType.addOrGetEventIdLiteral(eventIntegerId)
+						branchExpressions += xStsEventIdVariable
+								.createEqualityExpression(eventId.createEnumerationLiteralExpression)
+						val xStsBranchAction = createSequentialAction
+						xStsBranchActions += xStsBranchAction
+						
+						// Handling "bound" master message queues
+						val boundSlaveQueueStructs = newArrayList
+						val nextEnvironmentalQueues = environmentalQueues.subCollectionExclusive(queue)
+						for (boundQueue : nextEnvironmentalQueues.filter[
+										asynchronousBoundPorts.containsAny(it.storedPorts)]) {
+							// Restrictive check but makes everything sound: could be refined in the future
+							checkState(queueCapacity == 1 && boundQueue.getCapacity(systemPorts) == 1 &&
+								queue.highestPriorityQueue && boundQueue.highestPriorityQueue,
+									"A bound port must be of highest priority with capacity 1; else, we cannot ensure the emptiness of the queue when a message is received")
 							
-							val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
-							val xStsSlaveSizeVariable = (slaveSizeVariable === null) ? null :
-									variableTrace.getAll(slaveSizeVariable).onlyElement
+							val storedEvents = boundQueue.storedEvents
+							val boundPortEvent = storedEvents
+									.filter[asynchronousBoundPorts.contains(it.key) && it.value === event].onlyElement
+							logger.info('''Found queue «boundQueue.containingComponent.name».«boundQueue.name» bound to «
+									queue.containingComponent.name».«queue.name» via «boundPortEvent.key.name».«boundPortEvent.value.name»''')
+							handledBoundQueuePortEvents += boundPortEvent
 							
-							val xStsRandomValues = newArrayList
-							// Only for "normal" slave queues
-							for (xStsSlaveQueue : xStsSlaveQueues) {
-								val xStsRandomVariableAction = xStsSlaveQueue
-										.createVariableDeclarationActionForArray(
-											xStsSlaveQueue.randomValueLocalVariableName)
-								val xStsRandomVariable = xStsRandomVariableAction.variableDeclaration
-								xStsSlaveQueueSetting.actions += xStsRandomVariableAction
-								if (slaveQueueStruct.internal) {
-									// Assigning default values to internal parameter queues. This is needed if 
-									// the queue is not environmental, otherwise parameter values can shift to wrong indexes
-									xStsRandomVariable.expression = xStsRandomVariable.defaultExpression
-									if (queue.isEnvironmentalAndCheck(systemPorts)) {
-										// We delete this slave queue later as we do not want to override internal parameters
-										logger.info("Internal parameter slave queue for system port: " + xStsSlaveQueue.name)
-										xStsDeletableSlaveQueues += xStsSlaveQueue
+							val boundQueueMapping = queueTraceability.get(boundQueue)
+							val boundMasterQueue = boundQueueMapping.masterQueue.arrayVariable
+							val boundMasterSizeVariable = boundQueueMapping.masterQueue.sizeVariable
+							val boundSlaveQueues = boundQueueMapping.slaveQueues
+							boundSlaveQueueStructs += boundSlaveQueues.get(boundPortEvent)
+							
+							val xStsBoundMasterQueue = variableTrace.getAll(boundMasterQueue).onlyElement
+							val xStsBoundMasterSizeVariable = (boundMasterSizeVariable === null) ? null :
+									variableTrace.getAll(boundMasterSizeVariable).onlyElement
+							
+							val xStsBoundEventIdType = xStsBoundMasterQueue.elementTypeDefinition as EnumerationTypeDefinition
+							val boundEventIntegerId = queueTraceability.get(boundPortEvent)
+							val boundEventId = xStsBoundEventIdType.addOrGetEventIdLiteral(boundEventIntegerId)
+							
+							xStsBranchAction.actions += xStsBoundMasterQueue.isMasterQueueNotFull(
+								xStsBoundMasterSizeVariable).createIfAction(
+									 xStsBoundMasterQueue.addAndPotentiallyIncrement(
+											xStsBoundMasterSizeVariable, boundEventId.createEnumerationLiteralExpression))
+						}
+						
+						// Handling "normal" parameters
+						if (slaveQueues.containsKey(portEvent)) {
+							val slaveQueueStructs = slaveQueues.get(portEvent)
+							val xStsSlaveQueueSetting = createSequentialAction
+							xStsBranchAction.actions += xStsSlaveQueueSetting
+							
+							val xStsSavedRandomValues = <List<? extends Expression>>newArrayList
+							for (slaveQueueStruct : slaveQueueStructs) {
+								val slaveQueue = slaveQueueStruct.arrayVariable
+								val slaveSizeVariable = slaveQueueStruct.sizeVariable
+								
+								val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
+								val xStsSlaveSizeVariable = (slaveSizeVariable === null) ? null :
+										variableTrace.getAll(slaveSizeVariable).onlyElement
+								
+								val xStsRandomValues = newArrayList
+								// Only for "normal" slave queues
+								for (xStsSlaveQueue : xStsSlaveQueues) {
+									val xStsRandomVariableAction = xStsSlaveQueue
+											.createVariableDeclarationActionForArray(
+												xStsSlaveQueue.randomValueLocalVariableName)
+									val xStsRandomVariable = xStsRandomVariableAction.variableDeclaration
+									xStsSlaveQueueSetting.actions += xStsRandomVariableAction
+									if (slaveQueueStruct.internal) {
+										// Assigning default values to internal parameter queues. This is needed if 
+										// the queue is not environmental, otherwise parameter values can shift to wrong indexes
+										xStsRandomVariable.expression = xStsRandomVariable.defaultExpression
+										if (queue.isEnvironmentalAndCheck(systemPorts)) {
+											// We delete this slave queue later as we do not want to override internal parameters
+											logger.info("Internal parameter slave queue for system port: " + xStsSlaveQueue.name)
+											xStsDeletableSlaveQueues += xStsSlaveQueue
+										}
+										else {
+											// Currently cannot be reached due to isEnvironmentalAndCheck
+										}
 									}
 									else {
-										// Currently cannot be reached due to isEnvironmentalAndCheck
+										// Assigning a random value
+										xStsSlaveQueueSetting.actions += xStsRandomVariable.createHavocAction
 									}
+									xStsRandomValues += xStsRandomVariable.createReferenceExpression
 								}
-								else {
-									// Assigning a random value
-									xStsSlaveQueueSetting.actions += xStsRandomVariable.createHavocAction
-								}
-								xStsRandomValues += xStsRandomVariable.createReferenceExpression
+								
+								xStsSlaveQueueSetting.actions += xStsSlaveQueues
+										.addAllAndPotentiallyIncrement(xStsSlaveSizeVariable, xStsRandomValues)
+								xStsSavedRandomValues += xStsRandomValues
 							}
 							
-							xStsSlaveQueueSetting.actions += xStsSlaveQueues
-									.addAllAndPotentiallyIncrement(xStsSlaveSizeVariable, xStsRandomValues)
-							xStsSavedRandomValues += xStsRandomValues
-						}
-						
-						// "Bound" slave queues
-						for (slaveQueueStruct : boundSlaveQueueStructs) {
-							val k = boundSlaveQueueStructs.indexOf(slaveQueueStruct) % xStsSavedRandomValues.size
-							
-							val slaveQueue = slaveQueueStruct.arrayVariable
-							val slaveSizeVariable = slaveQueueStruct.sizeVariable
-							
-							val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
-							val xStsSlaveSizeVariable = (slaveSizeVariable === null) ? null :
-									variableTrace.getAll(slaveSizeVariable).onlyElement
-							
-							logger.info("Binding parameter queue: " + slaveQueue.name)
-							val xStsRandomValues = xStsSavedRandomValues.get(k) // Always good size: no optimization for system in event slave queues
-							xStsSlaveQueueSetting.actions += xStsSlaveQueues
-									.addAllAndPotentiallyIncrement(xStsSlaveSizeVariable, xStsRandomValues.clone) // Note the clone
+							// Handling "bound" parameters (slave queues)
+							for (slaveQueueStruct : boundSlaveQueueStructs) {
+								val k = boundSlaveQueueStructs.indexOf(slaveQueueStruct) % xStsSavedRandomValues.size
+								
+								val slaveQueue = slaveQueueStruct.arrayVariable
+								val slaveSizeVariable = slaveQueueStruct.sizeVariable
+								
+								val xStsSlaveQueues = variableTrace.getAll(slaveQueue)
+								val xStsSlaveSizeVariable = (slaveSizeVariable === null) ? null :
+										variableTrace.getAll(slaveSizeVariable).onlyElement
+								
+								logger.info("Binding parameter queue: " + slaveQueue.name)
+								val xStsRandomValues = xStsSavedRandomValues.get(k) // Always good size: no optimization for system in event slave queues
+								xStsSlaveQueueSetting.actions += xStsSlaveQueues
+										.addAllAndPotentiallyIncrement(xStsSlaveSizeVariable, xStsRandomValues.clone) // Note the clone
+							}
 						}
 					}
+					
+					xStsSetQueuesAction.actions += branchExpressions.createChoiceAction(xStsBranchActions)
 				}
-				
-				xStsSetQueuesAction.actions += branchExpressions.createChoiceAction(xStsBranchActions)
 			}
 		}
 		
