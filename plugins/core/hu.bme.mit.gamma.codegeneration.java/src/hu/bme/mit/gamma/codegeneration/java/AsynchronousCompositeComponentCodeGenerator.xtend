@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -152,10 +152,14 @@ class AsynchronousCompositeComponentCodeGenerator {
 					public List<«systemPort.interfaceRealization.interface.implementationName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> getRegisteredListeners() {
 						«IF systemPort.portBindings.empty»
 							return List.of();
+						«ELSEIF systemPort.portBindings.size == 1»
+							return «systemPort.portBindings.head.instancePortReference.instance.name».get«systemPort.portBindings.head.instancePortReference.port.name.toFirstUpper»().getRegisteredListeners();
 						«ELSE»
+							List<«systemPort.interfaceRealization.interface.implementationName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> registeredListeners =  new LinkedList<>();
 							«FOR portDef : systemPort.portBindings»
-								return «portDef.instancePortReference.instance.name».get«portDef.instancePortReference.port.name.toFirstUpper»().getRegisteredListeners();
+								registeredListeners.addAll(«portDef.instancePortReference.instance.name».get«portDef.instancePortReference.port.name.toFirstUpper»().getRegisteredListeners());
 							«ENDFOR»
+							return registeredListeners;
 						«ENDIF»
 					}
 					
