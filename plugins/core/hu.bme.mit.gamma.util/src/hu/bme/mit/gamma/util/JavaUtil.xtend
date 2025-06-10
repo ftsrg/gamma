@@ -101,6 +101,29 @@ class JavaUtil {
 		return set
 	}
 	
+	def <T, K extends T> subCollection(Collection<T> collection, K firstElement) {
+		val list = newArrayList
+		
+		var move = false
+		for (element : collection) {
+			if (element === firstElement) {
+				move = true
+			}
+			if (move) {
+				list += element
+			}
+		}
+		
+		return list
+	}
+	
+	def <T, K extends T> subCollectionExclusive(Collection<T> collection, K firstElement) {
+		val list = collection.subCollection(firstElement)
+		list.removeFirstElement
+		
+		return list
+	}
+	
 	def boolean containsAny(Collection<?> lhs, Iterable<?> rhs) {
 		for (element : rhs) {
 			if (lhs.contains(element)) {

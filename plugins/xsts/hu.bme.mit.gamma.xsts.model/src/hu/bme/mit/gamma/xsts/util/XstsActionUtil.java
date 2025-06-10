@@ -414,6 +414,10 @@ public class XstsActionUtil extends ExpressionUtil {
 	
 	public void changeAssignmentsAndReadingAssignmentsToEmptyActions(
 			Collection<? extends VariableDeclaration> variables, EObject root) {
+		if (variables.isEmpty()) {
+			return;
+		}
+		
 		changeAssignmentsToEmptyActions(variables, root);
 		
 		List<AssignmentAction> readingAssignments = getReadingAssignments(variables, root);
