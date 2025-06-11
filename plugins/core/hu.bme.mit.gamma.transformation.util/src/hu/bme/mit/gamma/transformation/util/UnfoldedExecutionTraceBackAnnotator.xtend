@@ -68,7 +68,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 	new(ExecutionTrace trace, Component originalTopComponent) {
 		checkNotNull(originalTopComponent)
 		checkArgument(!originalTopComponent.statechart,
-			"The original component cannot be a statechart")
+				"The original component cannot be a statechart")
 		this.trace = trace
 		this.originalTopComponent = originalTopComponent
 	}
@@ -168,9 +168,9 @@ class UnfoldedExecutionTraceBackAnnotator {
 	
 	protected def dispatch Expression transformAssert(ComponentInstanceStateReferenceExpression assert) {
 		val newState = assert.state
+		val instance = assert.instance.lastInstance as SynchronousComponentInstance
+		val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
 		try {
-			val instance = assert.instance.lastInstance as SynchronousComponentInstance
-			val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
 			val originalState = originalInstance.getOriginalState(newState)
 			return compositeModelFactory.createComponentInstanceStateReferenceExpression => [
 				it.instance = originalInstance
@@ -182,7 +182,10 @@ class UnfoldedExecutionTraceBackAnnotator {
 			if (message.startsWith("Not found state")) {
 				// Injected state for checking nondeterministic behavior
 				if (newState.name == "_TrapState_") {
-					return "Trap state entered".createOpaqueExpression
+					val regionName = newState.parentRegion.name
+					val instanceName = originalInstance.componentInstanceChain.map[it.name].join(".")
+					
+					return '''Trap state entered in region «regionName» of «instanceName»'''.createOpaqueExpression
 				}
 				
 				logger.warning(message)

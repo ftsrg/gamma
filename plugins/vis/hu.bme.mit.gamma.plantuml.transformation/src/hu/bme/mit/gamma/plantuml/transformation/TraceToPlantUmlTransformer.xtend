@@ -31,7 +31,8 @@ class TraceToPlantUmlTransformer {
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	//
-	
+	protected final String TRAP_STATE_MESSAGE_PREFIX = "Trap state entered"
+	//
 	new(ExecutionTrace trace) {
 		this.trace = trace
 	}
@@ -108,9 +109,9 @@ class TraceToPlantUmlTransformer {
 				«'''  '''»«variableConstraint.variableDeclaration.name» = «variableConstraint.otherOperandIfContainedByEquality.serialize»
 			«ENDFOR»
 		«ENDFOR»
-		«IF step.asserts.filter(OpaqueExpression).exists[it.expression == "Trap state entered"]»
-			<color Red>«"Nondeterministic behavior triggered".addItalicStyle»
-		«ENDIF»
+		«FOR trapAssert : step.asserts.filter(OpaqueExpression).filter[it.expression.startsWith(TRAP_STATE_MESSAGE_PREFIX)]»
+			<color Red>«trapAssert.expression.replace(TRAP_STATE_MESSAGE_PREFIX, "Nondeterministic behavior triggered").addItalicStyle»
+		«ENDFOR»
 		endhnote
 	'''
 	
