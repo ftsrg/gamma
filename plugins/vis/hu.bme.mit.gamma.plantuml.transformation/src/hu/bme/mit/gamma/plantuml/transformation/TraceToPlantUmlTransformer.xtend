@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.plantuml.transformation
 
+import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.plantuml.serialization.ExpressionSerializer
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
@@ -96,15 +97,20 @@ class TraceToPlantUmlTransformer {
 		
 		hnote over System
 		«FOR config : step.instanceStateConfigurations
-						.groupBy[it.instance?.serialize].entrySet.sortBy[it.key]»
+						.groupBy[it.instance?.serialize].entrySet
+						.sortBy[it.key]»
 			«config.key» «"in".addKeywordStyle» {«config.value.map[
 					it.region.name + "." + it.state.name.addItalicStyle].uniquate.join(",\n\t")»} «
 						IF step.instanceVariableStates.exists[it.instanceReference?.serialize == config.key]»«"with".addKeywordStyle»«ENDIF»
 			«FOR variableConstraint : step.uniqueInstanceVariableStates
-						.filter[it.instanceReference?.serialize == config.key].sortBy[it.variableDeclaration.name]»
+						.filter[it.instanceReference?.serialize == config.key]
+						.sortBy[it.variableDeclaration.name]»
 				«'''  '''»«variableConstraint.variableDeclaration.name» = «variableConstraint.otherOperandIfContainedByEquality.serialize»
 			«ENDFOR»
 		«ENDFOR»
+		«IF step.asserts.filter(OpaqueExpression).exists[it.expression == "Trap state entered"]»
+			<color Red>«"Nondeterministic behavior triggered".addItalicStyle»
+		«ENDIF»
 		endhnote
 	'''
 	
