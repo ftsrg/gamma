@@ -2407,6 +2407,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return states;
 	}
 	
+	public static Collection<State> getSelfAndAllStates(State state) {
+		Collection<State> allStates = new LinkedHashSet<State>();
+		allStates.add(state);
+		allStates.addAll(
+				getAllStates(state));
+		return allStates;
+	}
+	
 	public static Collection<State> getAllStates(Region region) {
 		Set<State> states = new LinkedHashSet<State>();
 		for (StateNode stateNode : region.getStateNodes()) {

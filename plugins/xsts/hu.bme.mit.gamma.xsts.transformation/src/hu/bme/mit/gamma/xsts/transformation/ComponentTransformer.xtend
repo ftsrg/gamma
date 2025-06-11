@@ -623,6 +623,7 @@ class ComponentTransformer {
 		
 		val xStsDeletableSlaveQueues = newHashSet
 		val handledBoundQueuePortEvents = newLinkedHashSet
+		// We do NOT discard stored messages in environmental queues - else, the encoding would be very compute-intensive
 		for (queue : environmentalQueues) {
 			if (!handledBoundQueuePortEvents.containsAll(queue.storedEvents)) { // Else, completely "bound" queue, we already handled all events
 				val adapter = queue.containingComponent
@@ -682,30 +683,6 @@ class ComponentTransformer {
 					// queue.getCapacity(systemPorts) is 1 most of the time, so i remains 0
 					xStsQueueHandlingAction.actions += xStsEventIdVariable.createHavocAction
 					
-//					val storesOnlySystemPort = systemPorts.containsAll(
-//							queue.storedPorts.map[it.boundTopComponentPort])
-//					 Semantically equivalent but maybe the second interval is easier to handle by SMT solvers
-//					val isValidIdExpression = if (!storesOnlySystemPort) {
-//						// (0 < eventId && eventId <= maxPotentialEventId) does not work now with internal events
-//						val eventIds = queue.getEventIdsOfPorts(systemPorts)
-//						
-//						// (eventId == 1 || eventId == 3 || ...)
-//						val idComparisons = eventIds.map[
-//							xStsEventIdVariable.createReferenceExpression
-//								.createEqualityExpression(
-//									it.toIntegerLiteral)]
-//						idComparisons.wrapIntoOrExpression
-//					}
-//					else {
-//						val emptyValue = xStsEventIdVariable.defaultExpression
-//						val maxEventId = queue.maxEventId.toIntegerLiteral
-//						// 0 < eventId && eventId <= maxPotentialEventId
-//						val leftInterval = emptyValue.createLessExpression(
-//								xStsEventIdVariable.createReferenceExpression)
-//						val rightInterval = xStsEventIdVariable.createReferenceExpression
-//								.createLessEqualExpression(maxEventId)
-//						#[leftInterval, rightInterval].wrapIntoAndExpression
-//					}
 					// If the id is a valid event
 					val isValidIdExpression = xStsEventIdVariable.createReferenceExpression
 								.createInequalityExpression(xStsEmptyId.createEnumerationLiteralExpression)
