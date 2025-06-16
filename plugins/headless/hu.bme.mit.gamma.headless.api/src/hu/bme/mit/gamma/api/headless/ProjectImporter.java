@@ -37,7 +37,6 @@ public class ProjectImporter extends HeadlessApplicationCommandHandler {
 
 	public ProjectImporter(IApplicationContext context, String[] appArgs, Level level) {
 		super(context, appArgs, level);
-		logger.setLevel(level);
 	}
 
 	@Override

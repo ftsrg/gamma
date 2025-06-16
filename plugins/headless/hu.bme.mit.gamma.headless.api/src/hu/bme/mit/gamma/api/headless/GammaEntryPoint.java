@@ -23,7 +23,6 @@ public class GammaEntryPoint extends AbstractEntryPoint {
 
 	public GammaEntryPoint(IApplicationContext context, String[] appArgs, Level level) {
 		super(context, appArgs, level);
-		logger.setLevel(level);
 	}
 	
 	@Override

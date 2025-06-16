@@ -34,6 +34,7 @@ public abstract class HeadlessApplicationCommandHandler {
 		this.context = context;
 		this.appArgs = appArgs;
 		this.level = level;
+		logger.setLevel(level);
 	}
 
 	public abstract void execute() throws Exception;
