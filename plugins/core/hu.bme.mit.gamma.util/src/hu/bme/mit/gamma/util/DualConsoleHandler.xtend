@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.util
 
+import java.util.Set
 import java.util.logging.ConsoleHandler
 import java.util.logging.Level
 import java.util.logging.LogRecord
@@ -21,6 +22,8 @@ class DualConsoleHandler extends StreamHandler {
 
 	protected final Level minimumLogLevel = Level.INFO
 	protected final ConsoleHandler stderrHandler = new ConsoleHandler
+	
+	protected static final Set<Logger> registeredLoggers = newHashSet
 
 	new() {
 		super(System.out, new SimpleFormatter)
@@ -38,8 +41,12 @@ class DualConsoleHandler extends StreamHandler {
 	}
 	
 	def static register(Logger logger) {
-		logger.setUseParentHandlers(false)
-		logger.addHandler(new DualConsoleHandler)
+		if (!registeredLoggers.contains(logger)) {
+			logger.setUseParentHandlers(false)
+			logger.addHandler(new DualConsoleHandler)
+			
+			registeredLoggers += logger
+		}
 	}
 
 }
