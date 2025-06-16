@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.util
 import java.util.logging.ConsoleHandler
 import java.util.logging.Level
 import java.util.logging.LogRecord
+import java.util.logging.Logger
 import java.util.logging.SimpleFormatter
 import java.util.logging.StreamHandler
 
@@ -34,6 +35,11 @@ class DualConsoleHandler extends StreamHandler {
 			stderrHandler.publish(record)
 			stderrHandler.flush
 		}
+	}
+	
+	def static register(Logger logger) {
+		logger.setUseParentHandlers(false)
+		logger.addHandler(new DualConsoleHandler)
 	}
 
 }

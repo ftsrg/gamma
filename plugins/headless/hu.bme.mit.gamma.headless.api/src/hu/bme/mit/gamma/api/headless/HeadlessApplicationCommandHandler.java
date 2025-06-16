@@ -43,9 +43,7 @@ public abstract class HeadlessApplicationCommandHandler {
 	protected void setupLogger() {
 		logger.setLevel(level);
 		
-		logger.setUseParentHandlers(false);
-		logger.addHandler(
-				new DualConsoleHandler());
+		DualConsoleHandler.register(logger);
 	}
 	
 }
