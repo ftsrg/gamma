@@ -89,6 +89,7 @@ import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean;
 import hu.bme.mit.gamma.verification.util.AbstractVerification;
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result;
+import hu.bme.mit.gamma.verification.util.DeterminismCheckPostprocessor;
 import hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil;
@@ -351,6 +352,13 @@ public class VerificationHandler extends TaskHandler {
 		// Note that .get and .json postfix ids will not match if optimization is applied
 		for (VerificationResult verificationResult : retrievedVerificationResults) {
 			serializer.serialize(targetFolderUri, traceFileName, verificationResult);
+		}
+		
+		// TODO select the corresponding post-processor
+		boolean needPostprocessing = false;
+		if (needPostprocessing) {
+			DeterminismCheckPostprocessor processor = new DeterminismCheckPostprocessor();
+			processor.execute(retrievedTraces);
 		}
 	}
 	

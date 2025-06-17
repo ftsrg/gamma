@@ -65,6 +65,11 @@ class UnfoldedExecutionTraceBackAnnotator {
 	
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
+	
+	public static final String TRAP_STATE_ID = "_TrapState_"
+	public static final String TRAP_STATE_MESSAGE_BEGINNING = "Trap state entered in"
+	//
+	
 	new(ExecutionTrace trace, Component originalTopComponent) {
 		checkNotNull(originalTopComponent)
 		checkArgument(!originalTopComponent.statechart,
@@ -181,11 +186,11 @@ class UnfoldedExecutionTraceBackAnnotator {
 			val message = e.message.trim
 			if (message.startsWith("Not found state")) {
 				// Injected state for checking nondeterministic behavior
-				if (newState.name == "_TrapState_") {
+				if (newState.name == TRAP_STATE_ID) {
 					val regionName = newState.parentRegion.name
 					val instanceName = originalInstance.componentInstanceChain.map[it.name].join(".")
 					
-					return '''Trap state entered in region «regionName» of «instanceName»'''.createOpaqueExpression
+					return '''«TRAP_STATE_MESSAGE_BEGINNING» region «regionName» of «instanceName»'''.createOpaqueExpression
 				}
 				
 				logger.warning(message)
