@@ -106,6 +106,7 @@ import hu.bme.mit.gamma.statechart.phase.History;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseAnnotation;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
+import hu.bme.mit.gamma.statechart.statechart.AsynchronousCoordinationStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.AsynchronousStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger;
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
@@ -131,6 +132,7 @@ import hu.bme.mit.gamma.statechart.statechart.StateAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.StateNode;
 import hu.bme.mit.gamma.statechart.statechart.StatechartAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
+import hu.bme.mit.gamma.statechart.statechart.SynchronousCoordinationStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.SynchronousStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration;
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference;
@@ -2146,6 +2148,12 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		if (composite instanceof AbstractAsynchronousCompositeComponent asynchronousCompositeComponent) {
 			return asynchronousCompositeComponent.getComponents();
 		}
+		if (composite instanceof SynchronousCoordinationStatechartDefinition synchronousCoordinationStatechart) {
+			return synchronousCoordinationStatechart.getComponents();
+		}
+		if (composite instanceof AsynchronousCoordinationStatechartDefinition asynchronousCoordinationStatechart) {
+			return asynchronousCoordinationStatechart.getComponents();
+		}
 		throw new IllegalArgumentException("Not known type: " + composite);
 	}
 	
@@ -2366,6 +2374,12 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		List<StateNode> allStateNodes = ecoreUtil
 				.getSelfAndAllContentsOfType(node, StateNode.class);
 		StatechartDefinition statechart = getContainingStatechart(node);
+		if (statechart instanceof CoordinationStatechartDefinition) {
+			// TODO CoordinationStatechart Validation
+			return ((CoordinationStatechartDefinition) statechart).getCoordinationTransitions().stream()
+					.filter(it -> allStateNodes.contains(it.getTargetState()))
+					.collect(Collectors.toList());
+		}
 		return statechart.getTransitions().stream()
 				.filter(it -> allStateNodes.contains(it.getTargetState()))
 				.collect(Collectors.toList());

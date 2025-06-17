@@ -36,7 +36,9 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.GammaToLowlevelTransformer
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.Trace
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.ValueDeclarationTransformer
+import hu.bme.mit.gamma.statechart.statechart.AsynchronousCoordinationStatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.SynchronousCoordinationStatechartDefinition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
@@ -64,6 +66,7 @@ import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeature
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.QueueNamings.*
 import static extension java.lang.Math.*
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
 
 class ComponentTransformer {
 	// This gammaToLowlevelTransformer must be the same during this transformation cycle due to tracing
@@ -88,6 +91,7 @@ class ComponentTransformer {
 	protected final extension EventConnector eventConnector = EventConnector.INSTANCE
 	protected final extension InternalEventHandler internalEventHandler = InternalEventHandler.INSTANCE
 	protected final extension SystemReducer systemReducer = SystemReducer.INSTANCE
+	protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension XSTSModelFactory xStsModelFactory = XSTSModelFactory.eINSTANCE
@@ -1337,6 +1341,177 @@ class ComponentTransformer {
 		}
 		
 		return xSts
+	}
+	
+	def dispatch XSTS transform(SynchronousCoordinationStatechartDefinition component, Package lowlevelPackage) {
+		val name = component.name
+		logger.info( "Transforming Synchronous Coordination Statechart " + name)
+		// TODO
+		val xSts = name.createXsts
+		val componentMergedActions = <Component, Action>newHashMap // To handle multiple schedulings in CascadeCompositeComponents
+		val components = component.components
+		
+		if (components.empty) {
+			logger.warning("No components in Synchronous Coordination Statechart " + name)
+			return xSts
+		}
+		
+		val coordinationInstance = this.statechartUtil.instantiateSynchronousComponent(component)
+		
+		val lowlevelStatechart = gammaToLowlevelTransformer.transform(component)
+		lowlevelPackage.components += lowlevelStatechart
+		val lowlevelToXSTSTransformer = new LowlevelToXstsTransformer(
+				lowlevelPackage, optimize, transitionMerging)
+		val xStsEntry = lowlevelToXSTSTransformer.execute
+		lowlevelPackage.components -= lowlevelStatechart // So that next time the matches do not return elements from this statechart
+		val coordinationXSts = xStsEntry.key
+		
+		// Adding new elements
+		xSts.merge(coordinationXSts)
+		
+		component.components.add(coordinationInstance)
+		
+		val coordinationActualComponentMergedAction = createSequentialAction => [
+			it.actions += coordinationXSts.mergedAction
+		]
+		// In and Out actions - using sequential actions to make sure they are composite actions
+		// Methods reset... and delete... require this
+		val newCoordinationInEventAction = createSequentialAction => [ it.actions += coordinationXSts.inEventTransition.action ]
+		coordinationXSts.inEventTransition = newCoordinationInEventAction.wrap
+		val newCoordinationOutEventAction = createSequentialAction => [ it.actions += coordinationXSts.outEventTransition.action ]
+		coordinationXSts.outEventTransition = newCoordinationOutEventAction.wrap
+		// Resetting channel events
+		// 1) the Sync ort semantics: Resetting channel IN events AFTER schedule would result in a deadlock
+		// 2) the Casc semantics: Resetting channel OUT events BEFORE schedule would delete in events of subsequent components
+		// Note, System in and out events are reset in the env action
+
+		// Resetting OUT events BEFORE schedule
+//		val clonedNewOutEventAction = newOutEventAction.clone // Clone is important
+//				.resetEverythingExceptPersistentParameters(subcomponentType)
+//		actualComponentMergedAction.actions.add(0, clonedNewOutEventAction) // Putting the new action BEFORE
+		// Tracing merged action
+		componentMergedActions += component -> coordinationActualComponentMergedAction.clone
+			
+		// In event
+		newCoordinationInEventAction.deleteEverythingExceptSystemEventsAndParameters(component)
+
+		// Out event
+		newCoordinationOutEventAction.deleteEverythingExceptSystemEventsAndParameters(component)
+	
+	
+		
+		for (subcomponent : components.reject[it == coordinationInstance]) {
+			val subcomponentType = subcomponent.type
+			
+			// Normal transformation
+			subcomponentType.extractParameters(subcomponent.arguments) // Change the reference from parameters to constants
+			val newXSts = subcomponentType.transform(lowlevelPackage)
+			newXSts.customizeDeclarationNames(subcomponent)
+			
+			// Internal event handling here as EventReferenceHandler cannot be used without customizeDeclarationNames
+			if (subcomponentType.statechart) {
+				newXSts.addInternalEventHandlingActions(subcomponentType)
+			}
+			//
+			
+			// Adding new elements
+			xSts.merge(newXSts)			
+			
+			// Merged action
+			val actualComponentMergedAction = createSequentialAction => [
+				it.actions += newXSts.mergedAction
+			]
+			// In and Out actions - using sequential actions to make sure they are composite actions
+			// Methods reset... and delete... require this
+			val newInEventAction = createSequentialAction => [ it.actions += newXSts.inEventTransition.action ]
+			newXSts.inEventTransition = newInEventAction.wrap
+			val newOutEventAction = createSequentialAction => [ it.actions += newXSts.outEventTransition.action ]
+			newXSts.outEventTransition = newOutEventAction.wrap
+			// Resetting channel events
+			// 1) the Sync ort semantics: Resetting channel IN events AFTER schedule would result in a deadlock
+			// 2) the Casc semantics: Resetting channel OUT events BEFORE schedule would delete in events of subsequent components
+			// Note, System in and out events are reset in the env action
+
+			// Resetting OUT events BEFORE schedule
+//			val clonedNewOutEventAction = newOutEventAction.clone // Clone is important
+//					.resetEverythingExceptPersistentParameters(subcomponentType)
+//			actualComponentMergedAction.actions.add(0, clonedNewOutEventAction) // Putting the new action BEFORE
+			// Tracing merged action
+			componentMergedActions += subcomponentType -> actualComponentMergedAction.clone
+			
+			// In event
+			newInEventAction.deleteEverythingExceptSystemEventsAndParameters(component)
+			if (xSts !== newXSts) { // Only if this is not the first component
+				val inEventAction = createSequentialAction
+				inEventAction.actions += xSts.inEventTransition.action
+				inEventAction.actions += newInEventAction
+				xSts.inEventTransition = inEventAction.wrap
+			}
+			// Out event
+			newOutEventAction.deleteEverythingExceptSystemEventsAndParameters(component)
+			if (xSts !== newXSts) { // Only if this is not the first component
+				val outEventAction = createSequentialAction
+				outEventAction.actions += xSts.outEventTransition.action
+				outEventAction.actions += newOutEventAction
+				xSts.outEventTransition = outEventAction.wrap
+			}
+		}
+		// Merged action based on scheduling instances		
+		val mergedAction = createSequentialAction
+		for (subcomponent : components.reject[it == coordinationInstance]) {
+			val subcomponentType = subcomponent.type
+			logger.info( "Checking subcomponent type " + subcomponentType + " in merged actions")
+			checkState(componentMergedActions.containsKey(subcomponentType))
+			val componentMergedAction = componentMergedActions.get(subcomponentType).clone
+			mergedAction.actions += componentMergedAction
+		}
+		xSts.changeTransitions(mergedAction.wrap)
+		
+//		logger.info( "Deleting unused instance ports in " + name)
+//		xSts.deleteUnusedPorts(component) // Deleting variable assignments for unused ports
+//		
+//		// Connect only after "xSts.mergedTransition.action = mergedAction" / "xSts.changeTransitions"
+//		logger.info( "Connecting events through channels in " + name)
+//		xSts.connectEventsThroughChannels(component) // Event (variable setting) connecting across channels
+//		
+//		logger.info( "Binding event to system port events in " + name)
+//		val oldInEventAction = xSts.inEventTransition.action
+//		val bindingAssignments = xSts.createEventAndParameterAssignmentsBoundToTheSameSystemPort(component)
+//		// Optimization: removing old NonDeterministicActions 
+//		bindingAssignments.removeNonDeterministicActionsReferencingAssignedVariables(oldInEventAction)
+//		
+//		val newInEventAction = createSequentialAction => [
+//			it.actions += oldInEventAction
+//			// Bind together ports connected to the same system port
+//			it.actions += bindingAssignments
+//		]
+//		
+//		xSts.inEventTransition = newInEventAction.wrap
+//		
+//		if (transformOrthogonalActions) {
+//			// After connectEventsThroughChannels
+//			logger.info( "Transforming orthogonal actions in XSTS " + name)
+//			xSts.mergedAction.transform(xSts)
+//			// Before optimize actions
+//		}
+//		
+//		if (optimize) {
+//			// Optimization: system in events (but not PERSISTENT parameters) can be reset after the merged transition
+//			// E.g., synchronous components do not reset system events
+//			xSts.resetInEventsAfterMergedAction(component)
+//		}
+//		
+//		// After in event optimization
+//		logger.info( "Adding internal event handlings in " + name)
+//		xSts.addInternalEventHandlingActions(component)
+		
+		return xSts
+	}
+	
+	def dispatch XSTS transform(AsynchronousCoordinationStatechartDefinition component, Package lowlevelPackage) {
+		logger.info( "Transforming Asynchronous Coordination Statechart " + component.name)
+		// TODO
+		return null
 	}
 	
 	// Utils

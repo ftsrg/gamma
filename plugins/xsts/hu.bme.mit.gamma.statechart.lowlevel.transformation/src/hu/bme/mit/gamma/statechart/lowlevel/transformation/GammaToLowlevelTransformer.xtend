@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.statechart.statechart.SynchronousCoordinationStatechartDefinition
 
 class GammaToLowlevelTransformer {
 	
@@ -51,6 +52,10 @@ class GammaToLowlevelTransformer {
 	}
 	
 	def hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition transform(StatechartDefinition statechart) {
+		return statechart.execute
+	}
+	
+	def hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition transform(SynchronousCoordinationStatechartDefinition statechart) {
 		return statechart.execute
 	}
 	

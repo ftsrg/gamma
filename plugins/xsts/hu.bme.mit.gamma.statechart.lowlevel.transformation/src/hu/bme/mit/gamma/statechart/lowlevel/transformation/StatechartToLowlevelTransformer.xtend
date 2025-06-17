@@ -50,6 +50,14 @@ import static com.google.common.base.Preconditions.checkState
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
+import hu.bme.mit.gamma.statechart.statechart.CoordinationStatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.SynchronousCoordinationStatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.CoordinationTransition
+import hu.bme.mit.gamma.statechart.statechart.AsynchronousCoordinationStatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.SequentialCoordinationReferenceExpression
+import hu.bme.mit.gamma.statechart.statechart.UnorderedCoordinationReferenceExpression
+import hu.bme.mit.gamma.expression.model.EnumerableTypeDefinition
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 
 class StatechartToLowlevelTransformer {
 	// Auxiliary objects
@@ -97,6 +105,14 @@ class StatechartToLowlevelTransformer {
 		mergeStateEliminator.execute
 		//
 		return statechart.transformComponent as hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
+	}
+	
+	def hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition execute(SynchronousCoordinationStatechartDefinition statechart) {
+		// Eliminating merge states
+		val mergeStateEliminator = new MergeStateEliminator(statechart)
+		mergeStateEliminator.execute
+		//
+		return statechart.transformCoordinationAutomaton as hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
 	}
 
 	protected def hu.bme.mit.gamma.statechart.lowlevel.model.Package transform(Package _package) {
@@ -459,6 +475,174 @@ class StatechartToLowlevelTransformer {
 	
 	def getTrace() {
 		return trace
+	}
+	
+	// Coordination automaton
+	
+	protected def dispatch Component transformCoordinationAutomaton(CoordinationStatechartDefinition statechart) {
+		if (trace.isMapped(statechart)) {
+			// It is already transformed
+			return trace.get(statechart)
+		}
+		val lowlevelStatechart = createStatechartDefinition => [
+			it.name = getName(statechart)
+			it.schedulingOrder = statechart.schedulingOrder.transform
+			it.guardEvaluation = statechart.guardEvaluation.transform
+			it.orthogonalRegionSchedulingOrder = statechart.orthogonalRegionSchedulingOrder.transform
+		]
+				if (!statechart.hasOrthogonalRegions) {
+			// If there are no orthogonal regions, then the guard evaluation policy is irrelevant;
+			// on the fly is the faster option, though
+			lowlevelStatechart.guardEvaluation =
+				hu.bme.mit.gamma.statechart.lowlevel.model.GuardEvaluation.ON_THE_FLY
+		}
+		if (statechart.hasAnnotation(RunUponExternalEventAnnotation)) {
+			lowlevelStatechart.addRunUponExternalEventAnnotation
+		}
+		if (statechart.hasAnnotation(RunUponExternalEventOrInternalTimeoutAnnotation)) {
+			lowlevelStatechart.addRunUponExternalEventOrInternalTimeoutAnnotation
+		}
+		trace.put(statechart, lowlevelStatechart) // Saving in trace
+		
+		// create scheduled control variable for each subcomponent
+		val scheduledComponentEnum = createEnumerationTypeDefinition
+		
+		// create default value, when no component is scheduled
+		val noComponentLiteral = createEnumerationLiteralDefinition
+		noComponentLiteral.name = "__nothing__"
+		scheduledComponentEnum.literals += noComponentLiteral
+		
+		// TODO is differentiation between SynchronousCoordinationStatechartDefinition and AsynchronousCoordinationStatechartDefinition necessary?
+		if (statechart.synchronous) {
+			for (subcomponent : (statechart as SynchronousCoordinationStatechartDefinition).components) {
+				val componentLiteral = createEnumerationLiteralDefinition
+				componentLiteral.name = subcomponent.name
+				scheduledComponentEnum.literals += componentLiteral
+			}
+		} else if (statechart.asynchronous) {
+			for (subcomponent : (statechart as AsynchronousCoordinationStatechartDefinition).components) {
+				val componentLiteral = createEnumerationLiteralDefinition
+				componentLiteral.name = subcomponent.name
+				scheduledComponentEnum.literals += componentLiteral
+			}
+		} else {
+			throw new IllegalArgumentException("CoordinationStateChart: " + statechart.name + " is neither synchronous nor asynchronous!")
+		}
+		val schedulableComponentsTypeDeclaration = scheduledComponentEnum.createTypeDeclaration("schedulableComponents")
+		statechart.typeDeclarations += schedulableComponentsTypeDeclaration
+		
+		val schedulableComponentsTypeReference = createTypeReference(schedulableComponentsTypeDeclaration)
+		
+		val scheduledCtrlVar = createVariableDeclaration(schedulableComponentsTypeReference, "scheduledComponent")
+		statechart.variableDeclarations += scheduledCtrlVar
+		
+		
+		// Constants
+		val gammaPackage = statechart.containingPackage
+		for (constantDeclaration : gammaPackage.selfAndImports // During code generation, imported constants can be referenced
+				.map[it.constantDeclarations].flatten) {
+			lowlevelStatechart.variableDeclarations += constantDeclaration.transform
+		}
+		// No parameter declarations mapping
+		for (parameterDeclaration : statechart.parameterDeclarations) {
+			val lowlevelParameterDeclaration = parameterDeclaration.transformComponentParameter
+			lowlevelStatechart.variableDeclarations += lowlevelParameterDeclaration
+			lowlevelStatechart.parameterDeclarations += lowlevelParameterDeclaration
+		}
+		for (variableDeclaration : statechart.variableDeclarations) {
+			lowlevelStatechart.variableDeclarations += variableDeclaration.transform
+		}
+		for (timeoutDeclaration : statechart.timeoutDeclarations) {
+			// Timeout declarations are transformed to integer variable declarations
+			val lowlevelTimeoutDeclaration = timeoutDeclaration.transform
+			lowlevelStatechart.variableDeclarations += lowlevelTimeoutDeclaration
+			lowlevelStatechart.timeoutDeclarations += lowlevelTimeoutDeclaration
+		}
+		for (port : statechart.ports) {
+			// Both in and out events are transformed to a boolean VarDecl with additional parameters
+			for (eventDeclaration : port.allEventDeclarations) {
+				val lowlevelEventDeclarations = eventDeclaration.transform(port)
+				lowlevelStatechart.eventDeclarations += lowlevelEventDeclarations
+				if (eventDeclaration.direction == EventDirection.INTERNAL) {
+					// Tracing
+					lowlevelStatechart.internalEventDeclarations += lowlevelEventDeclarations
+				}
+			}
+		}
+		for (region : statechart.regions) {
+			lowlevelStatechart.regions += region.transform
+		}
+		
+		
+		for (transition : statechart.coordinationTransitions) {
+			// Prioritizing transitions is done here
+			val lowlevelTransition = transition.transform(scheduledCtrlVar, scheduledComponentEnum)
+			lowlevelStatechart.transitions += lowlevelTransition
+		}
+		
+		
+		// Mapping port and interface invariants (now, not before, because we want to refer to e.g., state nodes and variables)
+		// First the interface invariants must be mapped to the ports realizing the interface
+		for (port : statechart.ports) {
+			val mappedInvariants = port.mapInterfaceInvariantsToPort
+			if (!mappedInvariants.empty) {
+				lowlevelStatechart.environmentalInvariants += mappedInvariants.map[it.transformSimpleExpression]
+			}
+			val invariants = port.invariants
+			if (!invariants.empty) {
+				lowlevelStatechart.environmentalInvariants += invariants.map[it.transformSimpleExpression]
+			}
+		}
+		
+		// Mapping statechart invariants
+		val statechartInvariants = statechart.invariants
+		if (!statechartInvariants.empty) {
+			lowlevelStatechart.invariants += statechartInvariants.map[it.transformSimpleExpression]
+		}
+		
+		return lowlevelStatechart
+	}
+	
+	protected def hu.bme.mit.gamma.statechart.lowlevel.model.Transition transform(
+		CoordinationTransition coordinationTransition, VariableDeclaration scheduledCtrlVar, 
+		EnumerationTypeDefinition scheduledComponentEnum
+	) {
+		// Trivial simple transitions
+		val gammaSource = coordinationTransition.sourceState
+		val gammaTarget = coordinationTransition.targetState
+		val lowlevelSource = if (gammaSource instanceof State) {
+			trace.get(gammaSource)
+		} else if (gammaSource instanceof PseudoState) {
+			trace.get(gammaSource)
+		}
+		val lowlevelTarget = if (gammaTarget instanceof State) {
+			trace.get(gammaTarget)
+		} else if (gammaTarget instanceof PseudoState) {
+			trace.get(gammaTarget)
+		}
+		val lowlevelTransition = createTransition => [
+			it.source = lowlevelSource
+			it.target = lowlevelTarget
+			it.priority = coordinationTransition.calculatePriority.intValue // Priority is handled later
+		]
+		trace.put(coordinationTransition, lowlevelTransition) // Saving in trace
+		// Important to trace the Gamma transition as the trigger transformer depends on it
+		lowlevelTransition.guard = coordinationTransition.transformTriggerAndGuard
+		val componentLiteral = createEnumerationLiteralDefinition
+
+		if (coordinationTransition.coordinatedComponent instanceof SequentialCoordinationReferenceExpression) {
+			componentLiteral.name = coordinationTransition.coordinatedComponent.instances.get(0).componentInstance.name		
+			coordinationTransition.effects += createAssignment(scheduledCtrlVar, createEnumerationLiteralExpression(scheduledComponentEnum.literals.get(0)))
+		} else if (coordinationTransition.coordinatedComponent instanceof UnorderedCoordinationReferenceExpression) {
+			componentLiteral.name = coordinationTransition.coordinatedComponent.instances.get(0).componentInstance.name
+			coordinationTransition.effects += createAssignment(scheduledCtrlVar, createEnumerationLiteralExpression(scheduledComponentEnum.literals.get(0)))
+		} else {
+			// transition without coordinated component
+		}
+
+		lowlevelTransition.action = coordinationTransition.effects.transformActions
+		
+		return lowlevelTransition
 	}
 	
 }
