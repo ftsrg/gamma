@@ -44,6 +44,8 @@ class Namings {
 	public static final String SINGLE_RUN_FUNCTION_IDENTIFIER = "run_cycle"
 	public static final String RUN_FUNCTION_IDENTIFIER = "run"
 	
+	public static final String NONDET_IDENTIFIER_PREFIX = "choice_"
+	
 	//
 	
 	public static final String DECLARATION_NAME_PREFIX = "_"
@@ -63,7 +65,7 @@ class Namings {
 	
 	def static customizeHavocField(HavocAction havoc) '''«havoc.lhs.declaration.customizeName»_«havoc.uniqueIndex»'''
 	
-	def static customizeChoice(NonDeterministicAction choice) '''choice_«choice.uniqueIndex»''' // Deterministic name - needed for the reuse of the 'r' record during semantic diff computation
+	def static customizeChoice(NonDeterministicAction choice) '''«NONDET_IDENTIFIER_PREFIX»«choice.uniqueIndex»''' // Deterministic name - needed for the reuse of the 'r' record during semantic diff computation
 	
 	def static customizeHoistedFunctionName(Action action) '''h_«action.randomizeName»'''
 	
@@ -75,7 +77,7 @@ class Namings {
 		if (object.eContainer === null) {
 			return object.randomizeName
 		}
-		val containers = object.getAllContainersOfType(EObject)
+		val containers = object.getSelfAndAllContainersOfType(EObject)
 		val index = containers.map[it.indexOrZero].join
 		return index
 	}

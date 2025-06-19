@@ -57,7 +57,7 @@ import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class SystemReducer {
 	// Singleton
-	public static final SystemReducer INSTANCE =  new SystemReducer
+	public static final SystemReducer INSTANCE = new SystemReducer
 	protected new() {}
 	// Auxiliary objects
 	protected final extension XstsOptimizer xStsOptimizer = XstsOptimizer.INSTANCE

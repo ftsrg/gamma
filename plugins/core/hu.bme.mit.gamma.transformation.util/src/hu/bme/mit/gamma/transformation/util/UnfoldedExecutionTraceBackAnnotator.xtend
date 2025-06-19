@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -65,10 +65,15 @@ class UnfoldedExecutionTraceBackAnnotator {
 	
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
+	
+	public static final String TRAP_STATE_ID = "_TrapState_"
+	public static final String TRAP_STATE_MESSAGE_BEGINNING = "Trap state entered in"
+	//
+	
 	new(ExecutionTrace trace, Component originalTopComponent) {
 		checkNotNull(originalTopComponent)
 		checkArgument(!originalTopComponent.statechart,
-			"The original component cannot be a statechart")
+				"The original component cannot be a statechart")
 		this.trace = trace
 		this.originalTopComponent = originalTopComponent
 	}
@@ -167,10 +172,11 @@ class UnfoldedExecutionTraceBackAnnotator {
 	// Asserts
 	
 	protected def dispatch Expression transformAssert(ComponentInstanceStateReferenceExpression assert) {
+		val newState = assert.state
+		val instance = assert.instance.lastInstance as SynchronousComponentInstance
+		val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
 		try {
-			val instance = assert.instance.lastInstance as SynchronousComponentInstance
-			val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
-				val originalState = originalInstance.getOriginalState(assert.state)
+			val originalState = originalInstance.getOriginalState(newState)
 			return compositeModelFactory.createComponentInstanceStateReferenceExpression => [
 				it.instance = originalInstance
 				it.state = originalState
@@ -179,6 +185,14 @@ class UnfoldedExecutionTraceBackAnnotator {
 		} catch (IllegalArgumentException e) {
 			val message = e.message.trim
 			if (message.startsWith("Not found state")) {
+				// Injected state for checking nondeterministic behavior
+				if (newState.name == TRAP_STATE_ID) {
+					val regionName = newState.parentRegion.name
+					val instanceName = originalInstance.componentInstanceChain.map[it.name].join(".")
+					
+					return '''«TRAP_STATE_MESSAGE_BEGINNING» region «regionName» of «instanceName»'''.createOpaqueExpression
+				}
+				
 				logger.warning(message)
 				val trueExpression = expressionModelFactory.createTrueExpression
 				dummyAsserts += trueExpression

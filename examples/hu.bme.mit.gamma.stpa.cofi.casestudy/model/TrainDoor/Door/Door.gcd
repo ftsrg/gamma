@@ -3,7 +3,7 @@ package traindoorcontrol
 import "Interface/Interface.gcd"
 
 @TransitionPriority = order-based
-statechart Environment [
+statechart Door [
 	port ControlActions : requires ControlActions
 	port FeedbackDoorState : provides FeedbackDoorState
 	port OpeningTimeout : requires Timeout { invariant OpeningTimeout.^timeout:: imply in-state(DoorStateRegion.Opening) }

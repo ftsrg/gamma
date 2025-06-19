@@ -3,7 +3,7 @@ package traindoorcontrol
 import "Interface/Interface.gcd"
 
 import "TrainDoorController/TrainDoorControllerAdapter.gcd"
-import "Environment/EnvironmentAdapter.gcd"
+import "Door/DoorAdapter.gcd"
 
 scheduled-async TrainDoor [
 	port FeedbackPresence : requires FeedbackPresence
@@ -15,17 +15,16 @@ scheduled-async TrainDoor [
 	port ClosingTimeout : requires Timeout
 ] {
 	component controller : TrainDoorControllerAdapter
-	component environment : EnvironmentAdapter
+	component door : DoorAdapter
 	
 	bind FeedbackPresence -> controller.FeedbackPresence
 	bind ExternalCommunication -> controller.ExternalCommunication
 	bind ControlActions -> controller.ControlActions
 	
 	bind OpenTimeout -> controller.OpenTimeout
-	bind OpeningTimeout -> environment.OpeningTimeout
-	bind ClosingTimeout -> environment.ClosingTimeout
+	bind OpeningTimeout -> door.OpeningTimeout
+	bind ClosingTimeout -> door.ClosingTimeout
 	
-	channel [ controller.ControlActions ] -o)- [ environment.ControlActions]
-	channel [ environment.FeedbackDoorState ] -o)- [ controller.FeedbackDoorState]
+	channel [ controller.ControlActions ] -o)- [ door.ControlActions]
+	channel [ door.FeedbackDoorState ] -o)- [ controller.FeedbackDoorState]
 }
-

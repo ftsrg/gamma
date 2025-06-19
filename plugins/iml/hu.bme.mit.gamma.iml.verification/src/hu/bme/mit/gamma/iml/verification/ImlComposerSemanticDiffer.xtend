@@ -27,7 +27,7 @@ class ImlComposerSemanticDiffer extends ImlSemanticDiffer {
 		val src = modelFile.loadString
 		val src2 = modelFile2.loadString
 		
-		val modelAligner = new SignatureAligner(src, src2)
+		val modelAligner = new SignatureAligner(src, src2, traceability)
 		val model = modelAligner.execute
 		
 		val diffParameters = src.extractTransFunctionParameters

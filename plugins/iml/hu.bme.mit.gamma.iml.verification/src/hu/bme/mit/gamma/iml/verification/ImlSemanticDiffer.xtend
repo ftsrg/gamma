@@ -24,12 +24,17 @@ import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.util.ScannerLogger
+import hu.bme.mit.gamma.xsts.iml.transformation.util.Namings
 import java.io.File
+import java.util.Collection
 import java.util.List
 import java.util.Map
 import java.util.Map.Entry
 import java.util.Scanner
 import java.util.logging.Logger
+
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 abstract class ImlSemanticDiffer {
 	//
@@ -91,6 +96,14 @@ abstract class ImlSemanticDiffer {
 		}
 	}
 	
+	protected def backAnnotateForRegionDecomposition(Map<String, String> diff, Object traceability) {
+		val trace = diff.mapValues[Map.entry(it, "")]
+				.backAnnotate(traceability)
+		trace.removeNewInvariants
+		
+		return trace
+	}
+	
 	protected def backAnnotate(Map<String, Entry<String, String>> diff, Object traceability) {
 		if (traceability !== null) {
 			val diffAdapter = new SemanticDiffAdapter
@@ -112,9 +125,11 @@ abstract class ImlSemanticDiffer {
 			val unfoldedComponent = trace.component
 			if (statechartEcoreUtil.existsOriginalComponent(unfoldedComponent)) {
 				val originalComponent = statechartEcoreUtil.loadAndReplaceToOriginalComponent(unfoldedComponent)
-				val backAnnotator = new UnfoldedExecutionTraceBackAnnotator(trace, originalComponent)
-				val orignalTrace = backAnnotator.execute
-				return orignalTrace
+				if (!originalComponent.statechart) {
+					val backAnnotator = new UnfoldedExecutionTraceBackAnnotator(trace, originalComponent)
+					val orignalTrace = backAnnotator.execute
+					return orignalTrace
+				}
 			}
 			//
 			
@@ -122,6 +137,22 @@ abstract class ImlSemanticDiffer {
 		}
 		
 		return null
+	}
+	
+	protected def removeNewInvariants(ExecutionTrace trace) {
+		val expressions = newArrayList
+		expressions += trace.steps.map[it.asserts].flatten
+		expressions.removeNewInvariants
+	}
+	
+	protected def removeNewInvariants(Iterable<? extends Expression> expressions) {
+		for (assertion : expressions) {
+			if (assertion instanceof OpaqueExpression) {
+				if (assertion.expression == SemanticDiffAdapter.V_INVARIANT) {
+					assertion.remove
+				}
+			}
+		}
 	}
 	
 	enum ParseRegionStates { CONSTRAINT, INVARIANT }
@@ -273,12 +304,50 @@ abstract class ImlSemanticDiffer {
 		//
 		protected final String src
 		protected final String src2
+		protected final Package gammaPackage
+		protected final boolean addFinalOptimizations // 'let r = { r with _port_event_In_component = false; ...'
+		//
+		protected final Collection<String> fieldIds = newHashSet
+		//
+		protected final String R = 'r'
+		protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 		//
 		
 		new(String src, String src2) {
+			this(src, src2, null)
+		}
+		
+		new(String src, String src2, Object gammaPackage) {
 			this.src = src
 			this.src2 = src2
+			this.gammaPackage = gammaPackage as Package
+			this.addFinalOptimizations = gammaPackage !== null
+			this.parseAllFieldIds
 		}
+		
+		//
+		
+		private def parseAllFieldIds() {
+			src.parseFieldIds
+			src2.parseFieldIds
+		}
+		
+		private def void parseFieldIds(String src) {
+			val S = "type nonrec t = {"
+			
+			val firstIndex = src.indexOf(S) + S.length
+			val lastIndex = src.indexOf("}", firstIndex)
+			
+			val completeFields = src.substring(firstIndex, lastIndex)
+			val fields = completeFields.split(";")
+					.map[it.removeWhitespaces]
+					.reject[it.nullOrEmpty]
+					.map[it.substring(0, it.indexOf(":"))]
+					
+			this.fieldIds += fields
+		}
+		
+		//
 		
 		def execute() '''
 			«mergeEnums.serializeModules»
@@ -307,7 +376,7 @@ abstract class ImlSemanticDiffer {
 			while (scanner.hasNextLine && (line = scanner.nextLine).startsWith(M)) {
 				val name = line.substring(M.length, line.indexOf('=')).trim
 				val literals =  line.substring(line.lastIndexOf('=') + 1, line.indexOf("end"))
-					.split('\\|').map[it.trim].reject[it.nullOrEmpty].toList
+						.split('\\|').map[it.trim].reject[it.nullOrEmpty].toList
 				
 				modules += name -> literals
 			}
@@ -382,21 +451,102 @@ abstract class ImlSemanticDiffer {
 		'''
 		
 		protected def getTrans() {
-			src.behavior
+			val trans = src.behavior
+			
+			if (addFinalOptimizations) {
+				val optTrans = trans.addFinalOptimization
+				return optTrans
+			}
+			
+			return trans
 		}
 		
 		protected def getTrans2() {
 			val template = '''let «DIFF_FUNCTION_NAME» ('''
 			val newTemplate = '''let «NEW_DIFF_FUNCTION_NAME» ('''
 			
-			return src2.behavior
+			val trans2 = src2.behavior
 					.replace(template, newTemplate)
+					
+			if (addFinalOptimizations) {
+				val optTrans2 = trans2.addFinalOptimization
+				return optTrans2
+			}
+			
+			return trans2
 		}
 		
 		protected def getBehavior(String src) {
 			val start = src.indexOf("let h_") // Omitting "init"
 			val end = src.indexOf("let env (")
 			return src.substring(start, end)
+		}
+		
+		//
+		
+		protected def addFinalOptimization(String base) {
+			val extension expressionSerializer = hu.bme.mit.gamma.xsts.iml.transformation.serialization.ExpressionSerializer.INSTANCE
+			
+			val C = "(* Cross-optimization *)" + System.lineSeparator
+			val inputs = newLinkedHashSet
+			
+			val component = gammaPackage.firstComponent
+			val simplePorts = component.allBoundSimplePorts
+			for (port : simplePorts) {
+				val instance = port.containingComponentInstance
+				for (inputEvent : port.inputEvents) {
+					val xStsId = hu.bme.mit.gamma.xsts.transformation.util.Namings.customizeInputName(inputEvent, port, instance)
+					val imlId = Namings.customizeDeclarationName(xStsId)
+					
+					if (imlId.fieldId) {
+						val imlAssignment = imlId + " = false"
+						inputs += imlAssignment
+					}
+					
+					if (inputEvent.transient) {
+						for (parameter : inputEvent.parameterDeclarations) {
+							val xStsIds = hu.bme.mit.gamma.xsts.transformation.util.Namings.customizeInNames(parameter, port, instance)
+							val imlIds = xStsIds.map[
+									Namings.customizeDeclarationName(it)]
+							
+							for (_imlId : imlIds) {
+								if (_imlId.fieldId) {
+									val _imlAssignment = _imlId + " = " + parameter.defaultExpression.serialize
+									inputs += _imlAssignment
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			// Resetting choices
+			for (choice : fieldIds.filter[it.startsWith(Namings.NONDET_IDENTIFIER_PREFIX)]) {
+				inputs += choice + " = 0"
+			}
+			//
+			
+			if (inputs.empty) {
+				return base
+			}
+			
+			return base.replaceLast("r", '''
+				«C»
+				let r = { r with
+					«FOR input : inputs SEPARATOR ";"»
+						«input»
+					«ENDFOR»
+				} in
+				r
+			''')
+		}
+		
+		protected def isFieldId(String id) {
+			return fieldIds.contains(id)
+		}
+		
+		protected def removeWhitespaces(String string) {
+			return string.trim.replaceAll("\\s+", "")
 		}
 		
 	}
@@ -417,6 +567,13 @@ abstract class ImlSemanticDiffer {
 			return regions.findFirst[it.constraints == constraints]?.invariant
 		}
 		
+		override clone() {
+			val decomposition = new Decomposition
+			for (region : regions) {
+				decomposition.regions += region.clone as Region
+			}
+			return decomposition
+		}
 	}
 	
 	static class Region {
@@ -439,6 +596,10 @@ abstract class ImlSemanticDiffer {
 		
 		def void setInvariant(String invariant) {
 			this.invariant = invariant
+		}
+		
+		override clone() {
+			new Region(constraints, invariant)
 		}
 		
 		//
@@ -499,8 +660,9 @@ abstract class ImlSemanticDiffer {
 	
 	static class SemanticDiffParser {
 		//
-		Decomposition decomposition1
-		Decomposition decomposition2
+		protected final Decomposition decomposition1
+		protected final Decomposition decomposition2
+		protected final boolean computeDiff
 		//
 		protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 		//
@@ -509,26 +671,49 @@ abstract class ImlSemanticDiffer {
 			this(decomposition, decomposition)
 		}
 		
+		new(Decomposition decomposition, boolean computeDiff) {
+			this(decomposition, decomposition, computeDiff)
+		}
+		
 		new(Decomposition decomposition1, Decomposition decomposition2) {
+			this(decomposition1, decomposition2, true)
+		}
+		
+		new(Decomposition decomposition1, Decomposition decomposition2, boolean computeDiff) {
 			this.decomposition1 = decomposition1
 			this.decomposition2 = decomposition2
+			this.computeDiff = computeDiff
 		}
 		
 		def execute() {
 			if (decomposition1 === decomposition2) {
-				return executeSameRegions
+				return executeForCompositeRegions
 			}
-			return executeDifferentRegions
+			return executeForDifferentRegions
 		}
 		
-		def executeSameRegions() {
+		protected def executeForCompositeRegions() { // See ComposerSemanticDiffer
 			return decomposition1.extractDiff
 					.splitConstraints
 		}
 		
-		def executeDifferentRegions() {
+		protected def executeForDifferentRegions() { // See DoubleCallSemanticDiffer
 			return decomposition1.extractDiff(decomposition2)
 						.splitConstraints
+		}
+		
+		def executeForRegionDecomposition() { // See ImlRegionDecomposer
+			val diffs = newLinkedHashMap
+			
+			for (region : decomposition1.regions) {
+				val constraints = region.getConstraints
+				val invariants = region.invariant
+				
+				val invariantDiff = invariants.extractDiff(invariants) // Diffing with itself
+				diffs += constraints -> invariantDiff.key
+			}
+			
+			return diffs.splitConstraints
 		}
 		
 		//
@@ -583,8 +768,10 @@ abstract class ImlSemanticDiffer {
 			intersection += invariants1
 			intersection.retainAll(invariants2)
 			
-			invariants1 -= intersection
-			invariants2 -= intersection
+			if (computeDiff) {
+				invariants1 -= intersection
+				invariants2 -= intersection
+			}
 			
 			return Map.entry(invariants1.joinOnDelim, invariants2.joinOnDelim)
 		}
@@ -601,7 +788,7 @@ abstract class ImlSemanticDiffer {
 			return split
 		}
 		
-		protected def splitConstraints(Map<String, Entry<String, String>> diff) {
+		protected def <T> splitConstraints(Map<String, T> diff) {
 			val diffs = newLinkedHashMap
 			
 			for (constraint : diff.keySet) {

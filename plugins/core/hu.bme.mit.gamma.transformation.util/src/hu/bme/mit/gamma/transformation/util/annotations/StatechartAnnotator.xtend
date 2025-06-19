@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -87,6 +87,7 @@ class StatechartAnnotator {
 	
 	// Transition pair coverage (same as the normal transition coverage, the difference is that the values are reused in pairs)
 	protected boolean TRANSITION_PAIR_COVERAGE
+	protected boolean CONSIDER_SUPERSTATES_OUTGOING_TRANSITIONS = true
 	protected final Set<SynchronousComponentInstance> transitionPairCoverableComponents = newHashSet
 	protected final Set<Transition> coverableTransitionPairs = newHashSet
 	protected long transitionId = 1 // As 0 is the reset value
@@ -369,18 +370,24 @@ class StatechartAnnotator {
 		if (!TRANSITION_PAIR_COVERAGE) {
 			return
 		}
+		// Note: 'transitions' leaving entry nodes are considered ('needsAnnotation' method is not used)
 		val incomingTransitions = coverableTransitionPairs.filter[it.incomingTransition]
 		val outgoingTransitions = coverableTransitionPairs.filter[it.outgoingTransition]
 		val incomingTransitionAnnotations = newArrayList
 		val outgoingTransitionAnnotations = newArrayList
+		
 		// States with incoming and outgoing transitions
 		val states = incomingTransitions.map[it.targetState].filter(State).toSet
-		states.retainAll(outgoingTransitions.map[it.sourceState].toList)
+		val intersectionStates = CONSIDER_SUPERSTATES_OUTGOING_TRANSITIONS ?
+				outgoingTransitions.map[it.sourceState].filter(State).map[it.selfAndAllStates].flatten.toSet :
+				outgoingTransitions.map[it.sourceState].toSet
+		states.retainAll(intersectionStates)
+		
 		for (state : states) {
 			val variablePair = state.getOrCreateVariablePair
 			val firstVariable = variablePair.first
 			val secondVariable = variablePair.second
-			state.exitActions += secondVariable.createAssignment(firstVariable.createReferenceExpression)
+			state.exitActions += secondVariable.createAssignment(firstVariable)
 		}
 		for (incomingTransition : incomingTransitions) {
 			val incomingId =  incomingTransition.transitionId
@@ -404,8 +411,10 @@ class StatechartAnnotator {
 		for (incomingTransitionAnnotation : incomingTransitionAnnotations) {
 			val incomingTransition = incomingTransitionAnnotation.getTransition
 			val state = incomingTransition.targetState as State
+			val sourceStates = (CONSIDER_SUPERSTATES_OUTGOING_TRANSITIONS) ?
+					state.ancestorsAndSelf : #[state]
 			for (outgoingTransitionAnnotation : outgoingTransitionAnnotations
-					.filter[it.transition.sourceState === state]) {
+					.filter[sourceStates.contains(it.transition.sourceState)]) {
 				// Annotation objects are NOT cloned
 				transitionPairAnnotations += new TransitionPairAnnotation(
 					incomingTransitionAnnotation, outgoingTransitionAnnotation)

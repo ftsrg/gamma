@@ -40,6 +40,7 @@ import hu.bme.mit.gamma.genmodel.model.InterfaceCompilation;
 import hu.bme.mit.gamma.genmodel.model.ModelMutation;
 import hu.bme.mit.gamma.genmodel.model.MutationBasedTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.PhaseStatechartGeneration;
+import hu.bme.mit.gamma.genmodel.model.RegionDecomposition;
 import hu.bme.mit.gamma.genmodel.model.SafetyAssessment;
 import hu.bme.mit.gamma.genmodel.model.SemanticDiff;
 import hu.bme.mit.gamma.genmodel.model.Slicing;
@@ -65,6 +66,7 @@ import hu.bme.mit.gamma.ui.taskhandler.ModelMutationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.MutationBasedTestGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.OptimizerAndVerificationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.PhaseGenerationHandler;
+import hu.bme.mit.gamma.ui.taskhandler.RegionDecompositionHandler;
 import hu.bme.mit.gamma.ui.taskhandler.SemanticDiffHandler;
 import hu.bme.mit.gamma.ui.taskhandler.SlicingHandler;
 import hu.bme.mit.gamma.ui.taskhandler.StatechartCompilationHandler;
@@ -290,6 +292,12 @@ public class GammaApi {
 									handler.execute(semanticDiff);
 									logger.info("Semantic diff computation has been finished");
 								}
+								else if (task instanceof RegionDecomposition regionDecomp) {
+									logger.info("Region decomposition has been started");
+									RegionDecompositionHandler handler = new RegionDecompositionHandler(file);
+									handler.execute(regionDecomp);
+									logger.info("Region decomposition has been finished");
+								}
 							}
 							// Iteration end
 							hook.endIteration();
@@ -354,7 +362,7 @@ public class GammaApi {
 								it instanceof TraceReplayModelGeneration ||
 								it instanceof StatechartContractTestGeneration || it instanceof StatechartContractGeneration ||
 								it instanceof SafetyAssessment || it instanceof MutationBasedTestGeneration ||
-								it instanceof SemanticDiff
+								it instanceof RegionDecomposition
 						).collect(Collectors.toList());
 			default: 
 				throw new IllegalArgumentException("Not known iteration variable: " + iteration);

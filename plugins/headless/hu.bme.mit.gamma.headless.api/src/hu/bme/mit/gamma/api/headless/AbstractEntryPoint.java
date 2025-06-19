@@ -58,7 +58,6 @@ public abstract class AbstractEntryPoint extends HeadlessApplicationCommandHandl
 
 	public AbstractEntryPoint(IApplicationContext context, String[] appArgs, Level level) {
 		super(context, appArgs, level);
-		logger.setLevel(level);
 	}
 
 	@Override

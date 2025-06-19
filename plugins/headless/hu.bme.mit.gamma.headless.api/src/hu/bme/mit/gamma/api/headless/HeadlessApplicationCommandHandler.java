@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 
 import org.eclipse.equinox.app.IApplicationContext;
 
+import hu.bme.mit.gamma.util.DualConsoleHandler;
 import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
@@ -34,8 +35,15 @@ public abstract class HeadlessApplicationCommandHandler {
 		this.context = context;
 		this.appArgs = appArgs;
 		this.level = level;
+		setupLogger();
 	}
 
 	public abstract void execute() throws Exception;
+	
+	protected void setupLogger() {
+		logger.setLevel(level);
+		
+		DualConsoleHandler.register(logger);
+	}
 	
 }

@@ -16,6 +16,7 @@ import java.util.Collections
 import java.util.Comparator
 import java.util.Iterator
 import java.util.List
+import java.util.function.BiPredicate
 import java.util.function.Predicate
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -977,6 +978,56 @@ class GammaEcoreUtil {
 		}
 		
 		throw new IllegalArgumentException("Not found class: " + clazz)
+	}
+	
+	def <T extends EObject> T cloneAndMerge(T root, T root2,
+			BiPredicate<EObject, EObject> match,
+			Predicate<EObject> continueAndMergable) {
+		val root1 = root.clone
+		
+		root1.merge(root2, match, continueAndMergable, continueAndMergable)
+		
+		return root1
+	}
+	
+	def <T extends EObject> T cloneAndMerge(T root, T root2,
+			BiPredicate<EObject, EObject> match,
+			Predicate<EObject> continue, Predicate<EObject> mergable) {
+		val root1 = root.clone
+		
+		root1.merge(root2, match, continue, mergable)
+		
+		return root1
+	}
+	
+	def <T extends EObject> void merge(T root, T root2,
+			BiPredicate<EObject, EObject> match,
+			Predicate<EObject> continue, Predicate<EObject> mergable) {
+		val contents = root.eContents
+		val contents2 = root2.eContents
+		
+		val mergableContents = newArrayList
+		mergableContents += contents2
+		
+		for (content : contents) {
+			val mergableContent = contents2.findFirst[match.test(content, it)]
+			if (mergableContent !== null) { // Corresponding element found, no merging
+				mergableContents -= mergableContent
+				if (continue.test(content)) {
+					content.merge(mergableContent, match, continue, mergable) // Recursion
+				}
+			}
+		}
+		
+		// Merging the 'unmatched' content
+		for (mergableContent : mergableContents) {
+			if (mergable.test(mergableContent)) {
+				val containmentFeature = mergableContent.eContainmentFeature
+				val clone = mergableContent.clone
+				
+				root.add(containmentFeature, clone)
+			}
+		}
 	}
 	
 }

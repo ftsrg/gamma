@@ -20,7 +20,6 @@ public class WorkspaceGenerator extends HeadlessApplicationCommandHandler {
 
 	public WorkspaceGenerator(IApplicationContext context, String[] appArgs, Level level) {
 		super(context, appArgs, level);
-		logger.setLevel(level);
 	}
 
 	public void execute() throws Exception {

@@ -1425,6 +1425,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return queues;
 	}
 	
+	public static boolean isHighestPriorityQueue(MessageQueue queue) {
+		List<MessageQueue> higherPriorityQueues = getHigherPriorityQueues(queue);
+		return higherPriorityQueues.isEmpty();
+	}
+	
 	public static List<MessageQueue> getStoringMessageQueues(Clock clock) {
 		List<MessageQueue> queues = new ArrayList<MessageQueue>();
 		
@@ -2426,6 +2431,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			}
 		}
 		return states;
+	}
+	
+	public static Collection<State> getSelfAndAllStates(State state) {
+		Collection<State> allStates = new LinkedHashSet<State>();
+		allStates.add(state);
+		allStates.addAll(
+				getAllStates(state));
+		return allStates;
 	}
 	
 	public static Collection<State> getAllStates(Region region) {

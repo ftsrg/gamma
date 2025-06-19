@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -29,6 +29,8 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.Set
 import org.eclipse.emf.common.util.URI
+
+import static hu.bme.mit.gamma.xsts.transformation.util.QueueNamings.*
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.codegeneration.c.util.GeneratorUtil.*
@@ -283,9 +285,9 @@ class WrapperBuilder implements IStatechartCode {
 				void «event.event.getInputName(port)»(«name»* statechart, bool value«FOR param : event.event.parameterDeclarations», «variableDeclarationSerializer.serialize(param.type, false, param.name)» «param.name»«ENDFOR») {
 					«IF xsts.async && component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.derivedType instanceof AsynchronousAdapter»
 						«FOR queue : (component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.derivedType as AsynchronousAdapter).messageQueues»
-							if (statechart->«stName.toLowerCase».sizeMaster«queue.name.toFirstUpper»Of«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name» < «expressionEvaluator.evaluate(queue.capacity)») {
-								int32_t temp[«expressionEvaluator.evaluate(queue.capacity)»] = {«queue.getEventId(queue.storedEvents.filter[it.value == event.event].head)»«FOR index : 0 .. expressionEvaluator.evaluate(queue.capacity) - 1», statechart->«stName.toLowerCase».master_«queue.name»Of«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name»[«index»]«ENDFOR»};
-								memcpy(statechart->«stName.toLowerCase».master_«queue.name»Of«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name», temp, sizeof(statechart->«stName.toLowerCase».master_«queue.name»Of«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name»));
+							if (statechart->«stName.toLowerCase».«SIZE_MASTER_PREFIX»«queue.name.toFirstUpper»Of«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name» < «expressionEvaluator.evaluate(queue.capacity)») {
+								int32_t temp[«expressionEvaluator.evaluate(queue.capacity)»] = {«queue.getEventId(queue.storedEvents.filter[it.value == event.event].head)»«FOR index : 0 .. expressionEvaluator.evaluate(queue.capacity) - 1», statechart->«stName.toLowerCase».«MASTER_PREFIX»«queue.name»Of«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name»[«index»]«ENDFOR»};
+								memcpy(statechart->«stName.toLowerCase».«MASTER_PREFIX»«queue.name»Of«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name», temp, sizeof(statechart->«stName.toLowerCase».«MASTER_PREFIX»«queue.name»Of«component.getBindingByCompositeSystemPort(port.name).instancePortReference.instance.name»));
 							}
 						«ENDFOR»
 					«ENDIF»

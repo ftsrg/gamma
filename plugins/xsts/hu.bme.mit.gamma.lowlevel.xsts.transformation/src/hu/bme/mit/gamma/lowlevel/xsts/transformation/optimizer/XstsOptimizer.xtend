@@ -72,6 +72,7 @@ class XstsOptimizer {
 		//
 		
 		// Finally, removing unreferenced transient variables
+		xSts.removeUnusedSlaveQueueVariables
 		xSts.removeTransientVariables
 	}
 	
