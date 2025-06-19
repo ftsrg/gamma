@@ -1377,6 +1377,7 @@ class ComponentTransformer {
 		// In and Out actions - using sequential actions to make sure they are composite actions
 		// Methods reset... and delete... require this
 		val newCoordinationInEventAction = createSequentialAction => [ it.actions += coordinationXSts.inEventTransition.action ]
+		coordinationActualComponentMergedAction.actions.forEach[ newCoordinationInEventAction.actions += it.clone]
 		coordinationXSts.inEventTransition = newCoordinationInEventAction.wrap
 		val newCoordinationOutEventAction = createSequentialAction => [ it.actions += coordinationXSts.outEventTransition.action ]
 		coordinationXSts.outEventTransition = newCoordinationOutEventAction.wrap
@@ -1393,10 +1394,10 @@ class ComponentTransformer {
 		componentMergedActions += component -> coordinationActualComponentMergedAction.clone
 			
 		// In event
-		newCoordinationInEventAction.deleteEverythingExceptSystemEventsAndParameters(component)
+//		newCoordinationInEventAction.deleteEverythingExceptSystemEventsAndParameters(component)
 
 		// Out event
-		newCoordinationOutEventAction.deleteEverythingExceptSystemEventsAndParameters(component)
+//		newCoordinationOutEventAction.deleteEverythingExceptSystemEventsAndParameters(component)
 	
 	
 		
@@ -1474,19 +1475,20 @@ class ComponentTransformer {
 //		logger.info( "Connecting events through channels in " + name)
 //		xSts.connectEventsThroughChannels(component) // Event (variable setting) connecting across channels
 //		
-//		logger.info( "Binding event to system port events in " + name)
-//		val oldInEventAction = xSts.inEventTransition.action
-//		val bindingAssignments = xSts.createEventAndParameterAssignmentsBoundToTheSameSystemPort(component)
-//		// Optimization: removing old NonDeterministicActions 
-//		bindingAssignments.removeNonDeterministicActionsReferencingAssignedVariables(oldInEventAction)
-//		
-//		val newInEventAction = createSequentialAction => [
-//			it.actions += oldInEventAction
-//			// Bind together ports connected to the same system port
-//			it.actions += bindingAssignments
-//		]
-//		
-//		xSts.inEventTransition = newInEventAction.wrap
+		logger.info( "Binding event to system port events in " + name)
+		val oldInEventAction = xSts.inEventTransition.action
+		val bindingAssignments = xSts.createEventAndParameterAssignmentsBoundToTheSameSystemPort(component)
+		// Optimization: removing old NonDeterministicActions 
+		bindingAssignments.removeNonDeterministicActionsReferencingAssignedVariables(oldInEventAction)
+		
+		val newInEventAction = createSequentialAction => [
+			it.actions += newCoordinationInEventAction
+			it.actions += oldInEventAction
+			// Bind together ports connected to the same system port
+			it.actions += bindingAssignments
+		]
+		
+		xSts.inEventTransition = newInEventAction.wrap
 //		
 //		if (transformOrthogonalActions) {
 //			// After connectEventsThroughChannels
