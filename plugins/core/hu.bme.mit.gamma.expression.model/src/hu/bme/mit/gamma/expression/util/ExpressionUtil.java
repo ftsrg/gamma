@@ -567,6 +567,15 @@ public class ExpressionUtil {
 		return referred;
 	}
 	
+	public EnumerationLiteralDefinition getEnumerationLiteralDefinitionByName(EnumerationTypeDefinition typeDefinition, String name) {
+		for (EnumerationLiteralDefinition literal : typeDefinition.getLiterals()) {
+			if (literal.getName().equals(name)) {
+				return literal;
+			}
+		}
+		throw new IllegalArgumentException("No EnumerationLiteralDefinition found in: " + typeDefinition + " for name: " + name);
+	}
+	
 	// Extract parameters
 	
 	public List<ConstantDeclaration> extractParameters(ParametricElement parametricElement,
@@ -1269,6 +1278,12 @@ public class ExpressionUtil {
 		TypeReference typeReference = createTypeReference(typeDeclaration);
 		literalExpression.setTypeReference(typeReference);
 		return literalExpression;
+	}
+	
+	
+	public EnumerationLiteralExpression createEnumerationLiteralExpression(
+			EnumerationTypeDefinition typeDefinition, String name) {
+		return createEnumerationLiteralExpression(getEnumerationLiteralDefinitionByName(typeDefinition, name));
 	}
 	
 	public Expression createDefaultExpression(Collection<? extends Expression> expressions) {
