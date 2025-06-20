@@ -67,6 +67,8 @@ import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.QueueNamings.*
 import static extension java.lang.Math.*
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.model.EqualityExpression
 
 class ComponentTransformer {
 	// This gammaToLowlevelTransformer must be the same during this transformation cycle due to tracing
@@ -1393,7 +1395,9 @@ class ComponentTransformer {
 		
 		val coordinationInstance = this.statechartUtil.instantiateSynchronousComponent(component)
 		
-		val lowlevelStatechart = gammaToLowlevelTransformer.transform(component)
+		val transformedCoordinationStatechart = gammaToLowlevelTransformer.transform(component)
+		val lowlevelStatechart = transformedCoordinationStatechart.key
+		val scheduledCtrlVar = transformedCoordinationStatechart.value
 		lowlevelPackage.components += lowlevelStatechart
 		val lowlevelToXSTSTransformer = new LowlevelToXstsTransformer(
 				lowlevelPackage, optimize, transitionMerging)
@@ -1499,7 +1503,8 @@ class ComponentTransformer {
 			logger.info( "Checking subcomponent type " + subcomponentType + " in merged actions")
 			checkState(componentMergedActions.containsKey(subcomponentType))
 			val componentMergedAction = componentMergedActions.get(subcomponentType).clone
-			mergedAction.actions += componentMergedAction
+//			mergedAction.actions += componentMergedAction
+			mergedAction.actions += createIfAction(createComponentScheduledEqualityExpression(scheduledCtrlVar, subcomponent.name) , componentMergedAction)
 		}
 		xSts.changeTransitions(mergedAction.wrap)
 		
@@ -1689,6 +1694,11 @@ class ComponentTransformer {
 				regionType.name = regionType.customizeRegionTypeName(type)
 			}
 		}
+	}
+	
+	protected def EqualityExpression createComponentScheduledEqualityExpression(VariableDeclaration scheduledCtrlVar, String name) {
+		val enumTypeDefinition = scheduledCtrlVar.typeDefinition as EnumerationTypeDefinition
+		return createEqualityExpression(scheduledCtrlVar, createEnumerationLiteralExpression(enumTypeDefinition, name))
 	}
 	
 }
