@@ -67,9 +67,9 @@ public class Application implements IApplication {
 				handler.execute();
 			}
 		} catch (Throwable t) {
-			// Duplicated error logging?
-			logger.severe(t.getMessage());
-			t.printStackTrace();
+			// No duplicated error logging - logging must be done at a lower level
+//			logger.severe(t.getMessage());
+//			t.printStackTrace();
 			
 			exitCode = Integer.valueOf(1); // Not 0 - could be refined in the future
 		}

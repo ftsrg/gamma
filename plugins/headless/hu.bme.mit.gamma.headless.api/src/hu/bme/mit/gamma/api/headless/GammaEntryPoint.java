@@ -26,7 +26,7 @@ public class GammaEntryPoint extends AbstractEntryPoint {
 	}
 	
 	@Override
-	protected void run(String fileWorkspaceRelativePath) throws Exception {
+	protected void run(String fileWorkspaceRelativePath) throws Throwable {
 		GammaApi gammaApi = new GammaApi();
 		gammaApi.run(fileWorkspaceRelativePath, createResourceSetCreator());
 	}

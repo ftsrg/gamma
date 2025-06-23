@@ -38,7 +38,7 @@ public abstract class HeadlessApplicationCommandHandler {
 		setupLogger();
 	}
 
-	public abstract void execute() throws Exception;
+	public abstract void execute() throws Throwable;
 	
 	protected void setupLogger() {
 		logger.setLevel(level);

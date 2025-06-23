@@ -22,7 +22,7 @@ public class WorkspaceGenerator extends HeadlessApplicationCommandHandler {
 		super(context, appArgs, level);
 	}
 
-	public void execute() throws Exception {
+	public void execute() throws Throwable {
 		// The workspace will be generated at the destination specified after the -data argument
 		ResourcesPlugin.getWorkspace();
 		logger.info("Workspace generated successfully");
