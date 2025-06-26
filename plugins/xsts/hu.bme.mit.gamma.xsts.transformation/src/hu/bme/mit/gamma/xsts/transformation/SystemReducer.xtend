@@ -410,7 +410,9 @@ class SystemReducer {
 	def void deleteTrivialCodomainVariablesExceptOutEvents(XSTS xSts,
 			Collection<? extends VariableDeclaration> keepableVariables, // Unfolded Gamma variables
 			Collection<? extends State> keepableStates) {
-		val keepableXStsVariables = xSts.nonInternalOutputVariables
+		val keepableXStsVariables = newLinkedHashSet
+		keepableXStsVariables += xSts.nonInternalOutputVariables
+		keepableXStsVariables += xSts.clockVariables
 		
 		xSts.deleteTrivialCodomainVariables(keepableVariables, keepableStates, keepableXStsVariables)
 	}
