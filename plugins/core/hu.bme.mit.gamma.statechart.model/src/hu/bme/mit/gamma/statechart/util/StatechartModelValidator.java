@@ -2158,7 +2158,21 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkComponents(
+	public Collection<ValidationResultMessage> checkPortBindings(
+			AbstractAsynchronousCompositeComponent compositeComponent) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		List<PortBinding> portBindings = compositeComponent.getPortBindings();
+		if (portBindings.isEmpty()) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+				"These components will be scheduled only if they send messages during initialization or have clocks in asynchronous adapters",
+					new ReferenceInfo(CompositeModelPackage.Literals.ABSTRACT_ASYNCHRONOUS_COMPOSITE_COMPONENT__COMPONENTS)));
+		}
+		
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkComponentTypes(
 			ScheduledAsynchronousCompositeComponent scheduledComponent) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
