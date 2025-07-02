@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -43,6 +43,9 @@ import hu.bme.mit.gamma.expression.model.EquivalenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.FalseExpression;
+import hu.bme.mit.gamma.expression.model.FieldAssignment;
+import hu.bme.mit.gamma.expression.model.FieldDeclaration;
+import hu.bme.mit.gamma.expression.model.FieldReferenceExpression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.GreaterEqualExpression;
 import hu.bme.mit.gamma.expression.model.GreaterExpression;
@@ -60,6 +63,8 @@ import hu.bme.mit.gamma.expression.model.OrExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
+import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
+import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SubtractExpression;
 import hu.bme.mit.gamma.expression.model.TrueExpression;
@@ -146,6 +151,21 @@ public class ExpressionEvaluator {
 			EnumerationTypeDefinition type = (EnumerationTypeDefinition) enumLiteral.eContainer();
 			List<EnumerationLiteralDefinition> literals = type.getLiterals();
 			return literals.indexOf(enumLiteral);
+		}
+		if (expression instanceof RecordAccessExpression recordAccessExpression) {
+			Expression operand = recordAccessExpression.getOperand();
+			FieldReferenceExpression fieldReference = recordAccessExpression.getFieldReference();
+			FieldDeclaration field = fieldReference.getFieldDeclaration();
+			
+			RecordLiteralExpression recordLiteral = null; // Add support for constants
+			recordLiteral = (RecordLiteralExpression) operand;
+			FieldAssignment fieldAssignment = recordLiteral.getFieldAssignments().stream()
+				.filter(it -> it.getReference().getFieldDeclaration() == field)
+				.findFirst()
+				.get();
+			
+			Expression value = fieldAssignment.getValue();
+			return evaluateInteger(value);
 		}
 		if (expression instanceof ArrayAccessExpression arrayAccessExpression) {
 			Expression index = arrayAccessExpression.getIndex();
@@ -292,6 +312,21 @@ public class ExpressionEvaluator {
 			List<EnumerationLiteralDefinition> literals = type.getLiterals();
 			return (double) literals.indexOf(enumLiteral);
 		}
+		if (expression instanceof RecordAccessExpression recordAccessExpression) {
+			Expression operand = recordAccessExpression.getOperand();
+			FieldReferenceExpression fieldReference = recordAccessExpression.getFieldReference();
+			FieldDeclaration field = fieldReference.getFieldDeclaration();
+			
+			RecordLiteralExpression recordLiteral = null; // Add support for constants
+			recordLiteral = (RecordLiteralExpression) operand;
+			FieldAssignment fieldAssignment = recordLiteral.getFieldAssignments().stream()
+				.filter(it -> it.getReference().getFieldDeclaration() == field)
+				.findFirst()
+				.get();
+			
+			Expression value = fieldAssignment.getValue();
+			return evaluateDecimal(value);
+		}
 		if (expression instanceof ArrayAccessExpression arrayAccessExpression) {
 			Expression index = arrayAccessExpression.getIndex();
 			Expression operand = arrayAccessExpression.getOperand();
@@ -368,6 +403,21 @@ public class ExpressionEvaluator {
 		}
 		if (expression instanceof FalseExpression) {
 			return false;
+		}
+		if (expression instanceof RecordAccessExpression recordAccessExpression) {
+			Expression operand = recordAccessExpression.getOperand();
+			FieldReferenceExpression fieldReference = recordAccessExpression.getFieldReference();
+			FieldDeclaration field = fieldReference.getFieldDeclaration();
+			
+			RecordLiteralExpression recordLiteral = null; // Add support for constants
+			recordLiteral = (RecordLiteralExpression) operand;
+			FieldAssignment fieldAssignment = recordLiteral.getFieldAssignments().stream()
+				.filter(it -> it.getReference().getFieldDeclaration() == field)
+				.findFirst()
+				.get();
+			
+			Expression value = fieldAssignment.getValue();
+			return evaluateBoolean(value);
 		}
 		if (expression instanceof ArrayAccessExpression arrayAccessExpression) {
 			Expression index = arrayAccessExpression.getIndex();
