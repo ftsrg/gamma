@@ -55,6 +55,12 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	//
 	protected static final ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE;
 	//
+	
+	public static boolean isUnfolded(ExecutionTrace trace) {
+		Component component = trace.getComponent();
+		return StatechartModelDerivedFeatures.isUnfolded(component);
+	}
+	
 	public static List<ParameterDeclaration> getParameterDeclarations(ArgumentedElement element) {
 		if (element instanceof RaiseEventAction raiseEventAction) {
 			Event event = raiseEventAction.getEvent();

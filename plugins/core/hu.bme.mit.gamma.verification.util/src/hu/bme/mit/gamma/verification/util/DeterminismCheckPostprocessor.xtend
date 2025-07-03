@@ -74,38 +74,49 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 		
 		val nondeterministicStates = newArrayList
 		val nondeterministicTransitions = newArrayList
+		val trapStates = newArrayList // If any, in the case of unfolded traces
 		
-		val stringBeginning = UnfoldedExecutionTraceBackAnnotator.TRAP_STATE_MESSAGE_BEGINNING
-		val trapStateEntries = lastStateAsserts.filter(OpaqueExpression)
-				.filter[it.expression.startsWith(stringBeginning)]
-		for (trapStateEntry : trapStateEntries) {
-			// Parsing non-deterministic instance and region
-			val string = trapStateEntry.expression
-			val pattern = Pattern.compile('''«stringBeginning» region (.*) of (.*)''')
-			val matcher = pattern.matcher(string)
-			if (!matcher.find) {
-				throw new IllegalArgumentException("Not found pattern: " + string)
-			}
+		if (trace.unfolded) {
+			val trapStateId = UnfoldedExecutionTraceBackAnnotator.TRAP_STATE_ID
 			
-			val regionName = matcher.group(1)
-			val instanceName = matcher.group(2)
-			
-			// Selecting next to last control location (state)
-			val nondeterministicState = beforeLastStepStates.filter[
-					it.instance.componentInstanceChain.map[it.name].join(".") == instanceName &&
-						it.region.name == regionName]
-					.onlyElement
-			nondeterministicStates += nondeterministicState
-					
-			val state = nondeterministicState.state
-			println('''Found nondeterministic state «state.name» in region «regionName» of «instanceName»''')
+			trapStates += lastStep.instanceStateConfigurations
+					.filter[it.state.name == trapStateId]
+			val regions = trapStates.map[it.region]
+			nondeterministicStates += beforeLastStepStates
+					.filter[regions.contains(it.region)]
 		}
+		else {
+			// Original model
+			val stringBeginning = UnfoldedExecutionTraceBackAnnotator.TRAP_STATE_MESSAGE_BEGINNING
+			val trapStateEntries = lastStateAsserts.filter(OpaqueExpression)
+					.filter[it.expression.startsWith(stringBeginning)]
+			for (trapStateEntry : trapStateEntries) {
+				// Parsing non-deterministic instance and region
+				val string = trapStateEntry.expression
+				val pattern = Pattern.compile('''«stringBeginning» region (.*) of (.*)''')
+				val matcher = pattern.matcher(string)
+				if (!matcher.find) {
+					throw new IllegalArgumentException("Not found pattern: " + string)
+				}
+				
+				val regionName = matcher.group(1)
+				val instanceName = matcher.group(2)
+				
+				// Selecting next to last control location (state)
+				val nondeterministicState = beforeLastStepStates.filter[
+						it.instance.componentInstanceChain.map[it.name].join(".") == instanceName &&
+							it.region.name == regionName]
+						.onlyElement
+				nondeterministicStates += nondeterministicState
+			}
+		}
+		nondeterministicStates.forEach[
+				println('''Found nondeterministic state «state.name» in region «
+						region.name» of «instance.componentInstanceChain.map[it.name].join(".")»''')]
 		
-		
-		// Note: 'timing' (elapse) does not work
-		val acts = beforeLastStep.actions
 		// TODO add 'last' raise of persistent events
 		// TODO add time lapse
+		val acts = beforeLastStep.actions
 		val simpleRaiseEvents = acts.filter(RaiseEventAct)
 				.map[pe | pe.port.allBoundSimplePorts
 						.map[it.createRaiseEventAction(pe.event, pe.arguments.clone)]]
@@ -118,6 +129,7 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 			val state = nondeterministicState.state
 			
 			val transitions = state.outgoingTransitions
+					.reject[trapStates.map[it.state].contains(it.targetState)]
 			if (transitions.size <= 2) {
 				// No need to compute anything - two transitions are needed for nondeterministic behavior
 				nondeterministicTransitions += transitions
