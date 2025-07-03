@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.verification.util
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.OpaqueExpression
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
@@ -23,6 +24,8 @@ import hu.bme.mit.gamma.statechart.statechart.OnCycleTrigger
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
+import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
+import hu.bme.mit.gamma.statechart.util.TriggerSerializer
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.util.TraceUtil
@@ -39,6 +42,8 @@ import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerived
 class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 	//
 	protected final extension ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE
+	protected final extension TriggerSerializer triggerSerializer = TriggerSerializer.INSTANCE
+	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	//
@@ -59,7 +64,6 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 				.toList
 	}
 	
-	// TODO unfolded traces or original traces? Probably both
 	def execute(ExecutionTrace trace) {
 		val steps = trace.steps
 		val beforeLastStep = steps.beforeLastElement
@@ -71,7 +75,6 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 		val nondeterministicStates = newArrayList
 		val nondeterministicTransitions = newArrayList
 		
-		// TODO for unfolded traces, too
 		val stringBeginning = UnfoldedExecutionTraceBackAnnotator.TRAP_STATE_MESSAGE_BEGINNING
 		val trapStateEntries = lastStateAsserts.filter(OpaqueExpression)
 				.filter[it.expression.startsWith(stringBeginning)]
@@ -90,7 +93,7 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 			// Selecting next to last control location (state)
 			val nondeterministicState = beforeLastStepStates.filter[
 					it.instance.componentInstanceChain.map[it.name].join(".") == instanceName &&
-					it.region.name == regionName]
+						it.region.name == regionName]
 					.onlyElement
 			nondeterministicStates += nondeterministicState
 					
@@ -98,10 +101,14 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 			println('''Found nondeterministic state «state.name» in region «regionName» of «instanceName»''')
 		}
 		
+		
 		// Note: 'timing' (elapse) does not work
 		val acts = beforeLastStep.actions
+		// TODO add 'last' raise of persistent events
+		// TODO add time lapse
 		val simpleRaiseEvents = acts.filter(RaiseEventAct)
-				.map[pe | pe.port.allBoundSimplePorts.map[it.createRaiseEventAction(pe.event, pe.arguments)]]
+				.map[pe | pe.port.allBoundSimplePorts
+						.map[it.createRaiseEventAction(pe.event, pe.arguments.clone)]]
 				.flatten
 		for (nondeterministicState : nondeterministicStates) {
 			val step = nondeterministicState.containingStep
@@ -111,17 +118,33 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 			val state = nondeterministicState.state
 			
 			val transitions = state.outgoingTransitions
-			for (transition : transitions) {
-				if (transition.isEnabled(simpleRaiseEvents, variableValues)) {
-					nondeterministicTransitions += transition
+			if (transitions.size <= 2) {
+				// No need to compute anything - two transitions are needed for nondeterministic behavior
+				nondeterministicTransitions += transitions
+			}
+			else {
+				for (transition : transitions) {
+					if (transition.isEnabled(simpleRaiseEvents, variableValues)) {
+						nondeterministicTransitions += transition
+					}
 				}
 			}
 		}
 		
-		println(nondeterministicTransitions)
+		// Pretty printing
+		for (transition : nondeterministicTransitions) {
+			val trigger = transition.trigger
+			val guard = transition.guard
+			
+			println('''«transition.sourceState.name»  -> «transition.targetState.name» when «
+					trigger.serialize» [«guard.serialize»]''')
+		}
+		//
 		
 		return new Object
 	}
+	
+	//
 	
 	protected def isEnabled(Transition transition,
 			Iterable<? extends RaiseEventAction> acts,
@@ -129,35 +152,35 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 		val trigger = transition.trigger
 		val guard = transition.guard
 		
-		val isTriggerCovered = trigger.isCoveredBy(acts)
+		val isTriggered = trigger.isTriggeredBy(acts)
 		val isGuardTrue = guard.evaluate(acts, values)
 		
-		return isTriggerCovered && isGuardTrue
+		return isTriggered && isGuardTrue
 	}
 	
 	//
 	
-	protected def dispatch boolean isCoveredBy(EventTrigger trigger, Iterable<? extends RaiseEventAction> acts) {
+	protected def dispatch boolean isTriggeredBy(EventTrigger trigger, Iterable<? extends RaiseEventAction> acts) {
 		val eventReference = trigger.eventReference
 		// Note: NO timed transitions
 		val inputEvents = eventReference.inputEvents
 		return inputEvents.exists[pe | acts.exists[it.port == pe.key && it.event == pe.value]]
 	}
 	
-	protected def dispatch boolean isCoveredBy(AnyTrigger trigger, Iterable<? extends RaiseEventAction> acts) {
+	protected def dispatch boolean isTriggeredBy(AnyTrigger trigger, Iterable<? extends RaiseEventAction> acts) {
 		return !acts.empty
 	}
 	
-	protected def dispatch boolean isCoveredBy(OnCycleTrigger trigger, Iterable<? extends RaiseEventAction> acts) {
+	protected def dispatch boolean isTriggeredBy(OnCycleTrigger trigger, Iterable<? extends RaiseEventAction> acts) {
 		return true
 	}
 
-	protected def dispatch boolean isCoveredBy(BinaryTrigger trigger, Iterable<? extends RaiseEventAction> acts) {
+	protected def dispatch boolean isTriggeredBy(BinaryTrigger trigger, Iterable<? extends RaiseEventAction> acts) {
 		val lhs = trigger.leftOperand
 		val rhs = trigger.rightOperand
 		
-		val evalLhs = lhs.isCoveredBy(acts)
-		val evalRhs = rhs.isCoveredBy(acts)
+		val evalLhs = lhs.isTriggeredBy(acts)
+		val evalRhs = rhs.isTriggeredBy(acts)
 		
 		val type = trigger.type
 		
@@ -172,9 +195,9 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 		}
 	}
 	
-	protected def dispatch boolean isCoveredBy(UnaryTrigger trigger, Iterable<? extends RaiseEventAction> acts) {
+	protected def dispatch boolean isTriggeredBy(UnaryTrigger trigger, Iterable<? extends RaiseEventAction> acts) {
 		val operand = trigger.operand
-		val evalOperand = operand.isCoveredBy(acts)
+		val evalOperand = operand.isTriggeredBy(acts)
 		
 		val type = trigger.type
 		
@@ -192,18 +215,22 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 			Iterable<? extends Pair<ComponentInstanceVariableReferenceExpression, Expression>> values) {
 		val clone = expression.clone
 		
-		// Works for records too, as there is a record literal in the trace
+		// Note: works for records too, as there is a maximal record literal in the trace
 		val variableReferences = clone.getSelfAndAllContentsOfType(DirectReferenceExpression)
 		for (variableReference : variableReferences) {
-			val declaration = variableReference.accessedDeclaration
-			val value = values.filter[it.key.variableDeclaration == declaration]
+			val variable = variableReference.accessedDeclaration as VariableDeclaration
+			val variableValues = values
+					.filter[it.key.variableDeclaration == variable]
 					.map[it.value]
-					.onlyElement
-					.clone
+			val value = (!variableValues.empty) ?
+					variableValues.onlyElement :
+					(variable.unwritten) ?
+						variable.initialValue :
+						throw new IllegalArgumentException("Not known value") // Model reduction or slicing
+			
 			value.replace(variableReference)
 		}
 		
-		// Note: does not work for 'persistent' events
 		val eventReferences = clone.getSelfAndAllContentsOfType(EventParameterReferenceExpression)
 		for (eventReference : eventReferences) {
 			val port = eventReference.port

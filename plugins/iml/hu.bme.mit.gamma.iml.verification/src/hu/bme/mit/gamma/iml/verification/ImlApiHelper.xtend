@@ -101,6 +101,7 @@ class ImlApiHelper {
 	static def String getDecomposeCall(String model, String decomposeFunctionName, String assumingFunctionName) '''
 		import imandrax_api.lib as xtypes
 		from imandra.core import Client
+«««		from imandra.core import Client, xtypes
 		
 		client = Client()
 		

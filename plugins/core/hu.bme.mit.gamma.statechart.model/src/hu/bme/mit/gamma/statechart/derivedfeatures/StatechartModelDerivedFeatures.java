@@ -34,6 +34,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures;
+import hu.bme.mit.gamma.action.model.AbstractAssignmentStatement;
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.Declaration;
@@ -44,6 +45,7 @@ import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
+import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
@@ -206,6 +208,48 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			return statechart.getParameterDeclarations();
 		}
 		throw new IllegalArgumentException("Not supported element: " + element);
+	}
+	
+	public static boolean isRead(Declaration declaration) {
+		StatechartDefinition statechart = getContainingStatechart(declaration);
+		
+		List<ReferenceExpression> references = ecoreUtil
+				.getAllContentsOfType(statechart, ReferenceExpression.class);
+		
+		List<AbstractAssignmentStatement> assignments = ecoreUtil
+				.getAllContentsOfType(statechart, AbstractAssignmentStatement.class);
+		List<ReferenceExpression> lhs = assignments.stream()
+				.map(it -> it.getLhs())
+				.collect(Collectors.toList());
+		
+		references.removeAll(lhs);
+		
+		List<Declaration> declarations = references.stream()
+				.map(it -> statechartUtil.getAccessedDeclaration(it))
+				.collect(Collectors.toList());
+		
+		return declarations.contains(declaration);
+	}
+	
+	public static boolean isWritten(Declaration variable) {
+		StatechartDefinition statechart = getContainingStatechart(variable);
+		
+		List<AbstractAssignmentStatement> assignments = ecoreUtil
+				.getAllContentsOfType(statechart, AbstractAssignmentStatement.class);
+		List<Declaration> declarations = assignments.stream()
+				.map(it -> it.getLhs())
+				.map(it -> statechartUtil.getAccessedDeclaration(it))
+				.collect(Collectors.toList());
+		
+		return declarations.contains(variable);
+	}
+	
+	public static boolean isUnread(Declaration declaration) {
+		return !isRead(declaration);
+	}
+	
+	public static boolean isUnwritten(Declaration variable) {
+		return !isWritten(variable);
 	}
 
 	public static boolean isBroadcast(InterfaceRealization interfaceRealization) {
