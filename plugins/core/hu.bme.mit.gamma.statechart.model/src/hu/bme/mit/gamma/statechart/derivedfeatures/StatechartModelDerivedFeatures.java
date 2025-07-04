@@ -1938,6 +1938,60 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return simplePorts;
 	}
 	
+	public static List<ComponentInstanceReferenceExpression> getAllBoundInstances(Port port) {
+		List<ComponentInstanceReferenceExpression> instances = new ArrayList<ComponentInstanceReferenceExpression>();
+		
+		Component component = getContainingComponent(port);
+		if (component instanceof StatechartDefinition) {
+			// No op as no instance here
+		}
+		else if (component instanceof CompositeComponent composite) {
+			for (PortBinding portBinding : composite.getPortBindings()) {
+				if (portBinding.getCompositeSystemPort() == port) {
+					InstancePortReference instancePortReference = portBinding.getInstancePortReference();
+					ComponentInstance instance = instancePortReference.getInstance();
+					Port subport = instancePortReference.getPort();
+					
+					List<ComponentInstanceReferenceExpression> boundInstances = getAllBoundInstances(subport);
+					
+					// Dealing with AA instances
+					if (isAdapter(instance)) {
+						AsynchronousAdapter adapter = (AsynchronousAdapter) getDerivedType(instance);
+						SynchronousComponentInstance wrappedComponent = adapter.getWrappedComponent();
+						if (boundInstances.isEmpty()) {
+							ComponentInstanceReferenceExpression instanceReference =
+									statechartUtil.createInstanceReference(wrappedComponent);
+							boundInstances.add(instanceReference);
+						}
+						else {
+							List<ComponentInstanceReferenceExpression> prependedInstances =
+									statechartUtil.prepend(boundInstances, wrappedComponent);
+							boundInstances.clear();
+							boundInstances.addAll(prependedInstances);
+						}
+					}
+					
+					// Adding current instance
+					if (boundInstances.isEmpty()) {
+						ComponentInstanceReferenceExpression instanceReference =
+								statechartUtil.createInstanceReference(instance);
+						boundInstances.add(instanceReference);
+					}
+					else {
+						List<ComponentInstanceReferenceExpression> prependedInstances =
+								statechartUtil.prepend(boundInstances, instance);
+						boundInstances.clear();
+						boundInstances.addAll(prependedInstances);
+					}
+					
+					instances.addAll(boundInstances);
+				}
+			}
+		}
+		
+		return instances;
+	}
+	
 	public static Entry<List<ComponentInstance>, Port> getBoundSimplePort(Port port) {
 		Component component = getContainingComponent(port);
 		if (component instanceof StatechartDefinition) {
@@ -3675,6 +3729,17 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			children.add(0, instance); // See above: mutable list is returned
 			return children;
 		}
+	}
+	
+	public static String getName(ComponentInstanceReferenceExpression reference) {
+		return getName(reference, ".");
+	}
+	
+	public static String getName(ComponentInstanceReferenceExpression reference, String delimeter) {
+		return getComponentInstanceChain(reference).stream()
+			.map(it -> it.getName())
+			.reduce((a, b) -> a + delimeter + b)
+			.get();
 	}
 	
 	public static ComponentInstanceReferenceExpression getParent(ComponentInstanceReferenceExpression reference) {

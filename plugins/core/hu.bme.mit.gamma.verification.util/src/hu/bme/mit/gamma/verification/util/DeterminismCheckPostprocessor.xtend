@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 import hu.bme.mit.gamma.statechart.util.TriggerSerializer
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
+import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.transformation.util.UnfoldedExecutionTraceBackAnnotator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -76,7 +77,8 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 		val nondeterministicTransitions = newArrayList
 		val trapStates = newArrayList // If any, in the case of unfolded traces
 		
-		if (trace.unfolded) {
+		val unfolded = trace.unfolded
+		if (unfolded) {
 			val trapStateId = UnfoldedExecutionTraceBackAnnotator.TRAP_STATE_ID
 			
 			trapStates += lastStep.instanceStateConfigurations
@@ -104,8 +106,7 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 				
 				// Selecting next to last control location (state)
 				val nondeterministicState = beforeLastStepStates.filter[
-						it.instance.componentInstanceChain.map[it.name].join(".") == instanceName &&
-							it.region.name == regionName]
+						it.instance.name == instanceName && it.region.name == regionName]
 						.onlyElement
 				nondeterministicStates += nondeterministicState
 			}
@@ -113,20 +114,18 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 		
 		nondeterministicStates.forEach[
 				println('''Found nondeterministic state «state.name» in region «
-						region.name» of «instance.componentInstanceChain.map[it.name].join(".")»''')]
+						region.name» of «instance.name»''')]
 		
 		// TODO add time lapse
 		val persistentRaiseEvents = trace.persistentRaiseEvents
-		val simpleRaiseEvents = beforeLastStep.actions.filter(RaiseEventAct)
-				.map[pe | pe.port.allBoundSimplePorts
-						.map[it.createRaiseEventAction(pe.event, pe.arguments.clone)]]
-				.flatten
+		val lastRaiseEvents = lastStep.actions.filter(RaiseEventAct)
 		
 		for (nondeterministicState : nondeterministicStates) {
 			val step = nondeterministicState.containingStep
 			val variables = step.uniqueInstanceVariableStates
 			val variableValues = variables.map[it -> it.otherOperandIfContainedByEquality].toList
 			
+			val instance = nondeterministicState.instance
 			val state = nondeterministicState.state
 			
 			val transitions = state.outgoingTransitions
@@ -136,9 +135,25 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 				nondeterministicTransitions += transitions
 			}
 			else {
+				// TODO extract
+				val instancePersistentRaiseEvents = persistentRaiseEvents
+						.filter[unfolded || // No need to filter port bindings by name
+								it.port.allBoundInstances.map[it.name].contains(instance.name)]
+						.map[pe | pe.port.allBoundSimplePorts
+						.map[it.createRaiseEventAction(pe.event, pe.arguments.clone)]]
+						.flatten
+				val instanceLastRaiseEvents = lastRaiseEvents
+						.filter[unfolded ||
+								it.port.allBoundInstances.map[it.name].contains(instance.name)]
+						.map[pe | pe.port.allBoundSimplePorts
+						.map[it.createRaiseEventAction(pe.event, pe.arguments.clone)]]
+						.flatten
+				val instanceVariableValues = variableValues
+						.filter[it.key.instance.name == instance.name]
+				
 				for (transition : transitions) {
 					if (transition.isEnabled(
-							persistentRaiseEvents, simpleRaiseEvents, variableValues)) {
+							instancePersistentRaiseEvents, instanceLastRaiseEvents, instanceVariableValues)) {
 						nondeterministicTransitions += transition
 					}
 				}
@@ -189,6 +204,19 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 		}
 		
 		return persistentActs
+	}
+	
+	protected def getEnabledTimeouts(ExecutionTrace trace) {
+		val reverseSteps = trace.steps.reverseView
+		for (var i = 0; i < reverseSteps.size - 1; i++) {
+			val step = reverseSteps.get(i)
+			val previousStep = reverseSteps.get(i + 1)
+			
+			val timeElapses = step.actions.filter(TimeElapse)
+			val states = previousStep.instanceStateConfigurations
+			
+		}
+	
 	}
 	
 	//
