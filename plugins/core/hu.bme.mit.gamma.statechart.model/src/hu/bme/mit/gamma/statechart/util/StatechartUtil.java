@@ -1064,6 +1064,17 @@ public class StatechartUtil extends ActionUtil {
 		return expression;
 	}
 	
+	public RaiseEventAction createRaiseEventAction(Port port, Event event) {
+		List<ParameterDeclaration> parameterDeclarations = event.getParameterDeclarations();
+		List<Expression> arguments = new ArrayList<Expression>();
+		for (ParameterDeclaration parameterDeclaration : parameterDeclarations) {
+			Expression defaultExpression = StatechartModelDerivedFeatures
+					.getDefaultExpression(parameterDeclaration);
+			arguments.add(defaultExpression);
+		}
+		return createRaiseEventAction(port, event, arguments);
+	}
+	
 	public RaiseEventAction createRaiseEventAction(Port port, Event event, Expression argument) {
 		return createRaiseEventAction(port, event, List.of(argument));
 	}

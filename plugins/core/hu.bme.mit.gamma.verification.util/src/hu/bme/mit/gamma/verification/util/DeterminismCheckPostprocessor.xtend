@@ -110,17 +110,18 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 				nondeterministicStates += nondeterministicState
 			}
 		}
+		
 		nondeterministicStates.forEach[
 				println('''Found nondeterministic state «state.name» in region «
 						region.name» of «instance.componentInstanceChain.map[it.name].join(".")»''')]
 		
-		// TODO add 'last' raise of persistent events
 		// TODO add time lapse
-		val acts = beforeLastStep.actions
-		val simpleRaiseEvents = acts.filter(RaiseEventAct)
+		val persistentRaiseEvents = trace.persistentRaiseEvents
+		val simpleRaiseEvents = beforeLastStep.actions.filter(RaiseEventAct)
 				.map[pe | pe.port.allBoundSimplePorts
 						.map[it.createRaiseEventAction(pe.event, pe.arguments.clone)]]
 				.flatten
+		
 		for (nondeterministicState : nondeterministicStates) {
 			val step = nondeterministicState.containingStep
 			val variables = step.uniqueInstanceVariableStates
@@ -136,7 +137,8 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 			}
 			else {
 				for (transition : transitions) {
-					if (transition.isEnabled(simpleRaiseEvents, variableValues)) {
+					if (transition.isEnabled(
+							persistentRaiseEvents, simpleRaiseEvents, variableValues)) {
 						nondeterministicTransitions += transition
 					}
 				}
@@ -158,14 +160,48 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 	
 	//
 	
+	protected def getPersistentRaiseEvents(ExecutionTrace trace) {
+		val persistentActs = newLinkedHashSet
+		
+		val component = trace.component
+		val ports = component.allPorts
+		
+		for (port : ports) {
+			val persistentEvents = port.allEvents.filter[it.persistent]
+			for (event : persistentEvents) {
+				persistentActs += port.createRaiseEventAction(event)
+			}
+		}
+		
+		val steps = trace.steps
+		for (step : steps) {
+			val acts = step.actions.filter(RaiseEventAction)
+			for (act : acts) {
+				val port = act.port
+				val event = act.event
+				if (event.persistent) {
+					// Remove old value
+					persistentActs.removeIf[it.port == port && it.event == event]
+					// Adding the new value
+					persistentActs += act.clone
+				}
+			}
+		}
+		
+		return persistentActs
+	}
+	
+	//
+	
 	protected def isEnabled(Transition transition,
+			Iterable<? extends RaiseEventAction> persistentActs,
 			Iterable<? extends RaiseEventAction> acts,
 			Iterable<? extends Pair<ComponentInstanceVariableReferenceExpression, Expression>> values) {
 		val trigger = transition.trigger
 		val guard = transition.guard
 		
-		val isTriggered = trigger.isTriggeredBy(acts)
-		val isGuardTrue = guard.evaluate(acts, values)
+		val isTriggered = trigger.isTriggeredBy(acts) // Contains persistent raises, too
+		val isGuardTrue = guard.evaluate(persistentActs + acts, values) // Persistent values AND simple raises (order matters due to .lastElement call)
 		
 		return isTriggered && isGuardTrue
 	}
@@ -196,8 +232,7 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 		
 		val type = trigger.type
 		
-		return
-		switch (type) {
+		return switch (type) {
 			case AND: evalLhs && evalRhs
 			case EQUAL: evalLhs == evalRhs
 			case IMPLY: !evalLhs || evalRhs
@@ -213,8 +248,7 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 		
 		val type = trigger.type
 		
-		return
-		switch (type) {
+		return switch (type) {
 			case NOT: !evalOperand
 			default: throw new IllegalArgumentException("Not known trigger type: " + type)
 		}
