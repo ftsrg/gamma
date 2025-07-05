@@ -116,7 +116,7 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 				println('''Found nondeterministic state «state.name» in region «
 						region.name» of «instance.name»''')]
 		
-		// TODO add time lapse
+		// TODO add time lapse - will not always be sound due to self-loops
 		val persistentRaiseEvents = trace.persistentRaiseEvents
 		val lastRaiseEvents = lastStep.actions.filter(RaiseEventAct)
 		
@@ -135,28 +135,43 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 				nondeterministicTransitions += transitions
 			}
 			else {
-				// TODO extract
-				val instancePersistentRaiseEvents = persistentRaiseEvents
-						.filter[unfolded || // No need to filter port bindings by name
+				val instancePortFilter = [ Iterable<? extends RaiseEventAction> rea |
+						rea.filter[unfolded || // No need to filter port bindings by name
 								it.port.allBoundInstances.map[it.name].contains(instance.name)]
 						.map[pe | pe.port.allBoundSimplePorts
 						.map[it.createRaiseEventAction(pe.event, pe.arguments.clone)]]
-						.flatten
-				val instanceLastRaiseEvents = lastRaiseEvents
-						.filter[unfolded ||
-								it.port.allBoundInstances.map[it.name].contains(instance.name)]
-						.map[pe | pe.port.allBoundSimplePorts
-						.map[it.createRaiseEventAction(pe.event, pe.arguments.clone)]]
-						.flatten
+						.flatten ]
+				val instancePersistentRaiseEvents = instancePortFilter.apply(persistentRaiseEvents)
+				val instanceLastRaiseEvents = instancePortFilter.apply(lastRaiseEvents)
+				// TODO add parameter declarations (will be hard)
 				val instanceVariableValues = variableValues
 						.filter[it.key.instance.name == instance.name]
 				
+				// Partitioning the outgoing transitions of the non-deterministic state
+				val enabledTransitions = newLinkedHashSet
+				val disabledTransitions = newLinkedHashSet
+				val unevaluableTransitions = newLinkedHashSet
 				for (transition : transitions) {
-					if (transition.isEnabled(
-							instancePersistentRaiseEvents, instanceLastRaiseEvents, instanceVariableValues)) {
-						nondeterministicTransitions += transition
+					try {
+						if (transition.isEnabled(instancePersistentRaiseEvents,
+									instanceLastRaiseEvents, instanceVariableValues)) {
+							enabledTransitions += transition
+						}
+						else {
+							disabledTransitions += transition
+						}
+					} catch (IllegalArgumentException e) {
+						// Unevaluable trigger or guard
+						unevaluableTransitions += transition
 					}
 				}
+				
+				// Determining non-deterministic transitions
+				nondeterministicTransitions += enabledTransitions
+				if (enabledTransitions.size < 2 && enabledTransitions.size + unevaluableTransitions.size == 2) {
+					nondeterministicTransitions += unevaluableTransitions
+				}
+				// Note that 'nondeterministicTransitions.size' my still be ' < 2' here
 			}
 		}
 		
@@ -195,7 +210,7 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 				val port = act.port
 				val event = act.event
 				if (event.persistent) {
-					// Remove old value
+					// Removing the old value
 					persistentActs.removeIf[it.port == port && it.event == event]
 					// Adding the new value
 					persistentActs += act.clone
@@ -320,7 +335,7 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 			}
 		}
 		
-		val evaluation = clone.evaluateBoolean
+		val evaluation = clone.evaluateBoolean // Takes care of constant declarations
 		return evaluation
 	}
 	
