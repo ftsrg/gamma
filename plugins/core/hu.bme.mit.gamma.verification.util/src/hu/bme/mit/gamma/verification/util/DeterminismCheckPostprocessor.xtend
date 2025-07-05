@@ -242,25 +242,28 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 		val guard = transition.guard
 		
 		var Boolean isTriggered = null
-		var Boolean isGuardTrue = null
+		var Boolean isGuardEnabled = null
 		try {
 			isTriggered = trigger.isTriggeredBy(acts) // Contains persistent raises, too
+			if (!isTriggered) {
+				return false // Transition is not triggered; not worth evaluating the guard
+			}
 		} catch (IllegalArgumentException e) {}
 		try {
 			if (guard === null) {
-				isGuardTrue = true
+				isGuardEnabled = true
 			}
 			else {
-				isGuardTrue = guard.evaluate(persistentActs + acts, values) // Persistent values AND simple raises (order matters due to .lastElement call)
+				isGuardEnabled = guard.evaluate(persistentActs + acts, values) // Persistent values AND simple raises
+				if (!isGuardEnabled) {
+					return false
+				}
 			}
 		} catch (IllegalArgumentException e) {}
 		
-		// Analyzing the result: transition is enabled iff 'trigger is raised' && 'guard is true'
-		if (Boolean.TRUE.equals(isTriggered) && Boolean.TRUE.equals(isGuardTrue)) {
+		// Analyzing the result: transition is enabled iff 'trigger is raised' && 'guard is true' (both evaluable)
+		if (Boolean.TRUE.equals(isTriggered) && Boolean.TRUE.equals(isGuardEnabled)) {
 			return true
-		}
-		if (Boolean.FALSE.equals(isTriggered) || Boolean.FALSE.equals(isGuardTrue)) {
-			return false // Either the trigger or the guard is definitely false
 		}
 		
 		throw new IllegalArgumentException("Unevaluable trigger or guard: " + transition)
@@ -335,7 +338,7 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 					variableValues.onlyElement :
 					(variable.unwritten) ?
 						variable.initialValue :
-						throw new IllegalArgumentException("Not known value") // Model reduction or slicing
+						throw new IllegalArgumentException("Not known value") // Due to model reduction or slicing
 			
 			value.replace(variableReference)
 		}
@@ -355,7 +358,7 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 			}
 		}
 		
-		val evaluation = clone.evaluateBoolean // Takes care of constant declarations
+		val evaluation = clone.evaluateBoolean // Takes care of constant declarations, too
 		return evaluation
 	}
 	
