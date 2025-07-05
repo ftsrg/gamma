@@ -149,16 +149,12 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 				
 				// Partitioning the outgoing transitions of the non-deterministic state
 				val enabledTransitions = newLinkedHashSet
-				val disabledTransitions = newLinkedHashSet
 				val unevaluableTransitions = newLinkedHashSet
 				for (transition : transitions) {
 					try {
 						if (transition.isEnabled(instancePersistentRaiseEvents,
 									instanceLastRaiseEvents, instanceVariableValues)) {
 							enabledTransitions += transition
-						}
-						else {
-							disabledTransitions += transition
 						}
 					} catch (IllegalArgumentException e) {
 						// Unevaluable trigger or guard
