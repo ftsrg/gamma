@@ -20,8 +20,10 @@ import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
+import hu.bme.mit.gamma.statechart.statechart.ClockTickReference
 import hu.bme.mit.gamma.statechart.statechart.OnCycleTrigger
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
+import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
@@ -239,16 +241,38 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 		val trigger = transition.trigger
 		val guard = transition.guard
 		
-		val isTriggered = trigger.isTriggeredBy(acts) // Contains persistent raises, too
-		val isGuardTrue = guard.evaluate(persistentActs + acts, values) // Persistent values AND simple raises (order matters due to .lastElement call)
+		var Boolean isTriggered = null
+		var Boolean isGuardTrue = null
+		try {
+			isTriggered = trigger.isTriggeredBy(acts) // Contains persistent raises, too
+		} catch (IllegalArgumentException e) {}
+		try {
+			if (guard === null) {
+				isGuardTrue = true
+			}
+			else {
+				isGuardTrue = guard.evaluate(persistentActs + acts, values) // Persistent values AND simple raises (order matters due to .lastElement call)
+			}
+		} catch (IllegalArgumentException e) {}
 		
-		return isTriggered && isGuardTrue
+		// Analyzing the result: transition is enabled iff 'trigger is raised' && 'guard is true'
+		if (Boolean.TRUE.equals(isTriggered) && Boolean.TRUE.equals(isGuardTrue)) {
+			return true
+		}
+		if (Boolean.FALSE.equals(isTriggered) || Boolean.FALSE.equals(isGuardTrue)) {
+			return false // Either the trigger or the guard is definitely false
+		}
+		
+		throw new IllegalArgumentException("Unevaluable trigger or guard: " + transition)
 	}
 	
 	//
 	
 	protected def dispatch boolean isTriggeredBy(EventTrigger trigger, Iterable<? extends RaiseEventAction> acts) {
 		val eventReference = trigger.eventReference
+		if (eventReference instanceof ClockTickReference || eventReference instanceof TimeoutEventReference) {
+			throw new IllegalArgumentException("Unsupported time-related trigger: " + eventReference)
+		}
 		// Note: NO timed transitions
 		val inputEvents = eventReference.inputEvents
 		return inputEvents.exists[pe | acts.exists[it.port == pe.key && it.event == pe.value]]
