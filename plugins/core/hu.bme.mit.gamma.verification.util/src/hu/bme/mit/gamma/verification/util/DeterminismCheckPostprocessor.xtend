@@ -33,7 +33,6 @@ import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.transformation.util.UnfoldedExecutionTraceBackAnnotator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
 import java.util.Collection
 import java.util.regex.Pattern
 
@@ -48,25 +47,8 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	//
-	override execute(Collection<? extends Result> results) {
-		return results.map[it.execute]
-				.toList
-	}
 	
-	def execute(Result result) {
-		val trace = result.trace
-		if (trace !== null) {
-			return trace.execute
-		}
-		return null
-	}
-	
-	def Collection<? extends Collection<Transition>> execute(Iterable<? extends ExecutionTrace> traces) {
-		return traces.map[it.execute]
-				.toList
-	}
-	
-	def Collection<Transition> execute(ExecutionTrace trace) {
+	override Collection<Transition> execute(ExecutionTrace trace) {
 		val steps = trace.steps
 		val beforeLastStep = steps.beforeLastElement
 		val lastStep = steps.lastElement

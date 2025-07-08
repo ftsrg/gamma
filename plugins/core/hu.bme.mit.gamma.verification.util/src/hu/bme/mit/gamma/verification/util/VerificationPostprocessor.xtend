@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.verification.util
 
+import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
 import java.util.Collection
@@ -19,6 +20,24 @@ abstract class VerificationPostprocessor {
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	//
 	
-	def Object execute(Collection<? extends Result> results)
+	def Collection<? extends Object> execute(Collection<? extends Result> results) {
+		return results.map[it.execute]
+				.toList
+	}
+	
+	def Object execute(Result result) {
+		val trace = result.trace
+		if (trace !== null) {
+			return trace.execute
+		}
+		return null
+	}
+	
+	def Collection<? extends Object> execute(Iterable<? extends ExecutionTrace> traces) {
+		return traces.map[it.execute]
+				.toList
+	}
+	
+	def Object execute(ExecutionTrace trace)
 	
 }
