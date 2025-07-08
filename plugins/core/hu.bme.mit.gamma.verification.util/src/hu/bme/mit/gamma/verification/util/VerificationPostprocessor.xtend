@@ -10,13 +10,21 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.verification.util
 
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
+import hu.bme.mit.gamma.statechart.util.ElementSerializer
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
+import hu.bme.mit.gamma.trace.util.TraceUtil
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
 import java.util.Collection
 
 abstract class VerificationPostprocessor {
 	//
+	protected final extension ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE
+	protected final extension ElementSerializer elementSerializer = ElementSerializer.INSTANCE
+	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	//
 	

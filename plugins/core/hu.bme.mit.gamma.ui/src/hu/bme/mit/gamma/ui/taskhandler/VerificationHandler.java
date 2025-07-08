@@ -116,7 +116,6 @@ public class VerificationHandler extends TaskHandler {
 	
 	protected final List<ExecutionTrace> traces = new ArrayList<ExecutionTrace>();
 	protected final VerificationPostprocessor verificationPostprocessor;
-	protected final List<Object> postprocessingResults = new ArrayList<Object>();
 	
 	//
 	
@@ -134,6 +133,10 @@ public class VerificationHandler extends TaskHandler {
 	
 	public VerificationHandler(IFile file, boolean serializeTraces) {
 		this(file, serializeTraces, null);
+	}
+	
+	public VerificationHandler(IFile file, VerificationPostprocessor verificationPostprocessor) {
+		this(file, true, verificationPostprocessor);
 	}
 	
 	public VerificationHandler(IFile file, boolean serializeTraces,
@@ -363,8 +366,7 @@ public class VerificationHandler extends TaskHandler {
 		}
 		
 		if (verificationPostprocessor != null) {
-			var result = verificationPostprocessor.execute(retrievedTraces);
-			postprocessingResults.addAll(result);
+			verificationPostprocessor.execute(retrievedTraces);
 		}
 	}
 	
@@ -587,8 +589,8 @@ public class VerificationHandler extends TaskHandler {
 		return traces;
 	}
 	
-	public List<Object> getPostprocessingResults() {
-		return postprocessingResults;
+	public VerificationPostprocessor getVerificationPostprocessor() {
+		return verificationPostprocessor;
 	}
 	
 	public void optimizeTraces() {

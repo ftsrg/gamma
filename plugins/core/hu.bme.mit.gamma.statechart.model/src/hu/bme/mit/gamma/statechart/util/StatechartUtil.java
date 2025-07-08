@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
@@ -1098,6 +1099,11 @@ public class StatechartUtil extends ActionUtil {
 		reference.setRegion(StatechartModelDerivedFeatures.getParentRegion(state));
 		reference.setState(state);
 		return reference;
+	}
+	
+	public Entry<ComponentInstanceReferenceExpression, Transition> createTransitionReference(
+			ComponentInstanceReferenceExpression instance, Transition transition) {
+		return Map.entry(instance, transition);
 	}
 	
 	public ComponentInstanceVariableReferenceExpression createVariableReference(ComponentInstanceReferenceExpression instance,

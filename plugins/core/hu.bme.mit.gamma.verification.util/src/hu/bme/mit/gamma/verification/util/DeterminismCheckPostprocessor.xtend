@@ -14,7 +14,7 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
@@ -26,14 +26,12 @@ import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
-import hu.bme.mit.gamma.statechart.util.ElementSerializer
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.TimeElapse
-import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.transformation.util.UnfoldedExecutionTraceBackAnnotator
-import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
+import java.util.Map.Entry
 import java.util.regex.Pattern
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
@@ -42,13 +40,11 @@ import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerived
 
 class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 	//
-	protected final extension ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE
-	protected final extension ElementSerializer elementSerializer = ElementSerializer.INSTANCE
-	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
-	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final Collection<Collection<? extends Entry<
+			ComponentInstanceReferenceExpression, Transition>>> nondeterministicTransitions = newArrayList
 	//
 	
-	override Collection<Transition> execute(ExecutionTrace trace) {
+	override execute(ExecutionTrace trace) {
 		val steps = trace.steps
 		val beforeLastStep = steps.beforeLastElement
 		val lastStep = steps.lastElement
@@ -115,7 +111,7 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 					.reject[trapStates.map[it.state].contains(it.targetState)]
 			if (transitions.size <= 2) {
 				// No need to compute anything - two transitions are needed for nondeterministic behavior
-				nondeterministicTransitions += transitions
+				nondeterministicTransitions += transitions.map[instance.createTransitionReference(it)]
 			}
 			else {
 				val instancePortFilter = [ Iterable<? extends RaiseEventAction> rea |
@@ -137,11 +133,11 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 					try {
 						if (transition.isEnabled(instancePersistentRaiseEvents,
 									instanceLastRaiseEvents, instanceVariableValues)) {
-							enabledTransitions += transition
+							enabledTransitions += instance.createTransitionReference(transition)
 						}
 					} catch (IllegalArgumentException e) {
 						// Unevaluable trigger or guard
-						unevaluableTransitions += transition
+						unevaluableTransitions += instance.createTransitionReference(transition)
 					}
 				}
 				
@@ -156,9 +152,11 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 		
 		// Pretty printing
 		for (transition : nondeterministicTransitions) {
-			println(elementSerializer.serialize(transition))
+			println(elementSerializer.serialize(transition.value))
 		}
 		//
+		
+		this.nondeterministicTransitions += nondeterministicTransitions
 		
 		return nondeterministicTransitions
 	}
@@ -338,5 +336,13 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 		val evaluation = clone.evaluateBoolean // Takes care of constant declarations, too
 		return evaluation
 	}
+	
+	//
+	
+	def getNondeterministicTransitions() {
+		return nondeterministicTransitions
+	}
+	
+	//
 	
 }

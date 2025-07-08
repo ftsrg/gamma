@@ -28,7 +28,8 @@ public class ElementSerializer {
 	//
 	
 	public String serialize(Transition transition) {
-		String stateNodes = "from " + transition.getSourceState().getName() + " to " + transition.getTargetState();
+		String stateNodes = "from " + transition.getSourceState().getName() + " to " +
+				transition.getTargetState().getName();
 		
 		Trigger trigger = transition.getTrigger();
 		String triggerString = "when " + triggerSerializer.serialize(trigger);

@@ -1323,7 +1323,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static List<Port> getAllPorts(Component component) {
 		if (component instanceof AsynchronousAdapter) {
 			return getAllPorts((AsynchronousAdapter) component);
-		}		
+		}
 		return component.getPorts();
 	}
 	
@@ -1903,7 +1903,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 					portBindings.add(portBinding);
 				}
 			}
-		}		
+		}
 		return portBindings;
 	}
 	
@@ -2777,7 +2777,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return hasDeepHistoryAbove(region) || 
 			region.getStateNodes().stream().anyMatch(it -> it instanceof ShallowHistoryState) || 
 			region.getStateNodes().stream().anyMatch(it -> it instanceof DeepHistoryState);
-	}	
+	}
 	
 	public static String getFullContainmentHierarchy(StateNode state) {
 		if (state == null) {
