@@ -26,8 +26,7 @@ import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
-import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
-import hu.bme.mit.gamma.statechart.util.TriggerSerializer
+import hu.bme.mit.gamma.statechart.util.ElementSerializer
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.TimeElapse
@@ -45,8 +44,7 @@ import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerived
 class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 	//
 	protected final extension ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE
-	protected final extension TriggerSerializer triggerSerializer = TriggerSerializer.INSTANCE
-	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	protected final extension ElementSerializer elementSerializer = ElementSerializer.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	//
@@ -60,14 +58,15 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 		if (trace !== null) {
 			return trace.execute
 		}
+		return null
 	}
 	
-	def execute(Iterable<? extends ExecutionTrace> traces) {
+	def Collection<? extends Collection<Transition>> execute(Iterable<? extends ExecutionTrace> traces) {
 		return traces.map[it.execute]
 				.toList
 	}
 	
-	def execute(ExecutionTrace trace) {
+	def Collection<Transition> execute(ExecutionTrace trace) {
 		val steps = trace.steps
 		val beforeLastStep = steps.beforeLastElement
 		val lastStep = steps.lastElement
@@ -175,15 +174,11 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 		
 		// Pretty printing
 		for (transition : nondeterministicTransitions) {
-			val trigger = transition.trigger
-			val guard = transition.guard
-			
-			println('''«transition.sourceState.name»  -> «transition.targetState.name» when «
-					trigger.serialize» [«guard.serialize»]''')
+			println(elementSerializer.serialize(transition))
 		}
 		//
 		
-		return new Object
+		return nondeterministicTransitions
 	}
 	
 	//

@@ -115,6 +115,7 @@ public class VerificationHandler extends TaskHandler {
 	//
 	
 	protected final List<ExecutionTrace> traces = new ArrayList<ExecutionTrace>();
+	protected final List<Object> postprocessingResults = new ArrayList<Object>();
 	
 	//
 	
@@ -358,7 +359,8 @@ public class VerificationHandler extends TaskHandler {
 		boolean needPostprocessing = false;
 		if (needPostprocessing) {
 			DeterminismCheckPostprocessor processor = new DeterminismCheckPostprocessor();
-			processor.execute(retrievedTraces);
+			var result = processor.execute(retrievedTraces);
+			postprocessingResults.addAll(result);
 		}
 	}
 	
@@ -579,6 +581,10 @@ public class VerificationHandler extends TaskHandler {
 	
 	public List<ExecutionTrace> getTraces() {
 		return traces;
+	}
+	
+	public List<Object> getPostprocessingResults() {
+		return postprocessingResults;
 	}
 	
 	public void optimizeTraces() {
