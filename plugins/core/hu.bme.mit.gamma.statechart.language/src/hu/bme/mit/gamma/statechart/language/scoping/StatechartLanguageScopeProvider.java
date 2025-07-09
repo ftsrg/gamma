@@ -180,8 +180,8 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			//
 			if (reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__EVENT) {
 				// If the branch above does not work
-				Collection<Event> inputEvents = new HashSet<Event>();
-				Collection<Event> allEvents = new HashSet<Event>();
+				Collection<Event> inputEvents = new ArrayList<Event>();
+				Collection<Event> allEvents = new ArrayList<Event>();
 				// Not only in events are returned as less-aware users tend to write out events on triggers
 				List<Port> ports = new ArrayList<Port>();
 				if (context instanceof PortEventReference portEventReference) {
