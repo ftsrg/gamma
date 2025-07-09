@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.statechart.statechart.ClockTickReference
 import hu.bme.mit.gamma.statechart.statechart.OnCycleTrigger
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
+import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
@@ -99,9 +100,9 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 				println('''Found nondeterministic state «state.name» in region «
 						region.name» of «instance.name»''')]
 		
-		// TODO add time lapse - will not always be sound due to self-loops
 		val persistentRaiseEvents = trace.persistentRaiseEvents
 		val lastRaiseEvents = lastStep.actions.filter(RaiseEventAct)
+		val enabledTimeouts = trace.enabledTimeouts // Note: not complete
 		
 		for (nondeterministicState : nondeterministicStates) {
 			val step = nondeterministicState.containingStep
@@ -126,6 +127,8 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 						.flatten ]
 				val instancePersistentRaiseEvents = instancePortFilter.apply(persistentRaiseEvents)
 				val instanceLastRaiseEvents = instancePortFilter.apply(lastRaiseEvents)
+				val instanceEnabledTimeouts = enabledTimeouts
+						.filter[it.key.name == instance.name]
 				// TODO add parameter declarations (will be hard)
 				val instanceVariableValues = variableValues
 						.filter[it.key.instance.name == instance.name]
@@ -136,7 +139,7 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 				for (transition : transitions) {
 					try {
 						if (transition.isEnabled(instancePersistentRaiseEvents,
-									instanceLastRaiseEvents, instanceVariableValues)) {
+									instanceLastRaiseEvents, instanceEnabledTimeouts, instanceVariableValues)) {
 							enabledTransitions += instance.createTransitionReference(transition)
 						}
 					} catch (IllegalArgumentException e) {
@@ -199,37 +202,56 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 	}
 	
 	protected def getEnabledTimeouts(ExecutionTrace trace) {
-		val enabledTimeouts = newLinkedHashSet
-		val setTimeouts = newLinkedHashSet
+		val enabledTimeouts = newHashSet
+		val setTimeouts = newHashMap
 		
 		var elapsedTime = 0
 		val reverseSteps = trace.steps.reverseView
-		for (var i = 0; i < reverseSteps.size - 1; i++) { // TODO not correct
+		for (var i = 0; i < reverseSteps.size - 1; i++) {
 			val step = reverseSteps.get(i)
 			val previousStep = reverseSteps.get(i + 1)
 			
 			val timeElapses = step.actions.filter(TimeElapse)
 			val states = previousStep.instanceStateConfigurations
 			
-			val timeLapse = timeElapses.map[it.elapsedTime.evaluateInteger]
+			elapsedTime = timeElapses.map[it.elapsedTime.evaluateInteger]
 					.fold(elapsedTime, [p1, p2 | p1 + p2])
-			elapsedTime = timeLapse
-			val elapsedTimeSpecification = timeLapse.createTimeSpecification(
+			val elapsedTimeSpecification = elapsedTime.createTimeSpecification(
 					trace.timeUnitAnnotation.timeUnit)
 			
 			for (instanceState : states) {
 				val instance = instanceState.instance
 				val state = instanceState.state
-				val timeoutSettings = state.entryActions.filter(SetTimeoutAction)
-				for (setTimeout : timeoutSettings) {
+				val setTimeoutActions = state.entryActions.filter(SetTimeoutAction)
+				for (setTimeout : setTimeoutActions) {
 					val timeout = setTimeout.timeoutDeclaration
 					val time = setTimeout.time
 					
 					val instanceTimeout = instance -> timeout
+					val instanceNameTimeout = instance.name -> timeout
 					
-					if (time.isLessThanOrEqualTo(elapsedTimeSpecification)) {
-						enabledTimeouts += instanceTimeout
+					if (!setTimeouts.containsKey(instanceNameTimeout) ||
+								setTimeouts.get(instanceNameTimeout) == state) {
+						if (i == 0 ||
+								state.ancestorsAndSelf.map[it.loopTransitions].flatten.empty) {
+							if (time.isLessThanOrEqualTo(elapsedTimeSpecification)) {
+								enabledTimeouts += instanceTimeout
+							}
+						}
+						
+						setTimeouts += instanceNameTimeout -> state
 					}
+				}
+				
+				// No support for set timeout actions on transitions and in state exit actions
+				val undhandledSetTimeoutActions = newHashSet
+				undhandledSetTimeoutActions += state.incomingTransitions.map[it.effects].flatten.filter(SetTimeoutAction)
+				undhandledSetTimeoutActions += state.exitActions.filter(SetTimeoutAction)
+				
+				val undhandledSetTimeouts = undhandledSetTimeoutActions.map[it.timeoutDeclaration]
+				for (undhandledSetTimeout : undhandledSetTimeouts) {
+					val instanceNameTimeout = instance.name -> undhandledSetTimeout
+					setTimeouts += instanceNameTimeout -> null
 				}
 			}
 		}
@@ -242,6 +264,7 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 	protected def isEnabled(Transition transition,
 			Iterable<? extends RaiseEventAction> persistentActs,
 			Iterable<? extends RaiseEventAction> acts,
+			Iterable<? extends Pair<ComponentInstanceReferenceExpression, TimeoutDeclaration>> timeouts,
 			Iterable<? extends Pair<ComponentInstanceVariableReferenceExpression, Expression>> values) {
 		val trigger = transition.trigger
 		val guard = transition.guard
@@ -249,7 +272,7 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 		var Boolean isTriggered = null
 		var Boolean isGuardEnabled = null
 		try {
-			isTriggered = trigger.isTriggeredBy(acts) // Contains persistent raises, too
+			isTriggered = trigger.isTriggeredBy(acts, timeouts) // Contains persistent raises, too
 			if (!isTriggered) {
 				return false // Transition is not triggered; not worth evaluating the guard
 			}
@@ -276,30 +299,43 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 	
 	//
 	
-	protected def dispatch boolean isTriggeredBy(EventTrigger trigger, Iterable<? extends RaiseEventAction> acts) {
+	protected def dispatch boolean isTriggeredBy(EventTrigger trigger,
+			Iterable<? extends RaiseEventAction> acts,
+			Iterable<? extends Pair<ComponentInstanceReferenceExpression, TimeoutDeclaration>> timeouts) {
 		val eventReference = trigger.eventReference
-		if (eventReference instanceof ClockTickReference || eventReference instanceof TimeoutEventReference) {
+		if (eventReference instanceof ClockTickReference) {
 			throw new IllegalArgumentException("Unsupported time-related trigger: " + eventReference)
 		}
-		// Note: NO timed transitions
+		// Note: support for timed transitions is not complete
+		if (eventReference instanceof TimeoutEventReference) {
+			val timeout = eventReference.timeout
+			return timeouts.contains(timeout)
+		}
+		
 		val inputEvents = eventReference.inputEvents
 		return inputEvents.exists[pe | acts.exists[it.port == pe.key && it.event == pe.value]]
 	}
 	
-	protected def dispatch boolean isTriggeredBy(AnyTrigger trigger, Iterable<? extends RaiseEventAction> acts) {
+	protected def dispatch boolean isTriggeredBy(AnyTrigger trigger,
+			Iterable<? extends RaiseEventAction> acts,
+			Iterable<? extends Pair<ComponentInstanceReferenceExpression, TimeoutDeclaration>> timeouts) {
 		return !acts.empty
 	}
 	
-	protected def dispatch boolean isTriggeredBy(OnCycleTrigger trigger, Iterable<? extends RaiseEventAction> acts) {
+	protected def dispatch boolean isTriggeredBy(OnCycleTrigger trigger,
+			Iterable<? extends RaiseEventAction> acts,
+			Iterable<? extends Pair<ComponentInstanceReferenceExpression, TimeoutDeclaration>> timeouts) {
 		return true
 	}
 
-	protected def dispatch boolean isTriggeredBy(BinaryTrigger trigger, Iterable<? extends RaiseEventAction> acts) {
+	protected def dispatch boolean isTriggeredBy(BinaryTrigger trigger,
+			Iterable<? extends RaiseEventAction> acts,
+			Iterable<? extends Pair<ComponentInstanceReferenceExpression, TimeoutDeclaration>> timeouts) {
 		val lhs = trigger.leftOperand
 		val rhs = trigger.rightOperand
 		
-		val evalLhs = lhs.isTriggeredBy(acts)
-		val evalRhs = rhs.isTriggeredBy(acts)
+		val evalLhs = lhs.isTriggeredBy(acts, timeouts)
+		val evalRhs = rhs.isTriggeredBy(acts, timeouts)
 		
 		val type = trigger.type
 		
@@ -313,9 +349,11 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 		}
 	}
 	
-	protected def dispatch boolean isTriggeredBy(UnaryTrigger trigger, Iterable<? extends RaiseEventAction> acts) {
+	protected def dispatch boolean isTriggeredBy(UnaryTrigger trigger,
+			Iterable<? extends RaiseEventAction> acts,
+			Iterable<? extends Pair<ComponentInstanceReferenceExpression, TimeoutDeclaration>> timeouts) {
 		val operand = trigger.operand
-		val evalOperand = operand.isTriggeredBy(acts)
+		val evalOperand = operand.isTriggeredBy(acts, timeouts)
 		
 		val type = trigger.type
 		
