@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.statechart.interface_.Trigger;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
+import hu.bme.mit.gamma.util.JavaUtil;
 
 public class ElementSerializer {
 	// Singleton
@@ -25,6 +26,7 @@ public class ElementSerializer {
 	protected final TriggerSerializer triggerSerializer = TriggerSerializer.INSTANCE;
 	protected final ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE;
 	protected final ActionSerializer actionSerializer = ActionSerializer.INSTANCE;
+	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	//
 	
 	public String serialize(Transition transition) {
@@ -35,7 +37,8 @@ public class ElementSerializer {
 		String triggerString = "when " + triggerSerializer.serialize(trigger);
 		
 		Expression guard = transition.getGuard();
-		String guardString = (guard == null) ? "" : expressionSerializer.serialize(guard);
+		String guardString = (guard == null) ? "" :  "[" + javaUtil.deparenthesize(
+				expressionSerializer.serialize(guard)) + "]";
 		
 		List<Action> effects = transition.getEffects();
 		String effectString = (effects.isEmpty()) ? "" : "/ " + effects.stream()

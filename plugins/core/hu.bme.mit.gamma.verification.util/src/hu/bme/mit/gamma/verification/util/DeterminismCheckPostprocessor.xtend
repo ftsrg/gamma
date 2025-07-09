@@ -200,24 +200,28 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 	
 	protected def getEnabledTimeouts(ExecutionTrace trace) {
 		val enabledTimeouts = newLinkedHashSet
-		val disabledTimeouts = newLinkedHashSet
+		val setTimeouts = newLinkedHashSet
 		
+		var elapsedTime = 0
 		val reverseSteps = trace.steps.reverseView
-		for (var i = 0; i < reverseSteps.size - 1; i++) {
+		for (var i = 0; i < reverseSteps.size - 1; i++) { // TODO not correct
 			val step = reverseSteps.get(i)
 			val previousStep = reverseSteps.get(i + 1)
 			
 			val timeElapses = step.actions.filter(TimeElapse)
 			val states = previousStep.instanceStateConfigurations
 			
-			val timeLapse = timeElapses.map[it.elapsedTime.evaluateInteger].fold(0, [p1, p2 | p1 + p2])
-			val elapsedTimeSpecification = timeLapse.createTimeSpecification(trace.timeUnitAnnotation.timeUnit)
+			val timeLapse = timeElapses.map[it.elapsedTime.evaluateInteger]
+					.fold(elapsedTime, [p1, p2 | p1 + p2])
+			elapsedTime = timeLapse
+			val elapsedTimeSpecification = timeLapse.createTimeSpecification(
+					trace.timeUnitAnnotation.timeUnit)
 			
 			for (instanceState : states) {
 				val instance = instanceState.instance
 				val state = instanceState.state
-				val setTimeouts = state.entryActions.filter(SetTimeoutAction)
-				for (setTimeout : setTimeouts) {
+				val timeoutSettings = state.entryActions.filter(SetTimeoutAction)
+				for (setTimeout : timeoutSettings) {
 					val timeout = setTimeout.timeoutDeclaration
 					val time = setTimeout.time
 					
@@ -225,9 +229,6 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 					
 					if (time.isLessThanOrEqualTo(elapsedTimeSpecification)) {
 						enabledTimeouts += instanceTimeout
-					}
-					else {
-						disabledTimeouts += instanceTimeout
 					}
 				}
 			}
