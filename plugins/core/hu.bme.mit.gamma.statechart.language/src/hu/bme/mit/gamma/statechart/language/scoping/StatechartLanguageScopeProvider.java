@@ -178,29 +178,33 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				}
 			}
 			//
-			if (context instanceof PortEventReference portEventReference && reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__EVENT) {
-				Port port = portEventReference.getPort();
-				Interface _interface = port.getInterfaceRealization().getInterface();
-				// Not only in events are returned as less-aware users tend to write out events on triggers
-				return Scopes.scopeFor(
-						StatechartModelDerivedFeatures.getAllEvents(_interface));
-			}
 			if (reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__EVENT) {
 				// If the branch above does not work
-				StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
-				Collection<Event> events = new HashSet<Event>();
-				statechart.getPorts()
-					.forEach(it -> events.addAll(StatechartModelDerivedFeatures.getAllEvents(it.getInterfaceRealization().getInterface())));
+				Collection<Event> inputEvents = new HashSet<Event>();
+				Collection<Event> allEvents = new HashSet<Event>();
 				// Not only in events are returned as less-aware users tend to write out events on triggers
-				return Scopes.scopeFor(events);
+				List<Port> ports = new ArrayList<Port>();
+				if (context instanceof PortEventReference portEventReference) {
+					ports.add(portEventReference.getPort());
+				}
+				else {
+					StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
+					ports.addAll(statechart.getPorts());
+				}
+				for (Port port : ports) {
+					inputEvents.addAll(StatechartModelDerivedFeatures.getInputEvents(port));
+					allEvents.addAll(StatechartModelDerivedFeatures.getAllEvents(port));
+				}
+				return Scopes.scopeFor(inputEvents,
+						Scopes.scopeFor(allEvents));
 			}
 			if (context instanceof RaiseEventAction raiseEventAction
 					&& reference == StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT) {
 				Port port = raiseEventAction.getPort();
-				Interface _interface = port.getInterfaceRealization().getInterface();
 				// Not only in events are returned as less-aware users tend to write in events on actions
 				return Scopes.scopeFor(
-						StatechartModelDerivedFeatures.getAllEvents(_interface));
+						StatechartModelDerivedFeatures.getOutputEvents(port),
+							Scopes.scopeFor(StatechartModelDerivedFeatures.getAllEvents(port)));
 			}
 			/* Without such scoping rules, the following exception is thrown:
 			 * Caused By: org.eclipse.xtext.conversion.ValueConverterException: ID 'Test.testIn.testInValue'
