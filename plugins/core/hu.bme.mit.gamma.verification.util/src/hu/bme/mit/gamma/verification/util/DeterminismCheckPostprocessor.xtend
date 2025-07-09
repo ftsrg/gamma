@@ -23,6 +23,7 @@ import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference
 import hu.bme.mit.gamma.statechart.statechart.OnCycleTrigger
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
+import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
@@ -31,6 +32,7 @@ import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.transformation.util.UnfoldedExecutionTraceBackAnnotator
 import java.util.Collection
+import java.util.List
 import java.util.Map.Entry
 import java.util.regex.Pattern
 
@@ -40,11 +42,13 @@ import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerived
 
 class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 	//
-	protected final Collection<Collection<? extends Entry<
+	protected final List<Collection<? extends Entry<
 			ComponentInstanceReferenceExpression, Transition>>> nondeterministicTransitions = newArrayList
 	//
 	
 	override execute(ExecutionTrace trace) {
+		trace.saveTrace
+		
 		val steps = trace.steps
 		val beforeLastStep = steps.beforeLastElement
 		val lastStep = steps.lastElement
@@ -195,6 +199,9 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 	}
 	
 	protected def getEnabledTimeouts(ExecutionTrace trace) {
+		val enabledTimeouts = newLinkedHashSet
+		val disabledTimeouts = newLinkedHashSet
+		
 		val reverseSteps = trace.steps.reverseView
 		for (var i = 0; i < reverseSteps.size - 1; i++) {
 			val step = reverseSteps.get(i)
@@ -203,8 +210,30 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 			val timeElapses = step.actions.filter(TimeElapse)
 			val states = previousStep.instanceStateConfigurations
 			
+			val timeLapse = timeElapses.map[it.elapsedTime.evaluateInteger].fold(0, [p1, p2 | p1 + p2])
+			val elapsedTimeSpecification = timeLapse.createTimeSpecification(trace.timeUnitAnnotation.timeUnit)
+			
+			for (instanceState : states) {
+				val instance = instanceState.instance
+				val state = instanceState.state
+				val setTimeouts = state.entryActions.filter(SetTimeoutAction)
+				for (setTimeout : setTimeouts) {
+					val timeout = setTimeout.timeoutDeclaration
+					val time = setTimeout.time
+					
+					val instanceTimeout = instance -> timeout
+					
+					if (time.isLessThanOrEqualTo(elapsedTimeSpecification)) {
+						enabledTimeouts += instanceTimeout
+					}
+					else {
+						disabledTimeouts += instanceTimeout
+					}
+				}
+			}
 		}
-	
+		
+		return enabledTimeouts
 	}
 	
 	//

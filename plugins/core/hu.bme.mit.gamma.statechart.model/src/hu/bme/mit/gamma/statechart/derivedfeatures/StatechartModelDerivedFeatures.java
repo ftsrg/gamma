@@ -3632,6 +3632,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 	}
 	
+	public static boolean isLessThanOrEqualTo(TimeSpecification lhs, TimeSpecification rhs) {
+		return statechartUtil.evaluateNanoseconds(lhs) <= statechartUtil.evaluateNanoseconds(rhs);
+	}
+	
 	public static Component getMonitoredComponent(StatechartDefinition adaptiveContract) {
 		List<ComponentAnnotation> annotations = adaptiveContract.getAnnotations();
 		for (ComponentAnnotation annotation: annotations) { 

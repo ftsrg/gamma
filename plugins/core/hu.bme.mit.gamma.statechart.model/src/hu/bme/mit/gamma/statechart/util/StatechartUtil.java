@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
@@ -916,6 +917,18 @@ public class StatechartUtil extends ActionUtil {
 	}
 	
 	// Statechart element creators
+	
+	public TimeSpecification createTimeSpecification(long expression, TimeUnit unit) {
+		IntegerLiteralExpression integerLiteral = toIntegerLiteral(expression);
+		return createTimeSpecification(integerLiteral, unit);
+	}
+	
+	public TimeSpecification createTimeSpecification(Expression expression, TimeUnit unit) {
+		TimeSpecification timeSpecification = interfaceFactory.createTimeSpecification();
+		timeSpecification.setValue(expression);
+		timeSpecification.setUnit(unit);
+		return timeSpecification;
+	}
 	
 	public Transition createTransition(StateNode source, StateNode target) {
 		Transition transition = statechartFactory.createTransition();

@@ -18,8 +18,11 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
 import java.util.Collection
+import java.util.List
 
 abstract class VerificationPostprocessor {
+	//
+	protected final List<ExecutionTrace> traces = newArrayList
 	//
 	protected final extension ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE
 	protected final extension ElementSerializer elementSerializer = ElementSerializer.INSTANCE
@@ -47,5 +50,13 @@ abstract class VerificationPostprocessor {
 	}
 	
 	def Object execute(ExecutionTrace trace)
+	
+	protected def saveTrace(ExecutionTrace trace) {
+		traces += trace
+	}
+	
+	def getTraces() {
+		return traces
+	}
 	
 }
