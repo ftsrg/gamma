@@ -26,6 +26,7 @@ import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.Cycle
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
@@ -50,6 +51,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 	
 	protected final ExecutionTrace trace
 	protected final Component originalTopComponent
+	protected final boolean sortTrace
 	
 	//
 	
@@ -65,17 +67,21 @@ class UnfoldedExecutionTraceBackAnnotator {
 	
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
-	
 	public static final String TRAP_STATE_ID = "_TrapState_"
 	public static final String TRAP_STATE_MESSAGE_BEGINNING = "Trap state entered in"
 	//
 	
 	new(ExecutionTrace trace, Component originalTopComponent) {
+		this(trace, originalTopComponent, true)
+	}
+	
+	new(ExecutionTrace trace, Component originalTopComponent, boolean sortTrace) {
 		checkNotNull(originalTopComponent)
 		checkArgument(!originalTopComponent.statechart,
 				"The original component cannot be a statechart")
 		this.trace = trace
 		this.originalTopComponent = originalTopComponent
+		this.sortTrace = sortTrace
 	}
 	
 	def execute() {
@@ -116,6 +122,12 @@ class UnfoldedExecutionTraceBackAnnotator {
 		
 		for (assert : step.asserts) {
 			newStep.asserts += assert.transformAssert
+		}
+		// Handling removed (reduced) variables (if any)
+		newStep.handleRemovedVariables
+		
+		if (sortTrace) {
+			newStep.sortInstanceStates
 		}
 		
 		return newStep
@@ -308,6 +320,37 @@ class UnfoldedExecutionTraceBackAnnotator {
 		}
 		
 		return clonedValue
+	}
+	
+	//
+	
+	protected def void handleRemovedVariables(Step step) {
+		val variableInstances = step.asserts
+				.map[it.getSelfAndAllContentsOfType(ComponentInstanceVariableReferenceExpression)]
+				.flatten
+		
+		val instances = originalTopComponent.allSimpleInstanceReferences
+		for (instance : instances) {
+			val statechart = instance.lastInstance.derivedType
+			if (statechart instanceof StatechartDefinition) {
+				val statechartVariables = statechart.variableDeclarations
+				val presentInstanceVariables = variableInstances.filter[it.instance.name == instance.name]
+				val presentVariables = presentInstanceVariables.map[it.variableDeclaration]
+				
+				val unpresentVariables = statechartVariables.filter[!presentVariables.contains(it)]
+				for (unpresentVariable : unpresentVariables) {
+					// We know what to do only if the variable is unwritten
+					if (unpresentVariable.unwritten) {
+						val unwrittenVariable = instance.clone
+								.createVariableReference(unpresentVariable)
+						val value = unpresentVariable.initialValue
+						
+						val assertion = unwrittenVariable.createEqualityExpression(value)
+						step.asserts += assertion
+					}
+				}
+			}
+		}
 	}
 	
 	//

@@ -87,10 +87,9 @@ public class TraceUtil extends StatechartUtil {
 			if (rhs instanceof RaiseEventAct) {
 				return 1;
 			}
-			if (lhs instanceof ComponentInstanceStateReferenceExpression && rhs instanceof ComponentInstanceStateReferenceExpression) {
+			if (lhs instanceof ComponentInstanceStateReferenceExpression lhsInstanceStateConfiguration &&
+					rhs instanceof ComponentInstanceStateReferenceExpression rhsInstanceStateConfiguration) {
 				// Two instance states: first - instance name, second - state level
-				ComponentInstanceStateReferenceExpression lhsInstanceStateConfiguration = (ComponentInstanceStateReferenceExpression) lhs;
-				ComponentInstanceStateReferenceExpression rhsInstanceStateConfiguration = (ComponentInstanceStateReferenceExpression) rhs;
 				ComponentInstance lhsInstance = StatechartModelDerivedFeatures.getLastInstance(
 						lhsInstanceStateConfiguration.getInstance());
 				ComponentInstance rhsInstance = StatechartModelDerivedFeatures.getLastInstance(
@@ -112,10 +111,9 @@ public class TraceUtil extends StatechartUtil {
 				return lhsRegion.getName().compareTo(
 						rhsRegion.getName());
 			}
-			else if (lhs instanceof ComponentInstanceVariableReferenceExpression && rhs instanceof ComponentInstanceVariableReferenceExpression) {
+			else if (lhs instanceof ComponentInstanceVariableReferenceExpression lhsVariableReference &&
+					rhs instanceof ComponentInstanceVariableReferenceExpression rhsVariableReference) {
 				// Two instance variable: name
-				ComponentInstanceVariableReferenceExpression lhsVariableReference = (ComponentInstanceVariableReferenceExpression) lhs;
-				ComponentInstanceVariableReferenceExpression rhsVariableReference = (ComponentInstanceVariableReferenceExpression) rhs;
 				ComponentInstance lhsInstance = StatechartModelDerivedFeatures.getLastInstance(
 						lhsVariableReference.getInstance());
 				ComponentInstance rhsInstance = StatechartModelDerivedFeatures.getLastInstance(

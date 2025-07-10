@@ -995,9 +995,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<ComponentInstanceReferenceExpression> getAllSimpleInstanceReferences(Component component) {
 		List<ComponentInstanceReferenceExpression> instanceReferences = new ArrayList<ComponentInstanceReferenceExpression>();
-		if (component instanceof AbstractAsynchronousCompositeComponent) {
-			AbstractAsynchronousCompositeComponent asynchronousCompositeComponent =
-					(AbstractAsynchronousCompositeComponent) component;
+		if (component instanceof AbstractAsynchronousCompositeComponent asynchronousCompositeComponent) {
 			for (AsynchronousComponentInstance instance : asynchronousCompositeComponent.getComponents()) {
 				if (isStatechart(instance)) {
 					ComponentInstanceReferenceExpression instanceReference =
@@ -1023,9 +1021,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 						statechartUtil.prepend(childReferences, instance));
 			}
 		}
-		else if (component instanceof AbstractSynchronousCompositeComponent) {
-			AbstractSynchronousCompositeComponent synchronousCompositeComponent =
-					(AbstractSynchronousCompositeComponent) component;
+		else if (component instanceof AbstractSynchronousCompositeComponent synchronousCompositeComponent) {
 			for (SynchronousComponentInstance instance : synchronousCompositeComponent.getComponents()) {
 				if (isStatechart(instance)) {
 					ComponentInstanceReferenceExpression instanceReference =
@@ -1073,8 +1069,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return statecharts;
 	}
 	
-	public static Collection<StatechartDefinition> getSelfOrAllContainedStatecharts(
-			Component component) {
+	public static Collection<StatechartDefinition> getSelfOrAllContainedStatecharts(Component component) {
 		if (component instanceof StatechartDefinition statechart) {
 			return List.of(statechart);
 		}
