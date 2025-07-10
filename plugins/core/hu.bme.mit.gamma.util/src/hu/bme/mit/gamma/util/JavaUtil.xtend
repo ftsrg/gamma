@@ -15,6 +15,7 @@ import java.util.Collection
 import java.util.List
 import java.util.Map
 import java.util.Map.Entry
+import java.util.Scanner
 import java.util.Set
 import java.util.function.Predicate
 
@@ -275,6 +276,24 @@ class JavaUtil {
 		}
 		
 		return count
+	}
+	
+	def String deleteEmptyLines(CharSequence string) {
+//		val pattern = "((?m)^\\s*\\r?\\n|\\r?\\n\\s*(?!.*\\r?\\n))+"
+//		return string.toString.replaceAll(pattern, System.lineSeparator)
+		val builder = new StringBuilder(string.length)
+		try (val scanner = new Scanner(string.toString)) {
+			while (scanner.hasNextLine) {
+				val line = scanner.nextLine
+				if (!line.nullOrEmpty) {
+					if (builder.length > 0) { // Not first line
+						builder.append(System.lineSeparator)
+					}
+					builder.append(line)
+				}
+			}
+		}
+		return builder.toString
 	}
 	
 	def String deleteAll(String string, String regex) {
