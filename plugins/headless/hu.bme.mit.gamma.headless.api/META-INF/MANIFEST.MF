@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Headless Application
 Bundle-SymbolicName: hu.bme.mit.gamma.headless.api;singleton:=true
 Bundle-Vendor: BME-FTSRG
-Bundle-Version: 2.11.0.qualifier
+Bundle-Version: 2.12.0.qualifier
 Export-Package: hu.bme.mit.gamma.api.headless
 Automatic-Module-Name: hui.bme.mit.gamma.api.headless
 Bundle-RequiredExecutionEnvironment: JavaSE-17

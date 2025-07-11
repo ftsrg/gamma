@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Setup
 Bundle-SymbolicName: hu.bme.mit.gamma.setup
-Bundle-Version: 2.11.0.qualifier
+Bundle-Version: 2.12.0.qualifier
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.emf.ecore;visibility:=reexport,
  org.eclipse.emf.ecore.xmi;visibility:=reexport,
