@@ -96,9 +96,9 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 			}
 		}
 		
-		nondeterministicStates.forEach[
-				println('''Found nondeterministic state «state.name» in region «
-						region.name» of «instance.name»''')]
+//		nondeterministicStates.forEach[
+//				println('''Found nondeterministic state «state.name» in region «
+//						region.name» of «instance.name»''')]
 		
 		val persistentRaiseEvents = trace.persistentRaiseEvents
 		val lastRaiseEvents = lastStep.actions.filter(RaiseEventAct)
@@ -159,9 +159,9 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 		}
 		
 		// Pretty printing
-		for (transition : nondeterministicTransitions) {
-			println(elementSerializer.serialize(transition.value))
-		}
+//		for (transition : nondeterministicTransitions) {
+//			println(elementSerializer.serialize(transition.value))
+//		}
 		//
 		
 		this.nondeterministicTransitions += nondeterministicTransitions
