@@ -45,8 +45,14 @@ class StateReachabilityCheckPostprocessor extends VerificationPostprocessor {
 		return names.contains(state.id)
 	}
 	
-	protected def getId(ComponentInstanceStateReferenceExpression state) {
+	def getId(ComponentInstanceStateReferenceExpression state) {
 		return state.instance.name + "." + state.state.fullContainmentHierarchy
-	} 
+	}
+	
+	//
+	
+	def getReachedStates() {
+		return reachedStates
+	}
 	
 }
