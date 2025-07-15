@@ -695,7 +695,8 @@ public class VerificationHandler extends TaskHandler {
 					resultFileName, GammaFileNamer.VERIFICATION_RESULT_EXTENSION);
 			String fileName = fileNamePair.getKey();
 			String jsonResult = gson.toJson(result);
-			fileUtil.saveString(resultFolderUri + File.separator + fileName, jsonResult);
+			String path = resultFolderUri + File.separator + fileName;
+			fileUtil.saveString(path, jsonResult);
 		}
 		
 		@SuppressWarnings("unused")
