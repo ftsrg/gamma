@@ -253,8 +253,15 @@ class UnfoldedExecutionTraceBackAnnotator {
 								val instanceName = originalInstance.name
 								val executedTransition = executedTransitions.head
 								
+								val transition = try {
+									originalInstance.getOriginalTransition(executedTransition)
+								} catch (IllegalArgumentException e2) {
+									// Did not find original transition
+									executedTransition
+								}
+								
 								val metadataMessage = '''«EXECUTED_TRANSITION_MESSAGE_BEGINNING»«
-										executedTransition.serialize» of «instanceName»'''
+										transition.serialize» of «instanceName»'''
 											.createOpaqueExpression
 								metadata += metadataMessage
 								

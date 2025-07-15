@@ -30,8 +30,10 @@ import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation
+import hu.bme.mit.gamma.statechart.util.ElementSerializer
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.JavaUtil
 import java.util.Collection
 
 import static com.google.common.base.Preconditions.checkState
@@ -48,6 +50,8 @@ class UnfoldingTraceability {
 	
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
+	protected final extension ElementSerializer elementSerializer = ElementSerializer.INSTANCE
 	
 	// Folded -> unfolded mapping
 	
@@ -465,6 +469,35 @@ class UnfoldingTraceability {
 			}
 		}
 		throw new IllegalArgumentException("Not found state: " + newState)
+	}
+	
+	def getOriginalTransition(ComponentInstanceReferenceExpression originalInstance, Transition newTransition) {
+		val statechartInstance = originalInstance.lastInstance
+		return statechartInstance.getOriginalTransition(newTransition)
+	}
+	
+	def getOriginalTransition(ComponentInstance originalInstance, Transition newTransition) {
+		val originalType = originalInstance.getStatechart
+		val originalTransitions = originalType.transitions
+		val sameSource = originalTransitions.filter[
+				it.sourceState.fullContainmentHierarchy == newTransition.sourceState.fullContainmentHierarchy]
+		val sameTarget = originalTransitions.filter[
+				it.targetState.fullContainmentHierarchy == newTransition.targetState.fullContainmentHierarchy]
+		val sameSourceAndTarget = sameSource.intersection(sameTarget)
+		
+		if (sameSourceAndTarget.size == 1) {
+			return sameSourceAndTarget.head
+		}
+		if (sameSource.size == 1) {
+			return sameSource.head
+		}
+		for (transition : sameSource) {
+			if (transition.serializeSourceAndTrigger == newTransition.serializeSourceAndTrigger) {
+				return transition
+			}
+		}
+		
+		throw new IllegalArgumentException("Not found transition: " + newTransition)
 	}
 	
 	def getOriginalVariable(ComponentInstanceReferenceExpression originalInstance, VariableDeclaration newVariable) {

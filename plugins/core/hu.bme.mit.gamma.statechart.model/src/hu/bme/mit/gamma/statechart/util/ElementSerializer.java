@@ -34,19 +34,35 @@ public class ElementSerializer {
 				transition.getTargetState().getName();
 		
 		Trigger trigger = transition.getTrigger();
-		String triggerString = "when " + triggerSerializer.serialize(trigger);
+		String triggerString = serialize(trigger);
 		
 		Expression guard = transition.getGuard();
-		String guardString = (guard == null) ? "" :  "[" + javaUtil.deparenthesize(
+		String guardString = (guard == null) ? "" :  " [" + javaUtil.deparenthesize(
 				expressionSerializer.serialize(guard)) + "]";
 		
 		List<Action> effects = transition.getEffects();
-		String effectString = (effects.isEmpty()) ? "" : "/ " + effects.stream()
+		String effectString = (effects.isEmpty()) ? "" : " /" + effects.stream()
 				.map(it -> actionSerializer.serialize(it))
-				.reduce((t, u) -> t + "; " + u)
+				.reduce((t, u) -> " " + t + ";" + u)
 				.get();
 		
-		return stateNodes + " " + triggerString + " " + guardString + " " + effectString;
+		return stateNodes + triggerString + guardString + effectString;
+	}
+	
+	public String serializeSourceAndTrigger(Transition transition) {
+		String source = "from " + transition.getSourceState().getName();
+		Trigger trigger = transition.getTrigger();
+		String string = source + serialize(trigger);
+		
+		return string;
+	}
+
+	protected String serialize(Trigger trigger) {
+		if (trigger == null) {
+			return "";
+		}
+		String triggerString = " when " + triggerSerializer.serialize(trigger);
+		return triggerString;
 	}
 	
 }
