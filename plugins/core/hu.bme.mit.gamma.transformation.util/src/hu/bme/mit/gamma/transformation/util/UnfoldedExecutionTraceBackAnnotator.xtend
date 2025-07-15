@@ -10,13 +10,17 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util
 
+import hu.bme.mit.gamma.action.model.AssignmentStatement
 import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
+import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
+import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
+import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.UnaryExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
@@ -27,6 +31,7 @@ import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.util.ElementSerializer
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.Cycle
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
@@ -38,7 +43,7 @@ import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import java.util.List
+import java.util.Collection
 import java.util.logging.Logger
 
 import static com.google.common.base.Preconditions.checkArgument
@@ -55,12 +60,14 @@ class UnfoldedExecutionTraceBackAnnotator {
 	
 	//
 	
-	protected final List<Expression> dummyAsserts = newArrayList
+	protected final Collection<Expression> dummyAsserts = newArrayList
+	protected final Collection<OpaqueExpression> metadata = newArrayList
 	
 	protected final InterfaceModelFactory interfaceModelFactory = InterfaceModelFactory.eINSTANCE
 	protected final CompositeModelFactory compositeModelFactory = CompositeModelFactory.eINSTANCE
 	protected final ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension TraceModelFactory traceModelFactory = TraceModelFactory.eINSTANCE
+	protected final extension ElementSerializer elementSerializer = ElementSerializer.INSTANCE
 	protected final extension UnfoldingTraceability traceability = UnfoldingTraceability.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
@@ -69,6 +76,10 @@ class UnfoldedExecutionTraceBackAnnotator {
 	
 	public static final String TRAP_STATE_ID = "_TrapState_"
 	public static final String TRAP_STATE_MESSAGE_BEGINNING = "Trap state entered in"
+	
+	public static final String EXECUTED_TRANSITION_VARIABLE_BEGINNING = "__id_"
+	public static final String EXECUTED_TRANSITION_VARIABLE_END = "_"
+	public static final String EXECUTED_TRANSITION_MESSAGE_BEGINNING = "Transition executed: "
 	//
 	
 	new(ExecutionTrace trace, Component originalTopComponent) {
@@ -106,6 +117,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 		
 		// There are injected variables that cannot be back-annotated
 		removeDummyAsserts
+		handleMetadata
 		// After removing dummy asserts (nulls)
 		if (sortTrace) {
 			originalExecutionTrace.sortInstanceStates
@@ -200,7 +212,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 				// Injected state for checking nondeterministic behavior
 				if (newState.name == TRAP_STATE_ID) {
 					val regionName = newState.parentRegion.name
-					val instanceName = originalInstance.componentInstanceChain.map[it.name].join(".")
+					val instanceName = originalInstance.name
 					
 					return '''«TRAP_STATE_MESSAGE_BEGINNING» region «regionName» of «instanceName»'''.createOpaqueExpression
 				}
@@ -221,14 +233,48 @@ class UnfoldedExecutionTraceBackAnnotator {
 		val originalVariable = try {
 			originalInstance.getOriginalVariable(variable)
 		} catch (IllegalArgumentException e) {
+			val message = e.message.trim
+			if (message.startsWith("Not found variable")) {
+				val name = variable.name
+				if (name.startsWith(EXECUTED_TRANSITION_VARIABLE_BEGINNING) &&
+						name.endsWith(EXECUTED_TRANSITION_VARIABLE_END)) {
+					val container = assert.eContainer
+					if (container instanceof Step ||
+							container instanceof EqualityExpression &&
+							assert.getContainerOfType(EqualityExpression).rightOperand instanceof TrueExpression) {
+						// There should be one true assignment to this variable
+						val statechart = instance.derivedType
+						if (statechart instanceof StatechartDefinition) {
+							val transitions = statechart.transitions
+							val executedTransitions = transitions.filter[
+									it.effects.filter(AssignmentStatement)
+									.exists[it.lhs.declaration == variable && it.rhs instanceof TrueExpression]]
+							if (!executedTransitions.empty) {
+								val instanceName = originalInstance.name
+								val executedTransition = executedTransitions.head
+								
+								val metadataMessage = '''«EXECUTED_TRANSITION_MESSAGE_BEGINNING»«
+										executedTransition.serialize» of «instanceName»'''
+											.createOpaqueExpression
+								metadata += metadataMessage
+								
+								return metadataMessage
+							}
+						}
+					}
+				}
+			}
+			
 			logger.info("Not found original variable for " + variable)
 			null
 		}
+		
 		val variableState = statechartUtil.createVariableReference(
 				originalInstance, originalVariable)
 		if (originalVariable === null) {
 			dummyAsserts += variableState
 		}
+		
 		return variableState
 	}
 	
@@ -358,6 +404,18 @@ class UnfoldedExecutionTraceBackAnnotator {
 	protected def removeDummyAsserts() {
 		dummyAsserts.removeContainmentChains(Expression)
 		dummyAsserts.clear
+	}
+	
+	protected def handleMetadata() {
+		for (data : metadata) {
+			val container = data.eContainer
+			if (!(container instanceof Step)) {
+				val topmostExpression = data.getChildOfContainerOfType(Step)
+				data.replace(topmostExpression)
+			}
+		}
+		
+		metadata.clear
 	}
 	
 }

@@ -43,7 +43,8 @@ public class ElementSerializer {
 		List<Action> effects = transition.getEffects();
 		String effectString = (effects.isEmpty()) ? "" : "/ " + effects.stream()
 				.map(it -> actionSerializer.serialize(it))
-				.reduce((t, u) -> t + "; " + u);
+				.reduce((t, u) -> t + "; " + u)
+				.get();
 		
 		return stateNodes + " " + triggerString + " " + guardString + " " + effectString;
 	}

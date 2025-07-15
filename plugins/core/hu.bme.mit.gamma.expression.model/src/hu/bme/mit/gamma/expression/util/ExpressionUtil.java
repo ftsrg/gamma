@@ -252,11 +252,11 @@ public class ExpressionUtil {
 				evaluator.evaluate(expression) - value);
 	}
 	
-	public Expression createOpaqueExpression(CharSequence chars) {
+	public OpaqueExpression createOpaqueExpression(CharSequence chars) {
 		return createOpaqueExpression(chars.toString());
 	}
 	
-	public Expression createOpaqueExpression(String string) {
+	public OpaqueExpression createOpaqueExpression(String string) {
 		OpaqueExpression opaqueExpression = factory.createOpaqueExpression();
 		opaqueExpression.setExpression(string);
 		return opaqueExpression;
