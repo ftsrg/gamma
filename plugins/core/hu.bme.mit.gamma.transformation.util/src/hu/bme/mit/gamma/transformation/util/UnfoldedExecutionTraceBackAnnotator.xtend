@@ -106,6 +106,10 @@ class UnfoldedExecutionTraceBackAnnotator {
 		
 		// There are injected variables that cannot be back-annotated
 		removeDummyAsserts
+		// After removing dummy asserts (nulls)
+		if (sortTrace) {
+			originalExecutionTrace.sortInstanceStates
+		}
 		
 		return originalExecutionTrace
 	}
@@ -125,10 +129,6 @@ class UnfoldedExecutionTraceBackAnnotator {
 		}
 		// Handling removed (reduced) variables (if any)
 		newStep.handleRemovedVariables
-		
-		if (sortTrace) {
-			newStep.sortInstanceStates
-		}
 		
 		return newStep
 	}
