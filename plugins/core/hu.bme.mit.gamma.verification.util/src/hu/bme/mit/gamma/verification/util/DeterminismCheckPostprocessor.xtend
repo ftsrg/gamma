@@ -73,20 +73,20 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 		}
 		else {
 			// Original model
-			val stringBeginning = UnfoldedExecutionTraceBackAnnotator.TRAP_STATE_MESSAGE_BEGINNING
+			val metadataBeginning = UnfoldedExecutionTraceBackAnnotator.TRAP_STATE_MESSAGE_BEGINNING
 			val trapStateEntries = lastStateAsserts.filter(OpaqueExpression)
-					.filter[it.expression.startsWith(stringBeginning)]
+					.filter[it.expression.startsWith(metadataBeginning)]
 			for (trapStateEntry : trapStateEntries) {
 				// Parsing non-deterministic instance and region
 				val string = trapStateEntry.expression
-				val pattern = Pattern.compile('''«stringBeginning» region (.*) of (.*)''')
+				val pattern = Pattern.compile('''«metadataBeginning» region (.*) of (.*)''')
 				val matcher = pattern.matcher(string)
 				if (!matcher.find) {
 					throw new IllegalArgumentException("Not found pattern: " + string)
 				}
 				
-				val regionName = matcher.group(1)
-				val instanceName = matcher.group(2)
+				val regionName = matcher.group(1).trim
+				val instanceName = matcher.group(2).trim
 				
 				// Selecting next to last control location (state)
 				val nondeterministicState = beforeLastStepStates.filter[

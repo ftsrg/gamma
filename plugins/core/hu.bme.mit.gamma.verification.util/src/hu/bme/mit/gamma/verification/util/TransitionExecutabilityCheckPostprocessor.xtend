@@ -10,12 +10,20 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.verification.util
 
+import hu.bme.mit.gamma.expression.model.OpaqueExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
+import hu.bme.mit.gamma.transformation.util.UnfoldedExecutionTraceBackAnnotator
 import java.util.Collection
 import java.util.List
 import java.util.Map.Entry
+import java.util.regex.Pattern
+
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
 
 class TransitionExecutabilityCheckPostprocessor extends VerificationPostprocessor {
 	//
@@ -25,6 +33,40 @@ class TransitionExecutabilityCheckPostprocessor extends VerificationPostprocesso
 	
 	override execute(ExecutionTrace trace) {
 		trace.saveTrace
+		
+		val metadataBeginning = UnfoldedExecutionTraceBackAnnotator.EXECUTED_TRANSITION_MESSAGE_BEGINNING
+		
+		val instances = trace.steps.map[it.asserts].flatten
+				.filter(ComponentInstanceElementReferenceExpression)
+				.map[it.instance]
+		
+		val executedTransitions = <Entry<ComponentInstanceReferenceExpression, Transition>>newArrayList
+		
+		val steps = trace.allSteps
+		for (step : steps) {
+			val asserts = step.asserts
+			for (assertion : asserts.filter(OpaqueExpression)
+						.filter[it.expression.startsWith(metadataBeginning)]) {
+				// Parsing executed transition and instance
+				val string = assertion.expression
+				val pattern = Pattern.compile('''«metadataBeginning» (.*) of (.*)''')
+				val matcher = pattern.matcher(string)
+				if (!matcher.find) {
+					throw new IllegalArgumentException("Not found pattern: " + string)
+				}
+				
+				val transitionString = matcher.group(1).trim
+				val instanceName = matcher.group(2).trim
+				
+				val instance = instances.findFirst[it.name == instanceName].clone
+				val statechart = instance.lastInstance.derivedType as StatechartDefinition
+				val transition = statechart.transitions.findFirst[it.serialize == transitionString]
+				
+				executedTransitions += instance.createTransitionReference(transition)
+			}
+		}
+		
+		this.executedTransitions += executedTransitions
 		
 		return executedTransitions
 	}
