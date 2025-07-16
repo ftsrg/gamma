@@ -18,7 +18,6 @@ import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.transformation.util.UnfoldedExecutionTraceBackAnnotator
 import java.util.Collection
-import java.util.List
 import java.util.Map.Entry
 import java.util.regex.Pattern
 
@@ -27,8 +26,8 @@ import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerived
 
 class TransitionExecutabilityCheckPostprocessor extends VerificationPostprocessor {
 	//
-	protected final List<Collection<? extends Entry<
-			ComponentInstanceReferenceExpression, Transition>>> executedTransitions = newArrayList
+	protected final Collection<Entry<
+			ComponentInstanceReferenceExpression, Transition>> executedTransitions = newArrayList
 	//
 	
 	override execute(ExecutionTrace trace) {
@@ -40,8 +39,6 @@ class TransitionExecutabilityCheckPostprocessor extends VerificationPostprocesso
 				.filter(ComponentInstanceElementReferenceExpression)
 				.map[it.instance]
 		
-		val executedTransitions = <Entry<ComponentInstanceReferenceExpression, Transition>>newArrayList
-		
 		val steps = trace.allSteps
 		for (step : steps) {
 			val asserts = step.asserts
@@ -49,7 +46,7 @@ class TransitionExecutabilityCheckPostprocessor extends VerificationPostprocesso
 						.filter[it.expression.startsWith(metadataBeginning)]) {
 				// Parsing executed transition and instance
 				val string = assertion.expression
-				val pattern = Pattern.compile('''«metadataBeginning» (.*) of (.*)''')
+				val pattern = Pattern.compile('''«metadataBeginning»(.*) of (.*)''')
 				val matcher = pattern.matcher(string)
 				if (!matcher.find) {
 					throw new IllegalArgumentException("Not found pattern: " + string)
@@ -66,12 +63,17 @@ class TransitionExecutabilityCheckPostprocessor extends VerificationPostprocesso
 			}
 		}
 		
-		this.executedTransitions += executedTransitions
-		
 		return executedTransitions
 	}
 	
-		
+	//
+	
+	def getId(Entry<ComponentInstanceReferenceExpression, Transition> transitionInstance) {
+		val instance = transitionInstance.key
+		val transition = transitionInstance.value
+		return instance.name + "." + transition.serialize
+	}
+	
 	//
 	
 	def getExecutedTransitions() {
