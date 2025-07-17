@@ -55,4 +55,26 @@ class StateReachabilityCheckPostprocessor extends VerificationPostprocessor {
 		return reachedStates
 	}
 	
+	def getUnreachedStates() {
+		val unreachedStates = newLinkedHashSet
+		
+		val reachedStateIds = reachedStates.map[it.id].toSet
+		
+		val instances = super.statechartInstanceReferences
+		for (instance : instances) {
+			val statechartInstance = instance.lastInstance
+			val statechart = statechartInstance.getStatechart
+			val states = statechart.allStates
+			for (state : states) {
+				val stateReference = instance.clone
+						.createStateReference(state)
+				if (!reachedStateIds.contains(stateReference.id)) {
+					unreachedStates += stateReference
+				}
+			}
+		}
+		
+		return unreachedStates
+	}
+	
 }

@@ -20,6 +20,8 @@ import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
 import java.util.Collection
 import java.util.List
 
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+
 abstract class VerificationPostprocessor {
 	//
 	protected final List<ExecutionTrace> traces = newArrayList
@@ -51,12 +53,27 @@ abstract class VerificationPostprocessor {
 	
 	def Object execute(ExecutionTrace trace)
 	
+	//
+	
 	protected def saveTrace(ExecutionTrace trace) {
 		traces += trace
 	}
 	
 	def getTraces() {
 		return traces
+	}
+	
+	def getStatechartInstanceReferences() {
+		val allComponents = traces.map[it.component].toSet
+		val components = (allComponents.allHelperEquals) ?
+				#{ allComponents.head } : allComponents
+		
+		val instanceReferences = components
+				.map[it.allSimpleInstanceReferences]
+				.flatten
+				.toList
+		
+		return instanceReferences
 	}
 	
 }

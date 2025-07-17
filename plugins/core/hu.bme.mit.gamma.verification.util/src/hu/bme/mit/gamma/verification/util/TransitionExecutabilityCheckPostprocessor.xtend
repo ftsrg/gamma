@@ -80,6 +80,28 @@ class TransitionExecutabilityCheckPostprocessor extends VerificationPostprocesso
 		return executedTransitions
 	}
 	
+	def getUnexecutedTransitions() {
+		val unexecutedTransitions = newLinkedHashSet
+		
+		val executedTransitionIds = executedTransitions.map[it.id].toSet
+		
+		val instances = super.statechartInstanceReferences
+		for (instance : instances) {
+			val statechartInstance = instance.lastInstance
+			val statechart = statechartInstance.getStatechart
+			val transitions = statechart.transitions
+			for (transition : transitions) {
+				val transitionReference = instance.clone
+						.createTransitionReference(transition)
+				if (!executedTransitionIds.contains(transitionReference.id)) {
+					unexecutedTransitions += transitionReference
+				}
+			}
+		}
+		
+		return unexecutedTransitions
+	}
+	
 	//
 	
 }
