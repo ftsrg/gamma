@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.transformation.util.UnfoldedExecutionTraceBackAnnotator
 import java.util.Collection
+import java.util.List
 import java.util.Map.Entry
 import java.util.regex.Pattern
 
@@ -26,12 +27,14 @@ import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerived
 
 class TransitionExecutabilityCheckPostprocessor extends VerificationPostprocessor {
 	//
-	protected final Collection<Entry<
-			ComponentInstanceReferenceExpression, Transition>> executedTransitions = newArrayList
+	protected final List<Collection<? extends
+			Entry<ComponentInstanceReferenceExpression, Transition>>> executedTransitions = newArrayList
 	//
 	
 	override execute(ExecutionTrace trace) {
 		trace.saveTrace
+		
+		val executedTransitions = <Entry<ComponentInstanceReferenceExpression, Transition>>newArrayList
 		
 		val metadataBeginning = UnfoldedExecutionTraceBackAnnotator.EXECUTED_TRANSITION_MESSAGE_BEGINNING
 		
@@ -63,6 +66,8 @@ class TransitionExecutabilityCheckPostprocessor extends VerificationPostprocesso
 			}
 		}
 		
+		this.executedTransitions += executedTransitions
+		
 		return executedTransitions
 	}
 	
@@ -80,10 +85,14 @@ class TransitionExecutabilityCheckPostprocessor extends VerificationPostprocesso
 		return executedTransitions
 	}
 	
+	def getAllExecutedTransitions() {
+		return executedTransitions.flatten
+	}
+	
 	def getUnexecutedTransitions() {
 		val unexecutedTransitions = newLinkedHashSet
 		
-		val executedTransitionIds = executedTransitions.map[it.id].toSet
+		val executedTransitionIds = allExecutedTransitions.map[it.id].toSet
 		
 		val instances = super.statechartInstanceReferences
 		for (instance : instances) {
