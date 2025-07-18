@@ -315,6 +315,10 @@ public class VerificationHandler extends TaskHandler {
 			
 			stopwatch.stop();
 			
+			// Trying to fetch the original property
+			result = result.clone(
+					formulas.get(serializedFormula));
+			
 			verificationResults.add(result);
 			ExecutionTrace trace = result.getTrace();
 			ThreeStateBoolean verificationResult = result.getResult();
@@ -370,15 +374,14 @@ public class VerificationHandler extends TaskHandler {
 			retrievedTraces.addAll(backAnnotatedTraces);
 		}
 		
+		for (VerificationResult result : derivedVerificationResults) {
+			serializer.serialize(targetFolderUri, traceFileName, result);
+		}
+		
 		traces.addAll(retrievedTraces);
 		
 		if (serializeTraces) { // After 'traces.add...'
 			serializeTraces(programmingLanguage);
-		}
-		
-		// Note that .get and .json postfix ids will not match if optimization is applied
-		for (VerificationResult result : derivedVerificationResults) {
-			serializer.serialize(targetFolderUri, traceFileName, result);
 		}
 		
 		if (verificationPostprocessor != null) {
@@ -648,7 +651,8 @@ public class VerificationHandler extends TaskHandler {
 		public void serialize(String traceFolderUri, String traceFileName,
 				String testFolderUri, String testFileName, String basePackage, ExecutionTrace trace,
 				IFile file, ProgrammingLanguage programmingLanguage) throws IOException {
-			this.serialize(traceFolderUri, traceFileName, null, testFolderUri, testFileName, basePackage, trace, file, programmingLanguage);
+			this.serialize(traceFolderUri, traceFileName, null, testFolderUri, testFileName,
+					basePackage, trace, file, programmingLanguage);
 		}
 		
 		public void serialize(String traceFolderUri, String traceFileName, String svgFileName,
@@ -659,7 +663,7 @@ public class VerificationHandler extends TaskHandler {
 			Entry<String, Integer> fileNamePair = fileUtil.getFileName(new File(traceFolderUri),
 					traceFileName, GammaFileNamer.EXECUTION_XTEXT_EXTENSION);
 			String fileName = fileNamePair.getKey();
-			Integer id = fileNamePair.getValue();
+			Integer id = fileNamePair.getValue(); // TODO calculate from json
 			serializer.saveModel(trace, traceFolderUri, fileName);
 			
 			// SVG
@@ -669,7 +673,8 @@ public class VerificationHandler extends TaskHandler {
 				SvgSerializer serializer = SvgSerializer.INSTANCE;
 				String svg = serializer.serialize(plantUmlString);
 				String svgFileNameWithId = svgFileName + id;
-				fileUtil.saveString(traceFolderUri + File.separator + svgFileNameWithId + ".svg", svg);
+				String path = traceFolderUri + File.separator + svgFileNameWithId + ".svg";
+				fileUtil.saveString(path, svg);
 			}
 			
 			// Test

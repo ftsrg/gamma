@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.verification.util
 
+import hu.bme.mit.gamma.property.model.StateFormula
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
@@ -199,11 +200,23 @@ abstract class AbstractVerifier {
 	
 	@Data
 	static class Result {
+		StateFormula property
 		ThreeStateBoolean result
 		ExecutionTrace trace
 		//
 		protected extension TraceUtil traceUtil = TraceUtil.INSTANCE
 		//
+		
+		new(ThreeStateBoolean result, ExecutionTrace trace) {
+			this(null, result, trace)
+		}
+		
+		new(StateFormula property, ThreeStateBoolean result, ExecutionTrace trace) {
+			this.property = property
+			this.result = result
+			this.trace = trace
+		}
+		
 		def extend(Result result) {
 			if (result === null) {
 				return this // We cannot do anything with null parameters
@@ -219,11 +232,15 @@ abstract class AbstractVerifier {
 		}
 		
 		def invert() {
-			return new Result(result.opposite, trace)
+			return new Result(property, result.opposite, trace)
 		}
 		
 		def clone(ExecutionTrace trace) {
-			return new Result(result, trace)
+			return new Result(property, result, trace)
+		}
+		
+		def clone(StateFormula property) {
+			return new Result(property, result, trace)
 		}
 		
 	}
