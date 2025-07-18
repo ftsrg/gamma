@@ -231,9 +231,10 @@ public class VerificationHandler extends TaskHandler {
 		
 		boolean isOptimize = verification.isOptimize();
 		
-		// Retrieved traces
-		List<VerificationResult> retrievedVerificationResults = new ArrayList<VerificationResult>();
-		List<ExecutionTrace> retrievedTraces = new ArrayList<ExecutionTrace>();
+		// Retrieved verification results and traces
+		List<Result> verificationResults = new ArrayList<Result>();
+		List<ExecutionTrace> retrievedTraces = new ArrayList<ExecutionTrace>(); // Derivable from verificationResults
+		List<VerificationResult> derivedVerificationResults = new ArrayList<VerificationResult>();
 		
 		// Map for collecting both supported property representations
 		Map<String, StateFormula> formulas = new LinkedHashMap<String, StateFormula>();
@@ -311,10 +312,12 @@ public class VerificationHandler extends TaskHandler {
 			
 			Result result = execute(verificationTask, modelFile, queryFile, arguments,
 					retrievedTraces, isOptimize);
-			ExecutionTrace trace = result.getTrace();
-			ThreeStateBoolean verificationResult = result.getResult();
 			
 			stopwatch.stop();
+			
+			verificationResults.add(result);
+			ExecutionTrace trace = result.getTrace();
+			ThreeStateBoolean verificationResult = result.getResult();
 			
 			// Adding comment to connect the trace with the property
 			if (trace != null) {
@@ -325,7 +328,7 @@ public class VerificationHandler extends TaskHandler {
 			long elapsed = stopwatch.elapsed(timeUnit);
 			String elapsedString = elapsed + " " + timeUnit;
 			
-			retrievedVerificationResults.add(
+			derivedVerificationResults.add(
 				new VerificationResult(
 					serializedFormula, verificationResult, arguments, elapsedString));
 			
@@ -336,7 +339,8 @@ public class VerificationHandler extends TaskHandler {
 		}
 		if (isOptimize) {
 			// Optimization again on the retrieved tests (front to back and vice versa)
-			traceUtil.removeCoveredExecutionTraces(retrievedTraces);
+			Collection<ExecutionTrace> removedTraces = traceUtil.removeCoveredExecutionTraces(retrievedTraces);
+			verificationResults.removeIf(it -> removedTraces.contains(it.getTrace()));
 		}
 		
 		// Back-annotating
@@ -345,11 +349,23 @@ public class VerificationHandler extends TaskHandler {
 			for (ExecutionTrace trace : retrievedTraces) {
 				Component newComponent = trace.getComponent();
 				Component originalComponent = statechartEcoreUtil.loadAndReplaceToOriginalComponent(newComponent);
+				
 				UnfoldedExecutionTraceBackAnnotator backAnnotator =
 						new UnfoldedExecutionTraceBackAnnotator(trace, originalComponent);
 				ExecutionTrace orignalTrace = backAnnotator.execute();
+				
 				backAnnotatedTraces.add(orignalTrace);
+				
+				// Changing in the results list
+				for (int i = 0; i < verificationResults.size(); i++) {
+					Result result = verificationResults.get(i);
+					if (result.getTrace() == trace) {
+						Result newResult = result.clone(orignalTrace);
+						verificationResults.set(i, newResult);
+					}
+				}
 			}
+			
 			retrievedTraces.clear();
 			retrievedTraces.addAll(backAnnotatedTraces);
 		}
@@ -361,12 +377,12 @@ public class VerificationHandler extends TaskHandler {
 		}
 		
 		// Note that .get and .json postfix ids will not match if optimization is applied
-		for (VerificationResult verificationResult : retrievedVerificationResults) {
-			serializer.serialize(targetFolderUri, traceFileName, verificationResult);
+		for (VerificationResult result : derivedVerificationResults) {
+			serializer.serialize(targetFolderUri, traceFileName, result);
 		}
 		
 		if (verificationPostprocessor != null) {
-			verificationPostprocessor.execute(retrievedTraces);
+			verificationPostprocessor.execute(verificationResults);
 		}
 	}
 	

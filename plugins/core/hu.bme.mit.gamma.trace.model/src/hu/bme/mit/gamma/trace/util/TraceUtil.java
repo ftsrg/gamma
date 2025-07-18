@@ -226,7 +226,9 @@ public class TraceUtil extends StatechartUtil {
 	
 	// Trace coverage
 	
-	public void removeCoveredExecutionTraces(List<ExecutionTrace> traces) {
+	public Collection<ExecutionTrace> removeCoveredExecutionTraces(List<ExecutionTrace> traces) {
+		Collection<ExecutionTrace> removedTraces = new ArrayList<ExecutionTrace>(traces);
+		
 		for (int i = 0; i < traces.size() - 1; ++i) {
 			ExecutionTrace lhs = traces.get(i);
 			boolean isLhsDeleted = false;
@@ -244,6 +246,10 @@ public class TraceUtil extends StatechartUtil {
 				}
 			}
 		}
+		
+		removedTraces.removeAll(traces);
+		
+		return removedTraces;
 	}
 	
 	public void removeCoveredSteps(ExecutionTrace trace) {

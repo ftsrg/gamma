@@ -222,6 +222,10 @@ abstract class AbstractVerifier {
 			return new Result(result.opposite, trace)
 		}
 		
+		def clone(ExecutionTrace trace) {
+			return new Result(result, trace)
+		}
+		
 	}
 	
 }
