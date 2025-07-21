@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.ui.taskhandler;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,6 +26,8 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
@@ -76,6 +79,7 @@ import hu.bme.mit.gamma.statechart.statechart.Region;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.theta.verification.ThetaVerification;
+import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.util.TraceUtil;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
@@ -660,10 +664,15 @@ public class VerificationHandler extends TaskHandler {
 				IFile file, ProgrammingLanguage programmingLanguage) throws IOException {
 			
 			// Model
-			Entry<String, Integer> fileNamePair = fileUtil.getFileName(new File(traceFolderUri),
-					traceFileName, GammaFileNamer.EXECUTION_XTEXT_EXTENSION);
-			String fileName = fileNamePair.getKey();
-			Integer id = fileNamePair.getValue(); // TODO calculate from json
+			File traceFolder = new File(traceFolderUri);
+			String baseFileName = traceFileName;
+			String id = getCorrespondingId(traceFolder, trace);
+			if (id == null) {
+				Entry<String, Integer> fileNamePair = fileUtil.getFileName(new File(traceFolderUri),
+						traceFileName, GammaFileNamer.EXECUTION_XTEXT_EXTENSION);
+				id = fileNamePair.getValue().toString();
+			}
+			String fileName = baseFileName + id + "." + GammaFileNamer.EXECUTION_XTEXT_EXTENSION;
 			serializer.saveModel(trace, traceFolderUri, fileName);
 			
 			// SVG
@@ -692,7 +701,44 @@ public class VerificationHandler extends TaskHandler {
 			}
 		}
 		
-		// Serialization of test cases for additional programming languages here...
+		protected File getCorrespondingJsonFile(File traceFolder, ExecutionTrace trace) {
+			String comment = TraceModelDerivedFeatures.getComment(trace);
+			
+			File[] jsonFiles = traceFolder.listFiles(
+					it -> fileUtil.getExtension(it).equals("json")); // TODO fix order
+			if (jsonFiles != null) {
+				for (int i = jsonFiles.length - 1; 0 <= i; i--) {
+					try {
+						File jsonFile = jsonFiles[i];
+						FileReader reader = new FileReader(jsonFile);
+						VerificationResult result = gson.fromJson(reader, VerificationResult.class);
+						String query = result.getQuery();
+						if (query.equals(comment)) {
+							return jsonFile; // Depends on iteration order (see 'i--' above)
+						}
+					} catch (Exception e) {}
+				}
+			}
+			
+			return null;
+		}
+		
+		protected String getCorrespondingId(File traceFolder, ExecutionTrace trace) {
+			File jsonFile = getCorrespondingJsonFile(traceFolder, trace);
+			if (jsonFile != null) {
+				String name = jsonFile.getName();
+				
+				Pattern pattern = Pattern.compile("([0-9]+)\\..*"); // Eager digit matching
+				Matcher matcher = pattern.matcher(name);
+				
+				if (matcher.find()) {
+					String id = matcher.group(1);
+					return id;
+				}
+			}
+			
+			return null;
+		}
 		
 		public void serialize(String resultFolderUri, String resultFileName,
 				VerificationResult result) throws IOException {
@@ -723,6 +769,10 @@ public class VerificationHandler extends TaskHandler {
 				this.result = result;
 				this.parameters = parameters;
 				this.executionTime = executionTime;
+			}
+			
+			public String getQuery() {
+				return query;
 			}
 			
 		}
