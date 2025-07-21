@@ -689,23 +689,8 @@ public class VerificationHandler extends TaskHandler {
 				
 				TestGenerationHandler testGenerationHandler = new TestGenerationHandler(file);
 				testGenerationHandler.execute(testGeneration, basePackage);
-			
-//				TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
-//				String testCode = testGenerator.execute();
-//				String packageUri = testGenerator.getPackageName().replaceAll("\\.", "/");
-//				fileUtil.saveString(testFolderUri + File.separator + packageUri +
-//					File.separator + className + ".java", testCode);
 			}
 		}
-
-//		protected void serializeJavaTestCase(String testFolderUri, String basePackage,
-//				String className, ExecutionTrace trace) {
-//			TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
-//			String testCode = testGenerator.execute();
-//			String packageUri = testGenerator.getPackageName().replaceAll("\\.", "/");
-//			fileUtil.saveString(testFolderUri + File.separator + packageUri +
-//				File.separator + className + ".java", testCode);
-//		}
 		
 		// Serialization of test cases for additional programming languages here...
 		
