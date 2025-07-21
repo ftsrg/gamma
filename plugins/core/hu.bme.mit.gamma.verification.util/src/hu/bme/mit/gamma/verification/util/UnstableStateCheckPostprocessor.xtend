@@ -13,13 +13,13 @@ package hu.bme.mit.gamma.verification.util
 import hu.bme.mit.gamma.property.model.StateFormula
 import hu.bme.mit.gamma.statechart.interface_.Component
 
-class TrapStateCheckPostprocessor extends StateCheckPostprocessor {
+class UnstableStateCheckPostprocessor extends StateCheckPostprocessor {
 	
 	new(Component originalTopComponent) {
 		super(originalTopComponent)
 	}
 	
-	protected override selectState(StateFormula property) {  // G (state a -> (G state a))
+	protected override selectState(StateFormula property) {  // G (state a -> X(!state a))
 		return super.selectState(property) // Returns the first reference
 	}
 	
