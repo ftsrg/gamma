@@ -668,7 +668,7 @@ public class VerificationHandler extends TaskHandler {
 			String baseFileName = traceFileName;
 			Integer id = getCorrespondingIndex(traceFolder, trace);
 			if (id == null) {
-				Entry<String, Integer> fileNamePair = fileUtil.getFileName(new File(traceFolderUri),
+				Entry<String, Integer> fileNamePair = fileUtil.getFileName(traceFolder,
 						traceFileName, GammaFileNamer.EXECUTION_XTEXT_EXTENSION);
 				id = fileNamePair.getValue();
 			}
