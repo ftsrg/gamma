@@ -443,7 +443,7 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 				mutatedComponent.setName(mutatedComponentName);
 				mutatedModel.getImports().clear();
 				mutatedModel.getImports().addAll(mutantImports);
-				if (mutatedComponent instanceof CompositeComponent mutatedCompositeComponent) {
+				if (mutatedComponent instanceof CompositeComponent) {
 					traceUtil.setInstanceTypes(mutatedInstances, clonedMutatedInstances);
 				}
 				ecoreUtil.save(mutatedModel); //

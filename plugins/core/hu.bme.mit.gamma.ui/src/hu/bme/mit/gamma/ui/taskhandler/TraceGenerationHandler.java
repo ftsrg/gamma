@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.logging.Level;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -60,10 +59,12 @@ public class TraceGenerationHandler extends TaskHandler {
 	public void execute(TraceGeneration traceGeneration) throws IOException {
 		setTargetFolder(traceGeneration);
 		
-		File targetFolder = new File(targetFolderUri + File.separator + file.getName().split("\\.")[0] + File.separator);
+		String extensionlessFileName = file.getName().split("\\.")[0];
+		File targetFolder = new File(targetFolderUri + File.separator + extensionlessFileName + File.separator);
 		if (targetFolder.exists()) {
 			cleanFolder(targetFolder);			
-		} else {
+		}
+		else {
 			targetFolder.mkdirs();
 		}
 		
@@ -85,7 +86,7 @@ public class TraceGenerationHandler extends TaskHandler {
 		List<ExecutionTrace> retrievedTraces = new ArrayList<ExecutionTrace>();
 		ThetaTraceGenerator ttg = new ThetaTraceGenerator();
 		retrievedTraces = ttg.execute(modelFile, fullTraces, variableList, noTransitionCoverage, useAbstraction);
-		logger.log(Level.INFO, "Number of received traces: " + retrievedTraces.size());
+		logger.info("Number of received traces: " + retrievedTraces.size());
 
 		for (ExecutionTrace trace : retrievedTraces) {
 			serializer.serialize(targetFolder.getAbsolutePath(), traceFileName, svgFileName,
@@ -101,7 +102,8 @@ public class TraceGenerationHandler extends TaskHandler {
 	        for (File file : files) {
 	            if (file.isDirectory()) {
 	                deleteFolder(file);
-	            } else {
+	            }
+	            else {
 	                file.delete();
 	            }
 	        }
@@ -110,11 +112,12 @@ public class TraceGenerationHandler extends TaskHandler {
 	
 	public static void deleteFolder(File folder) {
 	    File[] files = folder.listFiles();
-	    if (files!=null) {
+	    if (files != null) {
 	        for (File file : files) {
 	            if (file.isDirectory()) {
 	                deleteFolder(file);
-	            } else {
+	            }
+	            else {
 	                file.delete();
 	            }
 	        }
@@ -151,7 +154,6 @@ public class TraceGenerationHandler extends TaskHandler {
 			Entry<String, Integer> fileNamePair = fileUtil.getFileName(new File(traceFolderUri),
 					traceFileName, GammaFileNamer.EXECUTION_XTEXT_EXTENSION);
 			String fileName = fileNamePair.getKey();
-			Integer id = fileNamePair.getValue();
 			serializer.saveModel(trace, traceFolderUri, fileName);
 		}
 		
