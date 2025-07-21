@@ -7,9 +7,9 @@ import "Interface/Interface.gcd"
 statechart TrainDoorController [
 	port ControlActions : provides ControlActions
 	port FeedbackDoorState : requires FeedbackDoorState {
-		invariant FeedbackDoorState.feedback::doorState = DoorState::OPENING imply in-state(DoorStateRegion.Closed)
+		invariant FeedbackDoorState.feedback::doorState = DoorState::OPENING imply (in-state(DoorStateRegion.Closed) or in-state(DoorStateRegion.Closing))
 		invariant FeedbackDoorState.feedback::doorState = DoorState::OPEN imply in-state(DoorStateRegion.Opening)
-		invariant FeedbackDoorState.feedback::doorState = DoorState::CLOSING imply in-state(DoorStateRegion.Open)
+		invariant FeedbackDoorState.feedback::doorState = DoorState::CLOSING imply (in-state(DoorStateRegion.Open) or in-state(DoorStateRegion.Opening))
 		invariant FeedbackDoorState.feedback::doorState = DoorState::CLOSED imply in-state(DoorStateRegion.Closing)
 	}
 	port FeedbackPresence : requires FeedbackPresence
