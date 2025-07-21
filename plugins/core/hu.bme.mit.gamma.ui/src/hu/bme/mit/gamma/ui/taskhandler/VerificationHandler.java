@@ -16,18 +16,18 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
@@ -666,11 +666,11 @@ public class VerificationHandler extends TaskHandler {
 			// Model
 			File traceFolder = new File(traceFolderUri);
 			String baseFileName = traceFileName;
-			String id = getCorrespondingId(traceFolder, trace);
+			Integer id = getCorrespondingIndex(traceFolder, trace);
 			if (id == null) {
 				Entry<String, Integer> fileNamePair = fileUtil.getFileName(new File(traceFolderUri),
 						traceFileName, GammaFileNamer.EXECUTION_XTEXT_EXTENSION);
-				id = fileNamePair.getValue().toString();
+				id = fileNamePair.getValue();
 			}
 			String fileName = baseFileName + id + "." + GammaFileNamer.EXECUTION_XTEXT_EXTENSION;
 			serializer.saveModel(trace, traceFolderUri, fileName);
@@ -705,16 +705,19 @@ public class VerificationHandler extends TaskHandler {
 			String comment = TraceModelDerivedFeatures.getComment(trace);
 			
 			File[] jsonFiles = traceFolder.listFiles(
-					it -> fileUtil.getExtension(it).equals("json")); // TODO fix order
+					it -> fileUtil.getExtension(it).equals("json"));
 			if (jsonFiles != null) {
-				for (int i = jsonFiles.length - 1; 0 <= i; i--) {
+				List<File> sortedJsonFiles = fileUtil.sortIndexedFiles(
+						Arrays.asList(jsonFiles));
+				ListIterator<File> iterator = sortedJsonFiles.listIterator(sortedJsonFiles.size());
+				while (iterator.hasPrevious()) {
 					try {
-						File jsonFile = jsonFiles[i];
+						File jsonFile = iterator.previous();
 						FileReader reader = new FileReader(jsonFile);
 						VerificationResult result = gson.fromJson(reader, VerificationResult.class);
 						String query = result.getQuery();
 						if (query.equals(comment)) {
-							return jsonFile; // Depends on iteration order (see 'i--' above)
+							return jsonFile; // Depends on iteration order (see sorting/reversing above)
 						}
 					} catch (Exception e) {}
 				}
@@ -723,18 +726,10 @@ public class VerificationHandler extends TaskHandler {
 			return null;
 		}
 		
-		protected String getCorrespondingId(File traceFolder, ExecutionTrace trace) {
+		protected Integer getCorrespondingIndex(File traceFolder, ExecutionTrace trace) {
 			File jsonFile = getCorrespondingJsonFile(traceFolder, trace);
 			if (jsonFile != null) {
-				String name = jsonFile.getName();
-				
-				Pattern pattern = Pattern.compile("([0-9]+)\\..*"); // Eager digit matching
-				Matcher matcher = pattern.matcher(name);
-				
-				if (matcher.find()) {
-					String id = matcher.group(1);
-					return id;
-				}
+				return fileUtil.getIndex(jsonFile);
 			}
 			
 			return null;

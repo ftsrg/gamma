@@ -252,6 +252,19 @@ class JavaUtil {
 	
 	//
 	
+	def String getCommonPrefix(String a, String b) {
+		for (var i = 0; i < a.length && i < b.length; i++) {
+			if (a.charAt(i) != b.charAt(i)) {
+				return a.substring(0, i)
+			}
+		}
+		
+		if (a.length < b.length) {
+			return a
+		}
+		return b
+	}
+	
 	def getStringBetweenChars(String string, char character) {
 		return string.getStringBetweenChars(character, character)
 	}
@@ -344,7 +357,7 @@ class JavaUtil {
 	}
 	
 	def String replaceLast(String string, String regex, String replacement) {
-		return string.replaceFirst("(?s)(.*)" + regex, "$1" + replacement);
+		return string.replaceFirst("(?s)(.*)" + regex, "$1" + replacement)
 	}
 	
 	def matchFirstCharacterCapitalization(String string, String example) {
