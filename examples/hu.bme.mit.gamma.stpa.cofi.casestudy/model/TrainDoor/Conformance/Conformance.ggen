@@ -1,9 +1,9 @@
 import "Conformance.gcd"
 
-//analysis-model {
-//	component : Conformance
-//	language : SMV
-//}
+analysis-model {
+	component : Conformance
+	language : SMV
+}
 
 verification {
 	file : "Conformance.smv"
