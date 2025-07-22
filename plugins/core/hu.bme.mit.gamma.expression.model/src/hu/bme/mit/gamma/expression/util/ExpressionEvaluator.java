@@ -158,7 +158,12 @@ public class ExpressionEvaluator {
 			FieldDeclaration field = fieldReference.getFieldDeclaration();
 			
 			RecordLiteralExpression recordLiteral = null; // Add support for constants
-			recordLiteral = (RecordLiteralExpression) operand;
+			if (operand instanceof RecordLiteralExpression recordLiteralExpression) {
+				recordLiteral = recordLiteralExpression;
+			}
+			else {
+				throw new IllegalArgumentException("Not evaluable expression: " + expression);
+			}
 			FieldAssignment fieldAssignment = recordLiteral.getFieldAssignments().stream()
 				.filter(it -> it.getReference().getFieldDeclaration() == field)
 				.findFirst()
@@ -318,7 +323,12 @@ public class ExpressionEvaluator {
 			FieldDeclaration field = fieldReference.getFieldDeclaration();
 			
 			RecordLiteralExpression recordLiteral = null; // Add support for constants
-			recordLiteral = (RecordLiteralExpression) operand;
+			if (operand instanceof RecordLiteralExpression recordLiteralExpression) {
+				recordLiteral = recordLiteralExpression;
+			}
+			else {
+				throw new IllegalArgumentException("Not evaluable expression: " + expression);
+			}
 			FieldAssignment fieldAssignment = recordLiteral.getFieldAssignments().stream()
 				.filter(it -> it.getReference().getFieldDeclaration() == field)
 				.findFirst()
@@ -410,7 +420,12 @@ public class ExpressionEvaluator {
 			FieldDeclaration field = fieldReference.getFieldDeclaration();
 			
 			RecordLiteralExpression recordLiteral = null; // Add support for constants
-			recordLiteral = (RecordLiteralExpression) operand;
+			if (operand instanceof RecordLiteralExpression recordLiteralExpression) {
+				recordLiteral = recordLiteralExpression;
+			}
+			else {
+				throw new IllegalArgumentException("Not evaluable expression: " + expression);
+			}
 			FieldAssignment fieldAssignment = recordLiteral.getFieldAssignments().stream()
 				.filter(it -> it.getReference().getFieldDeclaration() == field)
 				.findFirst()
