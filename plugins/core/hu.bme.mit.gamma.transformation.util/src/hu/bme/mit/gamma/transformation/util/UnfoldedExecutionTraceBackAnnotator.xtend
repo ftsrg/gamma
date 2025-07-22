@@ -20,7 +20,6 @@ import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
-import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.UnaryExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
@@ -397,19 +396,20 @@ class UnfoldedExecutionTraceBackAnnotator {
 		val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
 		val name = variable.name
 		
+		// Both for "transition" and transition-pair" coverage
 		if (name.startsWith(EXECUTED_TRANSITION_VARIABLE_BEGINNING) &&
 				name.endsWith(EXECUTED_TRANSITION_VARIABLE_END)) {
 			val container = assert.eContainer
-			if (container instanceof Step ||
-					container instanceof EqualityExpression &&
-					assert.getContainerOfType(EqualityExpression).rightOperand instanceof TrueExpression) {
-				// There should be one true assignment to this variable
+			if (container instanceof Step || container instanceof EqualityExpression) {
+				val rhs = (container instanceof EqualityExpression) ? container.rightOperand : 
+						expressionModelFactory.createTrueExpression
+				// There should be one 'true' or 'integer literal' assignment to this variable
 				val statechart = instance.derivedType
 				if (statechart instanceof StatechartDefinition) {
 					val transitions = statechart.transitions
 					val executedTransitions = transitions.filter[
 							it.effects.filter(AssignmentStatement)
-							.exists[it.lhs.declaration == variable && it.rhs instanceof TrueExpression]]
+								.exists[it.lhs.declaration == variable && it.rhs.helperEquals(rhs)]]
 					if (!executedTransitions.empty) {
 						val instanceName = originalInstance.name
 						val executedTransition = executedTransitions.head
