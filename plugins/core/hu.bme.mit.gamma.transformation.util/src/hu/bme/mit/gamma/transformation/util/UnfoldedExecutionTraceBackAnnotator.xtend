@@ -201,20 +201,14 @@ class UnfoldedExecutionTraceBackAnnotator {
 		val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
 		try {
 			val originalState = originalInstance.getOriginalState(newState)
-			return compositeModelFactory.createComponentInstanceStateReferenceExpression => [
-				it.instance = originalInstance
-				it.state = originalState
-				it.region = it.state.parentRegion
-			]
+			val originalReference = originalInstance.createStateReference(originalState)
+			return originalReference
 		} catch (IllegalArgumentException e) {
 			val message = e.message.trim
 			if (message.startsWith("Not found state")) {
-				// Injected state for checking nondeterministic behavior
-				if (newState.name == TRAP_STATE_ID) {
-					val regionName = newState.parentRegion.name
-					val instanceName = originalInstance.name
-					
-					return '''«TRAP_STATE_MESSAGE_BEGINNING» region «regionName» of «instanceName»'''.createOpaqueExpression
+				val metadataMessage = assert.backAnnotate
+				if (metadataMessage !== null) {
+					return metadataMessage
 				}
 				
 				logger.warning(message)
@@ -235,40 +229,9 @@ class UnfoldedExecutionTraceBackAnnotator {
 		} catch (IllegalArgumentException e) {
 			val message = e.message.trim
 			if (message.startsWith("Not found variable")) {
-				val name = variable.name
-				if (name.startsWith(EXECUTED_TRANSITION_VARIABLE_BEGINNING) &&
-						name.endsWith(EXECUTED_TRANSITION_VARIABLE_END)) {
-					val container = assert.eContainer
-					if (container instanceof Step ||
-							container instanceof EqualityExpression &&
-							assert.getContainerOfType(EqualityExpression).rightOperand instanceof TrueExpression) {
-						// There should be one true assignment to this variable
-						val statechart = instance.derivedType
-						if (statechart instanceof StatechartDefinition) {
-							val transitions = statechart.transitions
-							val executedTransitions = transitions.filter[
-									it.effects.filter(AssignmentStatement)
-									.exists[it.lhs.declaration == variable && it.rhs instanceof TrueExpression]]
-							if (!executedTransitions.empty) {
-								val instanceName = originalInstance.name
-								val executedTransition = executedTransitions.head
-								
-								val transition = try {
-									originalInstance.getOriginalTransition(executedTransition)
-								} catch (IllegalArgumentException e2) {
-									// Did not find original transition
-									executedTransition
-								}
-								
-								val metadataMessage = '''«EXECUTED_TRANSITION_MESSAGE_BEGINNING»«
-										transition.serialize» of «instanceName»'''
-											.createOpaqueExpression
-								metadata += metadataMessage
-								
-								return metadataMessage
-							}
-						}
-					}
+				val metadataMessage = assert.backAnnotate
+				if (metadataMessage !== null) {
+					return metadataMessage
 				}
 			}
 			
@@ -336,7 +299,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 		val clonedValue = value.clone
 		
 		// Type declarations
-		val typeDeclarations = newHashSet
+		val typeDeclarations = newLinkedHashSet
 		
 		val typeReferences = clonedValue.getSelfAndAllContentsOfType(TypeReference)
 		typeDeclarations += typeReferences.map[it.reference]
@@ -404,6 +367,72 @@ class UnfoldedExecutionTraceBackAnnotator {
 				}
 			}
 		}
+	}
+	
+	//
+	
+	protected def backAnnotate(ComponentInstanceStateReferenceExpression assert) {
+		val instance = assert.instance.lastInstance as SynchronousComponentInstance
+		val state = assert.state
+		val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
+		val name = state.name
+		
+		// Injected state for checking nondeterministic behavior
+		if (name == TRAP_STATE_ID) {
+			val regionName = state.parentRegion.name
+			val instanceName = originalInstance.name
+			
+			val metadataMessage = '''«TRAP_STATE_MESSAGE_BEGINNING» region «regionName» of «instanceName»'''
+					.createOpaqueExpression
+			
+			return metadataMessage
+		}
+		
+		return null
+	}
+	
+	protected def backAnnotate(ComponentInstanceVariableReferenceExpression assert) {
+		val instance = assert.instance.lastInstance as SynchronousComponentInstance
+		val variable = assert.variableDeclaration
+		val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
+		val name = variable.name
+		
+		if (name.startsWith(EXECUTED_TRANSITION_VARIABLE_BEGINNING) &&
+				name.endsWith(EXECUTED_TRANSITION_VARIABLE_END)) {
+			val container = assert.eContainer
+			if (container instanceof Step ||
+					container instanceof EqualityExpression &&
+					assert.getContainerOfType(EqualityExpression).rightOperand instanceof TrueExpression) {
+				// There should be one true assignment to this variable
+				val statechart = instance.derivedType
+				if (statechart instanceof StatechartDefinition) {
+					val transitions = statechart.transitions
+					val executedTransitions = transitions.filter[
+							it.effects.filter(AssignmentStatement)
+							.exists[it.lhs.declaration == variable && it.rhs instanceof TrueExpression]]
+					if (!executedTransitions.empty) {
+						val instanceName = originalInstance.name
+						val executedTransition = executedTransitions.head
+						
+						val transition = try {
+							originalInstance.getOriginalTransition(executedTransition)
+						} catch (IllegalArgumentException e2) {
+							// Did not find original transition
+							executedTransition
+						}
+						
+						val metadataMessage = '''«EXECUTED_TRANSITION_MESSAGE_BEGINNING»«
+								transition.serialize» of «instanceName»'''
+									.createOpaqueExpression
+						metadata += metadataMessage
+						
+						return metadataMessage
+					}
+				}
+			}
+		}
+		
+		return null
 	}
 	
 	//
