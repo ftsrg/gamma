@@ -15,8 +15,14 @@ import java.util.Map
 
 class ImlApiHelper {
 	
-	public static val MODULE_PREFIX = "M." // Given by Imandra
+	protected static final String RET_VALUE = "- : "
+	public static final String CX_START = "module CX :"
+	public static final String CX_INIT_VAR = ImlApiHelper.RET_VALUE + "t =" // Used to be 'module CX :' before refactor
+	public static final String CX_TRACE_VAR = ImlApiHelper.RET_VALUE + "t list ="
 	
+	protected static val MODULE_PREFIX = "M." // Given by Imandra
+	
+	/* ImandraX (new Imandra) - IMANDRA_API_KEY environment variable must be set */
 	static def String getInvariantCall(String model, String command, String commandlessQuery) '''
 		from imandrax_api import Client
 		# from imandra.core import Client
@@ -34,7 +40,7 @@ class ImlApiHelper {
 			«model»
 			«commandlessQuery.utilityMethods»
 		""")
-		check_res = client.«command»("«commandlessQuery»")
+		check_res = client.«command»_src("«commandlessQuery»")
 «««		TODO If exists
 		if hasattr(check_res, 'sat'):
 			CX = check_res.sat.model.src
@@ -52,8 +58,10 @@ class ImlApiHelper {
 			eval_init_res = client.eval_src("eval(init)")
 			log = client.eval_src("eval(log_run init path)")
 			
-«««			TODO print init and additional part string?
+			print("«CX_START»") # Metadata related to the trace
+			print("«CX_INIT_VAR»")
 			print_eval_res(eval_init_res)
+			print("«CX_TRACE_VAR»")
 			print_eval_res(log)
 	'''
 	
@@ -198,10 +206,13 @@ class ImlApiHelper {
 	}
 	
 	protected static def parseInputs(String query) {
-		val funKeyword = "fun"
-		val funIndex = query.indexOf(funKeyword)
-		val lastIndex = query.indexOf("->")
-		val input = query.substring(funIndex + funKeyword.length, lastIndex).trim
+		val FUN = "fun"
+		val ARROW = "->"
+		
+		val funIndex = query.indexOf(FUN)
+		val lastIndex = query.indexOf(ARROW)
+		val input = query.substring(funIndex + FUN.length, lastIndex).trim
+		
 		return input
 	}
 	
@@ -209,15 +220,19 @@ class ImlApiHelper {
 		val input = query.parseInputs
 		val inputs = input.split("\\s")
 		// Sorted map needed!
-		val inputsOfLevels = inputs.groupBy[Integer.valueOf(it.split("\\_").get(1))] // TODO based on ImlPropertySerializer.getInputId
+		val inputsOfLevels = inputs.groupBy[
+				Integer.valueOf(it.split("\\_").get(1))] // TODO based on ImlPropertySerializer.getInputId
+		
 		return inputsOfLevels
 	}
 	
 	protected static def discardInputsAfterLoops(Map<Integer, List<String>> inputsOfLevels, String command) {
-		val loopOperators = (command.contains("verify")) ? #[ "F", "U", "SR" ] : #[ "G", "R", "WU" ]
+		val loopOperators = (command.contains("verify")) ?
+				#[ "F", "U", "SR" ] : #[ "G", "R", "WU" ]
 		for (level : inputsOfLevels.keySet) {
 			val inputs = inputsOfLevels.get(level)
-			if (inputs.exists[loopOperators.contains(it.split("\\_").get(2))]) {// TODO based on ImlPropertySerializer.getInputId
+			if (inputs.exists[
+					loopOperators.contains(it.split("\\_").get(2))]) {// TODO based on ImlPropertySerializer.getInputId
 				for (greaterLevel : inputsOfLevels.keySet.filter[it > level]) {
 					val discardableInputs = inputsOfLevels.get(greaterLevel)
 					val size = discardableInputs.size
@@ -226,17 +241,58 @@ class ImlApiHelper {
 						discardableInputs += "[]" // Empty lists
 					}
 				}
+				
 				return inputsOfLevels
 			}
 		}
+		
 		return inputsOfLevels
 	}
 	
+	//
+	
+	static def String getBasicInvariantCall(String parameters, String modelString, String command, String commandlessQuery) {
+		val arguments = parameters.parseArguments
+		val callArguments = arguments.key
+		val postCallArguments = arguments.value
+		
+		return ImlApiHelper.getBasicCall('''
+			«modelString»;;
+			«commandlessQuery.utilityMethods»
+			«command»«IF !callArguments.nullOrEmpty» «callArguments» «ENDIF»(«commandlessQuery»)«postCallArguments»;;
+			#print_length 10000;;
+			#print_depth 10000;;
+			init;;
+			let path = collect_path «FOR inputsOfLevels : commandlessQuery
+				.parseInputsOfLevels
+				.discardInputsAfterLoops(command) // Discarding events (path parts) after the first loop
+				.values»«
+					FOR inputOfLevels : inputsOfLevels»«IF inputOfLevels != "[]"»CX.«inputOfLevels»«ELSE»[]«ENDIF» «ENDFOR»«ENDFOR»in
+			log_run init path;;
+		''')
+	}
+	
+	protected static def parseArguments(String arguments) {
+		val argument = new StringBuilder
+		val postArgument = new StringBuilder
+		
+		val splits = arguments.split("\\s") // Split based on any whitespace
+		for (split : splits) {
+			if (split.startsWith("[") && split.endsWith("]")) { // [@@auto]
+				postArgument.append(split + " ")
+			}
+			else {
+				argument.append(split + " ")
+			}
+		}
+		
+		return argument.toString.trim -> postArgument.toString.trim
+	}
+	
 	/**
-	 * For this call, the caller has to be logged in via the Imandra CLI.
+	 * For this call, the caller has to be logged in via the Imandra CLI (old Imandra).
 	 */
-	@Deprecated
-	static def String getBasicCall(String src) '''
+	protected static def String getBasicCall(String src) '''
 		import sys
 		import imandra.api.auth
 		import imandra.api.instance

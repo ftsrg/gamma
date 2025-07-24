@@ -52,15 +52,12 @@ class ImlVerifier extends AbstractVerifier {
 		val command = query.substring(0, query.indexOf("("))
 		val commandlessQuery = query.substring(command.length)
 		
-		val arguments = parameters.parseArguments
-		val argument = arguments.key
-		val postArgument = arguments.value
-		
 		val parentFile = modelFile.parentFile + File.separator + IMANDRA_TEMPORARY_COMMAND_FOLDER
 		val pythonFile = new File(parentFile, '''.imandra-commands-«Thread.currentThread.name».py''')
 		pythonFile.deleteOnExit
 		
-		val serializedPython = ImlApiHelper.getInvariantCall(modelString, command, commandlessQuery)
+		val serializedPython = ImlApiHelper.getBasicInvariantCall(parameters, modelString, command, commandlessQuery)
+//		val serializedPython = ImlApiHelper.getInvariantCall(modelString, command, commandlessQuery)
 		fileUtil.saveString(pythonFile, serializedPython)
 		
 		// python3 .\imandra-test.py
@@ -87,7 +84,7 @@ class ImlVerifier extends AbstractVerifier {
 			
 			val gammaPackage = traceability as Package
 			val backAnnotator = new TraceBackAnnotator(gammaPackage, resultReader)
-			val trace = backAnnotator.synchronizeAndExecute // TODO?
+			val trace = backAnnotator.synchronizeAndExecute
 			
 			// Checking for loops (e.g., A F)
 			trace?.createCycleIfPossible
@@ -114,41 +111,6 @@ class ImlVerifier extends AbstractVerifier {
 		}
 		
 		return traceResult
-	}
-	
-//	protected def String getImlApiCode(String modelString, String command,
-//			String arguments, String postArguments, String commandlessQuery) {
-//		return ImlApiHelper.getBasicCall('''
-//			«modelString»;;
-//			«commandlessQuery.utilityMethods»
-//			«command»«IF !arguments.nullOrEmpty» «arguments» «ENDIF»(«commandlessQuery»)«postArguments»;;
-//			#print_length 10000;;
-//			#print_depth 10000;;
-//			init;;
-//			let path = collect_path «FOR inputsOfLevels : commandlessQuery
-//				.parseInputsOfLevels
-//				.discardInputsAfterLoops(command) // Discarding events (path parts) after the first loop
-//				.values»«
-//					FOR inputOfLevels : inputsOfLevels»«IF inputOfLevels != "[]"»CX.«inputOfLevels»«ELSE»[]«ENDIF» «ENDFOR»«ENDFOR»in
-//			log_run init path;;
-//		''')
-//	}
-	
-	protected def parseArguments(String arguments) {
-		val argument = new StringBuilder
-		val postArgument = new StringBuilder
-		
-		val splits = arguments.split("\\s") // Split based on any whitespace
-		for (split : splits) {
-			if (split.startsWith("[") && split.endsWith("]")) { // [@@auto]
-				postArgument.append(split + " ")
-			}
-			else {
-				argument.append(split + " ")
-			}
-		}
-		
-		return argument.toString.trim -> postArgument.toString.trim
 	}
 	
 	//

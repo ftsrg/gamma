@@ -30,18 +30,15 @@ import java.util.logging.Logger
 import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
+import static hu.bme.mit.gamma.iml.verification.ImlApiHelper.*
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class TraceBackAnnotator {
 	//
 	protected static final String LOOP = " loop "
-	protected static final String RETURN_VALUE = "- : "
-	public static final String CX_START = "module CX :"
 	public static final String STATE_CHANGE = "{"
 	public static final String STATE_CHANGE2 = "[{"
-	public static final String COUNTEREXAMPLE_INIT_VAR = RETURN_VALUE + "t =" // Used to be 'module CX :' before refactor
-	public static final String COUNTEREXAMPLE_TRACE_VAR = RETURN_VALUE + "t list ="
 	
 	protected val preprocessExpressions = ImlExpressionParser.preprocessExpressions
 	
@@ -129,15 +126,15 @@ class TraceBackAnnotator {
 				
 				if (state != BackAnnotatorState.INFO && state != BackAnnotatorState.END) {
 					switch (line) {
-						case line.contains(COUNTEREXAMPLE_INIT_VAR): { // Before RETURN_VALUE; UNREACHABLE?
+						case line.contains(CX_INIT_VAR): { // Before RETURN_VALUE; UNREACHABLE?
 							isValidTrace = true
 							state = BackAnnotatorState.END
 						}
-						case line.contains(COUNTEREXAMPLE_TRACE_VAR): { // UNREACHABLE?
+						case line.contains(CX_TRACE_VAR): { // UNREACHABLE?
 							isValidTrace = true
 							state = BackAnnotatorState.STATE_CHECK // Will be switched to ENV in default branch
 						}
-						case line.startsWith(RETURN_VALUE): {
+						case line.startsWith(RET_VALUE): {
 							// Return value of a call, no operation
 						}
 						case state == BackAnnotatorState.INIT: {
@@ -187,7 +184,7 @@ class TraceBackAnnotator {
 							for (handledLine : handledLines.split(System.lineSeparator)
 										.map[it.trim]
 										.reject[it.nullOrEmpty]) {
-								val split = handledLine.split(" = ", 2) // Only the first " = " is checked
+								val split = handledLine.split("=", 2) // Only the first " = " is checked
 								val id = split.get(0).trim
 								val value = split.get(1).trim
 								try {
