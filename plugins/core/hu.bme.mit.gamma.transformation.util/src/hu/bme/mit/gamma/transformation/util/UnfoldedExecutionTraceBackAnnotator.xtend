@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.UnaryExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory
@@ -29,7 +30,10 @@ import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
+import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
+import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.util.ElementSerializer
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.Cycle
@@ -79,6 +83,11 @@ class UnfoldedExecutionTraceBackAnnotator {
 	public static final String EXECUTED_TRANSITION_VARIABLE_BEGINNING = "__id_"
 	public static final String EXECUTED_TRANSITION_VARIABLE_END = "_"
 	public static final String EXECUTED_TRANSITION_MESSAGE_BEGINNING = "Transition executed: "
+	
+	public static final String SENT_INTERACTION_VARIABLE_BEGINNING = EXECUTED_TRANSITION_VARIABLE_BEGINNING + "first_"
+	public static final String RECEIVED_INTERACTION_VARIABLE_BEGINNING = EXECUTED_TRANSITION_VARIABLE_BEGINNING + "second_"
+	public static final String INTERACTION_SENDING_BEGINNING = "Interaction sent by: "
+	public static final String INTERACTION_RECEIVING_BEGINNING = "Interaction received by: "
 	//
 	
 	new(ExecutionTrace trace, Component originalTopComponent) {
@@ -308,7 +317,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 		for (typeDeclaration : typeDeclarations) {
 			val originalTypeDeclaration = originalTopComponent
 					.getOriginalTypeDeclaration(typeDeclaration)
-			//
+			
 			typeReferences.filter[it.reference === typeDeclaration]
 					.forEach[it.reference = originalTypeDeclaration]
 			recordLiterals.filter[it.typeDeclaration === typeDeclaration]
@@ -394,9 +403,10 @@ class UnfoldedExecutionTraceBackAnnotator {
 		val instance = assert.instance.lastInstance as SynchronousComponentInstance
 		val variable = assert.variableDeclaration
 		val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
+		val instanceName = originalInstance.name
 		val name = variable.name
 		
-		// Both for "transition" and transition-pair" coverage
+		// All for 'transition', 'transition-pair' and 'interaction' coverage
 		if (name.startsWith(EXECUTED_TRANSITION_VARIABLE_BEGINNING) &&
 				name.endsWith(EXECUTED_TRANSITION_VARIABLE_END)) {
 			val container = assert.eContainer
@@ -411,22 +421,45 @@ class UnfoldedExecutionTraceBackAnnotator {
 							it.effects.filter(AssignmentStatement)
 								.exists[it.lhs.declaration == variable && it.rhs.helperEquals(rhs)]]
 					if (!executedTransitions.empty) {
-						val instanceName = originalInstance.name
+						// 'Transition' (and/or '-pair') or 'interaction reception'
 						val executedTransition = executedTransitions.head
 						
-						val transition = try {
-							originalInstance.getOriginalTransition(executedTransition)
-						} catch (IllegalArgumentException e2) {
-							// Did not find original transition
-							executedTransition
-						}
-						
-						val metadataMessage = '''«EXECUTED_TRANSITION_MESSAGE_BEGINNING»«
-								transition.serialize» of «instanceName»'''
-									.createOpaqueExpression
-						metadata += metadataMessage
+						val prefix = name.startsWith(RECEIVED_INTERACTION_VARIABLE_BEGINNING) ?
+								INTERACTION_RECEIVING_BEGINNING : EXECUTED_TRANSITION_MESSAGE_BEGINNING
+						val metadataMessage = executedTransition.getMetadata(originalInstance, prefix)
 						
 						return metadataMessage
+					}
+					else {
+						// Sender of 'interaction' coverage
+						val _package = trace.import
+						val statecharts = _package.allStatechartComponents
+						
+						val allStates = statecharts.map[it.allStates].flatten
+						val allTransitions = statecharts.map[it.transitions].flatten
+						val actions = allStates.map[it.entryActions + it.exitActions].flatten +
+								allTransitions.map[it.effects].flatten
+						val raiseEventActions = actions.map[it.getSelfAndAllContentsOfType(RaiseEventAction)].flatten.toSet
+						val executedActions = raiseEventActions
+								.filter[!it.arguments.empty && it.arguments.lastOrNull.helperEquals(rhs)]
+						if (!executedActions.empty) {
+							val action = executedActions.head
+							val transitionOrState = action.containingTransitionOrState
+							if (transitionOrState instanceof Transition) {
+								val metadataMessage = transitionOrState.getMetadata(originalInstance, INTERACTION_SENDING_BEGINNING)
+								
+								return metadataMessage
+							}
+							else if (transitionOrState instanceof State) {
+								val stateName = transitionOrState.name
+								val regionName = transitionOrState.parentRegion.name
+								
+								val metadataMessage = '''«INTERACTION_SENDING_BEGINNING» state «stateName» region «regionName» of «instanceName»'''
+										.createOpaqueExpression
+								
+								return metadataMessage
+							}
+						}
 					}
 				}
 			}
@@ -434,6 +467,26 @@ class UnfoldedExecutionTraceBackAnnotator {
 		
 		return null
 	}
+	
+	protected def getMetadata(Transition newTransition,
+			ComponentInstanceReferenceExpression originalInstance, String prefix) {
+		val transition = try {
+			originalInstance.getOriginalTransition(newTransition)
+		} catch (IllegalArgumentException e2) {
+			// Did not find the original transition
+			newTransition
+		}
+		val instanceName = originalInstance.name
+		
+		val metadataMessage = prefix.getTransitionMessage(transition, instanceName)
+					.createOpaqueExpression
+		metadata += metadataMessage
+		
+		return metadataMessage
+	}
+	
+	protected def getTransitionMessage(String prefix, Transition transition, String instanceName)
+		'''«prefix»«transition.serialize» of «instanceName»'''
 	
 	//
 	
