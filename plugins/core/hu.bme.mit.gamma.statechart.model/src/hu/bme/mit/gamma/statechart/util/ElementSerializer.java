@@ -30,23 +30,17 @@ public class ElementSerializer {
 	//
 	
 	public String serialize(Transition transition) {
-		String stateNodes = "from " + transition.getSourceState().getName() + " to " +
-				transition.getTargetState().getName();
-		
-		Trigger trigger = transition.getTrigger();
-		String triggerString = serialize(trigger);
-		
-		Expression guard = transition.getGuard();
-		String guardString = (guard == null) ? "" :  " [" + javaUtil.deparenthesize(
-				expressionSerializer.serialize(guard)) + "]";
+		String sourceString = serializeSourceAndTargetAndTriggerAndGuard(transition);
 		
 		List<Action> effects = transition.getEffects();
-		String effectString = (effects.isEmpty()) ? "" : " /" + effects.stream()
+		String effectString = (effects.isEmpty()) ? "" : " / " + effects.stream()
 				.map(it -> actionSerializer.serialize(it))
-				.reduce((t, u) -> " " + t + ";" + u)
+				.reduce((t, u) -> t + " " + u)
 				.get();
 		
-		return stateNodes + triggerString + guardString + effectString;
+		return (sourceString + effectString)
+					.replace(System.lineSeparator(), " ")
+					.replaceAll("\\s+", " ");
 	}
 	
 	public String serializeSourceAndTrigger(Transition transition) {
@@ -56,7 +50,25 @@ public class ElementSerializer {
 		
 		return string;
 	}
-
+	
+	public String serializeSourceAndTargetAndTrigger(Transition transition) {
+		String source = "from " + transition.getSourceState().getName();
+		String target = " to " + transition.getTargetState().getName();
+		Trigger trigger = transition.getTrigger();
+		String string = source + target + serialize(trigger);
+		
+		return string;
+	}
+	
+	public String serializeSourceAndTargetAndTriggerAndGuard(Transition transition) {
+		String string = serializeSourceAndTargetAndTrigger(transition);
+		Expression guard = transition.getGuard();
+		String guardString = (guard == null) ? "" : javaUtil.deparenthesize(
+				expressionSerializer.serialize(guard));
+		
+		return string + " [" + guardString + "]";
+	}
+	
 	protected String serialize(Trigger trigger) {
 		if (trigger == null) {
 			return "";

@@ -43,7 +43,8 @@ public class ActionSerializer extends hu.bme.mit.gamma.action.util.ActionSeriali
 		for (Expression argument : raiseEventAction.getArguments()) {
 			if (isFirst) {
 				isFirst = false;
-			} else {
+			}
+			else {
 				builder.append(", ");
 			}
 			builder.append(expressionSerializer.serialize(argument));
@@ -53,10 +54,11 @@ public class ActionSerializer extends hu.bme.mit.gamma.action.util.ActionSeriali
 	}
 
 	public String serialize(Action action) {
-		if (action instanceof SetTimeoutAction) {
-			return _serialize((SetTimeoutAction) action);
-		} else if (action instanceof RaiseEventAction) {
-			return _serialize((RaiseEventAction) action);
+		if (action instanceof SetTimeoutAction _action) {
+			return _serialize(_action);
+		}
+		else if (action instanceof RaiseEventAction _action) {
+			return _serialize(_action);
 		}
 		return super.serialize(action);
 	}

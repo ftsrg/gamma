@@ -402,8 +402,6 @@ class UnfoldedExecutionTraceBackAnnotator {
 	protected def backAnnotate(ComponentInstanceVariableReferenceExpression assert) {
 		val instance = assert.instance.lastInstance as SynchronousComponentInstance
 		val variable = assert.variableDeclaration
-		val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
-		val instanceName = originalInstance.name
 		val name = variable.name
 		
 		// All for 'transition', 'transition-pair' and 'interaction' coverage
@@ -423,6 +421,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 					if (!executedTransitions.empty) {
 						// 'Transition' (and/or '-pair') or 'interaction reception'
 						val executedTransition = executedTransitions.head
+						val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
 						
 						val prefix = name.startsWith(RECEIVED_INTERACTION_VARIABLE_BEGINNING) ?
 								INTERACTION_RECEIVING_BEGINNING : EXECUTED_TRANSITION_MESSAGE_BEGINNING
@@ -432,32 +431,36 @@ class UnfoldedExecutionTraceBackAnnotator {
 					}
 					else {
 						// Sender of 'interaction' coverage
-						val _package = trace.import
-						val statecharts = _package.allStatechartComponents
-						
-						val allStates = statecharts.map[it.allStates].flatten
-						val allTransitions = statecharts.map[it.transitions].flatten
-						val actions = allStates.map[it.entryActions + it.exitActions].flatten +
-								allTransitions.map[it.effects].flatten
-						val raiseEventActions = actions.map[it.getSelfAndAllContentsOfType(RaiseEventAction)].flatten.toSet
-						val executedActions = raiseEventActions
-								.filter[!it.arguments.empty && it.arguments.lastOrNull.helperEquals(rhs)]
-						if (!executedActions.empty) {
-							val action = executedActions.head
-							val transitionOrState = action.containingTransitionOrState
-							if (transitionOrState instanceof Transition) {
-								val metadataMessage = transitionOrState.getMetadata(originalInstance, INTERACTION_SENDING_BEGINNING)
-								
-								return metadataMessage
-							}
-							else if (transitionOrState instanceof State) {
-								val stateName = transitionOrState.name
-								val regionName = transitionOrState.parentRegion.name
-								
-								val metadataMessage = '''«INTERACTION_SENDING_BEGINNING» state «stateName» region «regionName» of «instanceName»'''
-										.createOpaqueExpression
-								
-								return metadataMessage
+						val newComponent = trace.component
+						for (senderInstance : newComponent.allSimpleInstances) {
+							val senderStatechart = senderInstance.getStatechart
+							
+							val allStates = senderStatechart.allStates
+							val allTransitions = senderStatechart.transitions
+							val actions = allStates.map[it.entryActions + it.exitActions].flatten +
+									allTransitions.map[it.effects].flatten
+							val raiseEventActions = actions.map[it.getSelfAndAllContentsOfType(RaiseEventAction)].flatten.toSet
+							val executedActions = raiseEventActions
+									.filter[!it.arguments.empty && it.arguments.lastOrNull.helperEquals(rhs)]
+							if (!executedActions.empty) {
+								val originalSenderInstance = senderInstance.getOriginalSimpleInstanceReference(originalTopComponent)
+								val action = executedActions.head
+								val transitionOrState = action.containingTransitionOrState
+								if (transitionOrState instanceof Transition) {
+									val metadataMessage = transitionOrState.getMetadata(originalSenderInstance, INTERACTION_SENDING_BEGINNING)
+									
+									return metadataMessage
+								}
+								else if (transitionOrState instanceof State) {
+									val stateName = transitionOrState.name
+									val regionName = transitionOrState.parentRegion.name
+									val instanceName = originalSenderInstance.name
+									
+									val metadataMessage = '''«INTERACTION_SENDING_BEGINNING»state «stateName» region «regionName» of «instanceName»'''
+											.createOpaqueExpression
+									
+									return metadataMessage
+								}
 							}
 						}
 					}

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -479,6 +479,7 @@ class UnfoldingTraceability {
 	def getOriginalTransition(ComponentInstance originalInstance, Transition newTransition) {
 		val originalType = originalInstance.getStatechart
 		val originalTransitions = originalType.transitions
+		
 		val sameSource = originalTransitions.filter[
 				it.sourceState.fullContainmentHierarchy == newTransition.sourceState.fullContainmentHierarchy]
 		val sameTarget = originalTransitions.filter[
@@ -490,6 +491,11 @@ class UnfoldingTraceability {
 		}
 		if (sameSource.size == 1) {
 			return sameSource.head
+		}
+		for (transition : sameSource) {
+			if (transition.serializeSourceAndTargetAndTriggerAndGuard == newTransition.serializeSourceAndTargetAndTriggerAndGuard) {
+				return transition
+			}
 		}
 		for (transition : sameSource) {
 			if (transition.serializeSourceAndTrigger == newTransition.serializeSourceAndTrigger) {
