@@ -41,8 +41,7 @@ class ImlApiHelper {
 			«commandlessQuery.utilityMethods»
 		""")
 		check_res = client.«command»_src("«commandlessQuery»")
-«««		TODO If exists
-		if hasattr(check_res, 'sat'):
+		if hasattr(check_res, 'sat') and check_res.sat.model.src:
 			CX = check_res.sat.model.src
 			client.eval_src(CX)
 			

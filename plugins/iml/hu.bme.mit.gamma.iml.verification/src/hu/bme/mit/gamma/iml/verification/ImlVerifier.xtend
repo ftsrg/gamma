@@ -56,6 +56,7 @@ class ImlVerifier extends AbstractVerifier {
 		val pythonFile = new File(parentFile, '''.imandra-commands-«Thread.currentThread.name».py''')
 		pythonFile.deleteOnExit
 		
+		// "Old" Imandra API vs. ImandraX API
 		val serializedPython = ImlApiHelper.getBasicInvariantCall(parameters, modelString, command, commandlessQuery)
 //		val serializedPython = ImlApiHelper.getInvariantCall(modelString, command, commandlessQuery)
 		fileUtil.saveString(pythonFile, serializedPython)
