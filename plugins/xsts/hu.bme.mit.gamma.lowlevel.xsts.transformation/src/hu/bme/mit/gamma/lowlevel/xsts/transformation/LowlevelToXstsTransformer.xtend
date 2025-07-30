@@ -219,6 +219,10 @@ class LowlevelToXstsTransformer {
 		
 		handleTransientAndResettableVariableAnnotations
 		handleRunUponExternalEventAnnotation
+		
+		// To have a deterministic result
+		sortDeclarations
+		
 		// The created EMF models are returned
 		return new SimpleEntry<XSTS, L2STrace>(xSts, trace.getTrace)
 	}
@@ -825,6 +829,12 @@ class LowlevelToXstsTransformer {
 			
 			xSts.mergedTransition.action = ifAction
 		}
+	}
+	
+	protected def sortDeclarations() {
+		xSts.typeDeclarations.sortInplaceWith[it.name]
+		xSts.publicTypeDeclarations.sortInplaceWith[it.name]
+		xSts.variableDeclarations.sortInplaceWith[it.name]
 	}
 	
 	def dispose() {

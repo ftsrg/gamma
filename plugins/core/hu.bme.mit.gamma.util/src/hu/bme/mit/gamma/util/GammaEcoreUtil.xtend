@@ -35,6 +35,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.emf.ecore.util.EcoreUtil.Copier
 import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper
 import org.eclipse.emf.ecore.util.EcoreUtil.UsageCrossReferencer
+import org.eclipse.xtext.xbase.lib.Functions.Function1
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -965,6 +966,16 @@ class GammaEcoreUtil {
 			}
 		)
 		return array
+	}
+	
+	def <T extends EObject, C extends Comparable<? super C>> void sortInplaceWith(
+			List<T> list, Function1<? super T, C> key) {
+		val sortedList = newArrayList
+		sortedList += list
+		sortedList.sortInplaceBy(key)
+		
+		list.clear
+		list += sortedList
 	}
 	
 	def <T extends EObject> void removeEqualElements(List<T> list) {
