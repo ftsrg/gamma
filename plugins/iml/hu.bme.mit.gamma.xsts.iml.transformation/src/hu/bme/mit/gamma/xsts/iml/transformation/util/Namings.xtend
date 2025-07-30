@@ -67,19 +67,6 @@ class Namings {
 	
 	def static customizeChoice(NonDeterministicAction choice) '''«NONDET_IDENTIFIER_PREFIX»«choice.uniqueIndex»''' // Deterministic name - needed for the reuse of the 'r' record during semantic diff computation
 	
-	def static customizeHoistedFunctionName(Action action) '''h_«action.randomizeName»'''
-	
-	protected def static randomizeName(EObject object) {
-		return object.hashCode.toString.replaceAll("-", "0")
-	}
-	
-	protected def static uniqueIndex(EObject object) {
-		if (object.eContainer === null) {
-			return object.randomizeName
-		}
-		val containers = object.getSelfAndAllContainersOfType(EObject)
-		val index = containers.map[it.indexOrZero].join
-		return index
-	}
+	def static customizeHoistedFunctionName(Action action) '''h_«action.uniqueIndex»'''
 	
 }

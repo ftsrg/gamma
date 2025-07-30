@@ -1044,4 +1044,19 @@ class GammaEcoreUtil {
 		}
 	}
 	
+	//
+	
+	def randomizeName(EObject object) {
+		return object.hashCode.toString.replaceAll("-", "0")
+	}
+	
+	def uniqueIndex(EObject object) {
+		if (object.eContainer === null) {
+			return object.randomizeName
+		}
+		val containers = object.getSelfAndAllContainersOfType(EObject)
+		val index = containers.map[it.indexOrZero].join
+		return index
+	}
+	
 }

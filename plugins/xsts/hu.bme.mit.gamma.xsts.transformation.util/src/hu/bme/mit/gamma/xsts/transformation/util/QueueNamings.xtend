@@ -15,8 +15,7 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.interface_.Port
-
-import static extension java.lang.Math.*
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 class QueueNamings {
 	//
@@ -29,6 +28,8 @@ class QueueNamings {
 	
 	public static final String SIZE_MASTER_PREFIX = SIZE + MASTER_PREFIX
 	public static final String SIZE_SLAVE_PREFIX = SIZE + SLAVE_PREFIX
+	//
+	protected final static extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	//
 	
 	def static String getMasterQueueName(
@@ -44,10 +45,10 @@ class QueueNamings {
 		'''«SIZE_SLAVE_PREFIX»«parameterDeclaration.name.toFirstUpper»«port.name.toFirstUpper»«OF»«instance.name»'''
 	
 	def static String getEventIdLocalVariableName(VariableDeclaration queue)
-		'''eventId_«queue.name»_«queue.hashCode.abs»'''
+		'''eventId_«queue.name»_«queue.uniqueIndex»'''
 	def static String getRandomValueLocalVariableName(VariableDeclaration queue)
-		'''random_«queue.name»_«queue.hashCode.abs»'''
+		'''random_«queue.name»_«queue.uniqueIndex»'''
 	
 	def static String getLoopIterationVariableName() '''i'''
-		
+	
 }

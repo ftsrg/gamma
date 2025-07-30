@@ -75,7 +75,7 @@ class SystemReducer {
 	def void deleteUnusedPorts(XSTS xSts, CompositeComponent component) {
 		// In theory, only AssignmentAction would be enough, still we use AbstractAssignmentAction to be sure
 		val xStsAssignmentActions = xSts.getAllContentsOfType(AbstractAssignmentAction) // Caching
-		val xStsDefaultableVariables = newHashSet
+		val xStsDefaultableVariables = newLinkedHashSet
 		val xStsDeletableVariables = newHashSet
 		val xStsDeletableAssignmentActions = newHashSet
 		for (instance : component.derivedComponents) {
