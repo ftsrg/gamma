@@ -3,10 +3,10 @@ Bundle-ManifestVersion: 2
 Bundle-Name: C Code Generator
 Bundle-SymbolicName: hu.bme.mit.gamma.xsts.codegeneration.c;singleton:=true
 Bundle-Vendor: BME-FTSRG
-Bundle-Version: 2.12.0.qualifier
+Bundle-Version: 2.13.0.qualifier
 Automatic-Module-Name: hu.bme.mit.gamma.xsts.codegeneration.c
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Require-Bundle: com.google.guava,
  org.eclipse.xtend.lib,
  org.eclipse.xtext.xbase.lib,

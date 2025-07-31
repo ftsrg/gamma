@@ -19,7 +19,6 @@ import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
-import org.eclipse.emf.ecore.EObject
 
 class Namings {
 	//

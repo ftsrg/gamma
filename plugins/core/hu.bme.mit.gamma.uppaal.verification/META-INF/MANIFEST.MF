@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: UPPAAL Verifier
 Bundle-SymbolicName: hu.bme.mit.gamma.uppaal.verification;singleton:=true
-Bundle-Version: 2.12.0.qualifier
+Bundle-Version: 2.13.0.qualifier
 Bundle-Vendor: BME-FTSRG
 Export-Package: hu.bme.mit.gamma.uppaal.verification,
  hu.bme.mit.gamma.uppaal.verification.patterns,
@@ -22,6 +22,6 @@ Require-Bundle: com.google.guava,
  hu.bme.mit.gamma.verification.util,
  hu.bme.mit.gamma.theta.verification,
  hu.bme.mit.gamma.querygenerator
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: hu.bme.mit.gamma.uppaal.backannotation
 Import-Package: org.apache.log4j

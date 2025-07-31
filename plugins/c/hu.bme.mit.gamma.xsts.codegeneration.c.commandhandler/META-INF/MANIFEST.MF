@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: C Code Generator Command Handler
 Bundle-SymbolicName: hu.bme.mit.gamma.xsts.codegeneration.c.commandhandler;singleton:=true
 Bundle-Vendor: BME-FTSRG
-Bundle-Version: 2.12.0.qualifier
+Bundle-Version: 2.13.0.qualifier
 Require-Bundle: org.eclipse.ui;bundle-version="3.202.0",
  org.eclipse.core.runtime;bundle-version="3.26.100",
  org.eclipse.core.resources;bundle-version="3.18.200",
@@ -11,4 +11,4 @@ Require-Bundle: org.eclipse.ui;bundle-version="3.202.0",
  hu.bme.mit.gamma.xsts.codegeneration.c;bundle-version="1.0.0"
 Automatic-Module-Name: hu.bme.mit.gamma.xsts.codegeneration.c.commandhandler
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21

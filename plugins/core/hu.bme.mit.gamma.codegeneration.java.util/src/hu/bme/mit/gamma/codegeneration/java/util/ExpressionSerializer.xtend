@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -34,6 +34,7 @@ import hu.bme.mit.gamma.expression.model.LessExpression
 import hu.bme.mit.gamma.expression.model.ModExpression
 import hu.bme.mit.gamma.expression.model.MultiplyExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
+import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.expression.model.OrExpression
 import hu.bme.mit.gamma.expression.model.PredicateExpression
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression
@@ -69,6 +70,10 @@ class ExpressionSerializer {
 	def dispatch String serialize(ElseExpression expression) {
 		// No operation, this cannot be transformed on this level
 		throw new IllegalArgumentException("Cannot be transformed")
+	}
+	
+	def dispatch String serialize(OpaqueExpression expression) {
+		return '''// «expression.expression»'''
 	}
 	
 	def dispatch String serialize(EnumerationLiteralExpression expression) {

@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Action Language Metamodel
 Bundle-SymbolicName: hu.bme.mit.gamma.action.model;singleton:=true
-Bundle-Version: 2.12.0.qualifier
+Bundle-Version: 2.13.0.qualifier
 Bundle-ClassPath: .
 Bundle-Vendor: BME-FTSRG
 Bundle-Localization: plugin
@@ -10,7 +10,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.emf.ecore;visibility:=reexport,
  hu.bme.mit.gamma.expression.model;visibility:=reexport
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: hu.bme.mit.gamma.action.derivedfeatures,
  hu.bme.mit.gamma.action.model,
  hu.bme.mit.gamma.action.model.impl,
