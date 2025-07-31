@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Gamma Api Headless" uid="gamma.api.headless.product" id="hu.bme.mit.gamma.headless.api.product" application="gamma.api.headless.application" version="1.0.0" type="bundles" includeLaunchers="true" autoIncludeRequirements="true">
+<product name="Gamma Api Headless" uid="gamma.api.headless.product" id="hu.bme.mit.gamma.headless.api.product" application="gamma.api.headless.application" version="1.0.0" type="bundles" includeLaunchers="true" includeJRE="true" autoIncludeRequirements="true">
+
 
    <configIni use="default">
    </configIni>
@@ -13,16 +14,20 @@
 
    <windowImages/>
 
+
    <launcher>
       <win useIco="false">
          <bmp/>
       </win>
    </launcher>
 
+
    <vm>
    </vm>
 
+
    <plugins>
+      <plugin id="aQute.libg"/>
       <plugin id="bcpg"/>
       <plugin id="bcprov"/>
       <plugin id="bcutil"/>
@@ -31,12 +36,12 @@
       <plugin id="bndtools.api"/>
       <plugin id="ch.qos.logback.classic"/>
       <plugin id="ch.qos.logback.core"/>
+      <plugin id="com.github.weisj.jsvg"/>
       <plugin id="com.google.gson"/>
       <plugin id="com.google.guava"/>
       <plugin id="com.google.guava.failureaccess"/>
       <plugin id="com.google.inject"/>
       <plugin id="com.ibm.icu"/>
-      <plugin id="com.sun.el.javax.el"/>
       <plugin id="com.sun.jna"/>
       <plugin id="com.sun.jna.platform"/>
       <plugin id="de.uni_paderborn.uppaal"/>
@@ -146,9 +151,6 @@
       <plugin id="junit-platform-commons"/>
       <plugin id="junit-platform-engine"/>
       <plugin id="junit-platform-launcher"/>
-      <plugin id="junit-platform-runner"/>
-      <plugin id="junit-platform-suite-api"/>
-      <plugin id="junit-platform-suite-commons"/>
       <plugin id="net.sourceforge.plantuml.eclipse"/>
       <plugin id="net.sourceforge.plantuml.eclipse.imagecontrol"/>
       <plugin id="net.sourceforge.plantuml.lib"/>
@@ -163,12 +165,9 @@
       <plugin id="org.apache.batik.i18n"/>
       <plugin id="org.apache.batik.util"/>
       <plugin id="org.apache.commons.cli"/>
-      <plugin id="org.apache.commons.collections"/>
-      <plugin id="org.apache.commons.commons-beanutils"/>
       <plugin id="org.apache.commons.commons-codec"/>
       <plugin id="org.apache.commons.commons-io"/>
       <plugin id="org.apache.commons.commons-logging"/>
-      <plugin id="org.apache.commons.jxpath"/>
       <plugin id="org.apache.commons.logging"/>
       <plugin id="org.apache.felix.scr"/>
       <plugin id="org.apache.log4j"/>
@@ -278,7 +277,6 @@
       <plugin id="org.eclipse.jdt.debug.ui"/>
       <plugin id="org.eclipse.jdt.launching"/>
       <plugin id="org.eclipse.jdt.ui"/>
-      <plugin id="org.eclipse.jetty.servlet-api"/>
       <plugin id="org.eclipse.jface"/>
       <plugin id="org.eclipse.jface.databinding"/>
       <plugin id="org.eclipse.jface.notifications"/>
@@ -294,6 +292,7 @@
       <plugin id="org.eclipse.search"/>
       <plugin id="org.eclipse.search.core"/>
       <plugin id="org.eclipse.swt"/>
+      <plugin id="org.eclipse.swt.svg"/>
       <plugin id="org.eclipse.swt.win32.win32.x86_64"/>
       <plugin id="org.eclipse.team.core"/>
       <plugin id="org.eclipse.team.ui"/>
@@ -356,6 +355,7 @@
       <plugin id="org.eclipse.xtext.java"/>
       <plugin id="org.eclipse.xtext.java.source"/>
       <plugin id="org.eclipse.xtext.jdt.facade"/>
+      <plugin id="org.eclipse.xtext.jdt.facade.source"/>
       <plugin id="org.eclipse.xtext.logging"/>
       <plugin id="org.eclipse.xtext.logging.source"/>
       <plugin id="org.eclipse.xtext.purexbase"/>
@@ -400,6 +400,8 @@
       <plugin id="org.eclipse.xtext.xbase.ui.testing"/>
       <plugin id="org.eclipse.xtext.xbase.ui.testing.source"/>
       <plugin id="org.eclipse.xtext.xtext.generator"/>
+      <plugin id="org.eclipse.xtext.xtext.generator.dependencies"/>
+      <plugin id="org.eclipse.xtext.xtext.generator.dependencies.source"/>
       <plugin id="org.eclipse.xtext.xtext.generator.source"/>
       <plugin id="org.eclipse.xtext.xtext.ide"/>
       <plugin id="org.eclipse.xtext.xtext.ide.source"/>
@@ -411,12 +413,9 @@
       <plugin id="org.eclipse.xtext.xtext.wizard"/>
       <plugin id="org.eclipse.xtext.xtext.wizard.source"/>
       <plugin id="org.hamcrest"/>
-      <plugin id="org.jdom"/>
       <plugin id="org.jdom2"/>
       <plugin id="org.junit"/>
       <plugin id="org.kohsuke.args4j"/>
-      <plugin id="org.mortbay.jasper.apache-el"/>
-      <plugin id="org.mortbay.jasper.apache-jsp"/>
       <plugin id="org.objectweb.asm"/>
       <plugin id="org.objectweb.asm.commons"/>
       <plugin id="org.objectweb.asm.tree"/>
