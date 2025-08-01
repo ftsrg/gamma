@@ -2395,6 +2395,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return nonTrappingOutgoingTransitions;
 	}
 	
+	public static List<Transition> getSiblingTransitions(Transition transition) {
+		StateNode sourceState = transition.getSourceState();
+		List<Transition> siblingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(sourceState).stream()
+				.filter(it -> it != transition).collect(Collectors.toList());
+		return siblingTransitions;
+	}
+	
 	public static List<Transition> getOutgoingTransitions(StateNode node) {
 		StatechartDefinition statechart = getContainingStatechart(node);
 		return statechart.getTransitions().stream().filter(it -> it.getSourceState() == node)

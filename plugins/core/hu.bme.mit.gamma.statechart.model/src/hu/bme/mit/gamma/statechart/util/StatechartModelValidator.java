@@ -112,6 +112,7 @@ import hu.bme.mit.gamma.statechart.statechart.ForkState;
 import hu.bme.mit.gamma.statechart.statechart.InitialState;
 import hu.bme.mit.gamma.statechart.statechart.JoinState;
 import hu.bme.mit.gamma.statechart.statechart.MergeState;
+import hu.bme.mit.gamma.statechart.statechart.OnCycleTrigger;
 import hu.bme.mit.gamma.statechart.statechart.OpaqueTrigger;
 import hu.bme.mit.gamma.statechart.statechart.OrthogonalRegionSchedulingOrder;
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
@@ -1180,7 +1181,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 				it.getGuard() == null).count() > 1;
 		if (multipleTimedTransitions) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"This state has multiple transitions with occluding timing specifications", 
+				"This state has multiple transitions with occluding timing specifications", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
 		}
 		return validationResultMessages;
@@ -1188,10 +1189,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkOutgoingTransitionDeterminism(Transition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		StateNode sourceState = transition.getSourceState();
-		Collection<Transition> siblingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(sourceState).stream()
-				.filter(it -> it != transition).collect(Collectors.toSet());
-		Transition nonDeterministicTransition = checkTransitionDeterminism(transition, siblingTransitions);
+		Transition nonDeterministicTransition = checkTransitionDeterminism(transition);
 		if (nonDeterministicTransition != null) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
 				"This transitions is in a non-deterministic relation with other transitions from the same source", 
@@ -1200,47 +1198,58 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return validationResultMessages;
 	}
 	
+	public Transition checkTransitionDeterminism(Transition transition) {
+		List<Transition> siblingTransitions = StatechartModelDerivedFeatures.getSiblingTransitions(transition);
+		return checkTransitionDeterminism(transition, siblingTransitions);
+	}
+	
 	public Transition checkTransitionDeterminism(Transition transition, Collection<Transition> transitions) {
 		Trigger potentialTrigger = transition.getTrigger();
-		if (transition.getGuard() != null || !(potentialTrigger instanceof EventTrigger) ||
-			(!(((EventTrigger) potentialTrigger).getEventReference() instanceof PortEventReference) &&
-			!(((EventTrigger) potentialTrigger).getEventReference() instanceof AnyPortEventReference))) {
-			return null;
-		}
-		EventTrigger trigger = (EventTrigger) potentialTrigger;
-		EventReference eventReference = trigger.getEventReference();
-		if (eventReference instanceof PortEventReference) {
-			PortEventReference portEventReference = (PortEventReference) eventReference;
-			for (Transition siblingTransition : transitions) {
-				if (isTransitionTriggeredByPortEvent(
-						siblingTransition, portEventReference.getPort(), portEventReference.getEvent())) {
-					return siblingTransition;
+		Expression guard = transition.getGuard();
+		
+		for (Transition siblingTransition : transitions) {
+			Trigger siblingTrigger = siblingTransition.getTrigger();
+			Expression siblingGuard = siblingTransition.getGuard();
+			boolean oneIsUnguarded = guard != null || siblingGuard != null;
+			if (potentialTrigger instanceof EventTrigger trigger) {
+				EventReference eventReference = trigger.getEventReference();
+				if (eventReference instanceof PortEventReference portEventReference) {
+					if (isTransitionTriggeredByPortEvent(siblingTransition,
+							portEventReference.getPort(), portEventReference.getEvent())
+								&& oneIsUnguarded) {
+						return siblingTransition;
+					}
+				}
+				else if (eventReference instanceof AnyPortEventReference portEventReference) {
+					if (isTransitionTriggeredByPortEvent(siblingTransition, portEventReference.getPort())
+							&& oneIsUnguarded) {
+						return siblingTransition;
+					}
 				}
 			}
-		}
-		else if (eventReference instanceof AnyPortEventReference) {
-			AnyPortEventReference portEventReference = (AnyPortEventReference) eventReference;
-			for (Transition siblingTransition : transitions) {
-				if (isTransitionTriggeredByPortEvent(siblingTransition, portEventReference.getPort())) {
-					return siblingTransition;
-				}
+			if ((potentialTrigger instanceof OnCycleTrigger && siblingTrigger instanceof OnCycleTrigger ||
+					potentialTrigger instanceof AnyTrigger && siblingTrigger instanceof AnyTrigger)
+						&& oneIsUnguarded) {
+				return siblingTransition;
 			}
 		}
+		
 		return null;
 	}
 	
 	public boolean isTransitionTriggeredByPortEvent(Transition transition, Port port, Event event) {
 		Trigger trigger = transition.getTrigger();
-		if (trigger instanceof EventTrigger) {
-			EventTrigger eventTrigger = (EventTrigger) trigger;
-			if (eventTrigger.getEventReference() instanceof PortEventReference) {
-				PortEventReference candidateEventReference = (PortEventReference) eventTrigger.getEventReference();
+		if (trigger instanceof AnyTrigger) {
+			return true;
+		}
+		if (trigger instanceof EventTrigger eventTrigger) {
+			EventReference eventReference = eventTrigger.getEventReference();
+			if (eventReference instanceof PortEventReference candidateEventReference) {
 				if (candidateEventReference.getPort() == port && candidateEventReference.getEvent() == event) {
 					return true;
 				}
 			}
-			else if (eventTrigger.getEventReference() instanceof AnyPortEventReference) {
-				AnyPortEventReference candidateEventReference = (AnyPortEventReference) eventTrigger.getEventReference();
+			else if (eventReference instanceof AnyPortEventReference candidateEventReference) {
 				if (candidateEventReference.getPort() == port) {
 					return true;
 				}
@@ -1250,16 +1259,19 @@ public class StatechartModelValidator extends ActionModelValidator {
 	}
 	
 	public boolean isTransitionTriggeredByPortEvent(Transition transition, Port port) {
-		if (transition.getTrigger() instanceof EventTrigger) {
-			EventTrigger eventTrigger = (EventTrigger) transition.getTrigger();
-			if (eventTrigger.getEventReference() instanceof PortEventReference) {
-				PortEventReference candidateEventReference = (PortEventReference) eventTrigger.getEventReference();
+		Trigger trigger = transition.getTrigger();
+		if (trigger instanceof AnyTrigger) {
+			return true;
+		}
+		if (trigger instanceof EventTrigger) {
+			EventTrigger eventTrigger = (EventTrigger) trigger;
+			EventReference eventReference = eventTrigger.getEventReference();
+			if (eventReference instanceof PortEventReference candidateEventReference) {
 				if (candidateEventReference.getPort() == port) {
 					return true;
 				}
 			}
-			else if (eventTrigger.getEventReference() instanceof AnyPortEventReference) {
-				AnyPortEventReference candidateEventReference = (AnyPortEventReference) eventTrigger.getEventReference();
+			else if (eventReference instanceof AnyPortEventReference candidateEventReference) {
 				if (candidateEventReference.getPort() == port) {
 					return true;
 				}
