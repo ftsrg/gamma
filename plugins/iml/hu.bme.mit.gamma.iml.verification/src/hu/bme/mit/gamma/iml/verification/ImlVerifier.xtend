@@ -91,7 +91,6 @@ class ImlVerifier extends AbstractVerifier {
 			trace?.createCycleIfPossible
 			//
 			
-			// TODO
 			val noCounterExample = errorReader.concatenateLines.contains("Type error (env): Unbound module CX")
 			if (!errorReader.error || noCounterExample) { // Expected: no counterexample
 				if (trace === null && command.contains("verify") || trace !== null && command.contains("instance")) {

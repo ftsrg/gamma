@@ -22,6 +22,8 @@ class ImlApiHelper {
 	
 	protected static val MODULE_PREFIX = "M." // Given by Imandra
 	
+	protected static val TIMEOUT = 60
+	
 	/* ImandraX (new Imandra) - IMANDRA_API_KEY environment variable must be set */
 	static def String getInvariantCall(String model, String command, String commandlessQuery) '''
 		from imandrax_api import Client
@@ -33,16 +35,17 @@ class ImlApiHelper {
 		def print_eval_res(eval, i=0):
 			return print(get_eval_res(eval, i))
 		
-		client = Client(auth_token="«System.getenv("IMANDRA_API_KEY")»", url="https://api.dev.imandracapital.com/internal/imandrax", timeout=45)
-		# client = Client(timeout=45)
+		client = Client(auth_token="«System.getenv("IMANDRA_API_KEY")»", url="https://api.dev.imandracapital.com/internal/imandrax", timeout=«TIMEOUT»)
+		# client = Client(timeout=«TIMEOUT»)
 		
 		client.eval_src("""
 			«model»
 			«commandlessQuery.utilityMethods»
 		""")
 		check_res = client.«command»_src("«commandlessQuery»")
-		if hasattr(check_res, 'sat') and check_res.sat.model.src:
-			CX = check_res.sat.model.src
+		«val attr = command.modelAttribute»
+		if hasattr(check_res, '«attr»') and check_res.«attr».model.src:
+			CX = check_res.«attr».model.src
 			client.eval_src(CX)
 			
 			client.eval_src("let path = collect_path «
@@ -63,6 +66,10 @@ class ImlApiHelper {
 			print("«CX_TRACE_VAR»")
 			print_eval_res(log)
 	'''
+	
+	protected static def getModelAttribute(String command) {
+		return (command == "verify") ? "refuted" : "sat"
+	}
 	
 	protected static def getUtilityMethods(String query) { // TODO move to Prop-ser
 		val builder = new StringBuilder
