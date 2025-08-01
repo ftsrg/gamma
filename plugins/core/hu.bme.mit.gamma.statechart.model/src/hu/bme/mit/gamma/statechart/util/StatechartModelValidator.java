@@ -1210,7 +1210,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		for (Transition siblingTransition : transitions) {
 			Trigger siblingTrigger = siblingTransition.getTrigger();
 			Expression siblingGuard = siblingTransition.getGuard();
-			boolean oneIsUnguarded = guard != null || siblingGuard != null;
+			boolean oneIsUnguarded = guard == null || siblingGuard == null;
 			if (potentialTrigger instanceof EventTrigger trigger) {
 				EventReference eventReference = trigger.getEventReference();
 				if (eventReference instanceof PortEventReference portEventReference) {
