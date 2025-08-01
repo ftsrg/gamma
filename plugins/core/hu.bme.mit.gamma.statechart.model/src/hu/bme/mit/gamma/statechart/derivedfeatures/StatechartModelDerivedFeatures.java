@@ -3222,6 +3222,18 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		throw new IllegalArgumentException("Not supported trigger: " + trigger);
 	}
 	
+	public static boolean areSiblingTriggersDisjoint(Transition transition) {
+		List<Transition> siblingTransitions = StatechartModelDerivedFeatures.getSiblingTransitions(transition);
+		
+		for (Transition siblingTransition : siblingTransitions) {
+			if (!areTriggersDisjoint(transition, siblingTransition)) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
 	public static boolean areTriggersDisjoint(Transition lhs, Transition rhs) {
 		List<Transition> transitions = new ArrayList<Transition>();
 		
@@ -3231,7 +3243,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return areTriggersDisjoint(transitions);
 	}
 	
-	public static boolean areTriggersDisjoint(List<? extends Transition> transitions) {
+	public static boolean areTriggersDisjoint(Collection<? extends Transition> transitions) {
 		if (transitions.size() < 2) {
 			return true;
 		}
@@ -3245,6 +3257,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			}
 			
 			if (trigger != null) { // 'null' trigger (e.g., transition leaving a choice) is disjoint from anything
+				// We do not support 'not' triggers (yet)
+				if (ecoreUtil.isOrContainsTypesTransitively(trigger, UnaryTrigger.class)) {
+					return false;
+				}
+				
 				List<EventTrigger> eventTriggers = unfoldIntoEventTriggers(trigger);
 				
 				Collection<List<EventTrigger>> previousEventTriggers = triggers.values();
