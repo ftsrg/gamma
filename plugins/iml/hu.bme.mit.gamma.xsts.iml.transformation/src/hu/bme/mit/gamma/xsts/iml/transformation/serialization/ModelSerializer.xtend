@@ -186,10 +186,18 @@ class ModelSerializer {
 		
 		val aux = '''
 			«IF !choices.empty»
-				let «PICK_BRANCH_FUNCTION_NAME» («globalVariableName» : «GLOBAL_RECORD_TYPE_NAME») guard (xs : «NONDET_BRANCH_TYPE_NAME» list) (sel : int) =
-				    let open List in 
-				    let ys = filter (guard «globalVariableName») xs in
-				    Option.(nth sel ys <+> head_opt ys)
+				let «PICK_BRANCH_FUNCTION_NAME» («globalVariableName» : «GLOBAL_RECORD_TYPE_NAME») guard (bs : «NONDET_BRANCH_TYPE_NAME» list) (sel : int) : «NONDET_BRANCH_TYPE_NAME» option =
+					let rec aux branches candidate n =
+						match branches with
+						| [] -> candidate
+						| b::bs ->
+							if guard «globalVariableName» b then (
+								if sel = 0 then Some b
+								else aux bs (Some b) (n - 1))
+							else (
+								aux bs candidate (n - 1))
+					in
+					aux bs None sel
 			«ENDIF»
 		'''
 		
