@@ -8,15 +8,15 @@ statechart NonDetChoice [
 	var count : integer
 	region main {
 		initial Initial
-		state A
-		state B
-		state BB
-		state C
+		state _A
+		state _B
+		state _BB
+		state _C
 	}
 	
-	transition from Initial to A
-	transition from A to B when Execute.^execute
-	transition from A to BB when Execute.^execute [count < 10]
-	transition from B to C when cycle
+	transition from Initial to _A
+	transition from _A to _B when Execute.^execute
+	transition from _A to _BB when Execute.^execute [count < 10]
+	transition from _B to _C when cycle
 	
 }
