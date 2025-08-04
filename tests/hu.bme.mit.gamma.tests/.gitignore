@@ -9,6 +9,8 @@
 *.l2s
 *.xsts
 *.smv
+*.smvp
+*.iml
 *.cmd
 *.cex
 *.gpd
@@ -16,6 +18,8 @@
 *.pml
 *.pmlp
 *.txt
+*.py
+!/model/NonDetChoice/System/NonDetChoice.gpd
 !/model/TMT/System/TMT.gsm
 !/model/TMT/System/TMTComponent.gsm
 !/model/Spacecraft/System/Spacecraft.gsm
