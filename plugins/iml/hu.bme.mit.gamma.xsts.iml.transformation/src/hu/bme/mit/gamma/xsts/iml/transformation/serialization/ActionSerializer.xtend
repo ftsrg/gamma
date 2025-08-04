@@ -239,15 +239,22 @@ class ActionSerializer {
 	}
 	
 	protected def dispatch String serializeAction(NonDeterministicAction choice) '''
-		«localVariableDeclarations»
-			«FOR branch : choice.actions SEPARATOR " else "»
-				«IF !branch.last /* By construction, XSTS choices coming from the Gamma mapping are complete, so we do not have to serialize the last condition */»
-					if («IF branch.isFirstActionAssume»«branch.getFirstActionAssume.assumption.serialize» && «ENDIF»«globalVariableName».«choice.customizeChoice» = «branch.index») then
-				«ENDIF»
-					«branch.serialize»
+«««		Guard function written specifically for this non-det choice
+		let guard («globalVariableName» : «GLOBAL_RECORD_TYPE_NAME») (b : «NONDET_BRANCH_TYPE_NAME») : bool =
+			match b with
+			«FOR branch : choice.actions»
+				| «branch.index.branchLiteralName» -> «IF branch.isFirstActionAssume»«branch.getFirstActionAssume.assumption.serialize»«ELSE»true«ENDIF»
 			«ENDFOR»
-		in
-		«globalVariableDeclaration»{ «globalVariableName» with «choice.customizeChoice» = 0; } (* Optimization *) in
+			| _ -> false
+			in
+			«localVariableDeclarations»
+			match «PICK_BRANCH_FUNCTION_NAME» «globalVariableName» guard [«FOR branch : choice.actions SEPARATOR "; "»«branch.index.branchLiteralName»«ENDFOR»] «globalVariableName».«choice.customizeChoice» with
+				«FOR branch : choice.actions»
+					| Some «branch.index.branchLiteralName» -> «branch.serialize»
+				«ENDFOR»
+				| _ -> «localVariableNames» (* Theoretically unreachable *)
+			in
+			«globalVariableDeclaration»{ «globalVariableName» with «choice.customizeChoice» = 0; } (* Optimization *) in
 	'''
 		
 	protected def dispatch serializeAction(VariableDeclarationAction action) {

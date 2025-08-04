@@ -116,6 +116,10 @@ class ModelSerializer {
 					«ENDFOR»
 				}
 			«ENDIF»
+			
+			«IF !choices.empty»
+				type «NONDET_BRANCH_TYPE_NAME» = «FOR i : 0 ..< choices.map[it.actions.size].max SEPARATOR ' | '»«i.branchLiteralName»«ENDFOR»
+			«ENDIF»
 		'''
 		
 		val init = '''
@@ -180,10 +184,21 @@ class ModelSerializer {
 						pre_trans_r :: «globalVariableName» :: (log_«RUN_FUNCTION_IDENTIFIER» «globalVariableName» tl)
 		'''
 		
+		val aux = '''
+			«IF !choices.empty»
+				let «PICK_BRANCH_FUNCTION_NAME» («globalVariableName» : «GLOBAL_RECORD_TYPE_NAME») guard (xs : «NONDET_BRANCH_TYPE_NAME» list) (sel : int) =
+				    let open List in 
+				    let ys = filter (guard «globalVariableName») xs in
+				    Option.(nth sel ys <+> head_opt ys)
+			«ENDIF»
+		'''
+		
 		return '''
 			«types»
 			
 			«init»
+			
+			«aux»
 			
 			«hoistedFunctions»
 			

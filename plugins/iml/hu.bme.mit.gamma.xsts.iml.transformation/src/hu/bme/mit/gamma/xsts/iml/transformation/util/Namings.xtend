@@ -45,6 +45,9 @@ class Namings {
 	
 	public static final String NONDET_IDENTIFIER_PREFIX = "choice_"
 	
+	public static final String NONDET_BRANCH_TYPE_NAME = "b"
+	public static final String NONDET_BRANCH_LITERAL_PREFIX = "B"
+	public static final String PICK_BRANCH_FUNCTION_NAME = "pick_branch"
 	//
 	
 	public static final String DECLARATION_NAME_PREFIX = "_"
@@ -67,5 +70,7 @@ class Namings {
 	def static customizeChoice(NonDeterministicAction choice) '''«NONDET_IDENTIFIER_PREFIX»«choice.uniqueIndex»''' // Deterministic name - needed for the reuse of the 'r' record during semantic diff computation
 	
 	def static customizeHoistedFunctionName(Action action) '''h_«action.uniqueIndex»'''
+	
+	def static getBranchLiteralName(int i) '''«NONDET_BRANCH_LITERAL_PREFIX»_«i»'''
 	
 }
