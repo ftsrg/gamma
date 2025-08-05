@@ -196,6 +196,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 		int i = 0; // Only for logging
 		while (!formulas.isEmpty()) {
 			CommentableStateFormula formula = formulas.poll();
+			boolean isFormulaInvariant = PropertyModelDerivedFeatures.isInvariant(formula);
 			checkableFormulas.clear();
 			checkableFormulas.add(formula);
 			
@@ -283,7 +284,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 				fileUtil.saveString(xStsFile, xStsString);
 			}
 			if (analysisLanguages.contains(AnalysisLanguage.IML)) {
-				String imlString = imlSerializer.serializeIml(xSts);
+				String imlString = imlSerializer.serializeIml(xSts, isFormulaInvariant); // Optimized non-det mapping for invariant properties
 				fileUtil.saveString(analysisFile, imlString);
 				
 				String xStsString = xStsSerializer.serializeXsts(xSts);
