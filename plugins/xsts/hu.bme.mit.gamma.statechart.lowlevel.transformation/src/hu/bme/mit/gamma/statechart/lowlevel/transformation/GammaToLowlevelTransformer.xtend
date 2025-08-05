@@ -56,7 +56,7 @@ class GammaToLowlevelTransformer {
 		return statechart.execute
 	}
 	
-	def Pair<hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition, VariableDeclaration> transform(SynchronousCoordinationStatechartDefinition statechart) {
+	def hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition transform(SynchronousCoordinationStatechartDefinition statechart) {
 		return statechart.execute
 	}
 	

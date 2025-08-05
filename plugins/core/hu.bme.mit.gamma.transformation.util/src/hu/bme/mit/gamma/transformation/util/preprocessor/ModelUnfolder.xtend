@@ -44,6 +44,8 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.transformation.util.Namings.*
+import hu.bme.mit.gamma.statechart.statechart.SynchronousCoordinationStatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.AsynchronousCoordinationStatechartDefinition
 
 class ModelUnfolder {
 	
@@ -202,6 +204,60 @@ class ModelUnfolder {
 		gammaPackage.components += synchronousStatechart
 		gammaPackage.addDeclarations(clonedPackage)
 		// No tracing as it handles only instances
+	}
+	
+	private dispatch def void copyComponents(SynchronousCoordinationStatechartDefinition component,
+			Package gammaPackage, Trace trace) {
+		for (instance : component.components) {
+			val type = instance.type
+			val clonedPackage = type.containingPackage.clone
+			val clonedComponent = clonedPackage.components
+					.findFirst[it.helperEquals(type)] as SynchronousComponent // Sync composite or Statechart
+			clonedComponent.removeAnnotations // To prevent importing unnecessary resources into the resource set
+			gammaPackage.components += clonedComponent // Adding it to the "Instance container"
+			instance.type = clonedComponent // Setting the type to the new declaration
+			// Declarations must be copied AFTER moving component instances to enable reference changes
+			gammaPackage.addDeclarations(clonedPackage)
+			
+			// Changing the port binding
+			fixPortBindings(component, instance)
+			// Changing the providedPort references of Channels
+			fixChannelProvidedPorts(component, instance)
+			// Changing the requiredPort references of Channels
+			fixChannelRequiredPorts(component, instance)
+			if (clonedComponent instanceof AbstractSynchronousCompositeComponent) {
+				clonedComponent.copyComponents(gammaPackage, trace) // Cloning the contained CompositeSystems recursively
+			}
+			// Tracing
+			type.traceComponentInstances(clonedComponent, trace)
+		}
+	}
+	
+	private dispatch def void copyComponents(AsynchronousCoordinationStatechartDefinition component,
+			Package gammaPackage, Trace trace) {
+		for (instance : component.components) {
+			val type = instance.type
+			
+			val clonedPackage = type.containingPackage.clone
+			val clonedComponent = clonedPackage.components
+						.findFirst[it.helperEquals(type)] as AsynchronousComponent
+			gammaPackage.components += clonedComponent
+			
+			instance.type = clonedComponent
+			// Declarations must be copied AFTER moving component instances to enable reference changes
+			gammaPackage.addDeclarations(clonedPackage)
+			
+			clonedComponent.copyComponents(gammaPackage, trace) // Cloning the contained CompositeSystems recursively
+			
+			// Tracing
+			type.traceComponentInstances(clonedComponent, trace)
+			// Changing the port binding
+			fixPortBindings(component, instance)
+			// Changing the providedPort references of Channels
+			fixChannelProvidedPorts(component, instance)
+			// Changing the requiredPort references of Channels
+			fixChannelRequiredPorts(component, instance)
+		}
 	}
 	
 	protected def void removeAnnotations(Component component) {
