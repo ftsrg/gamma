@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.trace.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -383,16 +384,32 @@ public class TraceUtil extends StatechartUtil {
 		}
 		
 		Step last = javaUtil.getLastElement(steps);
+		Step lastClone = ecoreUtil.clone(last);
+		lastClone.getActions().clear();
 		for (Step step : steps) {
-			if (ecoreUtil.helperEquals(step, last) && step != last) {
-				int i = ecoreUtil.getIndex(step);
+			Step stepClone = ecoreUtil.clone(step);
+			stepClone.getActions().clear();
+			if (ecoreUtil.helperEquals(stepClone, lastClone) && step != last) {
+				int i = ecoreUtil.getIndex(step) + 1;
 				Cycle cycle = factory.createCycle();
 				trace.setCycle(cycle);
+				List<Step> cycleSteps = cycle.getSteps();
 				while (i < steps.size()) {
 					Step nextStep = steps.get(i);
-					cycle.getSteps().add(nextStep);
+					cycleSteps.add(nextStep);
 				}
-				ecoreUtil.remove(last);
+				
+				// Removing potential step duplications
+				Step previous = null;
+				Iterator<Step> iterator = cycleSteps.iterator();
+				while (iterator.hasNext()) {
+					Step actual = iterator.next();
+					if (ecoreUtil.helperEquals(previous, actual)) {
+						iterator.remove();
+					}
+					previous = actual;
+				}
+				
 				return;
 			}
 		}
