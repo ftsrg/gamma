@@ -387,8 +387,6 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.out.println(context);
-		System.out.println(reference);
 		return super.getScope(context, reference);
 	}
 	
