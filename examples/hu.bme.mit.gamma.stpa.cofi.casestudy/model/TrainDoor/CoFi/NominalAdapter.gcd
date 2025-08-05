@@ -1,9 +1,10 @@
 package traindoorcontrol
 
 //import "Nominal.gcd"
-import "Nominal_v2.gcd"
+//import "Nominal_v2.gcd"
+import "SEx.gcd"
 
-adapter NominalControllerAdapter of component controller : NominalController {
+adapter CoFiControllerAdapter of component controller : CoFiController {
 
 	when any / run
 	

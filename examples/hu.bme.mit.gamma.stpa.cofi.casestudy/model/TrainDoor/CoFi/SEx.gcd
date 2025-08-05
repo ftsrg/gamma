@@ -13,6 +13,7 @@ statechart CoFiController [
 	var upMov : boolean := false
 	var upAlign : boolean := true
 	var upPresence : boolean := false
+	var upEmOn : boolean := false
 	
 	region Main {
 		initial Initial
@@ -25,6 +26,10 @@ statechart CoFiController [
 		state _7
 		state _8
 		state _9
+		state _10
+		state _11
+		state _12
+		state _13
 	}
 	transition from Initial to _1
 	transition from _1 to _2 when ExternalCommunication.movement
@@ -83,9 +88,47 @@ statechart CoFiController [
 			[FeedbackPresence.feedback::isPresent] / upPresence := true;
 	transition from _9 to _4 when FeedbackPresence.feedback
 			[!FeedbackPresence.feedback::isPresent] / upPresence := false;
-			
+	
 	// Recommendations
 	transition from _6 to _3 when ExternalCommunication.movement
 			[ExternalCommunication.movement::motionState != MotionState::STILL] /
 				upMov := true;
+	
+	// Added in addition to nominal
+	
+	transition from _2 to _10 when ExternalCommunication.emergency
+			[ExternalCommunication.emergency::isOccurred] /
+				raise ControlActions.controlDoor(ControlAction::OPEN); upEmOn := true;
+	transition from _3 to _11 when ExternalCommunication.emergency
+			[ExternalCommunication.emergency::isOccurred] /
+				raise ControlActions.controlDoor(ControlAction::OPEN); upEmOn := true;
+	transition from _6 to _12 when ExternalCommunication.emergency
+			[ExternalCommunication.emergency::isOccurred] /
+				raise ControlActions.controlDoor(ControlAction::OPEN); upEmOn := true;
+				
+	transition from _11 to _12 when ExternalCommunication.movement
+			[ExternalCommunication.movement::motionState = MotionState::STILL] /
+				upMov := false;
+	transition from _10 to _13 when ExternalCommunication.movement
+			[ExternalCommunication.movement::motionState = MotionState::STILL] /
+				upMov := false;
+				
+	transition from _1 to _13 when ExternalCommunication.emergency
+			[ExternalCommunication.emergency::isOccurred] /
+				raise ControlActions.controlDoor(ControlAction::OPEN); upEmOn := true;
+	transition from _4 to _13 when ExternalCommunication.emergency
+			[ExternalCommunication.emergency::isOccurred] /
+				raise ControlActions.controlDoor(ControlAction::OPEN); upEmOn := true;
+	transition from _5 to _13 when ExternalCommunication.emergency
+			[ExternalCommunication.emergency::isOccurred] /
+				raise ControlActions.controlDoor(ControlAction::OPEN); upEmOn := true;
+	transition from _7 to _13 when ExternalCommunication.emergency
+			[ExternalCommunication.emergency::isOccurred] /
+				raise ControlActions.controlDoor(ControlAction::OPEN); upEmOn := true;
+	transition from _8 to _13 when ExternalCommunication.emergency
+			[ExternalCommunication.emergency::isOccurred] /
+				raise ControlActions.controlDoor(ControlAction::OPEN); upEmOn := true;
+	transition from _9 to _13 when ExternalCommunication.emergency
+			[ExternalCommunication.emergency::isOccurred] /
+				raise ControlActions.controlDoor(ControlAction::OPEN); upEmOn := true;
 }

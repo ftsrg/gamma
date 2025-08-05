@@ -14,7 +14,9 @@ statechart TrainDoorController [
 	}
 	port FeedbackPresence : requires FeedbackPresence
 	port ExternalCommunication : requires ExternalCommunication
-	port OpenTimeout : requires Timeout { invariant OpenTimeout.^timeout:: imply in-state(DoorStateRegion.Open) }
+	port OpenTimeout : requires Timeout	{
+		invariant OpenTimeout.^timeout:: imply in-state(DoorStateRegion.Open)
+	}
 ] {
 	region DoorStateRegion {
 		initial InitialDoorState
