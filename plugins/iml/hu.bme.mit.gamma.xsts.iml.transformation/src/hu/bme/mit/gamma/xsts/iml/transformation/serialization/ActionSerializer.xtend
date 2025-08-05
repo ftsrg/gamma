@@ -43,6 +43,7 @@ class ActionSerializer {
 	//
 	protected boolean hoistBranches = false
 	protected boolean hasTransHavoc = false
+	protected boolean optimizeNonDet = false
 	//
 	protected final extension MessageQueueHandler queueHandler = MessageQueueHandler.INSTANCE
 	protected final extension MessageQueueUtil queueUtil = MessageQueueUtil.INSTANCE
@@ -55,12 +56,13 @@ class ActionSerializer {
 	//
 	
 	new() {
-		this(false, false)
+		this(false, false, false)
 	}
 	
-	new(boolean hoistBranches, boolean hasTransHavoc) {
+	new(boolean hoistBranches, boolean hasTransHavoc, boolean optimizeNonDet) {
 		this.hoistBranches = hoistBranches
 		this.hasTransHavoc = hasTransHavoc
+		this.optimizeNonDet = optimizeNonDet
 	}
 	
 	//
@@ -238,7 +240,13 @@ class ActionSerializer {
 		'''
 	}
 	
-	protected def dispatch String serializeAction(NonDeterministicAction choice) '''
+	protected def dispatch String serializeAction(NonDeterministicAction choice) {
+		return (optimizeNonDet) ?
+			choice.serializeNonDeterministicActionOptimized :
+			choice.serializeNonDeterministicActionSound
+	}
+	
+	private def String serializeNonDeterministicActionSound(NonDeterministicAction choice) '''
 «««		Guard function written specifically for this non-det choice
 		let guard («globalVariableName» : «GLOBAL_RECORD_TYPE_NAME») (b : «NONDET_BRANCH_TYPE_NAME») : bool =
 			match b with
@@ -255,6 +263,21 @@ class ActionSerializer {
 				| _ -> «localVariableNames» (* Theoretically unreachable *)
 			in
 			«globalVariableDeclaration»{ «globalVariableName» with «choice.customizeChoice» = 0; } (* Optimization *) in
+	'''
+	
+	/**
+	 * This mapping is sound only in the case of reachability/invariant properties (not LTL liveness).
+	 */
+	private def String serializeNonDeterministicActionOptimized(NonDeterministicAction choice) '''
+		«localVariableDeclarations»
+			«FOR branch : choice.actions SEPARATOR " else "»
+				«IF !branch.last /* By construction, XSTS choices coming from the Gamma mapping are complete, so we do not have to serialize the last condition */»
+					if («IF branch.isFirstActionAssume»«branch.getFirstActionAssume.assumption.serialize» && «ENDIF»«globalVariableName».«choice.customizeChoice» = «branch.index») then
+				«ENDIF»
+					«branch.serialize»
+			«ENDFOR»
+		in
+		«globalVariableDeclaration»{ «globalVariableName» with «choice.customizeChoice» = 0; } (* Optimization *) in
 	'''
 		
 	protected def dispatch serializeAction(VariableDeclarationAction action) {
@@ -399,9 +422,13 @@ class ActionSerializer {
 	def setHasTransHavoc(boolean hasTransHavoc) {
 		this.hasTransHavoc = hasTransHavoc
 	}
-	
+
 	def getHasTransHavoc() {
 		return hasTransHavoc
+	}
+	
+	def setOptimizeNonDet(boolean optimizeNonDet) {
+		this.optimizeNonDet = optimizeNonDet
 	}
 	
 	def getHoistedFunctions() {

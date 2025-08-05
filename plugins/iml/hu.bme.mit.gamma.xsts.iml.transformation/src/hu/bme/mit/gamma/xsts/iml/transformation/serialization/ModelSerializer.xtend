@@ -37,7 +37,12 @@ class ModelSerializer {
 	//
 	
 	def String serializeIml(XSTS xSts) {
+		return xSts.serializeIml(false)
+	}
+	
+	def String serializeIml(XSTS xSts, boolean optimizeNonDet) {
 		actionSerializer.clearActions
+		actionSerializer.setOptimizeNonDet = optimizeNonDet
 		//
 		
 		val globalVariables = xSts.variableDeclarations
@@ -66,7 +71,7 @@ class ModelSerializer {
 		actionSerializer.setHasTransHavoc = !transHavocs.empty
 						
 		val choices = xSts.getAllContentsOfType(NonDeterministicAction)
-		
+		val needNonDet = !optimizeNonDet && !choices.empty // Map non-det choices in a sound way
 		//
 		
 		val types = '''
@@ -117,7 +122,7 @@ class ModelSerializer {
 				}
 			«ENDIF»
 			
-			«IF !choices.empty»
+			«IF needNonDet»
 				type «NONDET_BRANCH_TYPE_NAME» = «FOR i : 0 ..< choices.map[it.actions.size].max SEPARATOR ' | '»«i.branchLiteralName»«ENDFOR»
 			«ENDIF»
 		'''
@@ -185,7 +190,7 @@ class ModelSerializer {
 		'''
 		
 		val aux = '''
-			«IF !choices.empty»
+			«IF needNonDet»
 				let «PICK_BRANCH_FUNCTION_NAME» («globalVariableName» : «GLOBAL_RECORD_TYPE_NAME») guard (bs : «NONDET_BRANCH_TYPE_NAME» list) (sel : int) : «NONDET_BRANCH_TYPE_NAME» option =
 					let rec aux branches candidate n =
 						match branches with
