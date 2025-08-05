@@ -80,6 +80,7 @@ class SystemReducer {
 		val xStsDeletableAssignmentActions = newHashSet
 		for (instance : component.derivedComponents) {
 			for (instancePort : instance.unusedPorts) {
+				logger.info("Unused port: " + component.name + "." + instancePort.name)
 				// In events on required port
 				for (inputEvent : instancePort.inputEvents) {
 					val inEventName = inputEvent.customizeInputName(instancePort, instance)
