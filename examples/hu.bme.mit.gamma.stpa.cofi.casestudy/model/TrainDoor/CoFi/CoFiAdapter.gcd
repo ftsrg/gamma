@@ -2,7 +2,8 @@ package traindoorcontrol
 
 //import "Nominal.gcd"
 //import "Nominal_v2.gcd"
-import "SEx.gcd"
+//import "SEx.gcd"
+import "SP.gcd"
 
 adapter CoFiControllerAdapter of component controller : CoFiController {
 

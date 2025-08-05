@@ -3,7 +3,7 @@ package traindoorcontrol
 import "Interface/Interface.gcd"
 
 import "TrainDoorController/TrainDoorControllerAdapter.gcd"
-import "CoFi/NominalAdapter.gcd"
+import "CoFi/CoFiAdapter.gcd"
 
 scheduled-async Conformance [
 	port FeedbackDoorState : requires FeedbackDoorState
