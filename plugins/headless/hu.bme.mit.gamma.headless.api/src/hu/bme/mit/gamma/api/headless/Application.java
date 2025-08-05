@@ -20,7 +20,7 @@ import org.eclipse.equinox.app.IApplicationContext;
 // The application class that gets executed and exported as Headless Gamma
 public class Application implements IApplication {
 	//
-	protected int exitCode = IApplication.EXIT_OK;
+	protected Integer exitCode = IApplication.EXIT_OK;
 	//
 	protected final Logger logger = Logger.getLogger("GammaLogger");
 	//
@@ -67,9 +67,11 @@ public class Application implements IApplication {
 				handler.execute();
 			}
 		} catch (Throwable t) {
+			// Duplicated error logging?
 			logger.severe(t.getMessage());
 			t.printStackTrace();
-			exitCode = IApplication.EXIT_RESTART; // Correct exit code?
+			
+			exitCode = Integer.valueOf(1); // Not 0 - could be refined in the future
 		}
 		// Manual stopping may be needed
 		stop();
