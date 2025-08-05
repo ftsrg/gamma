@@ -48,6 +48,7 @@ import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
+import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
@@ -113,6 +114,7 @@ import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
 import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
 import hu.bme.mit.gamma.statechart.statechart.CoordinationStatechartDefinition;
+import hu.bme.mit.gamma.statechart.statechart.CoordinationVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.DeepHistoryState;
 import hu.bme.mit.gamma.statechart.statechart.EntryState;
 import hu.bme.mit.gamma.statechart.statechart.ForkState;
@@ -142,6 +144,7 @@ import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
+
 
 public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
@@ -1879,10 +1882,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static List<Port> getAllBoundSimplePorts(Port port) {
 		List<Port> simplePorts = new ArrayList<Port>();
 		Component component = getContainingComponent(port);
-		if (component instanceof StatechartDefinition) {
-			simplePorts.add(port);
-		}
-		else if (component instanceof CompositeComponent composite) {
+		if (component instanceof CompositeComponent composite) {
 			for (PortBinding portBinding : composite.getPortBindings()) {
 				if (portBinding.getCompositeSystemPort() == port) {
 					// Makes sense only if the containment hierarchy is a tree structure
@@ -1892,6 +1892,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 							instancePortReference.getPort()));
 				}
 			}
+		}
+		else if (component instanceof StatechartDefinition) {
+			simplePorts.add(port);
 		}
 		// Note that one port can be in the list multiple times iff the component is NOT unfolded
 		return simplePorts;
@@ -3812,6 +3815,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 		
 		return interfaceInvariants;
+	}
+	
+	// Coordination
+	
+	public static List<VariableDeclaration> getCoordinationVariables(StatechartDefinition statechart) {
+		return filterVariablesByAnnotation(statechart.getVariableDeclarations(),
+				CoordinationVariableDeclarationAnnotation.class);
 	}
 	
 }

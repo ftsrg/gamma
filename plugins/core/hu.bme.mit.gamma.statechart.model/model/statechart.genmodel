@@ -398,21 +398,18 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statechart.ecore#//TimeoutReferenceExpression/timeout"/>
     </genClasses>
     <genClasses ecoreClass="statechart.ecore#//CoordinationStatechartDefinition">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//CoordinationStatechartDefinition/components"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statechart.ecore#//CoordinationStatechartDefinition/coordinationTransitions"/>
     </genClasses>
+    <genClasses ecoreClass="statechart.ecore#//SynchronousCoordinationStatechartDefinition"/>
+    <genClasses ecoreClass="statechart.ecore#//AsynchronousCoordinationStatechartDefinition"/>
     <genClasses ecoreClass="statechart.ecore#//CoordinationTransition">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statechart.ecore#//CoordinationTransition/coordinatedComponent"/>
     </genClasses>
-    <genClasses image="false" ecoreClass="statechart.ecore#//AbstractCoordinationReferenceExpression"/>
-    <genClasses ecoreClass="statechart.ecore#//ComponentCoordinationReferenceExpression">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statechart.ecore#//ComponentCoordinationReferenceExpression/instance"/>
+    <genClasses image="false" ecoreClass="statechart.ecore#//AbstractCoordinationReferenceExpression">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//AbstractCoordinationReferenceExpression/instances"/>
     </genClasses>
-    <genClasses ecoreClass="statechart.ecore#//SequentialCoordinationReferenceExpression">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statechart.ecore#//SequentialCoordinationReferenceExpression/instances"/>
-    </genClasses>
-    <genClasses ecoreClass="statechart.ecore#//UnorderedCoordinationReferenceExpression">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statechart.ecore#//UnorderedCoordinationReferenceExpression/instances"/>
-    </genClasses>
+    <genClasses ecoreClass="statechart.ecore#//SequentialCoordinationReferenceExpression"/>
+    <genClasses ecoreClass="statechart.ecore#//UnorderedCoordinationReferenceExpression"/>
+    <genClasses ecoreClass="statechart.ecore#//CoordinationVariableDeclarationAnnotation"/>
   </genPackages>
 </genmodel:GenModel>

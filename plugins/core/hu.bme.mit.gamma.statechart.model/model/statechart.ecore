@@ -169,15 +169,9 @@
         upperBound="-1" eType="#//CoordinationTransition" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SynchronousCoordinationStatechartDefinition"
-      eSuperTypes="#//CoordinationStatechartDefinition composite.ecore#//SynchronousComponent">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="components" upperBound="-1"
-        eType="ecore:EClass composite.ecore#//SynchronousComponentInstance" containment="true"/>
-  </eClassifiers>
+      eSuperTypes="#//CoordinationStatechartDefinition composite.ecore#//SynchronousComponent composite.ecore#//SynchronousCompositeComponent"/>
   <eClassifiers xsi:type="ecore:EClass" name="AsynchronousCoordinationStatechartDefinition"
-      eSuperTypes="#//CoordinationStatechartDefinition composite.ecore#//AsynchronousComponent">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="components" upperBound="-1"
-        eType="ecore:EClass composite.ecore#//AsynchronousComponentInstance" containment="true"/>
-  </eClassifiers>
+      eSuperTypes="#//CoordinationStatechartDefinition composite.ecore#//AsynchronousComponent composite.ecore#//AsynchronousCompositeComponent"/>
   <eClassifiers xsi:type="ecore:EClass" name="CoordinationTransition" eSuperTypes="#//Transition">
     <eStructuralFeatures xsi:type="ecore:EReference" name="coordinatedComponent" eType="#//AbstractCoordinationReferenceExpression"
         containment="true"/>
@@ -192,4 +186,6 @@
       eSuperTypes="#//AbstractCoordinationReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="UnorderedCoordinationReferenceExpression"
       eSuperTypes="#//AbstractCoordinationReferenceExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="CoordinationVariableDeclarationAnnotation"
+      eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclarationAnnotation"/>
 </ecore:EPackage>

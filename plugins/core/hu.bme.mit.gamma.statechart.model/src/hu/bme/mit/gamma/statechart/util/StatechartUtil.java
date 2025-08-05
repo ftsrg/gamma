@@ -1246,4 +1246,9 @@ public class StatechartUtil extends ActionUtil {
 		ecoreUtil.removeAll(element.getRegions());
 	}
 	
+	// Coordination
+	
+	public void addCoordinationVariableAnnotation(VariableDeclaration variable) {
+		addAnnotation(variable, statechartFactory.createCoordinationVariableDeclarationAnnotation());
+	}
 }

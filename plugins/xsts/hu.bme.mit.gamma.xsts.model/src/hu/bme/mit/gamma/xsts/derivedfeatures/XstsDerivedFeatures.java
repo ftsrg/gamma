@@ -35,6 +35,7 @@ import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.LiteralExpression;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.statechart.statechart.CoordinationVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.util.Triple;
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction;
 import hu.bme.mit.gamma.xsts.model.Action;
@@ -1201,6 +1202,13 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 				Map<VariableDeclaration, List<VariableDeclaration>>,
 				Set<VariableDeclaration>>(
 			literalVariableAssignments, variableVariableAssignments, notLiteralVariables);
+	}
+	
+	// Coordination
+	
+	public static List<VariableDeclaration> getCoordinationVariables(XSTS xSts) {
+		return filterVariablesByAnnotation(xSts.getVariableDeclarations(),
+				CoordinationVariableDeclarationAnnotation.class);
 	}
 	
 }

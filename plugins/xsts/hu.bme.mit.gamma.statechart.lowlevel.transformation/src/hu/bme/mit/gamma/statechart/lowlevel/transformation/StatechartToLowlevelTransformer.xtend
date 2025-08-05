@@ -57,7 +57,7 @@ import hu.bme.mit.gamma.statechart.statechart.AsynchronousCoordinationStatechart
 import hu.bme.mit.gamma.statechart.statechart.SequentialCoordinationReferenceExpression
 import hu.bme.mit.gamma.statechart.statechart.UnorderedCoordinationReferenceExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
-import hu.bme.mit.gamma.expression.model.EqualityExpression
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
 
 class StatechartToLowlevelTransformer {
 	// Auxiliary objects
@@ -70,6 +70,7 @@ class StatechartToLowlevelTransformer {
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension LowlevelStatechartUtil lowlevelUtil = LowlevelStatechartUtil.INSTANCE
 	protected final extension EventAttributeTransformer eventAttributeTransformer = EventAttributeTransformer.INSTANCE
+	protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	// Low-level statechart model factory
 	protected final extension StatechartModelFactory factory = StatechartModelFactory.eINSTANCE
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
@@ -109,7 +110,7 @@ class StatechartToLowlevelTransformer {
 		return statechart.transformComponent as hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
 	}
 	
-	def Pair<hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition, VariableDeclaration> execute(SynchronousCoordinationStatechartDefinition statechart) {
+	def hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition execute(SynchronousCoordinationStatechartDefinition statechart) {
 		// Eliminating merge states
 		val mergeStateEliminator = new MergeStateEliminator(statechart)
 		mergeStateEliminator.execute
@@ -481,10 +482,10 @@ class StatechartToLowlevelTransformer {
 	
 	// Coordination automaton
 	
-	protected def Pair<hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition, VariableDeclaration> transformCoordinationAutomaton(CoordinationStatechartDefinition statechart) {
+	protected def hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition transformCoordinationAutomaton(CoordinationStatechartDefinition statechart) {
 		if (trace.isMapped(statechart)) {
 			// It is already transformed
-			return new Pair(trace.get(statechart), scheduledCtrlVar)
+			return trace.get(statechart) as hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
 		}
 		val lowlevelStatechart = createStatechartDefinition => [
 			it.name = getName(statechart)
@@ -535,8 +536,15 @@ class StatechartToLowlevelTransformer {
 		
 		val schedulableComponentsTypeReference = createTypeReference(schedulableComponentsTypeDeclaration)
 		
+		// TODO add ctrl var annotation
 		scheduledCtrlVar = createVariableDeclaration(schedulableComponentsTypeReference, "scheduledComponent")
+		statechartUtil.addCoordinationVariableAnnotation(scheduledCtrlVar)
 		statechart.variableDeclarations += scheduledCtrlVar
+		
+		// Transforming CoordinationTransitions to regular transitions, possibly creating VariableDeclarations and States
+		for (transition : statechart.coordinationTransitions) {
+			transition.transformCoordinationTransition(scheduledComponentEnum)
+		}
 		
 		
 		// Constants
@@ -575,10 +583,9 @@ class StatechartToLowlevelTransformer {
 			lowlevelStatechart.regions += region.transform
 		}
 		
-		
-		for (transition : statechart.coordinationTransitions) {
+		for (transition : statechart.transitions) {
 			// Prioritizing transitions is done here
-			val lowlevelTransition = transition.transform(scheduledComponentEnum)
+			val lowlevelTransition = transition.transform
 			lowlevelStatechart.transitions += lowlevelTransition
 		}
 		
@@ -602,47 +609,182 @@ class StatechartToLowlevelTransformer {
 			lowlevelStatechart.invariants += statechartInvariants.map[it.transformSimpleExpression]
 		}
 		
-		return new Pair(lowlevelStatechart, scheduledCtrlVar)
+		// TODO remove
+		return lowlevelStatechart
 	}
 	
-	protected def hu.bme.mit.gamma.statechart.lowlevel.model.Transition transform(
+	protected def transformCoordinationTransition(
 		CoordinationTransition coordinationTransition, EnumerationTypeDefinition scheduledComponentEnum
 	) {
-		// Trivial simple transitions
-		val gammaSource = coordinationTransition.sourceState
-		val gammaTarget = coordinationTransition.targetState
-		val lowlevelSource = if (gammaSource instanceof State) {
-			trace.get(gammaSource)
-		} else if (gammaSource instanceof PseudoState) {
-			trace.get(gammaSource)
-		}
-		val lowlevelTarget = if (gammaTarget instanceof State) {
-			trace.get(gammaTarget)
-		} else if (gammaTarget instanceof PseudoState) {
-			trace.get(gammaTarget)
-		}
-		val lowlevelTransition = createTransition => [
-			it.source = lowlevelSource
-			it.target = lowlevelTarget
-			it.priority = coordinationTransition.calculatePriority.intValue // Priority is handled later
-		]
-		trace.put(coordinationTransition, lowlevelTransition) // Saving in trace
-		// Important to trace the Gamma transition as the trigger transformer depends on it
-		lowlevelTransition.guard = coordinationTransition.transformTriggerAndGuard
-
-		if (coordinationTransition.coordinatedComponent instanceof SequentialCoordinationReferenceExpression) {
-			val componentName = coordinationTransition.coordinatedComponent.instances.get(0).componentInstance.name
-			coordinationTransition.effects += createAssignment(scheduledCtrlVar, createEnumerationLiteralExpression(scheduledComponentEnum, componentName))
-		} else if (coordinationTransition.coordinatedComponent instanceof UnorderedCoordinationReferenceExpression) {
-			val componentName = coordinationTransition.coordinatedComponent.instances.get(0).componentInstance.name
-			coordinationTransition.effects += createAssignment(scheduledCtrlVar, createEnumerationLiteralExpression(scheduledComponentEnum, componentName))
-		} else {
-			// transition without coordinated component
-		}
-
-		lowlevelTransition.action = coordinationTransition.effects.transformActions
+		var gammaSource = coordinationTransition.sourceState
+		val sourceName = gammaSource.name
+		val containingStatechart = gammaSource.containingStatechart
+		val region = gammaSource.getParentRegion
 		
-		return lowlevelTransition
+		val gammaTarget = coordinationTransition.targetState
+		
+		if (coordinationTransition.coordinatedComponent instanceof SequentialCoordinationReferenceExpression) {
+			if (!coordinationTransition.coordinatedComponent.instances.empty) {
+				for (var i = 0; i < coordinationTransition.coordinatedComponent.instances.size; i++) {
+					val componentInstanceReference = coordinationTransition.coordinatedComponent.instances.get(i)
+					val componentName = componentInstanceReference.componentInstance.name
+
+					if (i == coordinationTransition.coordinatedComponent.instances.size - 1) {
+
+						val internalTransition = statechartUtil.createTransition(gammaSource, gammaTarget)
+						internalTransition.trigger = coordinationTransition.trigger.clone
+						internalTransition.guard = coordinationTransition.guard.clone
+						internalTransition.effects +=
+							createAssignment(scheduledCtrlVar,
+								createEnumerationLiteralExpression(scheduledComponentEnum, componentName))
+						internalTransition.effects += coordinationTransition.effects.clone
+
+						containingStatechart.transitions += internalTransition
+					} else {
+						val internalState = statechartUtil.createState(region, sourceName + "_" + i++)
+						if (gammaTarget instanceof State) {
+							internalState.invariants += gammaTarget.invariants.clone
+							internalState.entryActions += gammaTarget.entryActions.clone
+							internalState.exitActions += gammaTarget.exitActions.clone
+							internalState.annotations += gammaTarget.annotations.clone
+						}
+
+						val internalTransition = statechartUtil.createTransition(gammaSource, internalState)
+						internalTransition.trigger = coordinationTransition.trigger.clone
+						internalTransition.guard = coordinationTransition.guard.clone
+						internalTransition.effects +=
+							createAssignment(scheduledCtrlVar,
+								createEnumerationLiteralExpression(scheduledComponentEnum, componentName))
+
+						gammaSource = internalState
+						containingStatechart.transitions += internalTransition
+					}
+				}
+			}
+		} else if (coordinationTransition.coordinatedComponent instanceof UnorderedCoordinationReferenceExpression) {
+//			val unordComponentEnum = createEnumerationTypeDefinition
+			val unordName = "unord_" + gammaSource.name + gammaTarget.name
+			val unordBoolVariables = newHashMap
+		
+			/* XSTS:
+			 * 
+			 * ctrl var unord_q0q3 : enum{Sensor1, Sensor2, Sensor3, Sensor4}
+			 * ctrl var unord_q0q3_Sensor1 : boolean = false
+			 * ctrl var unord_q0q3_Sensor2 : boolean = false
+			 * ctrl var unord_q0q3_Sensor3 : boolean = false
+			 * ctrl var unord_q0q3_Sensor4 : boolean = false
+			 */
+		
+			for (componentInstanceReference : coordinationTransition.coordinatedComponent.instances) {
+//				val componentLiteral = createEnumerationLiteralDefinition
+//				componentLiteral.name = componentInstanceReference.componentInstance.name
+//				unordComponentEnum.literals += componentLiteral
+
+				unordBoolVariables +=
+					componentInstanceReference.componentInstance ->
+						createVariableDeclarationWithDefaultInitialValue(createBooleanTypeDefinition,
+							unordName + "_" + componentInstanceReference.componentInstance.name)
+			}
+
+//			val unordComponentsTypeDeclaration = unordComponentEnum.createTypeDeclaration(unordName)
+//			containingStatechart.typeDeclarations += unordComponentsTypeDeclaration
+//
+//			val unordComponentsTypeReference = createTypeReference(unordComponentsTypeDeclaration)
+
+			// TODO add ctrl var annotation
+//			val unordComponentsVariableDecl = createVariableDeclaration(unordComponentsTypeReference, unordName)
+//			containingStatechart.variableDeclarations += unordComponentsVariableDecl
+			containingStatechart.variableDeclarations += unordBoolVariables.values
+			
+			/* XSTS:
+			 * if (coordState == q0) {
+			 *    assume c1 > 1 && c1 <= 2;
+			 *    havoc unord_q0q3; TODO initializing!
+			 * 	  choice {
+			 *	       assume unord_q0q3 == Sensor1 && !unord_q0q3_Sensor1;
+			 *         unord_q0q3_Sensor1 := true;
+			 *         scheduled := Sensor1;
+			 *    } or {
+			 *         assume unord_q0q3 == Sensor2 && !unord_q0q3_Sensor2;
+			 *         unord_q0q3_Sensor2 := true;
+			 *         scheduled := Sensor2;
+			 *    } or {
+			 *         ... // Sensor3
+			 *    } or {
+			 *         ... // Sensor4
+			 *    }
+			 *    if (unord_q0q3_Sensor1 && unord_q0q3_Sensor2 && unord_q0q3_Sensor3 && unord_q0q3_Sensor4) {
+			 *         c1 := 0;
+			 *         coordState := q3;
+			 *         unord_q0q3_Sensor1 := false;
+			 *         unord_q0q3_Sensor2 := false;
+			 *         ... // Sensor3, Sensor4
+			 *    }
+			 * }
+			 */
+			 
+			// creating new transition sourceState->sourceState for every componentInstance
+			 
+//			if (gammaSource instanceof State) {
+//				gammaSource.entryActions += createHavocStatement => [
+//					it.lhs = unordComponentsVariableDecl.createReferenceExpression
+//				]
+//			}
+			for (componentInstanceReference : coordinationTransition.coordinatedComponent.instances) {
+				val componentName = componentInstanceReference.componentInstance.name
+
+				val internalTransition = statechartUtil.createTransition(gammaSource, gammaSource)
+				internalTransition.trigger = coordinationTransition.trigger.clone
+				internalTransition.guard = createAndExpression => [
+					if (coordinationTransition.guard !== null) {
+						it.operands += coordinationTransition.guard.clone
+					}
+//					it.operands +=
+//						createEqualityExpression(unordComponentsVariableDecl,
+//							createEnumerationLiteralExpression(unordComponentEnum, componentName))
+					it.operands +=
+						createEqualityExpression(unordBoolVariables.get(componentInstanceReference.componentInstance),
+							createFalseExpression)
+				]
+				internalTransition.effects +=
+					createAssignment(scheduledCtrlVar,
+						createEnumerationLiteralExpression(scheduledCtrlVar.typeDefinition as EnumerationTypeDefinition, componentName))
+				internalTransition.effects +=
+					createAssignment(unordBoolVariables.get(componentInstanceReference.componentInstance),
+						createTrueExpression)
+				containingStatechart.transitions += internalTransition
+			}
+			
+			// creating new transition sourceState->targetState if every component was executed, reset action for each bool
+			
+			val finalTransition = statechartUtil.createTransition(gammaSource, gammaTarget)
+			finalTransition.trigger = coordinationTransition.trigger.clone
+
+			val guardExpression = createAndExpression => [
+				if (coordinationTransition.guard !== null) {
+					it.operands += coordinationTransition.guard.clone
+				}
+			]
+			finalTransition.guard = guardExpression
+
+			for (componentInstanceReference : coordinationTransition.coordinatedComponent.instances) {
+				guardExpression.operands +=
+					createEqualityExpression(unordBoolVariables.get(componentInstanceReference.componentInstance),
+						createTrueExpression)
+				finalTransition.effects +=
+					createAssignment(unordBoolVariables.get(componentInstanceReference.componentInstance),
+						createFalseExpression)
+			}
+			containingStatechart.transitions += finalTransition
+			
+		} else {
+			val transition = statechartUtil.createTransition(gammaSource, gammaTarget)
+			transition.trigger = coordinationTransition.trigger.clone
+			transition.guard = coordinationTransition.guard.clone
+			transition.effects += coordinationTransition.effects.clone
+			transition.annotations += coordinationTransition.annotations.clone
+			containingStatechart.transitions += transition
+		}
 	}
 	
 }
