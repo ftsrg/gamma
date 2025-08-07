@@ -970,6 +970,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					component, reference.getArguments(),
 					targetFolderUri, fileName,
 					minSchedulingConstraint, maxSchedulingConstraint,
+					true, // Inline functions
 					transformation.isOptimize(),
 					TransitionMerging.HIERARCHICAL,
 					transformation.getPropertyPackage(),

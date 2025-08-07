@@ -12,7 +12,6 @@ package hu.bme.mit.gamma.statechart.lowlevel.transformation.commandhandler;
 
 import java.io.File;
 import java.util.Map.Entry;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -79,7 +78,7 @@ public class CommandHandler extends AbstractHandler {
 			}
 		} catch (Throwable exception) {
 			exception.printStackTrace();
-			logger.log(Level.SEVERE, exception.getMessage());
+			logger.severe(exception.getMessage());
 			DialogUtil.showErrorWithStackTrace(exception.getMessage(), exception);
 		}
 		return null;
@@ -96,9 +95,9 @@ public class CommandHandler extends AbstractHandler {
 		// Transforming only a single statechart
 		hu.bme.mit.gamma.statechart.lowlevel.model.Package lowlevelPackage = transformer.transformAndWrap(gammaStatechart);
 		ecoreUtil.normalSave(lowlevelPackage, modelFolderUri, fileNameWithoutExtenstion + ".lgsm");
-		logger.log(Level.INFO, "The Gamma - low level statechart transformation has been finished: " +
+		logger.info("The Gamma - low level statechart transformation has been finished: " +
 					gammaStatechart.getName());
-		logger.log(Level.INFO, "Starting Gamma low level - xSTS transformation");
+		logger.info("Starting Gamma low level - xSTS transformation");
 		
 		LowlevelToXstsTransformer lowlevelTransformer = new LowlevelToXstsTransformer(
 				lowlevelPackage, false, TransitionMerging.HIERARCHICAL /* Flat does not work now */);
@@ -132,8 +131,8 @@ public class CommandHandler extends AbstractHandler {
 		// Cannot be serialized anymore, as it references some XTransitions that are now not
 		// serialized due to variable inlinings (see LowlevelToXSTSTransformer.deleteNotReadTransientVariables)
 //		ecoreUtil.normalSave(traceability, modelFolderUri, "." + fileNameWithoutExtenstion + ".l2s");
-		logger.log(Level.INFO, "The Gamma low level - xSTS transformation has been finished");
-		logger.log(Level.INFO, "Starting xSTS serialization: " + xSts.getName());
+		logger.info("The Gamma low level - xSTS transformation has been finished");
+		logger.info("Starting xSTS serialization: " + xSts.getName());
 		// Serializing the xSTS
 		ActionSerializer actionSerializer = ActionSerializer.INSTANCE;
 		CharSequence xStsString = actionSerializer.serializeXsts(xSts);
@@ -141,11 +140,11 @@ public class CommandHandler extends AbstractHandler {
 		if (printXStsString) {
 			System.out.println(xStsString);
 		}
-		logger.log(Level.INFO, "Starting xSTS Java code generation");
+		logger.info("Starting xSTS Java code generation");
 		StatechartToJavaCodeGenerator codeGenerator = new StatechartToJavaCodeGenerator(
 			targetFolderUri, basePackageName, gammaStatechart, xSts, javaActionSerializer);
 		codeGenerator.execute();
-		logger.log(Level.INFO, "The xSTS transformation has been finished");
+		logger.info("The xSTS transformation has been finished");
 	}
 	
 	enum ActionPrimingSetting {

@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.SelectExpression
@@ -27,6 +28,7 @@ import java.util.Set
 import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
+import static hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension java.lang.Math.abs
@@ -37,6 +39,7 @@ class ExpressionPreconditionTransformer {
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension ActionTransformer actionTransformer
 	protected final extension ValueDeclarationTransformer valueDeclarationTransformer
+	protected final extension TypeTransformer typeTransformer
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
@@ -59,6 +62,7 @@ class ExpressionPreconditionTransformer {
 		this.actionTransformer = actionTransformer
 		this.expressionTransformer = new ExpressionTransformer(this.trace)
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
+		this.typeTransformer = new TypeTransformer(this.trace)
 		this.FUNCTION_INLINING = functionInlining
 		this.MAX_RECURSION_DEPTH = maxRecursionDepth
 		this.currentRecursionDepth = MAX_RECURSION_DEPTH
@@ -93,13 +97,13 @@ class ExpressionPreconditionTransformer {
 	
 	def dispatch List<Action> transformPrecondition(FunctionAccessExpression expression) {
 		val actions = newArrayList
-		val function = expression.accessedDeclaration
+		val function = expression.accessedDeclaration as FunctionDeclaration
 		if (FUNCTION_INLINING) {
 			if (currentRecursionDepth <= 0) {
 				// Reached max recursion
 				val functionType = function.type.clone
 				val localStatement = functionType.createDeclarationStatement(
-					'''_defaultValueOf_«function.name»_«expression.hashCode.abs»_''')
+					'''_defaultValueOf_«function.name»_«expression.uniqueIndex»_''')
 				val localDefaultDeclaration = localStatement.variableDeclaration
 				
 				val lowlevelStatement = localStatement.transformAction
@@ -124,7 +128,16 @@ class ExpressionPreconditionTransformer {
 			}
 		}
 		else {
-			throw new UnsupportedOperationException("Only inlining is supported: " + expression)
+			// Mapping the function
+			if (!trace.isMapped(function)) {
+				val lowlevelFunction = function.transformFunction
+				val lowlevelStatechart = trace.firstStatechart
+				lowlevelStatechart.functionDeclarations += lowlevelFunction
+				
+				trace.put(function, lowlevelFunction)
+			}
+			
+			// No added precondition actions
 		}
 		return actions
 	}
@@ -236,6 +249,41 @@ class ExpressionPreconditionTransformer {
 			FunctionAccessExpression arguments) {
 		// Lambdas must be side effect-free, so no pre-transformation is necessary 
 		return #[]
+	}
+	
+	protected def FunctionDeclaration transformFunction(FunctionDeclaration function) {
+		val parameters = function.parameterDeclarations
+		val lowlevelParameters = parameters.map[it.transformFunctionParameter].flatten.toList
+		
+		val lowlevelFunction =
+		if (function instanceof ProcedureDeclaration) {
+			val lowlevelBody = function.body.transformAction.wrap
+			createProcedureDeclaration => [
+				it.body = lowlevelBody
+			]
+		}
+		else if (function instanceof LambdaDeclaration) {
+			val lowlevelExpression = function.expression.transformExpression.wrapIntoAndExpression
+			createLambdaDeclaration => [
+				it.expression = lowlevelExpression
+			]
+		}
+		else {
+			throw new IllegalArgumentException("Not known function type: " + function)
+		}
+		
+		val type = function.type
+		
+		val lowlevelType = (type.record) ? createVoidTypeDefinition : type.transformType // Cannot handle complex types (add void type)
+		val lowlevelName = getName(function)
+		
+		lowlevelFunction.type = lowlevelType
+		lowlevelFunction.name = lowlevelName
+		lowlevelFunction.parameterDeclarations += lowlevelParameters
+		
+		trace.put(function, lowlevelFunction)
+		
+		return lowlevelFunction
 	}
 	
 	// Auxiliary class for procedure return handling

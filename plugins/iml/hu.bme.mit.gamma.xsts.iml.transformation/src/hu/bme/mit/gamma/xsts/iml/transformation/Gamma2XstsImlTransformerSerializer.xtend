@@ -34,6 +34,7 @@ class Gamma2XstsImlTransformerSerializer {
 	protected final Integer minSchedulingConstraint
 	protected final Integer maxSchedulingConstraint
 	// Configuration
+	protected final boolean inlineFunctions
 	protected final boolean optimize
 	protected final TransitionMerging transitionMerging
 	// Slicing
@@ -61,6 +62,7 @@ class Gamma2XstsImlTransformerSerializer {
 			String targetFolderUri, String fileName,
 			Integer schedulingConstraint) {
 		this(component, arguments, targetFolderUri, fileName, schedulingConstraint, schedulingConstraint,
+			true,
 			true, TransitionMerging.HIERARCHICAL,
 			null, new AnnotatablePreprocessableElements(
 				null, null, null, null, null, null, null, null, null,
@@ -74,6 +76,7 @@ class Gamma2XstsImlTransformerSerializer {
 	new(Component component, List<? extends Expression> arguments,
 			String targetFolderUri, String fileName,
 			Integer minSchedulingConstraint, Integer maxSchedulingConstraint,
+			boolean inlineFunctions,
 			boolean optimize,
 			TransitionMerging transitionMerging,
 			PropertyPackage slicingProperties,
@@ -86,6 +89,7 @@ class Gamma2XstsImlTransformerSerializer {
 		this.minSchedulingConstraint = minSchedulingConstraint
 		this.maxSchedulingConstraint = maxSchedulingConstraint
 		//
+		this.inlineFunctions = inlineFunctions
 		this.optimize = optimize
 		this.transitionMerging = transitionMerging
 		//
@@ -101,6 +105,7 @@ class Gamma2XstsImlTransformerSerializer {
 		val xStsTransformer = new Gamma2XstsTransformerSerializer(component,
 			arguments, targetFolderUri,
 			fileName, minSchedulingConstraint, maxSchedulingConstraint,
+			inlineFunctions,
 			optimize,
 			true, // Optimize one-capacity arrays into standalone variables
 			false, // Flatten message queues into standalone variables

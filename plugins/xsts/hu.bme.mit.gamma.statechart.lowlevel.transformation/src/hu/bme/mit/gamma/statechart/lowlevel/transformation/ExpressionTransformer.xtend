@@ -265,6 +265,10 @@ class ExpressionTransformer {
 				val forLoopParameter = declaration as ParameterDeclaration
 				lowlevelVariables += trace.get(forLoopParameter)
 			}
+			else if (trace.isParMapped(declaration -> fieldAccess)) {
+				// Function parameter value
+				lowlevelVariables += trace.getAllPar(declaration -> fieldAccess)
+			}
 			else {
 				// Normal value
 				lowlevelVariables += trace.getAll(declaration -> fieldAccess)
@@ -317,7 +321,14 @@ class ExpressionTransformer {
 			}
 		}
 		else {
-			throw new IllegalArgumentException("Currently only function inlining is possible")
+			val function = expression.declaration as FunctionDeclaration
+			// By now, the procedure must be transformed by ExpressionPreconditionTransformer
+			checkState(trace.isMapped(function)) // TODO on the fly transformation could be added here?
+			val lowlevelFunction = trace.get(function)
+			val lowlevelArguments = expression.arguments.map[it.transformExpression].flatten.toList
+			val lowlevelCall = lowlevelFunction.createFunctionAccessExpression(lowlevelArguments)
+			
+			result += lowlevelCall
 		}
 		return result
 	}

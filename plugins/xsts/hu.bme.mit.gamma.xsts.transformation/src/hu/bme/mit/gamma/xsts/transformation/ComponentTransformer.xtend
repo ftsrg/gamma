@@ -1197,7 +1197,7 @@ class ComponentTransformer {
 	
 	def dispatch XSTS transform(AbstractSynchronousCompositeComponent component, Package lowlevelPackage) {
 		val name = component.name
-		logger.info( "Transforming abstract synchronous composite " + name)
+		logger.info("Transforming abstract synchronous composite " + name)
 		val xSts = name.createXsts
 		val componentMergedActions = <Component, Action>newHashMap // To handle multiple schedulings in CascadeCompositeComponents
 		val components = component.components
@@ -1313,14 +1313,14 @@ class ComponentTransformer {
 		}
 		xSts.changeTransitions(mergedAction.wrap)
 		
-		logger.info( "Deleting unused instance ports in " + name)
+		logger.info("Deleting unused instance ports in " + name)
 		xSts.deleteUnusedPorts(component) // Deleting variable assignments for unused ports
 		
 		// Connect only after "xSts.mergedTransition.action = mergedAction" / "xSts.changeTransitions"
-		logger.info( "Connecting events through channels in " + name)
+		logger.info("Connecting events through channels in " + name)
 		xSts.connectEventsThroughChannels(component) // Event (variable setting) connecting across channels
 		
-		logger.info( "Binding event to system port events in " + name)
+		logger.info("Binding event to system port events in " + name)
 		val oldInEventAction = xSts.inEventTransition.action
 		val bindingAssignments = xSts.createEventAndParameterAssignmentsBoundToTheSameSystemPort(component)
 		// Optimization: removing old NonDeterministicActions 
@@ -1336,7 +1336,7 @@ class ComponentTransformer {
 		
 		if (transformOrthogonalActions) {
 			// After connectEventsThroughChannels
-			logger.info( "Transforming orthogonal actions in XSTS " + name)
+			logger.info("Transforming orthogonal actions in XSTS " + name)
 			xSts.mergedAction.transform(xSts)
 			// Before optimize actions
 		}
@@ -1348,14 +1348,14 @@ class ComponentTransformer {
 		}
 		
 		// After in event optimization
-		logger.info( "Adding internal event handlings in " + name)
+		logger.info("Adding internal event handlings in " + name)
 		xSts.addInternalEventHandlingActions(component)
 		
 		return xSts
 	}
 	
 	def dispatch XSTS transform(StatechartDefinition statechart, Package lowlevelPackage) {
-		logger.info( "Transforming statechart " + statechart.name)
+		logger.info("Transforming statechart " + statechart.name)
 		/* Note that the package is already transformed and traced because of
 		   the "val lowlevelPackage = gammaToLowlevelTransformer.transform(_package)" call */
 		val lowlevelStatechart = gammaToLowlevelTransformer.transform(statechart)

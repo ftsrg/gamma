@@ -54,6 +54,7 @@ class ActionTransformer {
 	protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
 	// Trace
 	protected final Trace trace
+	protected final boolean FUNCTION_INLINING
 	
 	new(Trace trace) {
 		this(trace, true, 10, null)
@@ -61,6 +62,7 @@ class ActionTransformer {
 	
 	new(Trace trace, boolean functionInlining, int maxRecursionDepth, TimeUnit baseTimeUnit) {
 		this.trace = trace
+		this.FUNCTION_INLINING = functionInlining
 		this.expressionTransformer = new ExpressionTransformer(this.trace,
 				functionInlining, maxRecursionDepth, baseTimeUnit)
 		this.preconditionTransformer = new ExpressionPreconditionTransformer(
@@ -127,14 +129,16 @@ class ActionTransformer {
 		for (lowlevelVariableDeclaration : lowlevelVariableDeclarations) {
 			result += createVariableDeclarationStatement => [
 				it.variableDeclaration = lowlevelVariableDeclaration
-			]	
+			]
 		}
 		return result
 	}
 	
 	protected def dispatch List<Action> transformAction(ExpressionStatement action) {
 		val expression = action.expression
-		return expression.transformPrecondition
+		val preconditions = expression.transformPrecondition
+		return (FUNCTION_INLINING) ? preconditions :
+				expression.transformExpression.map[it.createExpressionStatement]
 	}
 	
 	protected def dispatch List<Action> transformAction(BreakStatement action) {

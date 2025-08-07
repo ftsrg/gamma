@@ -35,6 +35,9 @@
         upperBound="-1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eventDeclarations" upperBound="-1"
         eType="#//EventDeclaration" containment="true" eOpposite="#//EventDeclaration/component"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="functionDeclarations" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//FunctionDeclaration"
+        containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
         eType="#//ComponentAnnotation" containment="true"/>
   </eClassifiers>

@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
+import hu.bme.mit.gamma.expression.model.VoidTypeDefinition
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 
@@ -29,7 +30,6 @@ import static hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class TypeTransformer {
-	
 	// Auxiliary object
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
@@ -45,6 +45,10 @@ class TypeTransformer {
 	
 	protected def dispatch Type transformType(Type type) {
 		throw new IllegalArgumentException("Not known type: " + type)
+	}
+	
+	protected def dispatch Type transformType(VoidTypeDefinition type) {
+		return type.clone
 	}
 
 	protected def dispatch Type transformType(BooleanTypeDefinition type) {
