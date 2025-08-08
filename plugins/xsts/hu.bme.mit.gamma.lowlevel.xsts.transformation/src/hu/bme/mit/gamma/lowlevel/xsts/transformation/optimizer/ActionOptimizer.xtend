@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.AtomicAction
 import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.FunctionCallAction
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
@@ -128,6 +129,10 @@ class ActionOptimizer {
 		return action
 	}
 	
+	protected def dispatch Action simplifyCompositeActions(FunctionCallAction action) {
+		return action
+	}
+	
 	protected def dispatch Action simplifyCompositeActions(LoopAction action) {
 		val xStsSubaction = action.action
 		val simplifiedXStsSubaction = xStsSubaction.simplifyCompositeActions
@@ -206,6 +211,10 @@ class ActionOptimizer {
 	}
 	
 	protected def dispatch List<Action> simplifySequentialActions(AtomicAction action, boolean isTop) {
+		return #[action]
+	}
+	
+	protected def dispatch List<Action> simplifySequentialActions(FunctionCallAction action, boolean isTop) {
 		return #[action]
 	}
 	
@@ -296,6 +305,10 @@ class ActionOptimizer {
 		return #[action]
 	}
 	
+	protected def dispatch List<Action> simplifyParallelActions(FunctionCallAction action, boolean isTop) {
+		return #[action]
+	}
+	
 	protected def dispatch List<Action> simplifyParallelActions(LoopAction action, boolean isTop) {
 		val xStsSubaction = action.action
 		val newXStsSubactions = xStsSubaction.simplifyParallelActions(true)
@@ -374,6 +387,10 @@ class ActionOptimizer {
 		return #[action]
 	}
 	
+	protected def dispatch List<Action> simplifyOrthogonalActions(FunctionCallAction action, boolean isTop) {
+		return #[action]
+	}
+	
 	protected def dispatch List<Action> simplifyOrthogonalActions(LoopAction action, boolean isTop) {
 		val xStsSubaction = action.action
 		val newXStsSubactions = xStsSubaction.simplifyOrthogonalActions(true)
@@ -449,6 +466,10 @@ class ActionOptimizer {
 	}
 	
 	protected def dispatch List<Action> simplifyNonDeterministicActions(AtomicAction action, boolean isTop) {
+		return #[action]
+	}
+	
+	protected def dispatch List<Action> simplifyNonDeterministicActions(FunctionCallAction action, boolean isTop) {
 		return #[action]
 	}
 	

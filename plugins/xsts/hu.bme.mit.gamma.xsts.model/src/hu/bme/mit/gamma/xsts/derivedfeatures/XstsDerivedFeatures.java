@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -31,7 +31,10 @@ import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
+import hu.bme.mit.gamma.expression.model.LambdaDeclaration;
 import hu.bme.mit.gamma.expression.model.LiteralExpression;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
@@ -45,6 +48,7 @@ import hu.bme.mit.gamma.xsts.model.AsynchronousSystemAnnotation;
 import hu.bme.mit.gamma.xsts.model.AtomicAction;
 import hu.bme.mit.gamma.xsts.model.EmptyAction;
 import hu.bme.mit.gamma.xsts.model.EnvironmentalInvariantAnnotation;
+import hu.bme.mit.gamma.xsts.model.FunctionCallAction;
 import hu.bme.mit.gamma.xsts.model.HavocAction;
 import hu.bme.mit.gamma.xsts.model.IfAction;
 import hu.bme.mit.gamma.xsts.model.InternalInvariantAnnotation;
@@ -53,6 +57,7 @@ import hu.bme.mit.gamma.xsts.model.LoopAction;
 import hu.bme.mit.gamma.xsts.model.MessageQueueGroup;
 import hu.bme.mit.gamma.xsts.model.MultiaryAction;
 import hu.bme.mit.gamma.xsts.model.PrimedVariable;
+import hu.bme.mit.gamma.xsts.model.ProcedureDeclaration;
 import hu.bme.mit.gamma.xsts.model.SequentialAction;
 import hu.bme.mit.gamma.xsts.model.SynchronousSystemAnnotation;
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction;
@@ -496,6 +501,34 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return readVariables;
 	}
 	
+	private static Set<VariableDeclaration> _getReadVariables(FunctionCallAction action) {
+		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
+		
+		FunctionAccessExpression callExpression = action.getFunctionCallExpression();
+		for (Expression argument : callExpression.getArguments()) {
+			readVariables.addAll(
+					xStsActionUtil.getReferredVariables(argument));
+		}
+		
+		Expression operand = callExpression.getOperand();
+		FunctionDeclaration function = (FunctionDeclaration) xStsActionUtil.getDeclaration(operand);
+		if (function instanceof LambdaDeclaration lambda) {
+			Expression expression = lambda.getExpression();
+			readVariables.addAll(
+					xStsActionUtil.getReferredVariables(expression));
+		}
+		else if (function instanceof ProcedureDeclaration procedure) {
+			SequentialAction body = procedure.getBody();
+			readVariables.addAll(
+					getReadVariables(body));
+		}
+		else {
+			throw new IllegalArgumentException("Not known function: " + function);
+		}
+		
+		return readVariables;
+	}
+	
 	private static Set<VariableDeclaration> _getReadVariables(IfAction action) {
 		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
 		
@@ -555,6 +588,10 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return readVariables;
 	}
 	
+	private static Set<VariableDeclaration> _getExternallyReadVariables(FunctionCallAction action) {
+		return _getReadVariables(action);
+	}
+	
 	private static Set<VariableDeclaration> _getExternallyReadVariables(IfAction action) {
 		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
 		
@@ -609,6 +646,21 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return getWrittenVariables(subAction);
 	}
 	
+	private static Set<VariableDeclaration> _getWrittenVariables(FunctionCallAction action) {
+		Set<VariableDeclaration> writtenVariables = new HashSet<VariableDeclaration>();
+		
+		FunctionAccessExpression callExpression = action.getFunctionCallExpression();
+		Expression operand = callExpression.getOperand();
+		FunctionDeclaration function = (FunctionDeclaration) xStsActionUtil.getDeclaration(operand);
+		if (function instanceof ProcedureDeclaration procedure) {
+			SequentialAction body = procedure.getBody();
+			writtenVariables.addAll(
+					getWrittenVariables(body));
+		}
+		
+		return writtenVariables;
+	}
+	
 	private static Set<VariableDeclaration> _getWrittenVariables(IfAction action) {
 		Set<VariableDeclaration> writtenVariables = new HashSet<VariableDeclaration>();
 		
@@ -637,65 +689,97 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 
 	public static Set<VariableDeclaration> getReadVariables(Action action) {
-		if (action instanceof AssignmentAction) {
-			return _getReadVariables((AssignmentAction) action);
-		} else if (action instanceof HavocAction) {
-			return _getReadVariables((HavocAction) action);
-		} else if (action instanceof VariableDeclarationAction) {
-			return _getReadVariables((VariableDeclarationAction) action);
-		} else if (action instanceof AssumeAction) {
-			return _getReadVariables((AssumeAction) action);
-		} else if (action instanceof EmptyAction) {
-			return _getReadVariables((EmptyAction) action);
-		} else if (action instanceof LoopAction) {
-			return _getReadVariables((LoopAction) action);
-		} else if (action instanceof IfAction) {
-			return _getReadVariables((IfAction) action);
-		} else if (action instanceof MultiaryAction) {
-			return _getReadVariables((MultiaryAction) action);
-		} else {
+		if (action instanceof AssignmentAction _action) {
+			return _getReadVariables(_action);
+		}
+		else if (action instanceof HavocAction _action) {
+			return _getReadVariables(_action);
+		}
+		else if (action instanceof VariableDeclarationAction _action) {
+			return _getReadVariables(_action);
+		}
+		else if (action instanceof AssumeAction _action) {
+			return _getReadVariables(_action);
+		}
+		else if (action instanceof EmptyAction _action) {
+			return _getReadVariables(_action);
+		}
+		else if (action instanceof LoopAction _action) {
+			return _getReadVariables(_action);
+		}
+		else if (action instanceof IfAction _action) {
+			return _getReadVariables(_action);
+		}
+		else if (action instanceof MultiaryAction _action) {
+			return _getReadVariables(_action);
+		}
+		else if (action instanceof FunctionCallAction _action) {
+			return _getReadVariables(_action);
+		}
+		else {
 			throw new IllegalArgumentException("Unhandled action type: " + action);
 		}
 	}
 	
 	public static Set<VariableDeclaration> getExternallyReadVariables(Action action) {
-		if (action instanceof AssignmentAction) {
-			return _getExternallyReadVariables((AssignmentAction) action);
-		} else if (action instanceof HavocAction) {
-			return _getReadVariables((HavocAction) action);
-		} else if (action instanceof VariableDeclarationAction) {
-			return _getReadVariables((VariableDeclarationAction) action);
-		} else if (action instanceof AssumeAction) {
-			return _getReadVariables((AssumeAction) action);
-		} else if (action instanceof EmptyAction) {
-			return _getReadVariables((EmptyAction) action);
-		} else if (action instanceof LoopAction) {
-			return _getExternallyReadVariables((LoopAction) action);
-		} else if (action instanceof IfAction) {
-			return _getExternallyReadVariables((IfAction) action);
-		} else if (action instanceof MultiaryAction) {
-			return _getExternallyReadVariables((MultiaryAction) action);
-		} else {
+		if (action instanceof AssignmentAction _action) {
+			return _getExternallyReadVariables(_action);
+		}
+		else if (action instanceof HavocAction _action) {
+			return _getReadVariables(_action);
+		}
+		else if (action instanceof VariableDeclarationAction _action) {
+			return _getReadVariables(_action);
+		}
+		else if (action instanceof AssumeAction _action) {
+			return _getReadVariables(_action);
+		}
+		else if (action instanceof EmptyAction _action) {
+			return _getReadVariables(_action);
+		}
+		else if (action instanceof LoopAction _action) {
+			return _getExternallyReadVariables(_action);
+		}
+		else if (action instanceof IfAction _action) {
+			return _getExternallyReadVariables(_action);
+		}
+		else if (action instanceof MultiaryAction _action) {
+			return _getExternallyReadVariables(_action);
+		}
+		else if (action instanceof FunctionCallAction _action) {
+			return _getExternallyReadVariables(_action);
+		}
+		else {
 			throw new IllegalArgumentException("Unhandled action type: " + action);
 		}
 	}
 
 	public static Set<VariableDeclaration> getWrittenVariables(Action action) {
-		if (action instanceof AbstractAssignmentAction) {
-			return _getWrittenVariables((AbstractAssignmentAction) action);
-		} else if (action instanceof VariableDeclarationAction) {
-			return _getWrittenVariables((VariableDeclarationAction) action);
-		} else if (action instanceof AssumeAction) {
-			return _getWrittenVariables((AssumeAction) action);
-		} else if (action instanceof EmptyAction) {
-			return _getWrittenVariables((EmptyAction) action);
-		} else if (action instanceof LoopAction) {
-			return _getWrittenVariables((LoopAction) action);
-		} else if (action instanceof IfAction) {
-			return _getWrittenVariables((IfAction) action);
-		} else if (action instanceof MultiaryAction) {
-			return _getWrittenVariables((MultiaryAction) action);
-		} else {
+		if (action instanceof AbstractAssignmentAction _action) {
+			return _getWrittenVariables(_action);
+		}
+		else if (action instanceof VariableDeclarationAction _action) {
+			return _getWrittenVariables(_action);
+		}
+		else if (action instanceof AssumeAction _action) {
+			return _getWrittenVariables(_action);
+		}
+		else if (action instanceof EmptyAction _action) {
+			return _getWrittenVariables(_action);
+		}
+		else if (action instanceof LoopAction _action) {
+			return _getWrittenVariables(_action);
+		}
+		else if (action instanceof IfAction _action) {
+			return _getWrittenVariables(_action);
+		}
+		else if (action instanceof MultiaryAction _action) {
+			return _getWrittenVariables(_action);
+		}
+		else if (action instanceof FunctionCallAction _action) {
+			return _getWrittenVariables(_action);
+		}
+		else {
 			throw new IllegalArgumentException("Unhandled action type: " + action);
 		}
 	}

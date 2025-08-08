@@ -1504,6 +1504,9 @@ class ComponentTransformer {
 			for (variable : xSts.variableDeclarations) {
 				variable.name = variable.getCustomizedName(instance)
 			}
+			for (function : xSts.functionDeclarations) {
+				function.name = function.getCustomizedName(instance)
+			}
 			// Customizing region type declaration name
 			for (regionType : xSts.variableGroups.filter[it.annotation instanceof RegionGroup]
 					.map[it.variables].flatten

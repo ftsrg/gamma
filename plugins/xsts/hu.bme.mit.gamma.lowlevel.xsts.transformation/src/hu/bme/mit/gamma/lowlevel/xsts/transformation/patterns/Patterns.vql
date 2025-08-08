@@ -22,6 +22,10 @@ pattern typeDeclarations(typeDeclaration : TypeDeclaration) {
 	TypeDeclaration(typeDeclaration);
 }
 
+pattern functionDeclarations(functionDeclaration : FunctionDeclaration) {
+	FunctionDeclaration(functionDeclaration);
+}
+
 pattern events(event : EventDeclaration) {
 	EventDeclaration(event);
 }

@@ -63,5 +63,9 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//TypeDeclarationTrace/lowlevelTypeDeclaration"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//TypeDeclarationTrace/xStsTypeDeclaration"/>
     </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//FunctionDeclarationTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//FunctionDeclarationTrace/lowlevelFunctionDeclaration"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//FunctionDeclarationTrace/xStsFunctionDeclaration"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

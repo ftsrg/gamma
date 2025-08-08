@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,9 +10,11 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation.serializer
 
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.FunctionCallAction
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
@@ -71,6 +73,15 @@ class ActionSerializer {
 	
 	// nop cannot be parsed by Theta
 	def dispatch String serialize(EmptyAction action) ''''''
+	
+	// Cannot be parsed by Theta
+	def dispatch String serialize(FunctionCallAction action) {
+		val call = action.functionCallExpression
+		val operand = call.operand as DirectReferenceExpression
+		val function = operand.declaration
+		val arguments = call.arguments
+		return '''«function.name»(«FOR argument : arguments SEPARATOR ', '»«argument.serialize»«ENDFOR»);'''
+	}
 	
 	def dispatch String serialize(LoopAction action) {
 		val name = action.iterationParameterDeclaration.name

@@ -9,6 +9,9 @@
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="publicTypeDeclarations"
         upperBound="-1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//TypeDeclaration"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="functionDeclarations" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//FunctionDeclaration"
+        containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclarations" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"
         containment="true"/>
@@ -121,6 +124,15 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="then" lowerBound="1" eType="#//Action"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="else" lowerBound="1" eType="#//Action"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="FunctionCallAction" eSuperTypes="#//CompositeAction">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="functionCallExpression"
+        lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//FunctionAccessExpression"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ProcedureDeclaration" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//FunctionDeclaration">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="body" lowerBound="1" eType="#//SequentialAction"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="CompositeAction" abstract="true" eSuperTypes="#//Action"/>

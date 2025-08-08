@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation.util
 
+import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
@@ -43,6 +44,8 @@ class Namings {
 	protected final static extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	protected final static extension ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE
 	//
+	
+	public static val INACTIVE_ENUM_LITERAL = "__Inactive__"
 	
 	// To Low-level: in LowlevelNamings
 	
@@ -122,6 +125,6 @@ class Namings {
 	// Orthogonal variable renames
 	static def String getOrthogonalName(VariableDeclaration variable) '''_«variable.name»_''' // Caller must make sure there is no name collision
 	// XSTS instantiation
-	static def String getCustomizedName(VariableDeclaration variable, ComponentInstance instance) '''«variable.name»_«instance.name»''' // Caller must make sure there is no name collision
+	static def String getCustomizedName(Declaration declaration, ComponentInstance instance) '''«declaration.name»_«instance.name»''' // Caller must make sure there is no name collision
 	
 }

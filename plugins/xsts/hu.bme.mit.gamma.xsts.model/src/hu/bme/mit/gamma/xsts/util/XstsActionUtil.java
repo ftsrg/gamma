@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -168,6 +168,7 @@ public class XstsActionUtil extends ExpressionUtil {
 	public void merge(XSTS pivot, XSTS mergable) {
 		pivot.getTypeDeclarations().addAll(mergable.getTypeDeclarations());
 		pivot.getPublicTypeDeclarations().addAll(mergable.getPublicTypeDeclarations());
+		pivot.getFunctionDeclarations().addAll(mergable.getFunctionDeclarations());
 		pivot.getVariableDeclarations().addAll(mergable.getVariableDeclarations());
 		mergeVariableGroups(pivot, mergable);
 	}
@@ -213,6 +214,13 @@ public class XstsActionUtil extends ExpressionUtil {
 		XTransition transition = xStsFactory.createXTransition();
 		transition.setAction(action);
 		return transition;
+	}
+	
+	public SequentialAction wrapIfNeeded(Action action) {
+		if (action instanceof SequentialAction _action) {
+			return _action;
+		}
+		return createSequentialAction(action);
 	}
 	
 	public XTransition createEmptyTransition() {

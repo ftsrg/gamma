@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -137,8 +137,8 @@ class ActionTransformer {
 	protected def dispatch List<Action> transformAction(ExpressionStatement action) {
 		val expression = action.expression
 		val preconditions = expression.transformPrecondition
-		return (FUNCTION_INLINING) ? preconditions :
-				expression.transformExpression.map[it.createExpressionStatement]
+		return (FUNCTION_INLINING) ? preconditions : // Inlined function
+				expression.transformExpression.map[it.createExpressionStatement] // Function call
 	}
 	
 	protected def dispatch List<Action> transformAction(BreakStatement action) {

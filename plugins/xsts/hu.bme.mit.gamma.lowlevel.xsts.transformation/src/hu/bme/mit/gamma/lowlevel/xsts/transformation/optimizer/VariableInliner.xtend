@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.FunctionCallAction
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
@@ -73,7 +74,7 @@ class VariableInliner {
 		action.inline(concreteValues, symbolicValues)
 	}
 	
-	// The concreteValues and symbolicValues sets are disjunct!
+	// The concreteValues and symbolicValues sets are disjoint!
 	
 	protected def dispatch void inline(Action action,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
@@ -91,7 +92,21 @@ class VariableInliner {
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		val writtenVariables = action.writtenVariables
-				
+		
+		concreteValues.keySet -= writtenVariables
+		symbolicValues.keySet -= writtenVariables
+	}
+	
+	protected def dispatch void inline(FunctionCallAction action,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
+		val call = action.functionCallExpression
+		for (argument : call.arguments) {
+			argument.inlineExpression(concreteValues, symbolicValues)
+		}
+		
+		val writtenVariables = action.writtenVariables
+		// We do not consider function bodies (yet)
 		concreteValues.keySet -= writtenVariables
 		symbolicValues.keySet -= writtenVariables
 	}
