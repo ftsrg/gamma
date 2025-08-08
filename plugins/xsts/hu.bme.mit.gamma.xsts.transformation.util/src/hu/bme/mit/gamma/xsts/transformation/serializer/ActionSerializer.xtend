@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.OrthogonalAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
+import hu.bme.mit.gamma.xsts.model.ReturnAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
@@ -57,6 +58,10 @@ class ActionSerializer {
 	
 	def dispatch String serialize(AssumeAction action) '''
 		assume «action.assumption.serialize»;
+	'''
+	
+	def dispatch String serialize(ReturnAction action) '''
+		return «action.expression.serialize»;
 	'''
 	
 	def dispatch String serialize(AssignmentAction action) '''

@@ -58,6 +58,7 @@ import hu.bme.mit.gamma.xsts.model.MessageQueueGroup;
 import hu.bme.mit.gamma.xsts.model.MultiaryAction;
 import hu.bme.mit.gamma.xsts.model.PrimedVariable;
 import hu.bme.mit.gamma.xsts.model.ProcedureDeclaration;
+import hu.bme.mit.gamma.xsts.model.ReturnAction;
 import hu.bme.mit.gamma.xsts.model.SequentialAction;
 import hu.bme.mit.gamma.xsts.model.SynchronousSystemAnnotation;
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction;
@@ -451,6 +452,11 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 				action.getAssumption());
 	}
 	
+	private static Set<VariableDeclaration> _getReadVariables(ReturnAction action) {
+		return expressionUtil.getReferredVariables(
+				action.getExpression());
+	}
+	
 	private static Set<VariableDeclaration> _getReadVariables(HavocAction action) {
 		return Collections.emptySet();
 	}
@@ -588,10 +594,6 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return readVariables;
 	}
 	
-	private static Set<VariableDeclaration> _getExternallyReadVariables(FunctionCallAction action) {
-		return _getReadVariables(action);
-	}
-	
 	private static Set<VariableDeclaration> _getExternallyReadVariables(IfAction action) {
 		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
 		
@@ -626,6 +628,10 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return Collections.emptySet();
 	}
 
+	private static Set<VariableDeclaration> _getWrittenVariables(ReturnAction action) {
+		return Collections.emptySet();
+	}
+	
 	private static Set<VariableDeclaration> _getWrittenVariables(AbstractAssignmentAction action) {
 		VariableDeclaration accessedDeclaration = (VariableDeclaration)
 				xStsActionUtil.getAccessedDeclaration(
@@ -704,6 +710,9 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		else if (action instanceof EmptyAction _action) {
 			return _getReadVariables(_action);
 		}
+		else if (action instanceof ReturnAction _action) {
+			return _getReadVariables(_action);
+		}
 		else if (action instanceof LoopAction _action) {
 			return _getReadVariables(_action);
 		}
@@ -734,6 +743,9 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		else if (action instanceof AssumeAction _action) {
 			return _getReadVariables(_action);
 		}
+		else if (action instanceof ReturnAction _action) {
+			return _getReadVariables(_action);
+		}
 		else if (action instanceof EmptyAction _action) {
 			return _getReadVariables(_action);
 		}
@@ -747,7 +759,7 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 			return _getExternallyReadVariables(_action);
 		}
 		else if (action instanceof FunctionCallAction _action) {
-			return _getExternallyReadVariables(_action);
+			return _getReadVariables(_action);
 		}
 		else {
 			throw new IllegalArgumentException("Unhandled action type: " + action);
@@ -762,6 +774,9 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 			return _getWrittenVariables(_action);
 		}
 		else if (action instanceof AssumeAction _action) {
+			return _getWrittenVariables(_action);
+		}
+		else if (action instanceof ReturnAction _action) {
 			return _getWrittenVariables(_action);
 		}
 		else if (action instanceof EmptyAction _action) {

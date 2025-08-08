@@ -98,6 +98,9 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//ProcedureDeclaration/body"/>
     </genClasses>
     <genClasses ecoreClass="model.ecore#//CompositeAction"/>
+    <genClasses ecoreClass="model.ecore#//ReturnAction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//ReturnAction/expression"/>
+    </genClasses>
     <genClasses ecoreClass="model.ecore#//AssertAction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AssertAction/assertion"/>
     </genClasses>

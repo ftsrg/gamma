@@ -25,6 +25,7 @@ import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
+import hu.bme.mit.gamma.xsts.model.ReturnAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XTransition
@@ -202,6 +203,13 @@ class VariableInliner {
 		val assumption = action.assumption
 		assumption.inlineExpression(concreteValues, symbolicValues)
 		// TODO 'assume (a = 10)' like actions could be handled like assignments (see next dispatch)
+	}
+	
+	protected def dispatch void inline(ReturnAction action,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
+		val expression = action.expression
+		expression.inlineExpression(concreteValues, symbolicValues)
 	}
 	
 	protected def dispatch void inline(AssignmentAction action,

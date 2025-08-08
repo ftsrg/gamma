@@ -146,7 +146,12 @@ class ActionTransformer {
 	}
 	
 	protected def dispatch List<Action> transformAction(ReturnStatement action) {
-		throw new UnsupportedOperationException("Not supported action: " + action)
+		val expression = action.expression
+		return #[
+			createReturnStatement => [
+				it.expression = expression.transformExpression.wrapIntoAndExpression
+			]
+		]
 	}
 	
 	protected def dispatch List<Action> transformAction(IfStatement action) {

@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.action.model.ExpressionStatement
 import hu.bme.mit.gamma.action.model.ForStatement
 import hu.bme.mit.gamma.action.model.HavocStatement
 import hu.bme.mit.gamma.action.model.IfStatement
+import hu.bme.mit.gamma.action.model.ReturnStatement
 import hu.bme.mit.gamma.action.model.SwitchStatement
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
 import hu.bme.mit.gamma.expression.model.DefaultExpression
@@ -78,6 +79,13 @@ class ActionTransformer {
 //		return createAssertAction => [
 //			it.assertion = action.assertion.transformExpression
 //		]
+	}
+	
+	def dispatch Action transformAction(ReturnStatement action) {
+		val expression = action.expression
+		return createReturnAction => [
+			it.expression = expression.transformExpression
+		]
 	}
 	
 	def dispatch Action transformAction(ExpressionStatement action) {
