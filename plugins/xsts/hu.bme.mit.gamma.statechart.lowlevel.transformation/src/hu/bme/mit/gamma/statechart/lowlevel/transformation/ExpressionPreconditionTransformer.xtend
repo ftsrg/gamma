@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
 import hu.bme.mit.gamma.action.model.Action
@@ -252,6 +262,9 @@ class ExpressionPreconditionTransformer {
 	}
 	
 	protected def FunctionDeclaration transformFunction(FunctionDeclaration function) {
+		val type = function.type
+		checkState(!type.record, "Record return types are not supported")
+		
 		val parameters = function.parameterDeclarations
 		val lowlevelParameters = parameters.map[it.transformFunctionParameter].flatten.toList
 		
@@ -272,9 +285,7 @@ class ExpressionPreconditionTransformer {
 			throw new IllegalArgumentException("Not known function type: " + function)
 		}
 		
-		val type = function.type
-		
-		val lowlevelType = (type.record) ? createVoidTypeDefinition : type.transformType // Cannot handle complex types (add void type)
+		val lowlevelType = type.transformType // Cannot handle complex types
 		val lowlevelName = getName(function)
 		
 		lowlevelFunction.type = lowlevelType

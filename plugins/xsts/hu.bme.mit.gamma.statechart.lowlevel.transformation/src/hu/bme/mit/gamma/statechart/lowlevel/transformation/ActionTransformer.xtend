@@ -149,7 +149,7 @@ class ActionTransformer {
 		val expression = action.expression
 		return #[
 			createReturnStatement => [
-				it.expression = expression.transformExpression.wrapIntoAndExpression
+				it.expression = expression.transformSimpleExpression // Currently, only one expression
 			]
 		]
 	}
