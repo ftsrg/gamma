@@ -22,9 +22,11 @@ import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.FunctionCallAction
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
+import hu.bme.mit.gamma.xsts.model.ReturnAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XTransition
@@ -136,6 +138,14 @@ class ActionSerializer {
 	
 	protected def dispatch serializeAction(EmptyAction action) ''''''
 	
+	protected def dispatch serializeAction(ReturnAction action) {
+		val expression = action.expression
+		val string = (expression === null) ? "false (* placeholder *)" : expression.serialize
+		return '''(«globalVariableName», «string»)'''
+	}
+	
+	protected def dispatch serializeAction(FunctionCallAction action) '''«action.functionCallExpression.serialize»'''
+	
 	// Not the same, but a good run-time check
 	protected def dispatch serializeAction(AssumeAction action) '''
 		(* «action.assumption.serialize» *)
@@ -143,7 +153,7 @@ class ActionSerializer {
 	
 	protected def dispatch serializeAction(HavocAction action) {
 		val variable = action.lhs.declaration as VariableDeclaration
-		val rhsString = '''«Namings.ENV_HAVOC_RECORD_IDENTIFIER».«action.serializeFieldName»;'''
+		val rhsString = '''«ENV_HAVOC_RECORD_IDENTIFIER».«action.serializeFieldName»;'''
 		
 		val placeHolderRhs = 0.toIntegerLiteral
 		val placeHolderRhsString = placeHolderRhs.serialize + ";"

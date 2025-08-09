@@ -48,6 +48,8 @@ class Namings {
 	public static final String NONDET_BRANCH_TYPE_NAME = "b"
 	public static final String NONDET_BRANCH_LITERAL_PREFIX = "B"
 	public static final String PICK_BRANCH_FUNCTION_NAME = "pick_branch"
+	
+	public static final String FUNCTION_RETURN_VALUE = "v"
 	//
 	
 	public static final String DECLARATION_NAME_PREFIX = "_"

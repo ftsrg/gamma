@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Gamma project
+ * Copyright (c) 2024-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,11 +11,16 @@
 package hu.bme.mit.gamma.xsts.iml.transformation.serialization
 
 import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration
+import hu.bme.mit.gamma.expression.model.LambdaDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.xsts.iml.transformation.util.MessageQueueHandler
 import hu.bme.mit.gamma.xsts.model.HavocAction
+import hu.bme.mit.gamma.xsts.model.ProcedureDeclaration
 import hu.bme.mit.gamma.xsts.transformation.util.MessageQueueUtil
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
+
+import static hu.bme.mit.gamma.xsts.iml.transformation.util.Namings.*
 
 class DeclarationSerializer {
 	// Singleton
@@ -25,6 +30,7 @@ class DeclarationSerializer {
 	protected final extension MessageQueueHandler queueHandler = MessageQueueHandler.INSTANCE
 	protected final extension MessageQueueUtil queueUtil = MessageQueueUtil.INSTANCE
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	protected final extension ActionSerializer actionSerializer = new ActionSerializer
 	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	//
@@ -52,5 +58,17 @@ class DeclarationSerializer {
 		module «declaration.serializeName» = struct type t = «declaration.type.serializeType» end
 	'''
 	// type nonrec «declaration.serializeName» = «declaration.type.serializeType»
+	
+	def serializeFunctionDeclaration(FunctionDeclaration function) '''
+		let «function.name» («GLOBAL_RECORD_IDENTIFIER» : «GLOBAL_RECORD_TYPE_NAME») «
+			FOR parameter : function.parameterDeclarations SEPARATOR ' '»(«parameter.serializeParameterDeclaration»)«ENDFOR» =
+				«function.serializeFunctionDeclarationBody»
+	'''
+	
+	protected def serializeParameterDeclaration(Declaration declaration)'''«declaration.serializeName» : «declaration.type.serializeType»'''
+ 	
+	protected def dispatch serializeFunctionDeclarationBody(LambdaDeclaration function) '''«function.expression.serialize»'''
+	
+	protected def dispatch serializeFunctionDeclarationBody(ProcedureDeclaration function) '''«function.body.serializeActionIntermediate»'''
 	
 }

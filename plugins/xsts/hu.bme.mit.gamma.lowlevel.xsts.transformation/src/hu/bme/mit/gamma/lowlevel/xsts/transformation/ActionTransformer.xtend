@@ -84,7 +84,7 @@ class ActionTransformer {
 	def dispatch Action transformAction(ReturnStatement action) {
 		val expression = action.expression
 		return createReturnAction => [
-			it.expression = expression.transformExpression
+			it.expression = expression?.transformExpression
 		]
 	}
 	

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Gamma project
+ * Copyright (c) 2024-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -23,6 +23,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.FalseExpression
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.GreaterEqualExpression
 import hu.bme.mit.gamma.expression.model.GreaterExpression
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
@@ -35,6 +36,7 @@ import hu.bme.mit.gamma.expression.model.LiteralExpression
 import hu.bme.mit.gamma.expression.model.MultiplyExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
 import hu.bme.mit.gamma.expression.model.NullaryExpression
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.SubtractExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
@@ -44,6 +46,7 @@ import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.iml.transformation.util.MessageQueueHandler
 import hu.bme.mit.gamma.xsts.iml.transformation.util.Namings
+import hu.bme.mit.gamma.xsts.model.FunctionCallAction
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.transformation.util.MessageQueueUtil
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
@@ -139,7 +142,9 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	
 	override String _serialize(DirectReferenceExpression expression) {
 		val declaration = expression.declaration
-		return '''«declaration.id».«declaration.serializeName»'''
+		val id = (declaration instanceof ParameterDeclaration) ? '' : // Function declaration
+				declaration.id + "." // Default: 'r' or 'l'
+		return '''«id»«declaration.serializeName»'''
 	}
 	
 	override String _serialize(ArrayAccessExpression arrayAccessExpression) '''(Map.get «arrayAccessExpression.index.serialize» «arrayAccessExpression.operand.serialize»)'''
@@ -167,6 +172,12 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 		
 		return imlArrayLiteral
 	}
+	
+	override String _serialize(FunctionAccessExpression expression) '''
+		let «GLOBAL_RECORD_IDENTIFIER», «FUNCTION_RETURN_VALUE» = («expression.operand.declaration.name» «
+			FOR argument : expression.arguments SEPARATOR ' '»«argument.serialize»«ENDFOR») in«
+				IF !(expression.eContainer instanceof FunctionCallAction)» «FUNCTION_RETURN_VALUE»«ENDIF»
+	'''
 	
 	//
 
