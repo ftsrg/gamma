@@ -323,7 +323,7 @@ class ExpressionTransformer {
 		else {
 			val function = expression.declaration as FunctionDeclaration
 			// By now, the procedure must be transformed by ExpressionPreconditionTransformer
-			checkState(trace.isMapped(function)) // TODO on the fly transformation could be added here?
+			checkState(trace.isMapped(function), function) // TODO on the fly transformation could be added here?
 			val lowlevelFunction = trace.get(function)
 			val lowlevelArguments = expression.arguments.map[it.transformExpression].flatten.toList
 			val lowlevelCall = lowlevelFunction.createFunctionAccessExpression(lowlevelArguments)

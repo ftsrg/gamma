@@ -173,11 +173,15 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 		return imlArrayLiteral
 	}
 	
-	override String _serialize(FunctionAccessExpression expression) '''
-		let «GLOBAL_RECORD_IDENTIFIER», «FUNCTION_RETURN_VALUE» = («expression.operand.declaration.name» «
-			FOR argument : expression.arguments SEPARATOR ' '»«argument.serialize»«ENDFOR») in«
-				IF !(expression.eContainer instanceof FunctionCallAction)» «FUNCTION_RETURN_VALUE»«ENDIF»
-	'''
+	override String _serialize(FunctionAccessExpression expression) {
+		val isExpression = !(expression.eContainer instanceof FunctionCallAction)
+		val string = '''let «GLOBAL_RECORD_IDENTIFIER», «FUNCTION_RETURN_VALUE» = («expression.operand.declaration.name» «
+				GLOBAL_RECORD_IDENTIFIER» «FOR
+					argument : expression.arguments SEPARATOR ' '»«argument.serialize»«ENDFOR») in«
+						IF isExpression» «FUNCTION_RETURN_VALUE»«ENDIF»'''
+		return (isExpression) ? "(" + string + ")" :
+			string
+	}
 	
 	//
 

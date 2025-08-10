@@ -143,8 +143,6 @@ class ExpressionPreconditionTransformer {
 				val lowlevelFunction = function.transformFunction
 				val lowlevelStatechart = trace.firstStatechart
 				lowlevelStatechart.functionDeclarations += lowlevelFunction
-				
-				trace.put(function, lowlevelFunction)
 			}
 			
 			// No added precondition actions
@@ -270,16 +268,22 @@ class ExpressionPreconditionTransformer {
 		
 		val lowlevelFunction =
 		if (function instanceof ProcedureDeclaration) {
+			val lowlevelProcedure = createProcedureDeclaration
+			trace.put(function, lowlevelProcedure) // Here, to support recursion
+			
 			val lowlevelBody = function.body.transformAction.wrap
-			createProcedureDeclaration => [
-				it.body = lowlevelBody
-			]
+			lowlevelProcedure.body = lowlevelBody
+			
+			lowlevelProcedure
 		}
 		else if (function instanceof LambdaDeclaration) {
+			val lowlevelLambda = createLambdaDeclaration
+			trace.put(function, lowlevelLambda) // Here, to support recursion
+			
 			val lowlevelExpression = function.expression.transformExpression.wrapIntoAndExpression
-			createLambdaDeclaration => [
-				it.expression = lowlevelExpression
-			]
+			lowlevelLambda.expression = lowlevelExpression
+			
+			lowlevelLambda
 		}
 		else {
 			throw new IllegalArgumentException("Not known function type: " + function)
@@ -291,8 +295,6 @@ class ExpressionPreconditionTransformer {
 		lowlevelFunction.type = lowlevelType
 		lowlevelFunction.name = lowlevelName
 		lowlevelFunction.parameterDeclarations += lowlevelParameters
-		
-		trace.put(function, lowlevelFunction)
 		
 		return lowlevelFunction
 	}
