@@ -50,7 +50,7 @@ class Namings {
 	public static final String NONDET_BRANCH_LITERAL_PREFIX = "B"
 	public static final String PICK_BRANCH_FUNCTION_NAME = "pick_branch"
 	
-	public static final String FUNCTION_RETURN_VALUE_NAME = "_v_"
+	public static final String FUNCTION_RETURN_VALUE_NAME = "v_"
 	//
 	
 	public static final String DECLARATION_NAME_PREFIX = "_"

@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.xsts.iml.transformation.serialization
 
 import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
@@ -37,6 +38,7 @@ class DeclarationSerializer {
 	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE
 	//
 	
 	def serializeFieldDeclaration(Declaration declaration) {
@@ -65,16 +67,15 @@ class DeclarationSerializer {
 	
 	def serializeFunctionDeclaration(FunctionDeclaration function) '''
 		«IF function instanceof ProcedureDeclaration»
-			«var type = function.type»
-			type nonrec «function.customizeLocalVariablesTypeName» {
+			type nonrec «function.customizeLocalVariablesTypeName» = {
 				«FOR localVariable : function.localVariables»
 					«localVariable.serializeFieldDeclaration»
 				«ENDFOR»
-				«FUNCTION_RETURN_VALUE_NAME» : «IF type instanceof VoidTypeDefinition»bool«ELSE»«type.serializeType»«ENDIF»;
+				«function.createReturnVariable.serializeFieldDeclaration»
 			}
 		«ENDIF»
 		
-		let «function.name» («GLOBAL_RECORD_IDENTIFIER» : «GLOBAL_RECORD_TYPE_NAME») «
+		let «IF function.recursive»rec «ENDIF»«function.name» («GLOBAL_RECORD_IDENTIFIER» : «GLOBAL_RECORD_TYPE_NAME») «
 				FOR parameter : function.parameterDeclarations SEPARATOR ' '»(«parameter.serializeParameterDeclaration»)«ENDFOR» =
 			«function.serializeFunctionDeclarationBody»
 	'''
@@ -84,11 +85,19 @@ class DeclarationSerializer {
 	protected def dispatch serializeFunctionDeclarationBody(LambdaDeclaration function) '''«function.expression.serialize»'''
 	
 	protected def dispatch serializeFunctionDeclarationBody(ProcedureDeclaration function) '''
-		«(function.localVariables +
-				(function.type instanceof VoidTypeDefinition ? #[] :
-				#[function.type.clone.createVariableDeclaration(FUNCTION_RETURN_VALUE_NAME)]))
+		«(function.localVariables + #[function.createReturnVariable])
 					.initVariablesIfNotEmpty(LOCAL_RECORD_IDENTIFIER)»
 		«function.body.serializeActionIntermediate»«functionReturnValues»
 	'''
+	
+	//
+	
+	private def createReturnVariable(FunctionDeclaration function) {
+		val functionType = function.type
+		val type = (functionType instanceof VoidTypeDefinition) ? 
+				createBooleanTypeDefinition :
+				functionType.clone
+		return type.createVariableDeclaration(FUNCTION_RETURN_VALUE_NAME)
+	}
 	
 }

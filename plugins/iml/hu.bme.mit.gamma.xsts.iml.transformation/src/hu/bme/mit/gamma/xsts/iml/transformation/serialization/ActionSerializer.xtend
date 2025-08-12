@@ -140,7 +140,7 @@ class ActionSerializer {
 	protected def dispatch serializeAction(ReturnAction action) {
 		val expression = action.expression
 		val string = (expression === null) ? "false (* placeholder *)" : '''{ «
-				LOCAL_RECORD_IDENTIFIER» with «FUNCTION_RETURN_VALUE_NAME» = «expression.serialize» }'''
+				LOCAL_RECORD_IDENTIFIER» with «FUNCTION_RETURN_VALUE_NAME.customizeDeclarationName» = «expression.serialize» }'''
 		return '''«localVariableDeclarations»(«globalVariableName», «string») in'''
 	}
 	

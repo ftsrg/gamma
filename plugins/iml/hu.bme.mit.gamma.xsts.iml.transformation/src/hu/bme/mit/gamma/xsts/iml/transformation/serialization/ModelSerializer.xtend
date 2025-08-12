@@ -120,7 +120,7 @@ class ModelSerializer {
 						«choice.customizeChoice» : int;
 					«ENDFOR»
 				}
-			
+				
 			«ENDIF»
 			«FOR function : xSts.functionDeclarations»
 				«function.serializeFunctionDeclaration»
