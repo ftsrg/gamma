@@ -139,6 +139,19 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return !clockVariables.isEmpty();
 	}
 	
+	public static List<VariableDeclaration> getLocalVariables(FunctionDeclaration function) {
+		if (function instanceof ProcedureDeclaration procedure) {
+			SequentialAction body = procedure.getBody();
+			return getLocalVariables(body);
+		}
+		return List.of();
+	}
+	
+	public static List<VariableDeclaration> getLocalVariables(Action action) {
+		return ecoreUtil.getSelfAndAllContentsOfType(action, VariableDeclarationAction.class)
+				.stream().map(it -> it.getVariableDeclaration()).collect(Collectors.toList());
+	}
+	
 	public static boolean isLocal(Declaration variable) {
 		EObject container = variable.eContainer();
 		return container instanceof VariableDeclarationAction;

@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.xsts.iml.transformation.util
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
@@ -49,7 +50,7 @@ class Namings {
 	public static final String NONDET_BRANCH_LITERAL_PREFIX = "B"
 	public static final String PICK_BRANCH_FUNCTION_NAME = "pick_branch"
 	
-	public static final String FUNCTION_RETURN_VALUE = "v"
+	public static final String FUNCTION_RETURN_VALUE_NAME = "_v_"
 	//
 	
 	public static final String DECLARATION_NAME_PREFIX = "_"
@@ -61,6 +62,9 @@ class Namings {
 	public static final String TYPE_DECLARATION_NAME_PREFIX = "M_"
 	def static customizeName(TypeDeclaration type) { type.name.customizeTypeDeclarationName }
 	def static customizeTypeDeclarationName(String name) { TYPE_DECLARATION_NAME_PREFIX + name }
+	
+	def static customizeLocalVariablesTypeName(FunctionDeclaration function) { function.name.customizeLocalVariablesTypeName }
+	def static customizeLocalVariablesTypeName(String name) { LOCAL_RECORD_TYPE_NAME + "_" + name }
 	
 	public static final String ENUM_LITERAL_PREFIX = "L_"
 	def static customizeName(EnumerationLiteralExpression literal) { literal.reference.customizeName }

@@ -60,6 +60,9 @@ class MessageQueueUtil {
 		val type = variable.typeDefinition
 		if (type instanceof ArrayTypeDefinition) {
 			val xSts = variable.containingXsts
+			if (xSts === null) {
+				return false
+			}
 			val queueVariables = xSts.masterMessageQueueGroup.variables
 			
 			return queueVariables.contains(variable)
@@ -71,6 +74,9 @@ class MessageQueueUtil {
 		val type = variable.typeDefinition
 		if (type instanceof ArrayTypeDefinition) {
 			val xSts = variable.containingXsts
+			if (xSts === null) {
+				return false
+			}
 			val queueVariables = xSts.messageQueueGroup.variables
 			
 			return queueVariables.contains(variable)
@@ -82,6 +88,9 @@ class MessageQueueUtil {
 		val type = variable.typeDefinition
 		if (type instanceof IntegerTypeDefinition) {
 			val xSts = variable.containingXsts
+			if (xSts === null) {
+				return false
+			}
 			val sizeVariables = xSts.messageQueueSizeGroup.variables
 			
 			return sizeVariables.contains(variable)

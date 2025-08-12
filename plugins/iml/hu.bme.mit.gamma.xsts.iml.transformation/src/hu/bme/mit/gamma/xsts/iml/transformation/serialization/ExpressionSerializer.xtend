@@ -46,8 +46,10 @@ import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.iml.transformation.util.MessageQueueHandler
 import hu.bme.mit.gamma.xsts.iml.transformation.util.Namings
-import hu.bme.mit.gamma.xsts.model.FunctionCallAction
+import hu.bme.mit.gamma.xsts.model.Action
+import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.HavocAction
+import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.transformation.util.MessageQueueUtil
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.List
@@ -142,7 +144,7 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	
 	override String _serialize(DirectReferenceExpression expression) {
 		val declaration = expression.declaration
-		val id = (declaration instanceof ParameterDeclaration) ? '' : // Function declaration
+		val id = (declaration instanceof ParameterDeclaration) ? '' : // Function declaration's parameter
 				declaration.id + "." // Default: 'r' or 'l'
 		return '''«id»«declaration.serializeName»'''
 	}
@@ -174,14 +176,18 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	}
 	
 	override String _serialize(FunctionAccessExpression expression) {
-		val isExpression = !(expression.eContainer instanceof FunctionCallAction)
-		val string = '''let «GLOBAL_RECORD_IDENTIFIER», «FUNCTION_RETURN_VALUE» = («expression.operand.declaration.name» «
-				GLOBAL_RECORD_IDENTIFIER» «FOR
-					argument : expression.arguments SEPARATOR ' '»«argument.serialize»«ENDFOR») in«
-						IF isExpression» «FUNCTION_RETURN_VALUE»«ENDIF»'''
-		return (isExpression) ? "(" + string + ")" :
+		val action = expression.getContainerOfType(Action)
+		val isExpression = !(action instanceof AssignmentAction || action instanceof VariableDeclarationAction) // As rhs - cannot support functions with both a side effect and return value
+		val string = '''let «GLOBAL_RECORD_IDENTIFIER», «FUNCTION_RETURN_VALUE_NAME» = («
+			expression.operand.declaration.name» «GLOBAL_RECORD_IDENTIFIER» «FOR
+				argument : expression.arguments SEPARATOR ' '»«argument.serialize»«ENDFOR») in«
+					IF isExpression» «FUNCTION_RETURN_VALUE_NAME»«ENDIF»'''
+		return (isExpression) ?
+			'''(«string»)''' :
 			string
 	}
+	
+	def getFunctionReturnValues() '''«GLOBAL_RECORD_IDENTIFIER», «LOCAL_RECORD_IDENTIFIER».«FUNCTION_RETURN_VALUE_NAME»'''
 	
 	//
 

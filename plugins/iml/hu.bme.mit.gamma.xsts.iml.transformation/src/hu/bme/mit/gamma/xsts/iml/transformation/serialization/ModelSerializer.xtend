@@ -120,10 +120,11 @@ class ModelSerializer {
 						«choice.customizeChoice» : int;
 					«ENDFOR»
 				}
-				
+			
 			«ENDIF»
 			«FOR function : xSts.functionDeclarations»
 				«function.serializeFunctionDeclaration»
+				
 			«ENDFOR»
 			«IF needNonDet»
 				type «NONDET_BRANCH_TYPE_NAME» = «FOR i : 0 ..< choices.map[it.actions.size].max SEPARATOR ' | '»«i.branchLiteralName»«ENDFOR»

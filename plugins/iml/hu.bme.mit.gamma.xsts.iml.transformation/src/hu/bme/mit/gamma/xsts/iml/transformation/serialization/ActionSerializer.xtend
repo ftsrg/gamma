@@ -17,7 +17,6 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.xsts.iml.transformation.util.MessageQueueHandler
-import hu.bme.mit.gamma.xsts.iml.transformation.util.Namings
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
@@ -140,8 +139,9 @@ class ActionSerializer {
 	
 	protected def dispatch serializeAction(ReturnAction action) {
 		val expression = action.expression
-		val string = (expression === null) ? "false (* placeholder *)" : expression.serialize
-		return '''(«globalVariableName», «string»)'''
+		val string = (expression === null) ? "false (* placeholder *)" : '''{ «
+				LOCAL_RECORD_IDENTIFIER» with «FUNCTION_RETURN_VALUE_NAME» = «expression.serialize» }'''
+		return '''«localVariableDeclarations»(«globalVariableName», «string») in'''
 	}
 	
 	protected def dispatch serializeAction(FunctionCallAction action) '''«action.functionCallExpression.serialize»'''
@@ -372,7 +372,7 @@ class ActionSerializer {
 			val declaration = action.lhs.declaration
 			return declaration.id
 		}
-		return Namings.LOCAL_RECORD_IDENTIFIER
+		return LOCAL_RECORD_IDENTIFIER
 	}
 	
 	protected def getLocalRecordType(Action action) { // Not needed now, due to custom local var names; delete this if that helps somehow
