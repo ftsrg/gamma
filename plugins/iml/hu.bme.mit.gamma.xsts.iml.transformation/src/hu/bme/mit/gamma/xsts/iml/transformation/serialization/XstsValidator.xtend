@@ -47,7 +47,7 @@ class XstsValidator {
 			val container = functionCall.eContainer
 			if (!(container instanceof FunctionCallAction)) {
 				val function = functionCall.operand.declaration as FunctionDeclaration
-				checkArgument(function.pure, "Functions used in expression must be pure")
+				checkArgument(function.pure, "Functions used in expression must be pure: " + function)
 			}
 		}
 	}	
