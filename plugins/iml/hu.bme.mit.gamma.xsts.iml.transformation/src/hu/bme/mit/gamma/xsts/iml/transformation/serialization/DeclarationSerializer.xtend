@@ -78,6 +78,9 @@ class DeclarationSerializer {
 		let «IF function.recursive»rec «ENDIF»«function.name» («GLOBAL_RECORD_IDENTIFIER» : «GLOBAL_RECORD_TYPE_NAME») «
 				FOR parameter : function.parameterDeclarations SEPARATOR ' '»(«parameter.serializeParameterDeclaration»)«ENDFOR» =
 			«function.serializeFunctionDeclarationBody»
+		«IF function.recursive»«
+			var parameters = function.referencedParameterDeclarationsInReturnedActions»«
+			IF !parameters.empty»[@@adm r«FOR parameter : parameters», «parameter.serializeName»«ENDFOR»]«ENDIF»«ENDIF»
 	'''
 	
 	protected def serializeParameterDeclaration(Declaration declaration)'''«declaration.serializeName» : «declaration.type.serializeType»'''

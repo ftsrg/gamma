@@ -36,6 +36,7 @@ import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration;
 import hu.bme.mit.gamma.expression.model.LiteralExpression;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.util.Triple;
@@ -145,8 +146,10 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		for (AbstractAssignmentAction assignment : assignments) {
 			ReferenceExpression lhs = assignment.getLhs();
 			Declaration declaration = xStsActionUtil.getDeclaration(lhs);
-			if (ecoreUtil.hasContainerOfType(declaration, XSTS.class)) {
-				return false;
+			EObject container = declaration.eContainer();
+			if (container instanceof XSTS xSts) {
+				List<VariableDeclaration> variableDeclarations = xSts.getVariableDeclarations();
+				return variableDeclarations.contains(declaration);
 			}
 		}
 		
@@ -176,6 +179,26 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 				.map(it -> (FunctionDeclaration) xStsActionUtil.getDeclaration(it.getOperand()))
 				.collect(Collectors.toList());
 		return calledFunctions;
+	}
+	
+	public static Set<ParameterDeclaration> getReferencedParameterDeclarationsInReturnedActions(FunctionDeclaration function) {
+		Set<ParameterDeclaration> referencedParameters = new LinkedHashSet<ParameterDeclaration>();
+		
+		List<ReturnAction> returnActions = ecoreUtil.getAllContentsOfType(function, ReturnAction.class);
+		for (ReturnAction returnAction : returnActions) {
+			Expression expression = returnAction.getExpression();
+			List<DirectReferenceExpression> references = ecoreUtil.getSelfAndAllContentsOfType(expression, DirectReferenceExpression.class);
+			for (DirectReferenceExpression reference : references) {
+				Declaration declaration = reference.getDeclaration();
+				if (declaration instanceof ParameterDeclaration parameterDeclaration) {
+					if (parameterDeclaration.eContainer() == function) {
+						referencedParameters.add(parameterDeclaration);
+					}
+				}
+			}
+		}
+		
+		return referencedParameters;
 	}
 	
 	public static List<VariableDeclaration> getLocalVariables(FunctionDeclaration function) {
