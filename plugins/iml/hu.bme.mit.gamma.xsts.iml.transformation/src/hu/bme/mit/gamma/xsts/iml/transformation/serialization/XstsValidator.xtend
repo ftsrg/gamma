@@ -14,7 +14,6 @@ import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.FunctionCallAction
-import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 
@@ -45,7 +44,8 @@ class XstsValidator {
 		
 		val functionCalls = xSts.getAllContentsOfType(FunctionAccessExpression)
 		for (functionCall : functionCalls) {
-			if (!(functionCall.eContainer instanceof FunctionCallAction)) {
+			val container = functionCall.eContainer
+			if (!(container instanceof FunctionCallAction)) {
 				val function = functionCall.operand.declaration as FunctionDeclaration
 				checkArgument(function.pure, "Functions used in expression must be pure")
 			}
