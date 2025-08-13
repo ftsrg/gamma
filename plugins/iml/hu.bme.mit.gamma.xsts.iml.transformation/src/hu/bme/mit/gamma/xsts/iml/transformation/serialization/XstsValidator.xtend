@@ -36,11 +36,12 @@ class XstsValidator {
 	}
 	
 	protected def validateFunctionDeclarations(XSTS xSts) {
-		val functions = xSts.functionDeclarations
-		for (function : functions) {
-			checkArgument(function.getAllContentsOfType(NonDeterministicAction).empty,
-				"Functions cannot contain non-deterministic actions")
-		}
+		// Supported now
+//		val functions = xSts.functionDeclarations
+//		for (function : functions) {
+//			checkArgument(function.getAllContentsOfType(NonDeterministicAction).empty,
+//				"Functions cannot contain non-deterministic actions")
+//		}
 		
 		val functionCalls = xSts.getAllContentsOfType(FunctionAccessExpression)
 		for (functionCall : functionCalls) {

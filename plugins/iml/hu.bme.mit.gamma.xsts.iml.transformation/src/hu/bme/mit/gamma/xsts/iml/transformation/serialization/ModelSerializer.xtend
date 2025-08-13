@@ -125,10 +125,6 @@ class ModelSerializer {
 				}
 				
 			«ENDIF»
-			«FOR function : xSts.functionDeclarations»
-				«function.serializeFunctionDeclaration»
-				
-			«ENDFOR»
 			«IF needNonDet»
 				type «NONDET_BRANCH_TYPE_NAME» = «FOR i : 0 ..< choices.map[it.actions.size].max SEPARATOR ' | '»«i.branchLiteralName»«ENDFOR»
 			«ENDIF»
@@ -213,12 +209,21 @@ class ModelSerializer {
 			«ENDIF»
 		'''
 		
+		val functions = '''
+			«FOR function : xSts.functionDeclarations»
+				«function.serializeFunctionDeclaration»
+				
+			«ENDFOR»
+		'''
+		
 		return '''
 			«types»
 			
-			«init»
-			
 			«aux»
+			
+			«functions»
+			
+			«init»
 			
 			«hoistedFunctions»
 			
