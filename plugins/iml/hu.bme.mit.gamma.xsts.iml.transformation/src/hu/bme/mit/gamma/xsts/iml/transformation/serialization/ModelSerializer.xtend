@@ -29,6 +29,7 @@ class ModelSerializer {
 	
 	protected final extension ActionSerializer actionSerializer = new ActionSerializer // For code hoisting
 	
+	protected final extension XstsValidator validator = XstsValidator.INSTANCE
 	//
 	protected final extension DeclarationSerializer declarationSerializer = DeclarationSerializer.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
@@ -43,6 +44,8 @@ class ModelSerializer {
 	def String serializeIml(XSTS xSts, boolean optimizeNonDet) {
 		actionSerializer.clearActions
 		actionSerializer.setOptimizeNonDet = optimizeNonDet
+		//
+		xSts.validate
 		//
 		
 		val globalVariables = xSts.variableDeclarations

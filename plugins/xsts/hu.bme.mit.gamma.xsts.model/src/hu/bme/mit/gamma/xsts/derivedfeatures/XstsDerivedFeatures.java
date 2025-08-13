@@ -139,6 +139,20 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return !clockVariables.isEmpty();
 	}
 	
+	public static boolean isPure(FunctionDeclaration function) {
+		List<AbstractAssignmentAction> assignments = ecoreUtil.getAllContentsOfType(
+				function, AbstractAssignmentAction.class);
+		for (AbstractAssignmentAction assignment : assignments) {
+			ReferenceExpression lhs = assignment.getLhs();
+			Declaration declaration = xStsActionUtil.getDeclaration(lhs);
+			if (ecoreUtil.hasContainerOfType(declaration, XSTS.class)) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
 	public static boolean isRecursive(FunctionDeclaration function) {
 		List<FunctionDeclaration> calledFunctions = getCalledFunctions(function);
 		if (calledFunctions.isEmpty()) {
