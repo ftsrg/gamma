@@ -42,6 +42,7 @@ import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.ExpressionPackage;
+import hu.bme.mit.gamma.expression.model.FieldAssignment;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FinalVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
@@ -59,6 +60,7 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
+import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ResettableVariableDeclarationAnnotation;
@@ -334,6 +336,28 @@ public class ExpressionModelDerivedFeatures {
 	public static boolean isRecord(Type type) {
 		TypeDefinition typeDefinition = getTypeDefinition(type);
 		return typeDefinition instanceof RecordTypeDefinition;
+	}
+	
+	public static RecordLiteralExpression getSortedRecordLiteral(RecordLiteralExpression literal) {
+		RecordLiteralExpression newLiteral = ecoreUtil.clone(literal);
+		
+		TypeDeclaration typeDeclaration = literal.getTypeDeclaration();
+		RecordTypeDefinition type = (RecordTypeDefinition) typeDeclaration.getType();
+		List<FieldDeclaration> fieldDeclarations = type.getFieldDeclarations();
+		
+		List<FieldAssignment> fieldAssignments = literal.getFieldAssignments();
+		List<FieldAssignment> sortedFieldDeclarations = new ArrayList<FieldAssignment>(fieldAssignments);
+		sortedFieldDeclarations.sort((a, b) -> {
+				FieldDeclaration lhs = a.getReference().getFieldDeclaration();
+				FieldDeclaration rhs = b.getReference().getFieldDeclaration();
+				return Integer.valueOf(fieldDeclarations.indexOf(lhs)).compareTo(
+						fieldDeclarations.indexOf(rhs)); });
+		
+		List<FieldAssignment> newFieldAssignments = newLiteral.getFieldAssignments();
+		newFieldAssignments.clear();
+		newFieldAssignments.addAll(sortedFieldDeclarations);
+		
+		return newLiteral;
 	}
 	
 	public static boolean isComplex(Declaration declaration) {

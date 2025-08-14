@@ -195,9 +195,12 @@ class ExpressionTransformer {
 	def dispatch List<Expression> transformExpression(RecordLiteralExpression expression) {
 		// Currently the field assignment position has to match the field declaration position
 		val result = newArrayList
-		for (assignment : expression.fieldAssignments) {
+		
+		val sortedRecord = expression.sortedRecordLiteral
+		for (assignment : sortedRecord.fieldAssignments) {
 			result += assignment.value.transformExpression
 		}
+		
 		return result
 	}
 	

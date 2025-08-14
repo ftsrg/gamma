@@ -158,7 +158,7 @@ class StatechartCodeGenerator {
 				private «function.type.serialize» «function.name»(«
 						FOR parameter : function.parameterDeclarations SEPARATOR ', '»«parameter.type.serialize» «parameter.name»«ENDFOR») {
 					«IF function instanceof LambdaDeclaration»
-						return «function.expression.serialize»
+						return «function.expression.serialize»;
 					«ELSEIF function instanceof ProcedureDeclaration»
 						«function.body.serialize»
 					«ENDIF»

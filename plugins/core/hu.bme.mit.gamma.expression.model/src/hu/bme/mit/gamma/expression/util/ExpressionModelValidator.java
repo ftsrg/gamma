@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -96,6 +96,13 @@ public class ExpressionModelValidator {
 		}
 		
 		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkDeclarationAndExpressionConformance(
+			Declaration declaration, Expression rhs, ReferenceInfo referenceInfo) {
+		Type type = declaration.getType();
+
+		return checkTypeAndExpressionConformance(type, rhs, referenceInfo);
 	}
 	
 	public Collection<ValidationResultMessage> checkTypeAndExpressionConformance(
@@ -242,6 +249,15 @@ public class ExpressionModelValidator {
 			}
 		}
 		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkFieldAssignment(FieldAssignment fieldAssignment) {
+		FieldReferenceExpression reference = fieldAssignment.getReference();
+		FieldDeclaration fieldDeclaration = reference.getFieldDeclaration();
+		
+		Expression value = fieldAssignment.getValue();
+		
+		return checkDeclarationAndExpressionConformance(fieldDeclaration, value, new ReferenceInfo(fieldAssignment));
 	}
 	
 	public Collection<ValidationResultMessage> checkFunctionAccessExpression(FunctionAccessExpression functionAccessExpression) {
@@ -722,15 +738,15 @@ public class ExpressionModelValidator {
 
 	public Collection<ValidationResultMessage> checkRecordLiteralExpression(RecordLiteralExpression expression) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		// Find RecordTypeDefinition
+		
 		TypeDeclaration typeDeclaration = expression.getTypeDeclaration();
 		Type type = typeDeclaration.getType();
 		RecordTypeDefinition recordTypeDefinition = (RecordTypeDefinition) type;
-		// Check all FieldDeclaration and all FieldAssignment
+		
 		for (FieldDeclaration rTypeField : recordTypeDefinition.getFieldDeclarations()) {
 			int counter = 0;
-			for (FieldAssignment rLiFieldAssignment : expression.getFieldAssignments()) {
-				FieldReferenceExpression fieldReferenceExpression = rLiFieldAssignment.getReference();
+			for (FieldAssignment fieldAssignment : expression.getFieldAssignments()) {
+				FieldReferenceExpression fieldReferenceExpression = fieldAssignment.getReference();
 				FieldDeclaration fieldDeclaration = fieldReferenceExpression.getFieldDeclaration();
 				// Same fields
 				if (fieldDeclaration == rTypeField) {
@@ -750,6 +766,7 @@ public class ExpressionModelValidator {
 						new ReferenceInfo(ExpressionModelPackage.Literals.RECORD_LITERAL_EXPRESSION__FIELD_ASSIGNMENTS)));
 			}
 		}
+		
 		return validationResultMessages;
 	}
 	

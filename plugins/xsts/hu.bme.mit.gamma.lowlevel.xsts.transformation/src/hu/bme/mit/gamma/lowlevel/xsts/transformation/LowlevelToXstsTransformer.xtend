@@ -111,6 +111,7 @@ class LowlevelToXstsTransformer {
 	protected final XSTS xSts
 	// VIATRA rules
 	protected BatchTransformationRule<TypeDeclarations.Match, TypeDeclarations.Matcher> typeDeclarationsRule
+	protected BatchTransformationRule<FunctionDeclarations.Match, FunctionDeclarations.Matcher> functionDeclarationInitializationRule
 	protected BatchTransformationRule<FunctionDeclarations.Match, FunctionDeclarations.Matcher> functionDeclarationsRule
 	protected BatchTransformationRule<Events.Match, Events.Matcher> eventsRule
 	protected BatchTransformationRule<TopRegions.Match, TopRegions.Matcher> topRegionsRule
@@ -193,6 +194,7 @@ class LowlevelToXstsTransformer {
 		getComponentParametersRule.fireAllCurrent
 		getPlainVariablesRule.fireAllCurrent
 		// Functions may reference variables
+		getFunctionDeclarationInitializationRule.fireAllCurrent
 		getFunctionDeclarationsRule.fireAllCurrent
 		// Now component parameters come as plain variables (from constants), so TimeoutsRule must follow PlainVariablesRule
 		// Timeouts can refer to constants
@@ -295,15 +297,25 @@ class LowlevelToXstsTransformer {
 		return typeDeclarationsRule
 	}
 	
-	protected def getFunctionDeclarationsRule() { // After transforming variables
-		if (functionDeclarationsRule === null) {
-			functionDeclarationsRule = createRule(FunctionDeclarations.instance).action [
+	protected def getFunctionDeclarationInitializationRule() { // Needed due to function cross-references
+		if (functionDeclarationInitializationRule === null) {
+			functionDeclarationInitializationRule = createRule(FunctionDeclarations.instance).action [
 				val lowlevelFunctionDeclaration = it.functionDeclaration
 				val xStsFunctionDeclaration = (lowlevelFunctionDeclaration instanceof LambdaDeclaration) ?
 						expressionFactory.createLambdaDeclaration : factory.createProcedureDeclaration
 				
 				xSts.functionDeclarations += xStsFunctionDeclaration
 				trace.put(lowlevelFunctionDeclaration, xStsFunctionDeclaration)
+			].build
+		}
+		return functionDeclarationInitializationRule
+	}
+	
+	protected def getFunctionDeclarationsRule() { // After transforming variables (side effect) and function init rule
+		if (functionDeclarationsRule === null) {
+			functionDeclarationsRule = createRule(FunctionDeclarations.instance).action [
+				val lowlevelFunctionDeclaration = it.functionDeclaration
+				val xStsFunctionDeclaration = trace.getXStsFunctionDeclaration(lowlevelFunctionDeclaration)
 				
 				xStsFunctionDeclaration.name = lowlevelFunctionDeclaration.name.functionName
 				xStsFunctionDeclaration.type = lowlevelFunctionDeclaration.type.transformType
@@ -888,6 +900,11 @@ class LowlevelToXstsTransformer {
 		xSts.typeDeclarations.sortInplaceWith[it.name]
 		xSts.publicTypeDeclarations.sortInplaceWith[it.name]
 		xSts.variableDeclarations.sortInplaceWith[it.name]
+		
+		val functionDeclarations = xSts.functionDeclarations
+		val sortedFunctionDeclarations = functionDeclarations.sortAccordingToAllReferences
+		functionDeclarations.clear
+		functionDeclarations += sortedFunctionDeclarations
 	}
 	
 	def dispose() {

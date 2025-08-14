@@ -30,6 +30,7 @@ import hu.bme.mit.gamma.expression.model.GreaterExpression
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.ImplyExpression
 import hu.bme.mit.gamma.expression.model.InequalityExpression
+import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.LessEqualExpression
 import hu.bme.mit.gamma.expression.model.LessExpression
@@ -41,6 +42,8 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.SubtractExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
+import hu.bme.mit.gamma.expression.model.UnaryMinusExpression
+import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
 import hu.bme.mit.gamma.expression.model.XorExpression
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2
@@ -74,7 +77,7 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 		if (expression.queueExpression) {
 			return expression.serializeQueueExpression
 		}
-		return super.serialize(expression)
+		return expression.superSerialize
 	}
 	
 	//
@@ -122,6 +125,19 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	}
 	
 	//
+	
+	override String _serialize(UnaryPlusExpression expression) '''(«super._serialize(expression)»)'''
+	
+	override String _serialize(UnaryMinusExpression expression) '''(«super._serialize(expression)»)'''
+	
+	override String _serialize(IntegerLiteralExpression expression) {
+		val string = super._serialize(expression)
+		val value = expression.value
+		if (value.signum < 0) {
+			return '''(«string»)''' // For some reason, IML needs this (only for integers)
+		}
+		return string
+	}
 	
 	override String _serialize(TrueExpression expression) '''true'''
 

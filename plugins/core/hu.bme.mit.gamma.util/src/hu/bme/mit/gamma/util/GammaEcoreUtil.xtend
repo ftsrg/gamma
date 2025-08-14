@@ -968,6 +968,28 @@ class GammaEcoreUtil {
 		return array
 	}
 	
+	def <T extends EObject> List<T> sortAccordingToAllReferences(List<T> list) {
+		val array = newArrayList
+		array += list
+		array.sort( // TODO
+			new Comparator<T>() {
+				override compare(T lhs, T rhs) {
+					val lhsReferences = lhs.getSelfAndAllContentsOfType(EObject).map[it.eCrossReferences].flatten.toSet
+					val rhsReferences = rhs.getSelfAndAllContentsOfType(EObject).map[it.eCrossReferences].flatten.toSet
+					// We do not handle circular references
+					if (lhsReferences.contains(rhs)) {
+						return 1
+					}
+					if (rhsReferences.contains(lhs)) {
+						return -1
+					}
+					return 0
+				}
+			}
+		)
+		return array
+	}
+	
 	def <T extends EObject, C extends Comparable<? super C>> void sortInplaceWith(
 			List<T> list, Function1<? super T, C> key) {
 		val sortedList = newArrayList

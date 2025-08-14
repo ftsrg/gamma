@@ -97,7 +97,7 @@ class ExpressionSerializer {
 	}
 	
 	def dispatch String serialize(RecordLiteralExpression expression) {
-		return '''new «expression.typeDeclaration.name»(«FOR value : expression.fieldValues SEPARATOR ", "»«value.serialize»«ENDFOR»)'''
+		return '''new «expression.typeDeclaration.name»(«FOR value : expression.sortedRecordLiteral.fieldValues SEPARATOR ", "»«value.serialize»«ENDFOR»)'''
 	}
 	
 	def dispatch String serialize(IntegerLiteralExpression expression) {
