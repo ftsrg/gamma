@@ -44,6 +44,7 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.ExpressionPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FinalVariableDeclarationAnnotation;
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.InjectedVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
@@ -347,6 +348,43 @@ public class ExpressionModelDerivedFeatures {
 	
 	public static boolean isElseOrDefault(Expression expression) {
 		return expression instanceof ElseExpression || expression instanceof DefaultExpression;
+	}
+	
+	public static boolean callsRecursiveFunctions(EObject root) {
+		List<FunctionAccessExpression> functionCalls = ecoreUtil.getAllContentsOfType(root, FunctionAccessExpression.class);
+		for (FunctionAccessExpression functionCall : functionCalls) {
+			Expression operand = functionCall.getOperand();
+			FunctionDeclaration function = (FunctionDeclaration) expressionUtil.getDeclaration(operand);
+			if (isRecursive(function)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public static boolean isRecursive(FunctionDeclaration function) {
+		List<FunctionDeclaration> calledFunctions = getCalledFunctions(function);
+		if (calledFunctions.isEmpty()) {
+			return false;
+		}
+		for (FunctionDeclaration calledFunction : calledFunctions) {
+			if (function == calledFunction) {
+				return true;
+			}
+			List<FunctionDeclaration> calledFunctions2 = getCalledFunctions(calledFunction);
+			if (calledFunctions2.contains(function)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public static List<FunctionDeclaration> getCalledFunctions(FunctionDeclaration function) {
+		List<FunctionAccessExpression> functionCalls = ecoreUtil.getAllContentsOfType(function, FunctionAccessExpression.class);
+		List<FunctionDeclaration> calledFunctions = functionCalls.stream()
+				.map(it -> (FunctionDeclaration) expressionUtil.getDeclaration(it.getOperand()))
+				.collect(Collectors.toList());
+		return calledFunctions;
 	}
 	
 	public static TypeDefinition getElementTypeDefinition(Declaration declaration) {

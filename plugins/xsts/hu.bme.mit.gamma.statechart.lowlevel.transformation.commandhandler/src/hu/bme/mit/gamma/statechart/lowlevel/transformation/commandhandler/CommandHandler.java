@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -34,6 +34,7 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer.ActionPrimer;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer.ChoiceInliner;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer.VariableCommonizer;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.L2STrace;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.GammaToLowlevelTransformer;
@@ -91,7 +92,7 @@ public class CommandHandler extends AbstractHandler {
 		
 		String fileNameWithoutExtenstion = gammaStatechart.getName();
 		
-		final boolean inlineFunctions = true;
+		final boolean inlineFunctions = !StatechartModelDerivedFeatures.callsRecursiveFunctions(gammaStatechart);
 		GammaToLowlevelTransformer transformer = new GammaToLowlevelTransformer(inlineFunctions, 10, TimeUnit.NANOSECOND); // Explicitly for code generation
 		// Transforming only a single statechart
 		hu.bme.mit.gamma.statechart.lowlevel.model.Package lowlevelPackage = transformer.transformAndWrap(gammaStatechart);

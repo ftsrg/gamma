@@ -156,31 +156,6 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return true;
 	}
 	
-	public static boolean isRecursive(FunctionDeclaration function) {
-		List<FunctionDeclaration> calledFunctions = getCalledFunctions(function);
-		if (calledFunctions.isEmpty()) {
-			return false;
-		}
-		for (FunctionDeclaration calledFunction : calledFunctions) {
-			if (function == calledFunction) {
-				return true;
-			}
-			List<FunctionDeclaration> calledFunctions2 = getCalledFunctions(calledFunction);
-			if (calledFunctions2.contains(function)) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	public static List<FunctionDeclaration> getCalledFunctions(FunctionDeclaration function) {
-		List<FunctionAccessExpression> functionCalls = ecoreUtil.getAllContentsOfType(function, FunctionAccessExpression.class);
-		List<FunctionDeclaration> calledFunctions = functionCalls.stream()
-				.map(it -> (FunctionDeclaration) xStsActionUtil.getDeclaration(it.getOperand()))
-				.collect(Collectors.toList());
-		return calledFunctions;
-	}
-	
 	public static Set<ParameterDeclaration> getReferencedParameterDeclarationsInReturnedActions(FunctionDeclaration function) {
 		Set<ParameterDeclaration> referencedParameters = new LinkedHashSet<ParameterDeclaration>();
 		
