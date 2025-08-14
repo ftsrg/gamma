@@ -520,6 +520,10 @@ public class ExpressionModelDerivedFeatures {
 	
 	// Functions
 	
+	public static boolean isLambdaDeclaration(FunctionDeclaration function) {
+		return function instanceof LambdaDeclaration;
+	}
+	
 	public static Expression getLambdaExpression(FunctionDeclaration function) {
 		if (function instanceof LambdaDeclaration) {
 			LambdaDeclaration lambda = (LambdaDeclaration) function;

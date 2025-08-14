@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.FalseExpression
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.GreaterEqualExpression
 import hu.bme.mit.gamma.expression.model.GreaterExpression
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
@@ -175,10 +176,19 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	
 	override String _serialize(FunctionAccessExpression expression) {
 		val isExpression = !(expression.eContainer instanceof FunctionCallAction) // As rhs - cannot support functions with both a side effect and return value
-		val string = '''let «GLOBAL_RECORD_IDENTIFIER», «FUNCTION_RETURN_VALUE_NAME» = («
-			expression.operand.declaration.name» «GLOBAL_RECORD_IDENTIFIER» «FOR
-				argument : expression.arguments SEPARATOR ' '»«argument.serialize»«ENDFOR») in«
-					IF isExpression» «FUNCTION_RETURN_VALUE_NAME»«ENDIF»'''
+		val function = expression.operand.declaration as FunctionDeclaration
+		val isLambda = function.lambdaDeclaration
+		
+		val functionCall = '''(«function.name» «GLOBAL_RECORD_IDENTIFIER» «
+				FOR argument : expression.arguments SEPARATOR ' '»«argument.serialize»«ENDFOR»)'''
+		
+		if (isLambda) {
+			return functionCall // (r) is not returned
+		}
+		
+		val string = '''let «GLOBAL_RECORD_IDENTIFIER», «FUNCTION_RETURN_VALUE_NAME» = «
+				functionCall» in«IF isExpression» «FUNCTION_RETURN_VALUE_NAME»«ENDIF»'''
+		
 		return (isExpression) ?
 			'''(«string»)''' :
 			string
