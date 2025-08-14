@@ -23,6 +23,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.FalseExpression
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.GreaterEqualExpression
 import hu.bme.mit.gamma.expression.model.GreaterExpression
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
@@ -60,7 +61,7 @@ class ExpressionSerializer {
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
 	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
-	protected final extension ExpressionTypeDeterminator2 expressionTypeDeterminator3 = ExpressionTypeDeterminator2.INSTANCE
+	protected final extension ExpressionTypeDeterminator2 expressionTypeDeterminator = ExpressionTypeDeterminator2.INSTANCE
 	//
 	
 	def dispatch String serialize(Expression expression) {
@@ -70,6 +71,12 @@ class ExpressionSerializer {
 	def dispatch String serialize(ElseExpression expression) {
 		// No operation, this cannot be transformed on this level
 		throw new IllegalArgumentException("Cannot be transformed")
+	}
+	
+	def dispatch String serialize(FunctionAccessExpression expression) {
+		val operand = expression.operand
+		val arguments = expression.arguments
+		return '''«operand.serialize»(«FOR argument : arguments SEPARATOR ', '»«argument.serialize»«ENDFOR»)'''
 	}
 	
 	def dispatch String serialize(OpaqueExpression expression) {

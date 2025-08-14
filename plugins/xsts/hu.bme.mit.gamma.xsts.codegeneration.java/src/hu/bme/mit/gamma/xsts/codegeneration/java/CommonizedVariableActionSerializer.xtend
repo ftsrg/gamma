@@ -17,10 +17,12 @@ import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.FunctionCallAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
+import hu.bme.mit.gamma.xsts.model.ReturnAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
@@ -61,6 +63,16 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 	
 	def dispatch CharSequence serialize(Action action) {
 		throw new IllegalArgumentException("Not supported action: " + action)
+	}
+	
+	def dispatch CharSequence serialize(FunctionCallAction action) {
+		val functionCall = action.functionCallExpression
+		return '''«functionCall.serialize»;'''
+	}
+	
+	def dispatch CharSequence serialize(ReturnAction action) {
+		val expression = action.expression
+		return '''return «expression.serialize»;'''
 	}
 	
 	def dispatch CharSequence serialize(LoopAction action) {

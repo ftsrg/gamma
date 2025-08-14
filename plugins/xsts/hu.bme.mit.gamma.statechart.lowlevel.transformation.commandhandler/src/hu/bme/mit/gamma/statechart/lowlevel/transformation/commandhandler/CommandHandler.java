@@ -91,7 +91,8 @@ public class CommandHandler extends AbstractHandler {
 		
 		String fileNameWithoutExtenstion = gammaStatechart.getName();
 		
-		GammaToLowlevelTransformer transformer = new GammaToLowlevelTransformer(TimeUnit.NANOSECOND); // Explicitly for code generation
+		final boolean inlineFunctions = true;
+		GammaToLowlevelTransformer transformer = new GammaToLowlevelTransformer(inlineFunctions, 10, TimeUnit.NANOSECOND); // Explicitly for code generation
 		// Transforming only a single statechart
 		hu.bme.mit.gamma.statechart.lowlevel.model.Package lowlevelPackage = transformer.transformAndWrap(gammaStatechart);
 		ecoreUtil.normalSave(lowlevelPackage, modelFolderUri, fileNameWithoutExtenstion + ".lgsm");
@@ -103,7 +104,7 @@ public class CommandHandler extends AbstractHandler {
 				lowlevelPackage, false, TransitionMerging.HIERARCHICAL /* Flat does not work now */);
 		Entry<XSTS, L2STrace> resultModels = lowlevelTransformer.execute();
 		XSTS xSts = resultModels.getKey();
-		L2STrace traceability = resultModels.getValue();
+//		L2STrace traceability = resultModels.getValue();
 		lowlevelTransformer.dispose();
 		
 		// XSTS to Java serializer
