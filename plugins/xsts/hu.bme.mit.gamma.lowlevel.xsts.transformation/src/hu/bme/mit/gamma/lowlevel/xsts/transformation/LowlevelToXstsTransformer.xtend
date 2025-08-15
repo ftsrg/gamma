@@ -897,14 +897,11 @@ class LowlevelToXstsTransformer {
 	}
 	
 	protected def sortDeclarations() {
-		xSts.typeDeclarations.sortInplaceWith[it.name]
-		xSts.publicTypeDeclarations.sortInplaceWith[it.name]
-		xSts.variableDeclarations.sortInplaceWith[it.name]
+		xSts.typeDeclarations.sortInplaceWith[it.name].sortTopologicallyInplace
+		xSts.publicTypeDeclarations.sortInplaceWith[it.name].sortTopologicallyInplace
+		xSts.variableDeclarations.sortInplaceWith[it.name].sortTopologicallyInplace
 		
-		val functionDeclarations = xSts.functionDeclarations
-		val sortedFunctionDeclarations = functionDeclarations.sortAccordingToAllReferences
-		functionDeclarations.clear
-		functionDeclarations += sortedFunctionDeclarations
+		xSts.functionDeclarations.sortTopologicallyInplace
 	}
 	
 	def dispose() {

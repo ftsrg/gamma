@@ -968,29 +968,43 @@ class GammaEcoreUtil {
 		return array
 	}
 	
-	def <T extends EObject> List<T> sortAccordingToAllReferences(List<T> list) {
+	def <T extends EObject> List<T> sortTopologically(List<T> list) {
 		val array = newArrayList
-		array += list
-		array.sort( // TODO
-			new Comparator<T>() {
-				override compare(T lhs, T rhs) {
-					val lhsReferences = lhs.getSelfAndAllContentsOfType(EObject).map[it.eCrossReferences].flatten.toSet
-					val rhsReferences = rhs.getSelfAndAllContentsOfType(EObject).map[it.eCrossReferences].flatten.toSet
-					// We do not handle circular references
-					if (lhsReferences.contains(rhs)) {
-						return 1
-					}
-					if (rhsReferences.contains(lhs)) {
-						return -1
-					}
-					return 0
-				}
+		
+		val references = newHashMap
+		for (elem : list) {
+			val refs = elem.getSelfAndAllContentsOfType(EObject)
+					.map[it.eCrossReferences].flatten.toSet
+			references += elem -> refs
+		}
+		
+		for (elem : list) {
+			if (array.empty) {
+				array += elem
 			}
-		)
+			else {
+				var index = array.size - 1;
+				for (var i = 0; i < array.size; i++) {
+					val inElem = array.get(i)
+					val refs = references.get(inElem)
+					if (refs.contains(elem)) {
+						index = i
+					}
+				}
+				array.add(index, elem)
+			}
+		}
+		
 		return array
 	}
 	
-	def <T extends EObject, C extends Comparable<? super C>> void sortInplaceWith(
+	def <T extends EObject> void sortTopologicallyInplace(List<T> list) {
+		val sortedList = list.sortTopologically
+		list.clear
+		list += sortedList
+	}
+	
+	def <T extends EObject, C extends Comparable<? super C>> List<T> sortInplaceWith(
 			List<T> list, Function1<? super T, C> key) {
 		val sortedList = newArrayList
 		sortedList += list
@@ -998,6 +1012,8 @@ class GammaEcoreUtil {
 		
 		list.clear
 		list += sortedList
+		
+		return list
 	}
 	
 	def <T extends EObject> void removeEqualElements(List<T> list) {
