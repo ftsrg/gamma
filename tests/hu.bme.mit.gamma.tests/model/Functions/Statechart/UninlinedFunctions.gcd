@@ -1,0 +1,83 @@
+package nondetchoice
+
+import "Interfaces/Interfaces.gcd"
+
+statechart UninlinedFunctions [
+	port Execute : requires Execute
+] {
+	var _record : Record
+	var _int : integer
+	var _bool : boolean
+	region main {
+		initial Initial
+		state _A
+		state _B
+		state _C
+		state _D
+		state _E
+		state _F
+		state _G
+	}
+	
+	transition from Initial to _A
+	transition from _A to _B when Execute.^execute / {
+		var a : integer := _int;
+		if (checkLambda(4.56)) {
+			_int := factorialIfElse(5) + a;
+			a := 2;
+		}
+		else {
+			_int := factorialIfElse(4);
+			a := 3;
+		}
+		_int := _int / a;
+	}
+	transition from _B to _C when Execute.^execute / _int := factorialIf(_int mod 4);
+	transition from _C to _D when Execute.^execute / {
+		var a : integer := _int mod 5;
+		_int := factorialMerged(a);
+	}
+	transition from _D to _E when Execute.^execute / _int := factorialMerged(3);
+	transition from _E to _F when Execute.^execute / _bool := checkLambda(1.2);
+	transition from _F to _G when Execute.^execute / addRecord(#Record{ b := -3, a := true });
+	
+	lambda checkLambda(a : decimal) : boolean := _bool xor a >= -1.0
+	
+	procedure addRecord(rec : Record) : integer { // Should be void
+		_record.a := _record.a xor rec.a;
+		choice {
+			branch [rec.b < 10] {
+				_record.b := _record.b mod rec.b;
+			}
+			branch [rec.b > 0] { // In test - shall never be true
+				_record.b := _record.b - rec.b;
+			}
+		}
+		_bool := _record.a;
+		return _record.b;
+	}
+	
+	procedure factorialIfElse(value : integer) : integer {
+		if (value <= 1) {
+			return 1;
+		}
+		else {
+			return value * factorialIfElse(value - 1);
+		}
+	}
+	
+	procedure factorialIf(value : integer) : integer {
+		if (value <= 1) {
+			return 1;
+		}
+		return value * factorialIf(value - 1);
+	}
+	
+	procedure factorialMerged(value : integer) : integer {
+		if (value <= 1) {
+			return 1;
+		}
+		return value * factorialIfElse(value - 1);
+	}
+	
+}

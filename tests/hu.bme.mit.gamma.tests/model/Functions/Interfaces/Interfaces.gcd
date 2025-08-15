@@ -1,0 +1,10 @@
+package nondetchoice
+
+interface Execute {
+	out event ^execute
+}
+
+type Record : record {
+	a : boolean,
+	b : integer
+}

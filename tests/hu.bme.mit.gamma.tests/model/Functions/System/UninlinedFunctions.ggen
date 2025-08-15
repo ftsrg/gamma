@@ -1,0 +1,20 @@
+import "Statechart/UninlinedFunctions.gcd"
+
+code {
+	component : UninlinedFunctions
+	language : java
+}
+
+analysis {
+	component : UninlinedFunctions
+	language : Imandra
+	state-coverage
+}
+
+verification {
+	file : "UninlinedFunctions.iml"
+	language : Imandra
+	property-file : ".UninlinedFunctions.gpd"
+	test-language : java
+	optimize-traces : true
+}
