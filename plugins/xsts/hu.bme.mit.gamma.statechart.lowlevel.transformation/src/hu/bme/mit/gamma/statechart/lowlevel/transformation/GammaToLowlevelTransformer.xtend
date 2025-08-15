@@ -29,15 +29,15 @@ class GammaToLowlevelTransformer {
 	}
 	
 	new(boolean functionInlining) {
-		this(functionInlining, 10, null)
+		this(functionInlining, true, 10, null)
 	}
 	
 	new(TimeUnit baseTimeUnit) {
 		transformer = new StatechartToLowlevelTransformer(baseTimeUnit)
 	}
 	
-	new(boolean functionInlining, int maxRecursionDepth, TimeUnit baseTimeUnit) {
-		transformer = new StatechartToLowlevelTransformer(functionInlining, maxRecursionDepth, baseTimeUnit)
+	new(boolean functionInlining, boolean addReturnGuards, int maxRecursionDepth, TimeUnit baseTimeUnit) {
+		transformer = new StatechartToLowlevelTransformer(functionInlining, addReturnGuards, maxRecursionDepth, baseTimeUnit)
 	}
 	
 	//

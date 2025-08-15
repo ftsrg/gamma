@@ -57,16 +57,16 @@ class ActionTransformer {
 	protected final boolean FUNCTION_INLINING
 	
 	new(Trace trace) {
-		this(trace, true, 10, null)
+		this(trace, true, true, 10, null)
 	}
 	
-	new(Trace trace, boolean functionInlining, int maxRecursionDepth, TimeUnit baseTimeUnit) {
+	new(Trace trace, boolean functionInlining, boolean addReturnGuards, int maxRecursionDepth, TimeUnit baseTimeUnit) {
 		this.trace = trace
 		this.FUNCTION_INLINING = functionInlining
 		this.expressionTransformer = new ExpressionTransformer(this.trace,
 				functionInlining, maxRecursionDepth, baseTimeUnit)
 		this.preconditionTransformer = new ExpressionPreconditionTransformer(
-			this.trace, this, functionInlining, maxRecursionDepth)
+			this.trace, this, functionInlining, addReturnGuards, maxRecursionDepth)
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
 	}
 	
@@ -120,8 +120,8 @@ class ActionTransformer {
 			T valueDeclaration) {
 		val result = newArrayList
 		val initalExpression = valueDeclaration.expression
-		var lowlevelPrecondition = initalExpression !== null ?
-			initalExpression.transformPrecondition : <Action>newLinkedList
+		var lowlevelPrecondition = (initalExpression !== null) ?
+				initalExpression.transformPrecondition : <Action>newLinkedList
 		result += lowlevelPrecondition
 		
 		val lowlevelVariableDeclarations = valueDeclaration.transform

@@ -86,14 +86,15 @@ public class CommandHandler extends AbstractHandler {
 	}
 
 	public void run(StatechartDefinition gammaStatechart, String modelFolderUri,
-			String targetFolderUri, String basePackageName) {
+				String targetFolderUri, String basePackageName) {
 		modelFolderUri = URI.decode(modelFolderUri);
 		targetFolderUri = URI.decode(targetFolderUri);
 		
 		String fileNameWithoutExtenstion = gammaStatechart.getName();
 		
 		final boolean inlineFunctions = !StatechartModelDerivedFeatures.callsRecursiveFunctions(gammaStatechart);
-		GammaToLowlevelTransformer transformer = new GammaToLowlevelTransformer(inlineFunctions, 10, TimeUnit.NANOSECOND); // Explicitly for code generation
+		final boolean addReturnGuards = false; // Checked only if 'inlineFunctions' == true
+		GammaToLowlevelTransformer transformer = new GammaToLowlevelTransformer(inlineFunctions, addReturnGuards, 10, TimeUnit.NANOSECOND); // Explicitly for code generation
 		// Transforming only a single statechart
 		hu.bme.mit.gamma.statechart.lowlevel.model.Package lowlevelPackage = transformer.transformAndWrap(gammaStatechart);
 		ecoreUtil.normalSave(lowlevelPackage, modelFolderUri, fileNameWithoutExtenstion + ".lgsm");
@@ -128,20 +129,22 @@ public class CommandHandler extends AbstractHandler {
 			xSts.setInEventTransition(actionPrimer.transform(xSts.getInEventTransition()));
 			xSts.setOutEventTransition(actionPrimer.transform(xSts.getOutEventTransition()));
 		}
-		// Saving the xSTS model
+		
 		ecoreUtil.normalSave(xSts, modelFolderUri, fileNameWithoutExtenstion + ".gsts");
 		// Cannot be serialized anymore, as it references some XTransitions that are now not
 		// serialized due to variable inlinings (see LowlevelToXSTSTransformer.deleteNotReadTransientVariables)
 //		ecoreUtil.normalSave(traceability, modelFolderUri, "." + fileNameWithoutExtenstion + ".l2s");
 		logger.info("The Gamma low level - xSTS transformation has been finished");
 		logger.info("Starting xSTS serialization: " + xSts.getName());
-		// Serializing the xSTS
+		
 		ActionSerializer actionSerializer = ActionSerializer.INSTANCE;
 		CharSequence xStsString = actionSerializer.serializeXsts(xSts);
+		
 		boolean printXStsString = false;
 		if (printXStsString) {
 			System.out.println(xStsString);
 		}
+		
 		logger.info("Starting xSTS Java code generation");
 		StatechartToJavaCodeGenerator codeGenerator = new StatechartToJavaCodeGenerator(
 			targetFolderUri, basePackageName, gammaStatechart, xSts, javaActionSerializer);

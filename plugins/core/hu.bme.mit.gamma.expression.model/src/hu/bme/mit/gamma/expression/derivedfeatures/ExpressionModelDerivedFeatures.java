@@ -346,7 +346,7 @@ public class ExpressionModelDerivedFeatures {
 		List<FieldDeclaration> fieldDeclarations = type.getFieldDeclarations();
 		
 		List<FieldAssignment> fieldAssignments = literal.getFieldAssignments();
-		List<FieldAssignment> sortedFieldDeclarations = new ArrayList<FieldAssignment>(fieldAssignments);
+		List<FieldAssignment> sortedFieldDeclarations = ecoreUtil.clone(fieldAssignments);
 		sortedFieldDeclarations.sort((a, b) -> {
 				FieldDeclaration lhs = a.getReference().getFieldDeclaration();
 				FieldDeclaration rhs = b.getReference().getFieldDeclaration();

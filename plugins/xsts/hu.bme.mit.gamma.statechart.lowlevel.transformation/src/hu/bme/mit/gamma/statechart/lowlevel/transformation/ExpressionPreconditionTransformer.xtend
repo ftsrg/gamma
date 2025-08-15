@@ -57,23 +57,24 @@ class ExpressionPreconditionTransformer {
 	protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
 	// Transformation parameters
 	protected final boolean FUNCTION_INLINING
-	protected final boolean ADD_RETURN_GUARDS = true
+	protected final boolean ADD_RETURN_GUARDS // Checked only if functions are NOT inlined
 	protected final int MAX_RECURSION_DEPTH
 	
 	protected int currentRecursionDepth // For procedures
 	
 	new(Trace trace, ActionTransformer actionTransformer) {
-		this(trace, actionTransformer, true, 10)
+		this(trace, actionTransformer, true, true, 10)
 	}
 	
 	new(Trace trace, ActionTransformer actionTransformer,
-			boolean functionInlining, int maxRecursionDepth) {
+			boolean functionInlining, boolean addReturnGuards, int maxRecursionDepth) {
 		this.trace = trace
 		this.actionTransformer = actionTransformer
 		this.expressionTransformer = new ExpressionTransformer(this.trace)
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
 		this.typeTransformer = new TypeTransformer(this.trace)
 		this.FUNCTION_INLINING = functionInlining
+		this.ADD_RETURN_GUARDS = addReturnGuards
 		this.MAX_RECURSION_DEPTH = maxRecursionDepth
 		this.currentRecursionDepth = MAX_RECURSION_DEPTH
 	}
