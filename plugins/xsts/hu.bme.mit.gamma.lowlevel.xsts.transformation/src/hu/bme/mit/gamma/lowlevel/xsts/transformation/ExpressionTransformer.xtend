@@ -24,6 +24,8 @@ import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.NullaryExpression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
+import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
@@ -83,6 +85,13 @@ class ExpressionTransformer {
 			return initialValue.transformExpression
 		}
 		return trace.getXStsVariable(variableDeclaration).createReferenceExpression
+	}
+	
+	def dispatch Expression transformExpression(TupleReferenceExpression expression) {
+		val references = expression.references
+		return createTupleReferenceExpression => [
+			it.references += references.map[it.transformExpression].filter(ReferenceExpression)
+		]
 	}
 	
 	def dispatch Expression transformExpression(ArrayAccessExpression expression) {

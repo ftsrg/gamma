@@ -79,7 +79,17 @@ class TypeTransformer {
 	protected def dispatch Type transformType(RecordTypeDefinition type) {
 		// Due to the transformation and usage of ExpressionModelDerivedFeatures.getNativeTypes,
 		// this situation must never occur
-		throw new IllegalArgumentException("Record types cannot be transformed like this: " + type)
+		
+		// Except when functions are not inlined (function return type)
+		val tupleType = createTupleTypeDefinition
+		
+		val fieldDeclarations = type.fieldDeclarations
+		for (fieldDeclaration : fieldDeclarations) {
+			val fieldType = fieldDeclaration.type
+			tupleType.types += fieldType.transformType
+		}
+		
+		return tupleType
 	}
 	
 	protected def dispatch Type transformType(TypeReference type) {
@@ -87,6 +97,9 @@ class TypeTransformer {
 		val typeDefinition = typeDeclaration.type
 		// Inlining primitive types
 		if (typeDefinition.isPrimitive) {
+			return typeDefinition.transformType
+		}
+		if (typeDefinition instanceof RecordTypeDefinition) {
 			return typeDefinition.transformType
 		}
 		val lowlevelTypeDeclaration = if (trace.isMapped(typeDeclaration)) {

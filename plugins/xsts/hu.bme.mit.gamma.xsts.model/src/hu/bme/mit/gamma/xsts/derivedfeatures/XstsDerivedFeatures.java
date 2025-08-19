@@ -683,10 +683,16 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 	
 	private static Set<VariableDeclaration> _getWrittenVariables(AbstractAssignmentAction action) {
-		VariableDeclaration accessedDeclaration = (VariableDeclaration)
-				xStsActionUtil.getAccessedDeclaration(
-						action.getLhs()); // Not every variable, just the access
-		return Set.of(accessedDeclaration);
+		Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
+		
+		ReferenceExpression lhs = action.getLhs();
+		Set<Declaration> accessedDeclarations = xStsActionUtil.getAccessedDeclarations(lhs); // Not every variable, just the access
+		for (Declaration declaration : accessedDeclarations) {
+			variableList.add(
+					(VariableDeclaration) declaration);
+		}
+		
+		return variableList;
 	}
 	
 	private static Set<VariableDeclaration> _getWrittenVariables(VariableDeclarationAction action) {

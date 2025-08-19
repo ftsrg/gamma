@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer
 
 import hu.bme.mit.gamma.expression.model.AndExpression
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FalseExpression
 import hu.bme.mit.gamma.expression.model.ImplyExpression
@@ -641,24 +642,26 @@ class ActionOptimizer {
 			
 			if (xStsFirstAction instanceof AbstractAssignmentAction) {
 				val lhs = xStsFirstAction.lhs
-				val variable = lhs.accessedDeclaration
-				var foundAssignmentToTheSameVariable = false
-				for (var j = i + 1; j < xStsActions.size && !foundAssignmentToTheSameVariable; j++) {
-					val xStsSecondAction = xStsActions.get(j)
-					if (xStsSecondAction instanceof AbstractAssignmentAction) {
-						if (xStsSecondAction.lhs.helperEquals(lhs)) {
-							foundAssignmentToTheSameVariable = true
-							var isVariableRead = false
-							for (var k = i + 1; k <= j && !isVariableRead; k++) {
-								val xStsInBetweenAction = xStsActions.get(k)
-								// Not perfect for arrays: a[0] := 1; b := a[2]; a[0] := 2;
-								val readVariables = xStsInBetweenAction.readVariables
-								if (readVariables.contains(variable)) {
-									isVariableRead = true
+				if (lhs instanceof DirectReferenceExpression) { // Only simple lhs now
+					val variable = lhs.accessedDeclaration
+					var foundAssignmentToTheSameVariable = false
+					for (var j = i + 1; j < xStsActions.size && !foundAssignmentToTheSameVariable; j++) {
+						val xStsSecondAction = xStsActions.get(j)
+						if (xStsSecondAction instanceof AbstractAssignmentAction) {
+							if (xStsSecondAction.lhs.helperEquals(lhs)) {
+								foundAssignmentToTheSameVariable = true
+								var isVariableRead = false
+								for (var k = i + 1; k <= j && !isVariableRead; k++) {
+									val xStsInBetweenAction = xStsActions.get(k)
+									// Not perfect for arrays: a[0] := 1; b := a[2]; a[0] := 2;
+									val readVariables = xStsInBetweenAction.readVariables
+									if (readVariables.contains(variable)) {
+										isVariableRead = true
+									}
 								}
-							}
-							if (!isVariableRead) {
-								removeableXStsActions += xStsFirstAction
+								if (!isVariableRead) {
+									removeableXStsActions += xStsFirstAction
+								}
 							}
 						}
 					}

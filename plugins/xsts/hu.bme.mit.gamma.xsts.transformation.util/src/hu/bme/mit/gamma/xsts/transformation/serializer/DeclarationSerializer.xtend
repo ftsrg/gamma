@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.expression.model.LambdaDeclaration
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition
 import hu.bme.mit.gamma.expression.model.ScheduledClockVariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.SubrangeTypeDefinition
+import hu.bme.mit.gamma.expression.model.TupleTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
@@ -111,6 +112,8 @@ class DeclarationSerializer {
 	def dispatch String serializeType(EnumerationTypeDefinition type) '''{ «FOR literal : type.literals SEPARATOR ', '»«literal.serializeLiteral»«ENDFOR» }'''
 
 	def dispatch String serializeType(ArrayTypeDefinition type) '''[integer] -> «type.elementType.serializeType»'''
+
+	def dispatch String serializeType(TupleTypeDefinition type) '''(«FOR subtype : type.types SEPARATOR ', '»«subtype.serializeType»«ENDFOR»)'''
 
 	protected def String serializeLiteral(EnumerationLiteralDefinition literal) {
 		literal.validateIdentifier // As these are the only element identifiers that come unchanged from the source model

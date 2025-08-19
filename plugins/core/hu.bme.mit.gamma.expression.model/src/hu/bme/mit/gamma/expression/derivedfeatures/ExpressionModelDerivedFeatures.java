@@ -66,6 +66,7 @@ import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ResettableVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.ScheduledClockVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.TransientVariableDeclarationAnnotation;
+import hu.bme.mit.gamma.expression.model.TupleTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
@@ -427,14 +428,35 @@ public class ExpressionModelDerivedFeatures {
 	}
 	
 	public static TypeDefinition getTypeDefinition(Type type) {
-		if (type instanceof TypeDefinition) {
-			return (TypeDefinition) type;
+		if (type instanceof TypeDefinition typeDefinition) {
+			return typeDefinition;
 		}
-		if (type instanceof TypeReference) {
-			TypeReference typeReference = (TypeReference) type;
-			return getTypeDefinition(typeReference.getReference().getType());
+		if (type instanceof TypeReference typeReference) {
+			TypeDeclaration reference = typeReference.getReference();
+			return getTypeDefinition(reference.getType());
 		}
 		throw new IllegalArgumentException("Not known type: " + type);
+	}
+	
+	public static List<Type> getNativeTypes(TupleTypeDefinition tupleType) {
+		List<Type> types = new ArrayList<Type>();
+		
+		List<Type> tupleTypes = tupleType.getTypes();
+		for (Type type : tupleTypes) {
+			TypeDefinition typeDefinition = getTypeDefinition(type);
+			if (typeDefinition instanceof TupleTypeDefinition tupleTypeDefintion) {
+				types.addAll(
+						getNativeTypes(tupleTypeDefintion));
+			}
+			else if (typeDefinition instanceof RecordTypeDefinition) {
+				throw new IllegalArgumentException("Not supported type: " + typeDefinition);
+			}
+			else {
+				types.add(type);
+			}
+		}
+		
+		return types;
 	}
 	
 	public static TypeDeclaration getTypeDeclaration(Type type) {

@@ -17,11 +17,14 @@ import hu.bme.mit.gamma.expression.model.DefaultExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
+import hu.bme.mit.gamma.expression.model.EqualityExpression
+import hu.bme.mit.gamma.expression.model.EquivalenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
+import hu.bme.mit.gamma.expression.model.InequalityExpression
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.NullaryExpression
@@ -135,6 +138,33 @@ class ExpressionTransformer {
 				it.leftOperand = expression.leftOperand.transformSimpleExpression
 				it.rightOperand = expression.rightOperand.transformSimpleExpression
 			]
+		]
+	}
+	
+	def dispatch List<Expression> transformExpression(EquivalenceExpression expression) {
+		val expressions = <Expression>newArrayList
+		
+		val lowlevelLhs = expression.leftOperand.transformExpression
+		val lowlevelRhs = expression.rightOperand.transformExpression
+		val size = lowlevelLhs.size
+		checkState(lowlevelLhs.size == lowlevelRhs.size)
+		
+		for (var i = 0; i < size; i++) {
+			val lhs = lowlevelLhs.get(i)
+			val rhs = lowlevelRhs.get(i)
+			
+			expressions += create(expression.eClass) as EquivalenceExpression => [
+				it.leftOperand = lhs
+				it.rightOperand = rhs
+			]
+		}
+		
+		checkState(expression instanceof EqualityExpression || expression instanceof InequalityExpression, expression)
+		
+		return #[
+			(expression instanceof EqualityExpression) ?
+				expressions.wrapIntoAndExpression :
+				expressions.wrapIntoOrExpression
 		]
 	}
 	
@@ -324,15 +354,23 @@ class ExpressionTransformer {
 			}
 		}
 		else {
-			val function = expression.declaration as FunctionDeclaration
-			val arguments = expression.arguments
-			// By now, the procedure must be transformed by ExpressionPreconditionTransformer
-			checkState(trace.isMapped(function), function) // TODO on the fly transformation could be added here?
-			val lowlevelFunction = trace.get(function)
-			val lowlevelArguments = arguments.map[it.transformExpression].flatten.toList
-			val lowlevelCall = lowlevelFunction.createFunctionAccessExpression(lowlevelArguments)
-			
-			result += lowlevelCall
+			if (trace.isMapped(expression)) {
+				// Extracted method call
+				for (returnVariable : trace.get(expression)) {
+					result += returnVariable.createReferenceExpression
+				}
+			}
+			else {
+				// Basic method call
+				val function = expression.declaration as FunctionDeclaration
+				val arguments = expression.arguments
+				// By now, the procedure must be transformed by ExpressionPreconditionTransformer
+				checkState(trace.isMapped(function), function) // On-the-fly transformation could be added here?
+				val lowlevelFunction = trace.get(function)
+				val lowlevelArguments = arguments.map[it.transformExpression].flatten.toList
+				val lowlevelCall = lowlevelFunction.createFunctionAccessExpression(lowlevelArguments)
+				result += lowlevelCall
+			}
 		}
 		return result
 	}

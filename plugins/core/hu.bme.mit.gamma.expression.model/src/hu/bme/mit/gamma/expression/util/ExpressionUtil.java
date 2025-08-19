@@ -79,6 +79,8 @@ import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SubtractExpression;
 import hu.bme.mit.gamma.expression.model.TrueExpression;
+import hu.bme.mit.gamma.expression.model.TupleLiteralExpression;
+import hu.bme.mit.gamma.expression.model.TupleReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
@@ -134,21 +136,42 @@ public class ExpressionUtil {
 	}
 	
 	public ReferenceExpression getAccessReference(Expression expression) {
-		if (expression instanceof DirectReferenceExpression) {
-			return (DirectReferenceExpression) expression;
+		if (expression instanceof DirectReferenceExpression reference) {
+			return reference;
 		}
-		if (expression instanceof AccessExpression) {
-			AccessExpression access = (AccessExpression) expression;
+		if (expression instanceof AccessExpression access) {
 			return getAccessReference(
 					access.getOperand());
+		}
+		if (expression instanceof TupleReferenceExpression tuple) {
+			return tuple;
 		}
 		// Could be extended to literals too
 		throw new IllegalArgumentException("Not supported reference: " + expression);
 	}
 	
 	public Declaration getAccessedDeclaration(Expression expression) {
-		DirectReferenceExpression reference = (DirectReferenceExpression) getAccessReference(expression);
-		return reference.getDeclaration();
+		ReferenceExpression reference = getAccessReference(expression);
+		if (reference instanceof DirectReferenceExpression directReference) {
+			return directReference.getDeclaration();
+		}
+		throw new IllegalArgumentException("Not supported element: " + expression);
+	}
+	
+	public Set<Declaration> getAccessedDeclarations(Expression expression) {
+		ReferenceExpression reference = getAccessReference(expression);
+		if (reference instanceof TupleReferenceExpression tupleReferenceExpression) {
+			Set<Declaration> declarations = new HashSet<Declaration>();
+			List<ReferenceExpression> references = tupleReferenceExpression.getReferences();
+			for (ReferenceExpression subreference : references) {
+				declarations.addAll(
+						getAccessedDeclarations(subreference));
+			}
+			return declarations;
+		}
+		
+		return Set.of(
+				getAccessedDeclaration(expression));
 	}
 	
 	public Collection<TypeDeclaration> getTypeDeclarations(EObject context) {
@@ -328,19 +351,30 @@ public class ExpressionUtil {
 	}
 
 	protected Set<VariableDeclaration> _getReferredVariables(ReferenceExpression expression) {
-		if (expression instanceof DirectReferenceExpression) {
-			DirectReferenceExpression directReferenceExpression = (DirectReferenceExpression) expression;
+		if (expression instanceof DirectReferenceExpression directReferenceExpression) {
 			Declaration declaration = directReferenceExpression.getDeclaration();
-			if (declaration instanceof VariableDeclaration) {
-				return Collections.singleton((VariableDeclaration) declaration);
+			if (declaration instanceof VariableDeclaration variable) {
+				return Collections.singleton(variable);
 			}
-		} else if (expression instanceof ArrayAccessExpression) {
-			ArrayAccessExpression arrayAccessExpression = (ArrayAccessExpression) expression;
+		}
+		else if (expression instanceof TupleReferenceExpression tupleReferenceExpression) {
 			Set<VariableDeclaration> variables = new HashSet<VariableDeclaration>();
-			variables.addAll(getReferredVariables(arrayAccessExpression.getOperand()));
-			variables.addAll(getReferredVariables(arrayAccessExpression.getIndex()));
+			List<ReferenceExpression> references = tupleReferenceExpression.getReferences();
+			for (ReferenceExpression reference : references) {
+				variables.addAll(
+						getReferredVariables(reference));
+			}
 			return variables;
-		} else if (expression instanceof AccessExpression) {
+		}
+		else if (expression instanceof ArrayAccessExpression arrayAccessExpression) {
+			Set<VariableDeclaration> variables = new HashSet<VariableDeclaration>();
+			variables.addAll(
+					getReferredVariables(arrayAccessExpression.getOperand()));
+			variables.addAll(
+					getReferredVariables(arrayAccessExpression.getIndex()));
+			return variables;
+		}
+		else if (expression instanceof AccessExpression) {
 			AccessExpression accessExpression = (AccessExpression) expression;
 			return getReferredVariables(accessExpression.getOperand());
 		}
@@ -364,19 +398,25 @@ public class ExpressionUtil {
 	}
 
 	public Set<VariableDeclaration> getReferredVariables(Expression expression) {
-		if (expression instanceof ReferenceExpression) {
-			return _getReferredVariables((ReferenceExpression) expression);
-		} else if (expression instanceof BinaryExpression) {
-			return _getReferredVariables((BinaryExpression) expression);
-		} else if (expression instanceof IfThenElseExpression) {
-			return _getReferredVariables((IfThenElseExpression) expression);
-		} else if (expression instanceof MultiaryExpression) {
-			return _getReferredVariables((MultiaryExpression) expression);
-		} else if (expression instanceof NullaryExpression) {
-			return _getReferredVariables((NullaryExpression) expression);
-		} else if (expression instanceof UnaryExpression) {
-			return _getReferredVariables((UnaryExpression) expression);
-		} else {
+		if (expression instanceof ReferenceExpression _expression) {
+			return _getReferredVariables(_expression);
+		}
+		else if (expression instanceof BinaryExpression _expression) {
+			return _getReferredVariables(_expression);
+		}
+		else if (expression instanceof IfThenElseExpression _expression) {
+			return _getReferredVariables(_expression);
+		}
+		else if (expression instanceof MultiaryExpression _expression) {
+			return _getReferredVariables(_expression);
+		}
+		else if (expression instanceof NullaryExpression _expression) {
+			return _getReferredVariables(_expression);
+		}
+		else if (expression instanceof UnaryExpression _expression) {
+			return _getReferredVariables(_expression);
+		}
+		else {
 			throw new IllegalArgumentException("Unhandled parameter types: " + Arrays.<Object>asList(expression).toString());
 		}
 	}
@@ -1032,6 +1072,26 @@ public class ExpressionUtil {
 		and.getOperands().add(xor);
 		
 		return and;
+	}
+	
+	public TupleLiteralExpression createTupleLiteralExpression(Collection<? extends Expression> values) {
+		TupleLiteralExpression tuple = factory.createTupleLiteralExpression();
+		
+		for (Expression value : values) {
+			tuple.getOperands().add(value);
+		}
+		
+		return tuple;
+	}
+	
+	public TupleReferenceExpression createTupleAccessExpression(Collection<? extends ReferenceExpression> references) {
+		TupleReferenceExpression tuple = factory.createTupleReferenceExpression();
+		
+		for (ReferenceExpression reference : references) {
+			tuple.getReferences().add(reference);
+		}
+		
+		return tuple;
 	}
 	
 	public IntegerRangeLiteralExpression createIntegerRangeLiteralExpression(

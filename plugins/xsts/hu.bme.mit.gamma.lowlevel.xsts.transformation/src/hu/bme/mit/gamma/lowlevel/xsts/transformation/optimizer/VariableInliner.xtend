@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
@@ -223,6 +224,12 @@ class VariableInliner {
 			if (declaration instanceof VariableDeclaration) {
 				declaration.handleMaps(action, rhs, concreteValues, symbolicValues)
 			}
+		}
+		else if (lhs instanceof TupleReferenceExpression) {
+			// Used for function calls: we do not consider function bodies (yet)
+			val writtenVariables = action.writtenVariables
+			concreteValues.keySet -= writtenVariables
+			symbolicValues.keySet -= writtenVariables
 		}
 		else if (lhs instanceof ArrayAccessExpression) {
 			val index = lhs.index

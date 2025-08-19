@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.action.model.SwitchStatement
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
 import hu.bme.mit.gamma.action.util.ActionUtil
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.InitializableElement
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit
@@ -66,8 +67,12 @@ class ActionTransformer {
 		this.expressionTransformer = new ExpressionTransformer(this.trace,
 				functionInlining, maxRecursionDepth, baseTimeUnit)
 		this.preconditionTransformer = new ExpressionPreconditionTransformer(
-			this.trace, this, functionInlining, addReturnGuards, maxRecursionDepth)
+				this.trace, this, functionInlining, addReturnGuards, maxRecursionDepth)
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
+	}
+	
+	def getExpressionTransformer() {
+		return this.expressionTransformer
 	}
 	
 	protected def transformActions(Collection<? extends Action> actions) {
@@ -135,10 +140,24 @@ class ActionTransformer {
 	}
 	
 	protected def dispatch List<Action> transformAction(ExpressionStatement action) {
+		val actions = newArrayList
+		
 		val expression = action.expression
 		val preconditions = expression.transformPrecondition
-		return (FUNCTION_INLINING) ? preconditions : // Inlined function
-				expression.transformExpression.map[it.createExpressionStatement] // Function call
+		
+		actions += preconditions
+		if (!FUNCTION_INLINING) {
+			if (expression instanceof FunctionAccessExpression) {
+				if (!trace.isMapped(expression)) {
+					val lowlevelExpressions = expression.transformExpression
+					val lowlevelExpression = lowlevelExpressions.onlyElement
+					actions += lowlevelExpression.createExpressionStatement // Function call
+				}
+			}
+			// Otherwise, everything is in 'preconditions'
+		}
+		
+		return actions
 	}
 	
 	protected def dispatch List<Action> transformAction(BreakStatement action) {
@@ -147,9 +166,14 @@ class ActionTransformer {
 	
 	protected def dispatch List<Action> transformAction(ReturnStatement action) {
 		val expression = action.expression
+		val lowlevelExpressions = expression?.transformExpression
 		return #[
 			createReturnStatement => [
-				it.expression = expression?.transformSimpleExpression // Currently, only one expression
+				it.expression = (expression === null) ?
+					null :
+					(lowlevelExpressions.size == 1) ?
+						lowlevelExpressions.head :
+						lowlevelExpressions.createTupleLiteralExpression
 			]
 		]
 	}
@@ -261,7 +285,9 @@ class ActionTransformer {
 		}
 		// Transform assumption and create actions
 		val lowlevelAssumptions = (assumption === null) ? #[ createTrueExpression ] : assumption.transformExpression
-		val lowlevelAssumption = (lowlevelAssumptions.size == 1) ? lowlevelAssumptions.head : lowlevelAssumptions.wrapIntoAndExpression
+		val lowlevelAssumption = (lowlevelAssumptions.size == 1) ?
+				lowlevelAssumptions.head :
+				lowlevelAssumptions.wrapIntoAndExpression
 		
 		for (lhs : lowlevelLhs) {
 			val lowlevelHavoc = actionFactory.createHavocStatement

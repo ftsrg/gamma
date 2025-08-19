@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.action.model.ProcedureDeclaration
 import hu.bme.mit.gamma.action.model.ReturnStatement
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
 import hu.bme.mit.gamma.expression.model.AccessExpression
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.Expression
@@ -28,6 +29,7 @@ import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.SelectExpression
+import hu.bme.mit.gamma.expression.model.TupleTypeDefinition
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.model.VoidTypeDefinition
 import hu.bme.mit.gamma.expression.util.FieldHierarchy
@@ -70,7 +72,7 @@ class ExpressionPreconditionTransformer {
 			boolean functionInlining, boolean addReturnGuards, int maxRecursionDepth) {
 		this.trace = trace
 		this.actionTransformer = actionTransformer
-		this.expressionTransformer = new ExpressionTransformer(this.trace)
+		this.expressionTransformer = actionTransformer.expressionTransformer
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
 		this.typeTransformer = new TypeTransformer(this.trace)
 		this.FUNCTION_INLINING = functionInlining
@@ -85,6 +87,12 @@ class ExpressionPreconditionTransformer {
 	
 	def dispatch List<Action> transformPrecondition(AccessExpression expression) {
 		return expression.operand.transformPrecondition
+	}
+	
+	def dispatch List<Action> transformPrecondition(ArrayAccessExpression expression) {
+		return (
+			expression.operand.transformPrecondition + expression.index.transformPrecondition
+		).toList
 	}
 	
 	def dispatch List<Action> transformPrecondition(BinaryExpression expression) {
@@ -108,6 +116,10 @@ class ExpressionPreconditionTransformer {
 	
 	def dispatch List<Action> transformPrecondition(FunctionAccessExpression expression) {
 		val actions = newArrayList
+		
+		val arguments = expression.arguments
+		actions += arguments.map[it.transformPrecondition].flatten
+		
 		val function = expression.accessedDeclaration as FunctionDeclaration
 		if (FUNCTION_INLINING) {
 			if (currentRecursionDepth <= 0) {
@@ -146,8 +158,35 @@ class ExpressionPreconditionTransformer {
 				lowlevelStatechart.functionDeclarations += lowlevelFunction
 			}
 			
-			// No added precondition actions
+			val lowlevelFunction = trace.get(function)
+			val lowlevelType = lowlevelFunction.typeDefinition
+			
+			val extractFunction = lowlevelType instanceof TupleTypeDefinition // TODO for other calls, too, to support side effects?
+			if (extractFunction) {
+				if (lowlevelType instanceof TupleTypeDefinition) {
+					val nativeTypes = lowlevelType.nativeTypes.clone
+					
+					val lowlevelDeclarations = <VariableDeclarationStatement>newArrayList
+					for (type : nativeTypes) {
+						val name = '''«nativeTypes.indexOf(type)»_«expression.uniqueIndex»'''
+						lowlevelDeclarations += type.createDeclarationStatement(name)
+					}
+					actions += lowlevelDeclarations
+					val lowlevelVariables = lowlevelDeclarations.map[it.variableDeclaration].toList
+					
+					val tupleAccess = lowlevelVariables.map[it.createReferenceExpression].toList
+							.createTupleAccessExpression
+					
+					val lowlevelFunctionCall = expression.transformSimpleExpression
+					trace.put(expression, lowlevelVariables) // After the function call transformation (this tracing determines if the function is extracted or a basic call is made)
+					
+					val lowlevelAssignment = tupleAccess.createAssignment(lowlevelFunctionCall)
+					actions += lowlevelAssignment
+				}
+			}
+			// No added precondition actions otherwise
 		}
+		
 		return actions
 	}
 	
@@ -257,7 +296,6 @@ class ExpressionPreconditionTransformer {
 	
 	protected def FunctionDeclaration transformFunction(FunctionDeclaration function) {
 		val type = function.type
-		checkState(!type.record, "Record return types are not supported")
 		
 		val parameters = function.parameterDeclarations
 		val lowlevelParameters = parameters.map[it.transformFunctionParameter].flatten.toList
@@ -281,8 +319,10 @@ class ExpressionPreconditionTransformer {
 			val lowlevelLambda = createLambdaDeclaration
 			trace.put(function, lowlevelLambda) // Here, to support recursion
 			
-			val lowlevelExpression = function.expression.transformSimpleExpression // TODO add multiple return values
-			lowlevelLambda.expression = lowlevelExpression
+			val lowlevelExpressions = function.expression.transformExpression
+			lowlevelLambda.expression = (lowlevelExpressions.size > 1) ?
+				lowlevelExpressions.createTupleLiteralExpression :
+				lowlevelExpressions.head
 			
 			lowlevelLambda
 		}
@@ -290,7 +330,7 @@ class ExpressionPreconditionTransformer {
 			throw new IllegalArgumentException("Not known function type: " + function)
 		}
 		
-		val lowlevelType = type.transformType // Cannot handle complex types
+		val lowlevelType = type.transformType
 		val lowlevelName = getName(function)
 		
 		lowlevelFunction.type = lowlevelType

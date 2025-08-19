@@ -50,9 +50,12 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
+import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.SubtractExpression;
 import hu.bme.mit.gamma.expression.model.TrueExpression;
+import hu.bme.mit.gamma.expression.model.TupleLiteralExpression;
+import hu.bme.mit.gamma.expression.model.TupleReferenceExpression;
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression;
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression;
 import hu.bme.mit.gamma.expression.model.XorExpression;
@@ -101,6 +104,21 @@ public class ExpressionSerializer {
 	protected String _serialize(final DirectReferenceExpression expression) {
 		final Declaration declaration = expression.getDeclaration();
 		return declaration.getName();
+	}
+	
+	protected String _serialize(final TupleReferenceExpression expression) {
+		StringBuilder builder = new StringBuilder();
+		
+		List<ReferenceExpression> operands = expression.getReferences();
+		for (ReferenceExpression operand : operands) {
+			if (operands.indexOf(operand) > 0) {
+				builder.append(", ");
+			}
+			String string = serialize(operand);
+			builder.append(string);
+		}
+		
+		return "(" + builder.toString() + ")";
 	}
 	
 	protected String _serialize(final NotExpression expression) {
@@ -343,6 +361,21 @@ public class ExpressionSerializer {
 	protected String _serialize(final ArrayAccessExpression arrayAccessExpression) {
 		return serialize(arrayAccessExpression.getOperand()) + "[" + serialize(arrayAccessExpression.getIndex()) + "]";
 	}
+	
+	protected String _serialize(final TupleLiteralExpression tupleLiteralExpression) {
+		StringBuilder builder = new StringBuilder();
+		
+		List<Expression> operands = tupleLiteralExpression.getOperands();
+		for (Expression operand : operands) {
+			if (operands.indexOf(operand) > 0) {
+				builder.append(", ");
+			}
+			String string = serialize(operand);
+			builder.append(string);
+		}
+		
+		return "(" + builder.toString() + ")";
+	}
 
 	protected String _serialize(final FunctionAccessExpression functionAccessExpression) {
 		String string = "";
@@ -527,6 +560,8 @@ public class ExpressionSerializer {
 			return _serialize((MultiplyExpression) expression);
 		} else if (expression instanceof DirectReferenceExpression) {
 			return _serialize((DirectReferenceExpression) expression);
+		} else if (expression instanceof TupleReferenceExpression) {
+			return _serialize((TupleReferenceExpression) expression);
 		} else if (expression instanceof SubtractExpression) {
 			return _serialize((SubtractExpression) expression);
 		} else if (expression instanceof UnaryMinusExpression) {
@@ -557,6 +592,8 @@ public class ExpressionSerializer {
 			return _serialize((ArrayLiteralExpression) expression);
 		} else if (expression instanceof RecordLiteralExpression) {
 			return _serialize((RecordLiteralExpression) expression);
+		} else if (expression instanceof TupleLiteralExpression) {
+			return _serialize((TupleLiteralExpression) expression);
 		} else if (expression instanceof IntegerRangeLiteralExpression) {
 			return _serialize((IntegerRangeLiteralExpression) expression);
 		} else if (expression == null) {
