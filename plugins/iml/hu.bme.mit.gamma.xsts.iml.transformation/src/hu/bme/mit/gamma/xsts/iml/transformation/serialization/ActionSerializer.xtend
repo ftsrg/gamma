@@ -32,6 +32,7 @@ import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XTransition
 import hu.bme.mit.gamma.xsts.transformation.util.MessageQueueUtil
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
+import java.util.Collection
 import java.util.List
 import java.util.Map
 
@@ -96,7 +97,8 @@ class ActionSerializer {
 					actionCode.deleteFirst(localVariableDeclarations).deleteLast("in") : actionCode + " " + localVariableNames
 			val functionCode = '''
 				let «functionName» («globalVariableName» : «GLOBAL_RECORD_TYPE_NAME») («
-					localVariableName» : «action.localRecordType») «IF hasTransHavoc»(«ENV_HAVOC_RECORD_IDENTIFIER» : «ENV_HAVOC_RECORD_TYPE_NAME») «ENDIF»= «functionBody»
+					localVariableName» : «action.localRecordType») «IF hasTransHavoc»(«
+						ENV_HAVOC_RECORD_IDENTIFIER» : «ENV_HAVOC_RECORD_TYPE_NAME») «ENDIF»= «functionBody»
 			'''
 			actions += action -> functionCode
 			
@@ -122,7 +124,7 @@ class ActionSerializer {
 			if (serializedAction.endsWith(localVariableNames)) { // Make this more flexible
 				serializedAction = serializedAction.deleteLast(localVariableNames)
 			}
-			//
+			
 			builder.append(serializedAction)
 		}
 		builder.append(localVariableNames) // Always?
@@ -168,6 +170,23 @@ class ActionSerializer {
 	}
 	
 	protected def dispatch serializeAction(AssignmentAction action) {
+		val lhs = action.lhs
+		// Tuple-related code
+		if (lhs instanceof TupleReferenceExpression) {
+			val rhs = action.rhs
+			val declarations = lhs.accessedDeclarations
+			return '''
+				let («FOR declaration : declarations SEPARATOR ', '»«
+					declaration.temporaryTupleDeclarationName»«ENDFOR») = «rhs.serialize» in
+				«FOR declaration : declarations»
+					«var id = declaration.id»let «id» = { «id» with «declaration.serializeName» = «declaration.temporaryTupleDeclarationName» } in
+				«ENDFOR»
+			'''
+		}
+		
+		// TODO add method extraction related code here if needed
+		
+		// Regular assignment code 
 		return #[action].serializeAssignmentActions
 	}
 	
@@ -196,20 +215,20 @@ class ActionSerializer {
 		if (action.queueAction) { // Queue handling
 			return action.serializeQueueAction
 		}
-		val expression = (variable.expression === null) ? variable.defaultExpression : variable.expression
+		val expression = (variable.expression === null) ?
+				variable.defaultExpression :
+				variable.expression
 		return '''«variable.serializeAssignmentAction(expression)»'''
 	}
 	
 	private def serializeAssignmentAction(Expression lhs, Expression rhs) {
-		return
-		if (lhs instanceof ArrayAccessExpression) {
+		return if (lhs instanceof ArrayAccessExpression) {
 			val declaration = lhs.declaration
 			// a[i][j][k] := 69 -> a2 = (Map.add i (Map.add j (Map.add k 69 (Map.get j (Map.get i a)))) (Map.get i a)) a)
 			'''«declaration.serializeName» = «lhs.serializeArrayAssignmentAction(rhs)»;'''
 		}
 		else if (lhs instanceof TupleReferenceExpression) {
-			val declarations = lhs.accessedDeclarations
-			'''(«FOR declaration : declarations SEPARATOR ', '»«declaration.serializeName»«ENDFOR») = «rhs.serialize»;'''
+			throw new IllegalArgumentException("Tuples are not supported here: " + lhs)
 		}
 		else {
 			'''«lhs.declaration.serializeAssignmentAction(rhs)»'''
@@ -318,15 +337,12 @@ class ActionSerializer {
 			// Looking for subsequent assignments
 			val writtenVariables = newHashSet
 			while (j < actions.size - 1 &&
-					actions.get(j).id == actions.get(j + 1).id &&
-					(actions.get(j) instanceof AssignmentAction || actions.get(j) instanceof VariableDeclarationAction) &&
-					(actions.get(j + 1) instanceof AssignmentAction || actions.get(j + 1) instanceof VariableDeclarationAction) &&
-						writtenVariables.containsNone(actions.get(j + 1).referredAndLocalVariables) &&
-						actions.get(j).writtenAndLocalVariables.containsNone(actions.get(j + 1).referredAndLocalVariables)) {
-				writtenVariables += actions.get(j).writtenAndLocalVariables
+						actions.get(j).canBeSubsequentAssignments(actions.get(j + 1), writtenVariables)) {
+				val lhsAction = actions.get(j)
+				writtenVariables += lhsAction.writtenAndLocalVariables
 				j++ 
 			}
-			// No susbequent assignments
+			// No subsequent assignments
 			if (i == j) {
 				builder.append(
 					actions.get(i).serialize)
@@ -343,6 +359,26 @@ class ActionSerializer {
 		}
 		
 		return builder.toString
+	}
+	
+	//
+	
+	protected def canBeSubsequentAssignments(Action lhs, Action rhs,
+			Collection<? extends VariableDeclaration> writtenVariables) {
+		if (lhs instanceof AssignmentAction) {
+			val lhsRef = lhs.lhs.accessReference
+			if (lhsRef instanceof TupleReferenceExpression) {
+				return false
+			}
+		}
+		
+		// TODO Add method extraction related condition here if needed
+		
+		return lhs.id == rhs.id &&
+				(lhs instanceof AssignmentAction || lhs instanceof VariableDeclarationAction) &&
+				(rhs instanceof AssignmentAction || rhs instanceof VariableDeclarationAction) &&
+					writtenVariables.containsNone(rhs.referredAndLocalVariables) &&
+						lhs.writtenAndLocalVariables.containsNone(rhs.referredAndLocalVariables)
 	}
 	
 	//

@@ -79,4 +79,5 @@ class Namings {
 	
 	def static getBranchLiteralName(int i) '''«NONDET_BRANCH_LITERAL_PREFIX»_«i»'''
 	
+	def static getTemporaryTupleDeclarationName(Declaration declaration) '''«DECLARATION_NAME_PREFIX»«declaration.name»_t'''
 }

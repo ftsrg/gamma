@@ -17,7 +17,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -156,10 +155,10 @@ public class ExpressionUtil {
 		throw new IllegalArgumentException("Not supported element: " + expression);
 	}
 	
-	public Set<Declaration> getAccessedDeclarations(Expression expression) {
+	public List<Declaration> getAccessedDeclarations(Expression expression) {
 		ReferenceExpression reference = getAccessReference(expression);
 		if (reference instanceof TupleReferenceExpression tupleReferenceExpression) {
-			Set<Declaration> declarations = new LinkedHashSet<Declaration>();
+			List<Declaration> declarations = new ArrayList<Declaration>();
 			List<ReferenceExpression> references = tupleReferenceExpression.getReferences();
 			for (ReferenceExpression subreference : references) {
 				declarations.addAll(
@@ -168,7 +167,7 @@ public class ExpressionUtil {
 			return declarations;
 		}
 		
-		return Set.of(
+		return List.of(
 				getAccessedDeclaration(expression));
 	}
 	

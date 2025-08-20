@@ -176,6 +176,18 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return referencedParameters;
 	}
 	
+	public static List<Declaration> getLhsDeclarations(Action action) {
+		if (action instanceof AssignmentAction assignmentAction) {
+			ReferenceExpression lhs = assignmentAction.getLhs();
+			return xStsActionUtil.getAccessedDeclarations(lhs);
+		}
+		if (action instanceof VariableDeclarationAction variableDeclarationAction) {
+			VariableDeclaration variableDeclaration = variableDeclarationAction.getVariableDeclaration();
+			return List.of(variableDeclaration);
+		}
+		return List.of();
+	}
+	
 	public static List<VariableDeclaration> getLocalVariables(FunctionDeclaration function) {
 		if (function instanceof ProcedureDeclaration procedure) {
 			SequentialAction body = procedure.getBody();
@@ -686,7 +698,7 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
 		
 		ReferenceExpression lhs = action.getLhs();
-		Set<Declaration> accessedDeclarations = xStsActionUtil.getAccessedDeclarations(lhs); // Not every variable, just the access
+		List<Declaration> accessedDeclarations = xStsActionUtil.getAccessedDeclarations(lhs); // Not every variable, just the access
 		for (Declaration declaration : accessedDeclarations) {
 			variableList.add(
 					(VariableDeclaration) declaration);
