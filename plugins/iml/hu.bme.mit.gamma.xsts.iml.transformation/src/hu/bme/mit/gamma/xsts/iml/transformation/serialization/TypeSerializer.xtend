@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition
+import hu.bme.mit.gamma.expression.model.TupleTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
@@ -59,6 +60,8 @@ class TypeSerializer {
 	def dispatch String serializeType(EnumerationTypeDefinition type) '''«FOR literal : type.literals SEPARATOR ' | '»«literal.serializeName»«ENDFOR»'''
 	
 	def dispatch String serializeType(ArrayTypeDefinition type) '''((int, «type.elementType.serializeType») Map.t)'''
+	
+	def dispatch String serializeType(TupleTypeDefinition type) '''(«FOR subtype : type.types SEPARATOR ' * '»«subtype.serializeType»«ENDFOR»)'''
 		
 	//
 	

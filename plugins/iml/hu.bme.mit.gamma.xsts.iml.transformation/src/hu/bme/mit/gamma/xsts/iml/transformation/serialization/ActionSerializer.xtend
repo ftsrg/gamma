@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.xsts.iml.transformation.serialization
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
@@ -200,13 +201,18 @@ class ActionSerializer {
 	}
 	
 	private def serializeAssignmentAction(Expression lhs, Expression rhs) {
+		return
 		if (lhs instanceof ArrayAccessExpression) {
 			val declaration = lhs.declaration
 			// a[i][j][k] := 69 -> a2 = (Map.add i (Map.add j (Map.add k 69 (Map.get j (Map.get i a)))) (Map.get i a)) a)
-			return '''«declaration.serializeName» = «lhs.serializeArrayAssignmentAction(rhs)»;'''
+			'''«declaration.serializeName» = «lhs.serializeArrayAssignmentAction(rhs)»;'''
+		}
+		else if (lhs instanceof TupleReferenceExpression) {
+			val declarations = lhs.accessedDeclarations
+			'''(«FOR declaration : declarations SEPARATOR ', '»«declaration.serializeName»«ENDFOR») = «rhs.serialize»;'''
 		}
 		else {
-			return '''«lhs.declaration.serializeAssignmentAction(rhs)»'''
+			'''«lhs.declaration.serializeAssignmentAction(rhs)»'''
 		}
 	}
 	
@@ -369,7 +375,22 @@ class ActionSerializer {
 	
 	protected def getId(Action action) {
 		if (action instanceof AssignmentAction) {
-			val declaration = action.lhs.declaration
+			val lhs = action.lhs
+			
+			// Tuple
+			if (lhs instanceof TupleReferenceExpression) {
+				val declaratations = lhs.references.map[it.declaration]
+				val ids = declaratations.map[it.id].toSet
+				if (ids.size == 1) {
+					return ids.head
+				}
+				else {
+					throw new IllegalArgumentException("Unhandleable tuple: " + lhs)
+				}
+			}
+			
+			// Single declaration
+			val declaration = lhs.declaration
 			return declaration.id
 		}
 		return LOCAL_RECORD_IDENTIFIER

@@ -26,6 +26,7 @@ import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.LessEqualExpression
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
+import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -249,6 +250,10 @@ class MessageQueueUtil {
 	def isQueueAddAction(Action action) {
 		if (action instanceof AssignmentAction) {
 			val lhs = action.lhs
+			if (lhs instanceof TupleReferenceExpression) {
+				return false
+			}
+			
 			val queue = lhs.declaration
 			if (queue.global) {
 				val xSts = queue.containingXsts
