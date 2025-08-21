@@ -13,8 +13,10 @@ package hu.bme.mit.gamma.xsts.codegeneration.java
 import hu.bme.mit.gamma.codegeneration.java.util.TypeDeclarationSerializer
 import hu.bme.mit.gamma.codegeneration.java.util.TypeSerializer
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration
+import hu.bme.mit.gamma.expression.model.TupleTypeDefinition
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.ProcedureDeclaration
 import hu.bme.mit.gamma.xsts.model.XSTS
 
@@ -36,6 +38,8 @@ class StatechartCodeGenerator {
 	final extension VariableDiagnoser variableDiagnoser = VariableDiagnoser.INSTANCE
 	final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
+	final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	
 	// Depending on the xSTS form
 	final extension ActionSerializer actionSerializer
 	
@@ -55,6 +59,7 @@ class StatechartCodeGenerator {
 		«FOR _package : gammaStatechart.containingPackage.importsWithComponentsOrInterfacesOrTypes.toSet»
 			import «_package.getPackageString(BASE_PACKAGE_NAME)».*;
 		«ENDFOR»
+		«IF xSts.containsTypeTransitively(TupleTypeDefinition)»import java.util.List;«ENDIF»
 		
 		public class «CLASS_NAME» {
 			

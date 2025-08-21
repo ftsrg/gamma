@@ -163,7 +163,7 @@ class ExpressionPreconditionTransformer {
 					
 					val lowlevelDeclarations = <VariableDeclarationStatement>newArrayList
 					for (type : nativeTypes) {
-						val name = '''«nativeTypes.indexOf(type)»_«expression.uniqueIndex»'''
+						val name = '''_«nativeTypes.indexOf(type)»_«expression.uniqueIndex»'''
 						lowlevelDeclarations += type.createDeclarationStatement(name)
 					}
 					actions += lowlevelDeclarations

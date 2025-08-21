@@ -43,6 +43,8 @@ import hu.bme.mit.gamma.expression.model.RecordAccessExpression
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
 import hu.bme.mit.gamma.expression.model.SubtractExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
+import hu.bme.mit.gamma.expression.model.TupleLiteralExpression
+import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
@@ -100,6 +102,10 @@ class ExpressionSerializer {
 		return '''new «expression.typeDeclaration.name»(«FOR value : expression.sortedRecordLiteral.fieldValues SEPARATOR ", "»«value.serialize»«ENDFOR»)'''
 	}
 	
+	def dispatch String serialize(TupleLiteralExpression expression) {
+		return '''List.of(«FOR value : expression.operands SEPARATOR ", "»«value.serialize»«ENDFOR»)'''
+	}
+	
 	def dispatch String serialize(IntegerLiteralExpression expression) {
 		val value = expression.value
 		val casting = (expression.needsLongCast) ? "l" : ""
@@ -155,6 +161,10 @@ class ExpressionSerializer {
 	
 	def dispatch String serialize(RecordAccessExpression expression) {
 		return '''«expression.operand.serialize».«expression.fieldReference.fieldDeclaration.name»'''
+	}
+	
+	def dispatch String serialize(TupleReferenceExpression expression) {
+		return '''List<Object> «Namings.getName(expression)»'''
 	}
 	
 	def dispatch String serialize(NotExpression expression) {

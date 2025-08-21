@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,18 +10,22 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegeneration.java.util
 
+import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Interface
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.io.File
 import org.eclipse.emf.ecore.EObject
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class Namings {
-	
+	//
+	protected static final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	//
 	public static final String GAMMA_EVENT_CLASS = "Event"
 	
 	public static final String YAKINDU_TIMER_INTERFACE = "ITimer"
@@ -75,5 +79,7 @@ class Namings {
 	 * Returns the name of the Java object of the wrapped synchronous component.
 	 */
 	static def String getWrappedComponentName(AsynchronousAdapter component) '''«component.wrappedComponent.name»'''
-
+	
+	static def String getName(TupleReferenceExpression tuple) '''_«tuple.uniqueIndex»'''
+	
 }

@@ -367,7 +367,7 @@ class ExpressionTransformer {
 				val gammaFunction = expression.declaration as FunctionDeclaration
 				val arguments = expression.arguments
 				// By now, the procedure must be transformed by ExpressionPreconditionTransformer
-				if (!trace.isMapped(gammaFunction)) {// On-the-fly transformation could be added here?
+				if (!trace.isMapped(gammaFunction)) { // On-the-fly transformation added here
 					val extension functionTransformer = new FunctionTransformer(trace, ADD_RETURN_GUARDS)
 					gammaFunction.transformAndStoreFunction
 				}

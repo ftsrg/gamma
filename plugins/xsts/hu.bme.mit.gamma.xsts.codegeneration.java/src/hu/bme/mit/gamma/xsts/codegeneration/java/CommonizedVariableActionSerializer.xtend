@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,8 +10,10 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.java
 
+import hu.bme.mit.gamma.codegeneration.java.util.Namings
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
@@ -129,9 +131,21 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 		if (action.unnecessaryAction) {
 			return ''''''
 		}
-		return '''
-			«action.lhs.serialize» = «action.rhs.serialize»;
-		'''
+		
+		val lhs = action.lhs
+		val string = '''«lhs.serialize» = «action.rhs.serialize»;'''
+		
+		if (lhs instanceof TupleReferenceExpression) {
+			val references = lhs.references
+			return '''
+				«string»
+				«FOR reference : references»
+					«reference.serialize» = («reference.declaration.type.serialize») «Namings.getName(lhs)».get(«references.indexOf(reference)»);
+				«ENDFOR»
+			'''
+		}
+		
+		return string
 	}
 	
 	def dispatch CharSequence serialize(VariableDeclarationAction action) {
