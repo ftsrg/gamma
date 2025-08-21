@@ -971,29 +971,22 @@ class GammaEcoreUtil {
 	def <T extends EObject> List<T> sortTopologically(List<T> list) {
 		val array = newArrayList
 		
-		val references = newHashMap
+		val references = newLinkedHashMap
 		for (elem : list) {
 			val refs = elem.getSelfAndAllContentsOfType(EObject)
 					.map[it.eCrossReferences].flatten.toSet
 			references += elem -> refs
 		}
 		
-		for (elem : list) {
-			if (array.empty) {
-				array += elem
-			}
-			else {
-				var index = array.size - 1;
-				for (var i = 0; i < array.size; i++) {
-					val inElem = array.get(i)
-					val refs = references.get(inElem)
-					if (refs.contains(elem)) {
-						index = i
-					}
-				}
-				array.add(index, elem)
-			}
+		while (!references.empty) {
+			val nonReferencedElem = references.keySet
+					.findFirst[elem | !references.entrySet
+							.exists[it.key !== elem && it.value.contains(elem)]]
+			references -= nonReferencedElem
+			
+			array += nonReferencedElem
 		}
+		array.reverse
 		
 		return array
 	}

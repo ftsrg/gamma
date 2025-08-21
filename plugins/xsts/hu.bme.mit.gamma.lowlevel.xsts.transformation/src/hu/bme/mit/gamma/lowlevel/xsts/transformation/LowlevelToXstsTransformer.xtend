@@ -901,7 +901,7 @@ class LowlevelToXstsTransformer {
 		xSts.publicTypeDeclarations.sortInplaceWith[it.name].sortTopologicallyInplace
 		xSts.variableDeclarations.sortInplaceWith[it.name].sortTopologicallyInplace
 		
-		xSts.functionDeclarations.sortTopologicallyInplace
+		xSts.functionDeclarations.sortInplaceWith[it.name].sortTopologicallyInplace
 	}
 	
 	def dispose() {
