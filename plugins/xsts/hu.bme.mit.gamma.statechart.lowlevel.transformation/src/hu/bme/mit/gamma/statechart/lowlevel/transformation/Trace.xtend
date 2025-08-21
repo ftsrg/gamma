@@ -256,8 +256,8 @@ class Trace {
 		componentMappings.get(gammaComponent)
 	}
 	
-	def getFirstStatechart() {
-		return componentMappings.values.filter(StatechartDefinition).head
+	def getLastStatechart() {
+		return componentMappings.values.filter(StatechartDefinition).lastOrNull
 	}
 	
 	// Value declarations with fields

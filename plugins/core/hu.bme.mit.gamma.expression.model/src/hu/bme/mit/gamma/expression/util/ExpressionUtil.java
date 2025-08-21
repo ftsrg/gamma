@@ -370,6 +370,14 @@ public class ExpressionUtil {
 					getReferredVariables(arrayAccessExpression.getIndex()));
 			return variables;
 		}
+		else if (expression instanceof FunctionAccessExpression functionAccessExpression) {
+			Set<VariableDeclaration> variables = new HashSet<VariableDeclaration>();
+			for (Expression argument : functionAccessExpression.getArguments()) {
+				variables.addAll(
+					getReferredVariables(argument));
+			}
+			return variables;
+		}
 		else if (expression instanceof AccessExpression accessExpression) {
 			return getReferredVariables(
 					accessExpression.getOperand());

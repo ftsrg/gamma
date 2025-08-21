@@ -78,6 +78,7 @@ class ExpressionTransformer {
 	// Trace needed for variable mappings
 	protected final Trace trace
 	protected final boolean FUNCTION_INLINING
+	protected final boolean ADD_RETURN_GUARDS
 	protected final int MAX_RECURSION_DEPTH
 	protected final TimeUnit BASE_TIME_UNIT
 	
@@ -88,18 +89,19 @@ class ExpressionTransformer {
 	}
 	
 	new(Trace trace) {
-		this(trace, true, 10, null)
+		this(trace, true, true, 10, null)
 	}
 	
-	new(Trace trace, boolean functionInlining, int maxRecursionDepth) {
-		this(trace, functionInlining, maxRecursionDepth, null)
+	new(Trace trace, boolean functionInlining, boolean addReturnGuards, int maxRecursionDepth) {
+		this(trace, functionInlining, addReturnGuards, maxRecursionDepth, null)
 	}
 	
-	new(Trace trace, boolean functionInlining, int maxRecursionDepth, TimeUnit baseTimeUnit) {
+	new(Trace trace, boolean functionInlining, boolean addReturnGuards, int maxRecursionDepth, TimeUnit baseTimeUnit) {
 		this.trace = trace
 		this.FUNCTION_INLINING = functionInlining
 		this.MAX_RECURSION_DEPTH = maxRecursionDepth
 		this.BASE_TIME_UNIT = baseTimeUnit
+		this.ADD_RETURN_GUARDS = addReturnGuards
 		this.currentRecursionDepth = maxRecursionDepth
 		this.typeTransformer = new TypeTransformer(trace)
 	}
@@ -362,11 +364,15 @@ class ExpressionTransformer {
 			}
 			else {
 				// Basic method call
-				val function = expression.declaration as FunctionDeclaration
+				val gammaFunction = expression.declaration as FunctionDeclaration
 				val arguments = expression.arguments
 				// By now, the procedure must be transformed by ExpressionPreconditionTransformer
-				checkState(trace.isMapped(function), function) // On-the-fly transformation could be added here?
-				val lowlevelFunction = trace.get(function)
+				if (!trace.isMapped(gammaFunction)) {// On-the-fly transformation could be added here?
+					val extension functionTransformer = new FunctionTransformer(trace, ADD_RETURN_GUARDS)
+					gammaFunction.transformAndStoreFunction
+				}
+				
+				val lowlevelFunction = trace.get(gammaFunction)
 				val lowlevelArguments = arguments.map[it.transformExpression].flatten.toList
 				val lowlevelCall = lowlevelFunction.createFunctionAccessExpression(lowlevelArguments)
 				result += lowlevelCall

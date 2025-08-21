@@ -14,7 +14,6 @@ import hu.bme.mit.gamma.action.model.Action
 import hu.bme.mit.gamma.action.model.ActionModelFactory
 import hu.bme.mit.gamma.action.model.Block
 import hu.bme.mit.gamma.action.model.ConstantDeclarationStatement
-import hu.bme.mit.gamma.action.model.ForStatement
 import hu.bme.mit.gamma.action.model.ProcedureDeclaration
 import hu.bme.mit.gamma.action.model.ReturnStatement
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
@@ -36,11 +35,8 @@ import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.List
-import java.util.Set
-import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
-import static hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
@@ -59,7 +55,7 @@ class ExpressionPreconditionTransformer {
 	protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
 	// Transformation parameters
 	protected final boolean FUNCTION_INLINING
-	protected final boolean ADD_RETURN_GUARDS // Checked only if functions are NOT inlined
+	protected final boolean ADD_RETURN_GUARDS
 	protected final int MAX_RECURSION_DEPTH
 	
 	protected int currentRecursionDepth // For procedures
@@ -153,9 +149,8 @@ class ExpressionPreconditionTransformer {
 		else {
 			// Mapping the function
 			if (!trace.isMapped(function)) {
-				val lowlevelFunction = function.transformFunction
-				val lowlevelStatechart = trace.firstStatechart
-				lowlevelStatechart.functionDeclarations += lowlevelFunction
+				val extension functionTransformer = new FunctionTransformer(this.trace, ADD_RETURN_GUARDS)
+				function.transformAndStoreFunction
 			}
 			
 			val lowlevelFunction = trace.get(function)
@@ -292,141 +287,6 @@ class ExpressionPreconditionTransformer {
 			FunctionAccessExpression arguments) {
 		// Lambdas must be side effect-free, so no pre-transformation is necessary 
 		return #[]
-	}
-	
-	protected def FunctionDeclaration transformFunction(FunctionDeclaration function) {
-		val type = function.type
-		
-		val parameters = function.parameterDeclarations
-		val lowlevelParameters = parameters.map[it.transformFunctionParameter].flatten.toList
-		
-		val lowlevelFunction =
-		if (function instanceof ProcedureDeclaration) {
-			val lowlevelProcedure = createProcedureDeclaration
-			trace.put(function, lowlevelProcedure) // Here, to support recursion
-			
-			val lowlevelBody = function.body.transformAction.wrap
-			lowlevelProcedure.body = lowlevelBody
-			
-			if (ADD_RETURN_GUARDS) {
-				val extension returnGuardHandler = new ProcedureReturnGuardHandler
-				lowlevelBody.createAndSetReturnedDeclarationAndAddReturnGuard
-			}
-			
-			lowlevelProcedure
-		}
-		else if (function instanceof LambdaDeclaration) {
-			val lowlevelLambda = createLambdaDeclaration
-			trace.put(function, lowlevelLambda) // Here, to support recursion
-			
-			val lowlevelExpressions = function.expression.transformExpression
-			lowlevelLambda.expression = (lowlevelExpressions.size > 1) ?
-				lowlevelExpressions.createTupleLiteralExpression :
-				lowlevelExpressions.head
-			
-			lowlevelLambda
-		}
-		else {
-			throw new IllegalArgumentException("Not known function type: " + function)
-		}
-		
-		val lowlevelType = type.transformType
-		val lowlevelName = getName(function)
-		
-		lowlevelFunction.type = lowlevelType
-		lowlevelFunction.name = lowlevelName
-		lowlevelFunction.parameterDeclarations += lowlevelParameters
-		
-		return lowlevelFunction
-	}
-	
-	// Auxiliary class for procedure return handling
-	
-	private static class ProcedureReturnGuardHandler {
-		
-		VariableDeclaration isReturnedDeclaration
-		final Set<Action> guardedActions = newHashSet // A block or for statement is guarded only once
-		// Auxiliary objects
-		protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
-		protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
-		protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
-		protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
-		
-		new() {
-			this(null)
-		}
-		
-		new(VariableDeclaration isReturnedDeclaration) {
-			this.isReturnedDeclaration = isReturnedDeclaration
-		}
-		
-		def void createAndSetReturnedDeclarationAndAddReturnGuard(Action top) {
-			val isReturnedVariableDeclaration = createBooleanTypeDefinition.createDeclarationStatement("isReturned")
-			isReturnedVariableDeclaration.prepend(top)
-			isReturnedDeclaration = isReturnedVariableDeclaration.variableDeclaration
-			
-			for (returnAction : top.getAllContentsOfType(ReturnStatement)) {
-				returnAction.setReturnedDeclarationAndAddReturnGuard
-			}
-		}
-		
-		def void setReturnedDeclarationAndAddReturnGuard(ReturnStatement returnAction) {
-			val setDeclarationAction = isReturnedDeclaration.createAssignment(createTrueExpression)
-			setDeclarationAction.prepend(returnAction)
-			
-			returnAction.addReturnGuard
-		}
-		
-		// EObject is expected to handle branches too
-		def void addReturnGuard(EObject action) {
-			val container = action.eContainer
-			
-			if (container === null) {
-				return
-			}
-			
-			if (container instanceof Block) {
-				if (!guardedActions.contains(container)) {
-					val actions = container.actions
-					val size = actions.size
-					val firstGuardableActionIndex = action.index + 1
-					
-					if (firstGuardableActionIndex < size) {
-						val guard = isReturnedDeclaration.createReferenceExpression
-								.createNotExpression
-						val guardedBlock = createBlock => [
-							it.actions += actions.subList(firstGuardableActionIndex, size)
-						]
-						val branch = guard.createBranch(guardedBlock)
-						val ifStatement = createIfStatement => [
-							it.conditionals += branch
-						]
-						// Putting the guarded block to the end (guardable actions are inside)
-						actions += ifStatement
-					}
-					
-					guardedActions += container
-				}
-			}
-			else if (container instanceof ForStatement) {
-				if (!guardedActions.contains(container)) {
-					val guard = createNotExpression => [
-						it.operand = isReturnedDeclaration.createReferenceExpression
-					]
-					val branch = guard.createBranch(container.body)
-					val ifStatement = createIfStatement => [
-						it.conditionals += branch
-					]
-					container.body = ifStatement
-					
-					guardedActions += container
-				}
-			}
-			
-			// Recursion to the top
-			container.addReturnGuard
-		} 
-		
 	}
 	
 }

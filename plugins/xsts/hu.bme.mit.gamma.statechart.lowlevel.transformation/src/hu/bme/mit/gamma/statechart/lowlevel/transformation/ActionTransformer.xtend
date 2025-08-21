@@ -65,7 +65,7 @@ class ActionTransformer {
 		this.trace = trace
 		this.FUNCTION_INLINING = functionInlining
 		this.expressionTransformer = new ExpressionTransformer(this.trace,
-				functionInlining, maxRecursionDepth, baseTimeUnit)
+				functionInlining, addReturnGuards, maxRecursionDepth, baseTimeUnit)
 		this.preconditionTransformer = new ExpressionPreconditionTransformer(
 				this.trace, this, functionInlining, addReturnGuards, maxRecursionDepth)
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
