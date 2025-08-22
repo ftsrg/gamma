@@ -29,23 +29,31 @@ public class TypeSerializer {
 	//
 
 	public String serialize(Type type) {
-		if (type instanceof TypeReference) {
-			return _serialize((TypeReference) type);
-		} else if (type instanceof BooleanTypeDefinition) {
-			return _serialize((BooleanTypeDefinition) type);
-		} else if (type instanceof IntegerTypeDefinition) {
-			return _serialize((IntegerTypeDefinition) type);
-		} else if (type instanceof DecimalTypeDefinition) {
-			return _serialize((DecimalTypeDefinition) type);
-		} else if (type instanceof RationalTypeDefinition) {
-			return _serialize((RationalTypeDefinition) type);
-		} else if (type instanceof ArrayTypeDefinition) {
-			return _serialize((ArrayTypeDefinition) type);
-		} else if (type instanceof EnumerationTypeDefinition) {
-			return _serialize((EnumerationTypeDefinition) type);
-		} else if (type instanceof RecordTypeDefinition) {
-			return _serialize((RecordTypeDefinition) type);
-		} else {
+		if (type instanceof TypeReference _type) {
+			return _serialize(_type);
+		}
+		else if (type instanceof BooleanTypeDefinition _type) {
+			return _serialize(_type);
+		}
+		else if (type instanceof IntegerTypeDefinition _type) {
+			return _serialize(_type);
+		}
+		else if (type instanceof DecimalTypeDefinition _type) {
+			return _serialize(_type);
+		}
+		else if (type instanceof RationalTypeDefinition _type) {
+			return _serialize(_type);
+		}
+		else if (type instanceof ArrayTypeDefinition _type) {
+			return _serialize(_type);
+		}
+		else if (type instanceof EnumerationTypeDefinition _type) {
+			return _serialize(_type);
+		}
+		else if (type instanceof RecordTypeDefinition _type) {
+			return _serialize(_type);
+		}
+		else {
 			return _serialize(type);
 		}
 	}
@@ -59,7 +67,8 @@ public class TypeSerializer {
 		Type referencedType = reference.getType();
 		if (ExpressionModelDerivedFeatures.isPrimitive(referencedType)) {
 			return serialize(referencedType);
-		} else {
+		}
+		else {
 			return reference.getName();
 		}
 	}
@@ -81,15 +90,18 @@ public class TypeSerializer {
 	}
 
 	protected String _serialize(ArrayTypeDefinition type) {
-		return serialize(type.getElementType()) + "[]";
+		Type elementType = type.getElementType();
+		return serialize(elementType) + "[]";
 	}
 
 	protected String _serialize(EnumerationTypeDefinition type) {
-		return ExpressionModelDerivedFeatures.getTypeDeclaration(type).getName();
+		TypeDeclaration typeDeclaration = ExpressionModelDerivedFeatures.getTypeDeclaration(type);
+		return typeDeclaration.getName();
 	}
 
 	protected String _serialize(RecordTypeDefinition type) {
-		return ExpressionModelDerivedFeatures.getTypeDeclaration(type).getName();
+		TypeDeclaration typeDeclaration = ExpressionModelDerivedFeatures.getTypeDeclaration(type);
+		return typeDeclaration.getName();
 	}
 
 }

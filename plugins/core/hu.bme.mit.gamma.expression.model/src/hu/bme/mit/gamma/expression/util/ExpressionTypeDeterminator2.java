@@ -268,7 +268,8 @@ public class ExpressionTypeDeterminator2 {
 			TypeDeclaration clonedTypeDeclaration = ecoreUtil.clone(typeDeclaration);
 			clonedFinalTypeReference.setReference(clonedTypeDeclaration);
 			Type clonedType = clonedTypeDeclaration.getType();
-			clonedTypeDeclaration.setType(getAliaslessTypeTree(clonedType));
+			clonedTypeDeclaration.setType(
+					getAliaslessTypeTree(clonedType));
 			return clonedFinalTypeReference;
 		}
 		Type clonedType = ecoreUtil.clone(type); // type instanceof TypeDefinition
@@ -340,8 +341,10 @@ public class ExpressionTypeDeterminator2 {
 	
 	private <T extends ArithmeticExpression & BinaryExpression> Type getArithmeticBinaryType(T expression) {
 		List<Type> types = new ArrayList<Type>();
-		types.add(getType(expression.getLeftOperand()));
-		types.add(getType(expression.getRightOperand()));		
+		types.add(
+				getType(expression.getLeftOperand()));
+		types.add(
+				getType(expression.getRightOperand()));
 		return getArithmeticType(types);
 	}
 	
@@ -439,21 +442,18 @@ public class ExpressionTypeDeterminator2 {
 		if (type instanceof RationalTypeDefinition) {
 			return "Rational";
 		}
-		if (type instanceof ArrayTypeDefinition) {
-			ArrayTypeDefinition arrayType = (ArrayTypeDefinition) type;
+		if (type instanceof ArrayTypeDefinition arrayType) {
 			Type elementType = arrayType.getElementType();
 			return "Array, type of elements: " + print(elementType);
 		}
-		if (type instanceof RecordTypeDefinition) {
-			RecordTypeDefinition recordTypeDefinition = (RecordTypeDefinition) type;
+		if (type instanceof RecordTypeDefinition recordTypeDefinition) {
 			List<FieldDeclaration> fields = recordTypeDefinition.getFieldDeclarations();
 			String fieldsNames = fields.stream()
 					.map(it -> it.getName())
 					.reduce((lhs, rhs) -> lhs + ", " + rhs).orElse("");
 			return "Record, with fields: " + fieldsNames;
 		}
-		if (type instanceof EnumerationTypeDefinition) {
-			EnumerationTypeDefinition enumerationTypeDefinition = (EnumerationTypeDefinition) type;
+		if (type instanceof EnumerationTypeDefinition enumerationTypeDefinition) {
 			String literalNames = enumerationTypeDefinition.getLiterals().stream()
 					.map(it -> it.getName())
 					.reduce((lhs, rhs) -> lhs + ", " + rhs).orElse("");
@@ -462,12 +462,12 @@ public class ExpressionTypeDeterminator2 {
 		if (type instanceof VoidTypeDefinition) {
 			return "Void";
 		}
-		if (type instanceof TypeReference) {
-			TypeReference typeReference = (TypeReference) type;
+		if (type instanceof TypeReference typeReference) {
 			TypeDeclaration reference = typeReference.getReference();
 			Type referenceType = reference.getType();
 			return reference.getName() + ": " + print(referenceType);
 		}
+		
 		return "Unknown type: " + type; // During parsing, there can be null typeDefinitions
 	}
 		

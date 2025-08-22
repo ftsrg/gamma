@@ -320,8 +320,7 @@ public class ExpressionModelDerivedFeatures {
 	
 	public static boolean isOneCapacityArray(Type type) {
 		TypeDefinition typeDefinition = getTypeDefinition(type);
-		if (typeDefinition instanceof ArrayTypeDefinition) {
-			ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) typeDefinition;
+		if (typeDefinition instanceof ArrayTypeDefinition arrayTypeDefinition) {
 			Expression size = arrayTypeDefinition.getSize();
 			int evaluatedSize = evaluator.evaluate(size);
 			return evaluatedSize == 1;
@@ -494,7 +493,8 @@ public class ExpressionModelDerivedFeatures {
 					getIndexes(operand)); // Recursion, including records
 		}
 		if (expression instanceof ArrayAccessExpression arrayAccessExpression) {
-			indexes.add(arrayAccessExpression.getIndex()); // Index adding
+			Expression index = arrayAccessExpression.getIndex();
+			indexes.add(index); // Index adding
 		}
 		
 		return indexes;
@@ -507,8 +507,7 @@ public class ExpressionModelDerivedFeatures {
 	
 	public static Type getArrayElementType(Type type) {
 		TypeDefinition typeDefinition = getTypeDefinition(type);
-		if (typeDefinition instanceof ArrayTypeDefinition) {
-			ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) typeDefinition;
+		if (typeDefinition instanceof ArrayTypeDefinition arrayTypeDefinition) {
 			return arrayTypeDefinition.getElementType();
 		}
 		throw new IllegalArgumentException("Not array type: " + type);
@@ -571,8 +570,7 @@ public class ExpressionModelDerivedFeatures {
 	}
 	
 	public static Expression getLambdaExpression(FunctionDeclaration function) {
-		if (function instanceof LambdaDeclaration) {
-			LambdaDeclaration lambda = (LambdaDeclaration) function;
+		if (function instanceof LambdaDeclaration lambda) {
 			return lambda.getExpression();
 		}
 		// ProcedureDeclaration
@@ -609,7 +607,9 @@ public class ExpressionModelDerivedFeatures {
 	
 	public static int getIndex(ParameterDeclaration parameter) {
 		ParametricElement container = (ParametricElement) parameter.eContainer();
-		return container.getParameterDeclarations().indexOf(parameter);
+		List<ParameterDeclaration> parameterDeclarations = container.getParameterDeclarations();
+		int index = parameterDeclarations.indexOf(parameter);
+		return index;
 	}
 	
 	public static boolean isEvaluable(Expression expression) {

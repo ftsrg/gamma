@@ -187,7 +187,7 @@ public class ExpressionEvaluator {
 			List<Expression> operands = multiplyExpression.getOperands();
 			List<Integer> evaluatedOperands = new ArrayList<Integer>();
 			IllegalArgumentException potentialException = null;
-			//
+			
 			for (Expression multiplicationOperand : operands) {
 				try {
 					int evaluatedOperand = evaluateInteger(multiplicationOperand);
@@ -201,7 +201,7 @@ public class ExpressionEvaluator {
 					potentialException = e;
 				}
 			}
-			//
+			
 			if (potentialException != null) {
 				throw potentialException;
 			}
@@ -212,17 +212,17 @@ public class ExpressionEvaluator {
 			if (evaluatedNumerator == 0) {
 				return 0;
 			}
-			//
+			
 			return evaluatedNumerator / evaluateInteger(divideExpression.getRightOperand());
 		}
 		if (expression instanceof AddExpression addExpression) {
 			List<Expression> operands = addExpression.getOperands();
 			// Potential optimization
 			List<Expression> negativeOperandPairs = getNegativeExpressionPairs(operands);
-			//
+			
 			List<Expression> evaluableOperands = new ArrayList<Expression>(operands);
 			evaluableOperands.removeAll(negativeOperandPairs);
-			//
+			
 			return evaluableOperands.stream().map(it -> evaluateInteger(it))
 					.reduce(0, (p1, p2) -> p1 + p2);
 		}
@@ -233,7 +233,7 @@ public class ExpressionEvaluator {
 			if (ecoreUtil.helperEquals(leftOperand, rightOperand)) {
 				return 0;
 			}
-			//
+			
 			return evaluateInteger(leftOperand) - evaluateInteger(rightOperand);
 		}
 		if (expression instanceof FunctionAccessExpression functionAccessExpression) {
@@ -277,9 +277,11 @@ public class ExpressionEvaluator {
 		Expression lhs = expression.getLeftOperand();
 		Expression rhs = expression.getRightOperand();
 		
-		// if the expression is left inclusive we leave the lhs as is, if exclusive we have to increase the lhs by 1
-		// similarly if the expression is right inclusive we have to increase the rhs by 1, if exlusive we can leave as is
-		for (int i = (evaluate(lhs) + (expression.isLeftInclusive() ? 0 : 1)); i < (evaluate(rhs) + (expression.isRightInclusive() ? 1 : 0)); i++) {
+		// If the expression is left inclusive we leave the lhs as is, if exclusive we have to increase the lhs by 1
+		// similarly if the expression is right inclusive we have to increase the rhs by 1, if exclusive we can leave as is
+		int start = evaluate(lhs) + (expression.isLeftInclusive() ? 0 : 1);
+		int end = evaluate(rhs) + (expression.isRightInclusive() ? 1 : 0);
+		for (int i = start; i < end; i++) {
 			range.add(i);
 		}
 		
@@ -330,9 +332,9 @@ public class ExpressionEvaluator {
 				throw new IllegalArgumentException("Not evaluable expression: " + expression);
 			}
 			FieldAssignment fieldAssignment = recordLiteral.getFieldAssignments().stream()
-				.filter(it -> it.getReference().getFieldDeclaration() == field)
-				.findFirst()
-				.get();
+					.filter(it -> it.getReference().getFieldDeclaration() == field)
+					.findFirst()
+					.get();
 			
 			Expression value = fieldAssignment.getValue();
 			return evaluateDecimal(value);
@@ -352,7 +354,7 @@ public class ExpressionEvaluator {
 			List<Expression> operands = multiplyExpression.getOperands();
 			List<Double> evaluatedOperands = new ArrayList<Double>();
 			IllegalArgumentException potentialException = null;
-			//
+			
 			for (Expression multiplicationOperand : operands) {
 				try {
 					double evaluatedOperand = evaluateDecimal(multiplicationOperand);
@@ -366,7 +368,7 @@ public class ExpressionEvaluator {
 					potentialException = e;
 				}
 			}
-			//
+			
 			if (potentialException != null) {
 				throw potentialException;
 			}
@@ -377,17 +379,17 @@ public class ExpressionEvaluator {
 			if (evaluatedNumerator == 0.0) {
 				return 0.0;
 			}
-			//
+			
 			return evaluatedNumerator / evaluateDecimal(divideExpression.getRightOperand());
 		}
 		if (expression instanceof AddExpression addExpression) {
 			List<Expression> operands = addExpression.getOperands();
 			// Potential optimization
 			List<Expression> negativeOperandPairs = getNegativeExpressionPairs(operands);
-			//
+			
 			List<Expression> evaluableOperands = new ArrayList<Expression>(operands);
 			evaluableOperands.removeAll(negativeOperandPairs);
-			//
+			
 			return evaluableOperands.stream().map(it -> evaluateDecimal(it))
 					.reduce(0.0, (p1, p2) -> p1 + p2);
 		}
@@ -399,7 +401,6 @@ public class ExpressionEvaluator {
 			if (ecoreUtil.helperEquals(leftOperand, rightOperand)) {
 				return 0.0;
 			}
-			//
 			
 			return evaluateDecimal(leftOperand) - evaluateDecimal(rightOperand);
 		}
@@ -463,7 +464,7 @@ public class ExpressionEvaluator {
 			if (hasEqualityToDifferentLiterals(referenceEqualityExpressions)) {
 				return false;
 			}
-			//
+			
 			if (unevaluableException != null) {
 				throw unevaluableException; // At least one was unevaluable
 			}
@@ -501,9 +502,9 @@ public class ExpressionEvaluator {
 		if (expression instanceof BinaryExpression binaryExpression) {
 			Expression left = binaryExpression.getLeftOperand();
 			Expression right = binaryExpression.getRightOperand();
-			//
+			
 			boolean leftEqualsRight = ecoreUtil.helperEquals(left, right); // For optimization
-			//
+			
 			if (expression instanceof ImplyExpression) {
 				return !evaluateBoolean(left) || evaluateBoolean(right);
 			}
@@ -529,7 +530,7 @@ public class ExpressionEvaluator {
 				if (leftEqualsRight) {
 					return false;
 				}
-				//
+				
 				return evaluate(left) < evaluate(right);
 			}
 			if (expression instanceof LessEqualExpression) {
@@ -537,7 +538,7 @@ public class ExpressionEvaluator {
 				if (leftEqualsRight) {
 					return true;
 				}
-				//
+				
 				return evaluate(left) <= evaluate(right);
 			}
 			if (expression instanceof GreaterExpression) {
@@ -545,7 +546,7 @@ public class ExpressionEvaluator {
 				if (leftEqualsRight) {
 					return false;
 				}
-				//
+				
 				return evaluate(left) > evaluate(right);
 			}
 			if (expression instanceof GreaterEqualExpression) {
@@ -553,7 +554,7 @@ public class ExpressionEvaluator {
 				if (leftEqualsRight) {
 					return true;
 				}
-				//
+				
 				return evaluate(left) >= evaluate(right);
 			}
 		}
@@ -684,13 +685,12 @@ public class ExpressionEvaluator {
 	protected List<EqualityExpression> collectAllEqualityExpressions(AndExpression expression) {
 		List<EqualityExpression> equalityExpressions = new ArrayList<EqualityExpression>();
 		for (Expression subexpression : expression.getOperands()) {
-			if (subexpression instanceof EqualityExpression) {
-				EqualityExpression equalityExpression = (EqualityExpression) subexpression;
+			if (subexpression instanceof EqualityExpression equalityExpression) {
 				equalityExpressions.add(equalityExpression);
 			}
-			else if (subexpression instanceof AndExpression) {
-				AndExpression andExpression = (AndExpression) subexpression;
-				equalityExpressions.addAll(collectAllEqualityExpressions(andExpression));
+			else if (subexpression instanceof AndExpression andExpression) {
+				equalityExpressions.addAll(
+						collectAllEqualityExpressions(andExpression));
 			}
 		}
 		return equalityExpressions;

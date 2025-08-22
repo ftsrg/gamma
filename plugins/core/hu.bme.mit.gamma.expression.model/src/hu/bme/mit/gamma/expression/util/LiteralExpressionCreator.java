@@ -143,13 +143,15 @@ public class LiteralExpressionCreator {
 	
 	public LiteralExpression of(RationalTypeDefinition type, double value) {
 		DecimalLiteralExpression literalExpression = factory.createDecimalLiteralExpression();
-		literalExpression.setValue(BigDecimal.valueOf(value));
+		BigDecimal decimalValue = BigDecimal.valueOf(value);
+		literalExpression.setValue(decimalValue);
 		return literalExpression;
 	}
 	
 	public LiteralExpression of(DecimalTypeDefinition type, double value) {
 		DecimalLiteralExpression literalExpression = factory.createDecimalLiteralExpression();
-		literalExpression.setValue(BigDecimal.valueOf(value));
+		BigDecimal decimalValue = BigDecimal.valueOf(value);
+		literalExpression.setValue(decimalValue);
 		return literalExpression;
 	}
 	

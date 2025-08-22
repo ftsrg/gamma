@@ -230,7 +230,8 @@ public class ExpressionUtil {
 		List<EnumerationLiteralExpression> literals = new ArrayList<EnumerationLiteralExpression>();
 		for (Expression expression : expressions) {
 			int index = evaluator.evaluate(expression);
-			EnumerationLiteralDefinition literal = type.getLiterals().get(index);
+			List<EnumerationLiteralDefinition> literals2 = type.getLiterals();
+			EnumerationLiteralDefinition literal = literals2.get(index);
 			EnumerationLiteralExpression literalExpression = createEnumerationLiteralExpression(literal);
 			literals.add(literalExpression);
 		}
@@ -647,7 +648,8 @@ public class ExpressionUtil {
 	
 	public List<ConstantDeclaration> extractParameters(ParametricElement parametricElement,
 			List<String> names, List<? extends Expression> arguments) {
-		return extractParameters(parametricElement.getParameterDeclarations(), names, arguments);
+		List<ParameterDeclaration> parameterDeclarations = parametricElement.getParameterDeclarations();
+		return extractParameters(parameterDeclarations, names, arguments);
 	}
 	
 	public List<ConstantDeclaration> extractParameters(
@@ -741,13 +743,15 @@ public class ExpressionUtil {
 	}
 
 	protected Expression _getInitialValueOfType(EnumerationTypeDefinition type) {
-		EnumerationLiteralDefinition literal = type.getLiterals().get(0);
+		List<EnumerationLiteralDefinition> literals = type.getLiterals();
+		EnumerationLiteralDefinition literal = literals.get(0);
 		return createEnumerationLiteralExpression(literal);
 	}
 	
 	protected Expression _getInitialValueOfType(ArrayTypeDefinition type) {
 		ArrayLiteralExpression arrayLiteralExpression = factory.createArrayLiteralExpression();
-		int arraySize = evaluator.evaluateInteger(type.getSize());
+		Expression size = type.getSize();
+		int arraySize = evaluator.evaluateInteger(size);
 		for (int i = 0; i < arraySize; ++i) {
 			Expression elementDefaultValue = getInitialValueOfType(type.getElementType());
 			arrayLiteralExpression.getOperands().add(elementDefaultValue);
@@ -862,7 +866,8 @@ public class ExpressionUtil {
 		}
 		if (operands.isEmpty()) {
 			// If collection is empty, the expression is always true
-			operands.add(factory.createTrueExpression());
+			TrueExpression _true = factory.createTrueExpression();
+			operands.add(_true);
 		}
 		return and;
 	}
@@ -871,8 +876,7 @@ public class ExpressionUtil {
 			Iterable<? extends InitializableElement> initializableElements, EObject context) {
 		for (InitializableElement element : initializableElements) {
 			Expression initialExpression = element.getExpression();
-			if (initialExpression instanceof DirectReferenceExpression) {
-				DirectReferenceExpression reference = (DirectReferenceExpression) initialExpression;
+			if (initialExpression instanceof DirectReferenceExpression reference) {
 				Declaration referencedDeclaration = reference.getDeclaration();
 				ecoreUtil.change(referencedDeclaration, element, context);
 			}
@@ -985,7 +989,8 @@ public class ExpressionUtil {
 	}
 	
 	public IntegerLiteralExpression toIntegerLiteral(long value) {
-		return toIntegerLiteral(toBigInt(value));
+		BigInteger bigInteger = toBigInt(value);
+		return toIntegerLiteral(bigInteger);
 	}
 	
 	public IntegerLiteralExpression toIntegerLiteral(BigInteger value) {
@@ -1013,8 +1018,8 @@ public class ExpressionUtil {
 	}
 	
 	public DecimalLiteralExpression toDecimalLiteral(double value) {
-		return toDecimalLiteral(
-				toBigDec(value));
+		BigDecimal bigDecimal = toBigDec(value);
+		return toDecimalLiteral(bigDecimal);
 	}
 	
 	public DecimalLiteralExpression toDecimalLiteral(BigDecimal value) {
@@ -1435,6 +1440,7 @@ public class ExpressionUtil {
 			return operands.iterator().next();
 		}
 		potentialContainer.getOperands().addAll(operands);
+		
 		return potentialContainer;
 	}
 	
@@ -1486,8 +1492,7 @@ public class ExpressionUtil {
 	// Unwrapper
 	
 	public Expression unwrapIfPossible(Expression expression) {
-		if (expression instanceof MultiaryExpression) {
-			MultiaryExpression multiaryExpression = (MultiaryExpression) expression;
+		if (expression instanceof MultiaryExpression multiaryExpression) {
 			List<Expression> operands = multiaryExpression.getOperands();
 			int size = operands.size();
 			if (size >= 2) {
