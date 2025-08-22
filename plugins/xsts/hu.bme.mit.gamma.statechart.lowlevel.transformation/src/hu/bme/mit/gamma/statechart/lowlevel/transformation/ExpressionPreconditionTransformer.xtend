@@ -38,6 +38,7 @@ import java.util.List
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class ExpressionPreconditionTransformer {
@@ -156,28 +157,32 @@ class ExpressionPreconditionTransformer {
 			val lowlevelFunction = trace.get(function)
 			val lowlevelType = lowlevelFunction.typeDefinition
 			
-			val extractFunction = lowlevelType instanceof TupleTypeDefinition // TODO for other calls, too, to support side effects?
+			val isTuple = lowlevelType instanceof TupleTypeDefinition
+			val hasSideEffect = !lowlevelFunction.pure
+			val extractFunction = isTuple || hasSideEffect
 			if (extractFunction) {
-				if (lowlevelType instanceof TupleTypeDefinition) {
-					val nativeTypes = lowlevelType.nativeTypes.clone
-					
-					val lowlevelDeclarations = <VariableDeclarationStatement>newArrayList
-					for (type : nativeTypes) {
-						val name = '''_«nativeTypes.indexOf(type)»_«expression.uniqueIndex»'''
-						lowlevelDeclarations += type.createDeclarationStatement(name)
-					}
-					actions += lowlevelDeclarations
-					val lowlevelVariables = lowlevelDeclarations.map[it.variableDeclaration].toList
-					
-					val tupleAccess = lowlevelVariables.map[it.createReferenceExpression].toList
-							.createTupleAccessExpression
-					
-					val lowlevelFunctionCall = expression.transformSimpleExpression
-					trace.put(expression, lowlevelVariables) // After the function call transformation (this tracing determines if the function is extracted or a basic call is made)
-					
-					val lowlevelAssignment = tupleAccess.createAssignment(lowlevelFunctionCall)
-					actions += lowlevelAssignment
+				val nativeTypes = (lowlevelType instanceof TupleTypeDefinition) ?
+						lowlevelType.nativeTypes.clone :
+						#[ lowlevelType.clone ]
+				
+				val lowlevelDeclarations = <VariableDeclarationStatement>newArrayList
+				for (type : nativeTypes) {
+					val name = '''_«nativeTypes.indexOf(type)»_«expression.uniqueIndex»'''
+					lowlevelDeclarations += type.createDeclarationStatement(name)
 				}
+				actions += lowlevelDeclarations
+				val lowlevelVariables = lowlevelDeclarations.map[it.variableDeclaration].toList
+				
+				val access = (lowlevelType instanceof TupleTypeDefinition) ?
+						lowlevelVariables.map[it.createReferenceExpression].toList
+								.createTupleAccessExpression :
+						lowlevelVariables.head.createReferenceExpression
+				
+				val lowlevelFunctionCall = expression.transformSimpleExpression
+				trace.put(expression, lowlevelVariables) // After the function call transformation (this tracing determines if the function is extracted or a basic call is made)
+				
+				val lowlevelAssignment = access.createAssignment(lowlevelFunctionCall)
+				actions += lowlevelAssignment
 			}
 			// No added precondition actions otherwise
 		}

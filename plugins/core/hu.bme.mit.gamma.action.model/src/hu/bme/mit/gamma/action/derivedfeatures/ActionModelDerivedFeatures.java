@@ -17,6 +17,7 @@ import java.util.Set;
 
 import org.eclipse.emf.ecore.EObject;
 
+import hu.bme.mit.gamma.action.model.AbstractAssignmentStatement;
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
@@ -31,6 +32,7 @@ import hu.bme.mit.gamma.action.model.SwitchStatement;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.action.util.ActionUtil;
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
+import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
@@ -46,6 +48,27 @@ public class ActionModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	public static boolean isLocal(VariableDeclaration variableDeclaration) {
 		EObject container = variableDeclaration.eContainer();
 		return container instanceof VariableDeclarationStatement;
+	}
+	
+
+	public static boolean isPure(FunctionDeclaration function) {
+		if (isLambda(function)) {
+			return true;
+		}
+		
+		List<AbstractAssignmentStatement> assignments = ecoreUtil.getAllContentsOfType(
+				function, AbstractAssignmentStatement.class);
+		for (AbstractAssignmentStatement assignment : assignments) {
+			ReferenceExpression lhs = assignment.getLhs();
+			List<Declaration> declarations = actionUtil.getAccessedDeclarations(lhs);
+			for (Declaration declaration : declarations) {
+				if (!ecoreUtil.containsTransitively(function, declaration)) {
+					return false;
+				}
+			}
+		}
+		
+		return true;
 	}
 	
 	public static boolean isLambda(FunctionDeclaration function) {
