@@ -58,7 +58,9 @@ public class ActionUtil extends ExpressionUtil {
 			ReferenceExpression lhs = assignment.getLhs();
 			return getDeclaration(lhs);
 		}
-		return (Declaration) ecoreUtil.getSelfOrContainerOfType(context, InitializableElement.class);
+		InitializableElement initializableElement = ecoreUtil.getSelfOrContainerOfType(context, InitializableElement.class);
+		Declaration declaration = (Declaration) initializableElement;
+		return declaration;
 	}
 	
 	//
@@ -129,8 +131,7 @@ public class ActionUtil extends ExpressionUtil {
 		else if (pivot == null) {
 			return action;
 		}
-		else if (pivot instanceof Block) {
-			Block block = (Block) pivot;
+		else if (pivot instanceof Block block) {
 			block.getActions().add(0, action);
 			return block;
 		}
@@ -151,8 +152,7 @@ public class ActionUtil extends ExpressionUtil {
 		else if (action == null) {
 			return pivot;
 		}
-		else if (pivot instanceof Block) {
-			Block block = (Block) pivot;
+		else if (pivot instanceof Block block) {
 			block.getActions().add(action);
 			return block;
 		}
@@ -176,7 +176,6 @@ public class ActionUtil extends ExpressionUtil {
 	
 	//
 	
-
 	public Block createBlock(Collection<? extends Action> actions) {
 		Block block = actionFactory.createBlock();
 		
@@ -297,8 +296,7 @@ public class ActionUtil extends ExpressionUtil {
 		List<AssignmentStatement> assignmentsOfVariable = new ArrayList<>();
 		for (AssignmentStatement assignment : assignments) {
 			ReferenceExpression lhs = assignment.getLhs();
-			if (lhs instanceof DirectReferenceExpression) {
-				DirectReferenceExpression reference = (DirectReferenceExpression) lhs;
+			if (lhs instanceof DirectReferenceExpression reference) {
 				Declaration declaration = reference.getDeclaration();
 				if (declaration == variable) {
 					assignmentsOfVariable.add(assignment);
@@ -311,26 +309,25 @@ public class ActionUtil extends ExpressionUtil {
 		return assignmentsOfVariable;
 	}
 	
-	public AssignmentStatement createAssignment(ReferenceExpression reference,
-			Expression expression) {
+	public AssignmentStatement createAssignment(ReferenceExpression reference, Expression expression) {
 		AssignmentStatement assignmentStatement = actionFactory.createAssignmentStatement();
 		assignmentStatement.setLhs(reference);
 		assignmentStatement.setRhs(expression);
 		return assignmentStatement;
 	}
 	
-	public AssignmentStatement createAssignment(VariableDeclaration variable,
-			Expression expression) {
-		return createAssignment(createReferenceExpression(variable), expression);
+	public AssignmentStatement createAssignment(VariableDeclaration variable, Expression expression) {
+		DirectReferenceExpression reference = createReferenceExpression(variable);
+		return createAssignment(reference, expression);
 	}
 	
-	public AssignmentStatement createAssignment(VariableDeclaration variable,
-			ValueDeclaration declaration) {
-		return createAssignment(variable, createReferenceExpression(declaration));
+	public AssignmentStatement createAssignment(VariableDeclaration variable, ValueDeclaration declaration) {
+		DirectReferenceExpression reference = createReferenceExpression(declaration);
+		return createAssignment(variable, reference);
 	}
 	
-	public List<AssignmentStatement> createAssignments(List<? extends ReferenceExpression> left,
-			List<Expression> right) {
+	public List<AssignmentStatement> createAssignments(
+				List<? extends ReferenceExpression> left, List<? extends Expression> right) {
 		List<AssignmentStatement> assignments = new ArrayList<AssignmentStatement>();
 		int size = left.size();
 		if (size != right.size()) {
@@ -339,7 +336,8 @@ public class ActionUtil extends ExpressionUtil {
 		for (int i = 0; i < size; i++) {
 			ReferenceExpression lhs = left.get(i);
 			Expression rhs = right.get(i);
-			assignments.add(createAssignment(lhs, rhs));
+			AssignmentStatement assignment = createAssignment(lhs, rhs);
+			assignments.add(assignment);
 		}
 		return assignments;
 	}
@@ -350,8 +348,8 @@ public class ActionUtil extends ExpressionUtil {
 	}
 	
 	public AssignmentStatement createIncrementation(VariableDeclaration variable) {
-		return createAssignment(variable,
-				createIncrementExpression(variable));
+		Expression increment = createIncrementExpression(variable);
+		return createAssignment(variable, increment);
 	}
 	
 }
