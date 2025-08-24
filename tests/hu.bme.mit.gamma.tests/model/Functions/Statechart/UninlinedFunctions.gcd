@@ -41,7 +41,7 @@ statechart UninlinedFunctions [
 	transition from _D to _E when Execute.^execute / _int := factorialMerged(3);
 	transition from _E to _F when Execute.^execute / _bool := checkLambda(1.2);
 	transition from _F to _G when Execute.^execute / addRecord(#Record{ b := -3, a := true });
-	transition from _G to _H when Execute.^execute / addRecord(createRecord(11, false));
+	transition from _G to _H when Execute.^execute / _int := addRecord(createRecord(11, false));
 	
 	lambda checkLambda(a : decimal) : boolean := _bool xor a >= -1.0
 	
