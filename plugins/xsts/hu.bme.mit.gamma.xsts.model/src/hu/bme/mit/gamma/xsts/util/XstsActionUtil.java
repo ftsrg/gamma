@@ -32,6 +32,7 @@ import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
@@ -54,6 +55,7 @@ import hu.bme.mit.gamma.xsts.model.AssignmentAction;
 import hu.bme.mit.gamma.xsts.model.AssumeAction;
 import hu.bme.mit.gamma.xsts.model.CompositeAction;
 import hu.bme.mit.gamma.xsts.model.EmptyAction;
+import hu.bme.mit.gamma.xsts.model.FunctionCallAction;
 import hu.bme.mit.gamma.xsts.model.GroupAnnotation;
 import hu.bme.mit.gamma.xsts.model.HavocAction;
 import hu.bme.mit.gamma.xsts.model.IfAction;
@@ -166,10 +168,14 @@ public class XstsActionUtil extends ExpressionUtil {
 	}
 	
 	public void merge(XSTS pivot, XSTS mergable) {
-		pivot.getTypeDeclarations().addAll(mergable.getTypeDeclarations());
-		pivot.getPublicTypeDeclarations().addAll(mergable.getPublicTypeDeclarations());
-		pivot.getFunctionDeclarations().addAll(mergable.getFunctionDeclarations());
-		pivot.getVariableDeclarations().addAll(mergable.getVariableDeclarations());
+		pivot.getTypeDeclarations().addAll(
+				mergable.getTypeDeclarations());
+		pivot.getPublicTypeDeclarations().addAll(
+				mergable.getPublicTypeDeclarations());
+		pivot.getFunctionDeclarations().addAll(
+				mergable.getFunctionDeclarations());
+		pivot.getVariableDeclarations().addAll(
+				mergable.getVariableDeclarations());
 		mergeVariableGroups(pivot, mergable);
 	}
 	
@@ -457,6 +463,12 @@ public class XstsActionUtil extends ExpressionUtil {
 		variableDeclaration.setExpression(expression);
 		
 		return variableDeclarationAction;
+	}
+	
+	public FunctionCallAction createFunctionCallAction(FunctionAccessExpression functionCall) {
+		FunctionCallAction functionCallAction = xStsFactory.createFunctionCallAction();
+		functionCallAction.setFunctionCallExpression(functionCall);
+		return functionCallAction;
 	}
 	
 	public VariableDeclarationAction createVariableDeclarationAction(Type type, String name) {

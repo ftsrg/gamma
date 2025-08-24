@@ -160,8 +160,8 @@ class ExpressionPreconditionTransformer {
 			
 			val isTuple = lowlevelType instanceof TupleTypeDefinition
 			val hasSideEffect = !lowlevelFunction.pure
-			val isProcedure = lowlevelType instanceof VoidTypeDefinition || expression.isContainedBy(ExpressionStatement)
-			val extractFunction = isTuple || hasSideEffect && !isProcedure
+			val isProcedureCall = lowlevelType instanceof VoidTypeDefinition || expression.isContainedBy(ExpressionStatement)
+			val extractFunction = isTuple || hasSideEffect && !isProcedureCall
 			if (extractFunction) {
 				val nativeTypes = (lowlevelType instanceof TupleTypeDefinition) ?
 						lowlevelType.nativeTypes.clone :
