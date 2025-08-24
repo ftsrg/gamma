@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.action.model.Action
 import hu.bme.mit.gamma.action.model.ActionModelFactory
 import hu.bme.mit.gamma.action.model.Block
 import hu.bme.mit.gamma.action.model.ConstantDeclarationStatement
+import hu.bme.mit.gamma.action.model.ExpressionStatement
 import hu.bme.mit.gamma.action.model.ProcedureDeclaration
 import hu.bme.mit.gamma.action.model.ReturnStatement
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
@@ -159,7 +160,8 @@ class ExpressionPreconditionTransformer {
 			
 			val isTuple = lowlevelType instanceof TupleTypeDefinition
 			val hasSideEffect = !lowlevelFunction.pure
-			val extractFunction = isTuple || hasSideEffect
+			val isProcedure = lowlevelType instanceof VoidTypeDefinition || expression.isContainedBy(ExpressionStatement)
+			val extractFunction = isTuple || hasSideEffect && !isProcedure
 			if (extractFunction) {
 				val nativeTypes = (lowlevelType instanceof TupleTypeDefinition) ?
 						lowlevelType.nativeTypes.clone :
@@ -167,7 +169,7 @@ class ExpressionPreconditionTransformer {
 				
 				val lowlevelDeclarations = <VariableDeclarationStatement>newArrayList
 				for (type : nativeTypes) {
-					val name = '''_«nativeTypes.indexOf(type)»_«expression.uniqueIndex»'''
+					val name = '''_«nativeTypes.indexOf(type)»_«lowlevelFunction.name»_«expression.uniqueIndex»'''
 					lowlevelDeclarations += type.createDeclarationStatement(name)
 				}
 				actions += lowlevelDeclarations
