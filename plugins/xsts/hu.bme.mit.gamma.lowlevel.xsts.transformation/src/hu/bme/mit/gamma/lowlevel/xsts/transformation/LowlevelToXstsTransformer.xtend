@@ -225,7 +225,7 @@ class LowlevelToXstsTransformer {
 		if (optimize) {
 			xSts.removeReadOnlyVariables(true) // Affects parameter and input variables, too
 			// Not internal variables at this point because they are handled later (internal events)
-			removeUnnecessaryInactiveLiterals
+//			removeUnnecessaryInactiveLiterals
 		}
 		
 		handleStateInvariants
@@ -792,25 +792,26 @@ class LowlevelToXstsTransformer {
 		return outEventEnvironmentalActionRule
 	}
 	
-	protected def removeUnnecessaryInactiveLiterals() {
-		val statechart = trace.statechart
-		val topRegions = statechart.regions
-		for (topRegion : topRegions) {
-			val xStsInactiveEnumLiteral = trace.getXStsInactiveEnumLiteral(topRegion) // Non-null
-			try {
-				val xStsNextLiteral = xStsInactiveEnumLiteral.next as EnumerationLiteralDefinition
-				val xStsTypeDeclaration = xStsInactiveEnumLiteral.typeDeclaration
-				val xSts = xStsTypeDeclaration.containingXsts
-				logger.info("Removing unnecessary inactive region literal from " + xStsTypeDeclaration.name)
-				val xStsLiteralReferences = xSts.getAllContentsOfType(EnumerationLiteralExpression)
-						.filter[it.reference === xStsInactiveEnumLiteral]
-				for (xStsLiteralReference : xStsLiteralReferences) {
-					xStsLiteralReference.reference = xStsNextLiteral
-				}
-				xStsInactiveEnumLiteral?.remove
-			} catch (IndexOutOfBoundsException e) {}
-		}
-	}
+	// Relied on by back-annotation
+//	protected def removeUnnecessaryInactiveLiterals() {
+//		val statechart = trace.statechart
+//		val topRegions = statechart.regions
+//		for (topRegion : topRegions) {
+//			val xStsInactiveEnumLiteral = trace.getXStsInactiveEnumLiteral(topRegion) // Non-null
+//			try {
+//				val xStsNextLiteral = xStsInactiveEnumLiteral.next as EnumerationLiteralDefinition
+//				val xStsTypeDeclaration = xStsInactiveEnumLiteral.typeDeclaration
+//				val xSts = xStsTypeDeclaration.containingXsts
+//				logger.info("Removing unnecessary inactive region literal from " + xStsTypeDeclaration.name)
+//				val xStsLiteralReferences = xSts.getAllContentsOfType(EnumerationLiteralExpression)
+//						.filter[it.reference === xStsInactiveEnumLiteral]
+//				for (xStsLiteralReference : xStsLiteralReferences) {
+////					xStsLiteralReference.reference = xStsNextLiteral
+//				}
+////				xStsInactiveEnumLiteral?.remove
+//			} catch (IndexOutOfBoundsException e) {}
+//		}
+//	}
 	
 	protected def handleStateInvariants() {
 		val lowlevelStatechart = trace.statechart
