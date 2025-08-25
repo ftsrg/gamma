@@ -171,20 +171,36 @@ class ActionSerializer {
 	
 	protected def dispatch serializeAction(AssignmentAction action) {
 		val lhs = action.lhs
-		// Tuple-related code
-		if (lhs instanceof TupleReferenceExpression) {
-			val rhs = action.rhs
-			val declarations = lhs.accessedDeclarations
-			return '''
-				let («FOR declaration : declarations SEPARATOR ', '»«
-					declaration.temporaryTupleDeclarationName»«ENDFOR») = «rhs.serialize» in
-				«FOR declaration : declarations»
-					«var id = declaration.id»let «id» = { «id» with «declaration.serializeName» = «declaration.temporaryTupleDeclarationName» } in
-				«ENDFOR»
-			'''
-		}
+		val rhs = action.rhs
 		
-		// TODO add method extraction related code here if needed
+		val isTuple = lhs instanceof TupleReferenceExpression
+		val needR = rhs.hasFunctionCallSideEffect
+		if (isTuple || needR) {
+			val declarations = lhs.accessedDeclarations
+			
+			val declarationNames = newArrayList
+			// Method extraction related code
+			if (needR) {
+				declarationNames += globalVariableName
+			}
+			// Tuple-related code (works for basic declarations, too)
+			declarationNames += declarations.map[it.temporaryDeclarationName]
+			
+			val ids = declarations.map[it.id].toSet
+			val isSameId = ids.size == 1
+			return '''
+				let («FOR name : declarationNames SEPARATOR ', '»«name»«ENDFOR») = «rhs.serialize» in
+				«IF isSameId»
+					«val id = ids.head»
+					let «id» = { «id» with «FOR declaration : declarations»«declaration.serializeName» = «declaration.temporaryDeclarationName»; «ENDFOR»} in
+				«ELSE»
+					«FOR declaration : declarations»
+						«val id = declaration.id»
+						let «id» = { «id» with «declaration.serializeName» = «declaration.temporaryDeclarationName» } in
+					«ENDFOR»
+				«ENDIF»
+			''' // See ExpressionSerializer._serialize(FunctionAccessExpression ...)
+		}
 		
 		// Regular assignment code 
 		return #[action].serializeAssignmentActions
@@ -370,9 +386,10 @@ class ActionSerializer {
 			if (lhsRef instanceof TupleReferenceExpression) {
 				return false
 			}
+			if (lhs.rhs.hasFunctionCallSideEffect) {
+				return false
+			}
 		}
-		
-		// TODO Add method extraction related condition here if needed
 		
 		return lhs.id == rhs.id &&
 				(lhs instanceof AssignmentAction || lhs instanceof VariableDeclarationAction) &&

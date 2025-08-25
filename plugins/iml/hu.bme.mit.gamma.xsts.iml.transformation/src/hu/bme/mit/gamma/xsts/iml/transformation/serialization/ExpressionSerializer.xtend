@@ -192,14 +192,17 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	
 	override String _serialize(FunctionAccessExpression expression) {
 		val isExpression = !(expression.eContainer instanceof FunctionCallAction) // As rhs - cannot support functions with both a side effect and return value
+		val hasSideEffect = expression.hasFunctionCallSideEffect
 		val function = expression.operand.declaration as FunctionDeclaration
 		val isLambda = function.lambdaDeclaration
 		
 		val functionCall = '''(«function.name» «GLOBAL_RECORD_IDENTIFIER» «
 				FOR argument : expression.arguments SEPARATOR ' '»«argument.serialize»«ENDFOR»)'''
 		
-		if (isLambda) {
-			return functionCall // (r) is not returned
+		if (isLambda || /* (r) is not returned */
+				isExpression && hasSideEffect /* Special code handles this case at a higher (assignment) level */) {
+			// See ActionSerializer.serializeAction: 'needR'
+			return functionCall
 		}
 		
 		val string = '''let «GLOBAL_RECORD_IDENTIFIER», «FUNCTION_RETURN_VALUE_NAME» = «

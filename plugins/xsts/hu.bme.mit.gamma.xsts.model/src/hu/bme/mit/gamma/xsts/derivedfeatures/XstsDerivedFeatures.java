@@ -140,7 +140,15 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return !clockVariables.isEmpty();
 	}
 	
+	public static boolean hasSideEffect(FunctionDeclaration function) {
+		return !isPure(function);
+	}
+	
 	public static boolean isPure(FunctionDeclaration function) {
+		if (isLambdaDeclaration(function)) {
+			return true;
+		}
+		
 		List<AbstractAssignmentAction> assignments = ecoreUtil.getAllContentsOfType(
 				function, AbstractAssignmentAction.class);
 		for (AbstractAssignmentAction assignment : assignments) {
@@ -149,11 +157,26 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 			EObject container = declaration.eContainer();
 			if (container instanceof XSTS xSts) {
 				List<VariableDeclaration> variableDeclarations = xSts.getVariableDeclarations();
-				return variableDeclarations.contains(declaration);
+				if (variableDeclarations.contains(declaration)) {
+					return false;
+				}
 			}
 		}
 		
 		return true;
+	}
+	
+	public static boolean hasFunctionCallSideEffect(Expression expression) {
+		List<FunctionAccessExpression> functionCalls = ecoreUtil.getSelfAndAllContentsOfType(
+				expression, FunctionAccessExpression.class);
+		for (FunctionAccessExpression functionCall : functionCalls) {
+			FunctionDeclaration function = (FunctionDeclaration) xStsActionUtil.getDeclaration(functionCall);
+			if (hasSideEffect(function)) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	public static Set<ParameterDeclaration> getReferencedParameterDeclarationsInReturnedActions(FunctionDeclaration function) {

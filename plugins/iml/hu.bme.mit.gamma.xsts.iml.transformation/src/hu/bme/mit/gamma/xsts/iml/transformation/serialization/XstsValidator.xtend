@@ -10,16 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.iml.transformation.serialization
 
-import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
-import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import hu.bme.mit.gamma.xsts.model.FunctionCallAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
-
-import static com.google.common.base.Preconditions.checkArgument
-
-import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 class XstsValidator {
 	// Singleton
@@ -41,14 +34,14 @@ class XstsValidator {
 //			checkArgument(function.getAllContentsOfType(NonDeterministicAction).empty,
 //				"Functions cannot contain non-deterministic actions")
 //		}
-		
-		val functionCalls = xSts.getAllContentsOfType(FunctionAccessExpression)
-		for (functionCall : functionCalls) {
-			val container = functionCall.eContainer
-			if (!(container instanceof FunctionCallAction)) {
-				val function = functionCall.operand.declaration as FunctionDeclaration
-				checkArgument(function.pure, "Functions used in expression must be pure: " + function)
-			}
-		}
+		// Supported now
+//		val functionCalls = xSts.getAllContentsOfType(FunctionAccessExpression)
+//		for (functionCall : functionCalls) {
+//			val container = functionCall.eContainer
+//			if (!(container instanceof FunctionCallAction)) {
+//				val function = functionCall.operand.declaration as FunctionDeclaration
+//				checkArgument(function.pure, "Functions used in expression must be pure: " + function)
+//			}
+//		}
 	}	
 }
