@@ -11,6 +11,8 @@
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
 import hu.bme.mit.gamma.action.model.ProcedureDeclaration
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration
@@ -58,6 +60,7 @@ import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.AbstractMap.SimpleEntry
 import java.util.Set
+import java.util.logging.Logger
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 import org.eclipse.viatra.transformation.runtime.emf.rules.batch.BatchTransformationRule
@@ -74,10 +77,8 @@ import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeature
 import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
 
 class LowlevelToXstsTransformer {
-	// Transformation-related extensions
 	extension BatchTransformation transformation
 	final extension BatchTransformationStatements statements
-	// Transformation rule-related extensions
 	final extension BatchTransformationRuleFactory = new BatchTransformationRuleFactory
 	// Auxiliary objects
 	protected final extension RegionActivator regionActivator
@@ -101,6 +102,8 @@ class LowlevelToXstsTransformer {
 	// Model factories
 	protected final extension XSTSModelFactory factory = XSTSModelFactory.eINSTANCE
 	protected final extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
+	// Logger
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 	// VIATRA engines
 	protected ViatraQueryEngine engine
 	protected ViatraQueryEngine targetEngine
@@ -222,6 +225,7 @@ class LowlevelToXstsTransformer {
 		if (optimize) {
 			xSts.removeReadOnlyVariables(true) // Affects parameter and input variables, too
 			// Not internal variables at this point because they are handled later (internal events)
+			removeUnnecessaryInactiveLiterals
 		}
 		
 		handleStateInvariants
@@ -786,6 +790,26 @@ class LowlevelToXstsTransformer {
 			].build
 		}
 		return outEventEnvironmentalActionRule
+	}
+	
+	protected def removeUnnecessaryInactiveLiterals() {
+		val statechart = trace.statechart
+		val topRegions = statechart.regions
+		for (topRegion : topRegions) {
+			val xStsInactiveEnumLiteral = trace.getXStsInactiveEnumLiteral(topRegion) // Non-null
+			try {
+				val xStsNextLiteral = xStsInactiveEnumLiteral.next as EnumerationLiteralDefinition
+				val xStsTypeDeclaration = xStsInactiveEnumLiteral.typeDeclaration
+				val xSts = xStsTypeDeclaration.containingXsts
+				logger.info("Removing unnecessary inactive region literal from " + xStsTypeDeclaration.name)
+				val xStsLiteralReferences = xSts.getAllContentsOfType(EnumerationLiteralExpression)
+						.filter[it.reference === xStsInactiveEnumLiteral]
+				for (xStsLiteralReference : xStsLiteralReferences) {
+					xStsLiteralReference.reference = xStsNextLiteral
+				}
+				xStsInactiveEnumLiteral?.remove
+			} catch (IndexOutOfBoundsException e) {}
+		}
 	}
 	
 	protected def handleStateInvariants() {
