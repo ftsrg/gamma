@@ -213,7 +213,7 @@ class ExpressionPreconditionTransformer {
 			clonedBlock.getAllContentsOfType(ConstantDeclarationStatement).map[it.constantDeclaration]
 		for (declaration : declarations) {
 			val name = declaration.name
-			declaration.name = '''«name»_«declaration.uniqueIndex»'''
+			declaration.name = '''«name»_«expression.uniqueIndex»'''
 			// A default expression is needed, otherwise some uninitialized parts of record can be havoced
 			if (declaration.expression === null) {
 				declaration.expression = declaration.type.defaultExpression

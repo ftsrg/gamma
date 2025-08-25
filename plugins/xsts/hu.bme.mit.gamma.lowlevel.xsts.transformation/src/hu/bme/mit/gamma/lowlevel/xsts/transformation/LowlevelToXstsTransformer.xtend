@@ -11,8 +11,6 @@
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
 import hu.bme.mit.gamma.action.model.ProcedureDeclaration
-import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
-import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration
@@ -60,7 +58,6 @@ import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.AbstractMap.SimpleEntry
 import java.util.Set
-import java.util.logging.Logger
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 import org.eclipse.viatra.transformation.runtime.emf.rules.batch.BatchTransformationRule
@@ -102,8 +99,6 @@ class LowlevelToXstsTransformer {
 	// Model factories
 	protected final extension XSTSModelFactory factory = XSTSModelFactory.eINSTANCE
 	protected final extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
-	// Logger
-	protected final Logger logger = Logger.getLogger("GammaLogger")
 	// VIATRA engines
 	protected ViatraQueryEngine engine
 	protected ViatraQueryEngine targetEngine
