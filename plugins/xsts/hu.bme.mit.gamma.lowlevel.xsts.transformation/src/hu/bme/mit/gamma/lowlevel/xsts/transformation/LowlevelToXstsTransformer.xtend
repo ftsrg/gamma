@@ -11,6 +11,10 @@
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
 import hu.bme.mit.gamma.action.model.ProcedureDeclaration
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
+import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration
@@ -220,7 +224,7 @@ class LowlevelToXstsTransformer {
 		if (optimize) {
 			xSts.removeReadOnlyVariables(true) // Affects parameter and input variables, too
 			// Not internal variables at this point because they are handled later (internal events)
-//			removeUnnecessaryInactiveLiterals
+			optimizeTopRegionLiteralReferences
 		}
 		
 		handleStateInvariants
@@ -787,26 +791,37 @@ class LowlevelToXstsTransformer {
 		return outEventEnvironmentalActionRule
 	}
 	
-	// Relied on by back-annotation
-//	protected def removeUnnecessaryInactiveLiterals() {
-//		val statechart = trace.statechart
-//		val topRegions = statechart.regions
-//		for (topRegion : topRegions) {
-//			val xStsInactiveEnumLiteral = trace.getXStsInactiveEnumLiteral(topRegion) // Non-null
-//			try {
-//				val xStsNextLiteral = xStsInactiveEnumLiteral.next as EnumerationLiteralDefinition
-//				val xStsTypeDeclaration = xStsInactiveEnumLiteral.typeDeclaration
-//				val xSts = xStsTypeDeclaration.containingXsts
-//				logger.info("Removing unnecessary inactive region literal from " + xStsTypeDeclaration.name)
-//				val xStsLiteralReferences = xSts.getAllContentsOfType(EnumerationLiteralExpression)
-//						.filter[it.reference === xStsInactiveEnumLiteral]
-//				for (xStsLiteralReference : xStsLiteralReferences) {
-////					xStsLiteralReference.reference = xStsNextLiteral
-//				}
-////				xStsInactiveEnumLiteral?.remove
-//			} catch (IndexOutOfBoundsException e) {}
-//		}
-//	}
+	protected def optimizeTopRegionLiteralReferences() {
+		val statechart = trace.statechart
+		val topRegions = statechart.regions
+		for (topRegion : topRegions) {
+			val xStsTypeDeclaration = trace.getXStsEnumType(topRegion)
+			val xStsRegionVariable = trace.getXStsVariable(topRegion)
+			val xSts = xStsTypeDeclaration.containingXsts
+			val xStsEnumLiterals = xStsTypeDeclaration.literals
+			if (xStsEnumLiterals.size == 2) {
+				val xStsInactiveEnumLiteral = trace.getXStsInactiveEnumLiteral(topRegion) // Non-null
+				val xStsOtherEnumLiteral = xStsInactiveEnumLiteral.next as EnumerationLiteralDefinition
+				
+				val xStsLiteralReferences = xSts.getAllContentsOfType(EnumerationLiteralExpression)
+						.filter[it.reference === xStsOtherEnumLiteral]
+				for (xStsLiteralReference : xStsLiteralReferences) {
+					val container = xStsLiteralReference.eContainer
+					if (container instanceof EqualityExpression) {
+						val lhs = container.leftOperand
+						val rhs = container.rightOperand
+						var optimize = lhs instanceof DirectReferenceExpression &&
+							lhs.declaration === xStsRegionVariable ||
+							rhs instanceof DirectReferenceExpression && rhs.declaration === xStsRegionVariable
+						if (optimize) {
+							createTrueExpression
+								.replace(container)
+						}
+					}
+				}
+			}
+		}
+	}
 	
 	protected def handleStateInvariants() {
 		val lowlevelStatechart = trace.statechart
