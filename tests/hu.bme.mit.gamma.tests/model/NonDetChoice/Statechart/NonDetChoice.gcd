@@ -17,6 +17,11 @@ statechart NonDetChoice [
 	transition from Initial to _A
 	transition from _A to _B when Execute.^execute
 	transition from _A to _BB when Execute.^execute [count < 10]
-	transition from _B to _C when cycle
+	transition from _B to _C when cycle / increment(5);
+	
+	procedure increment(value : integer) : integer {
+		count := value;
+		return count + value;
+	}
 	
 }
