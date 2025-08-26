@@ -977,10 +977,16 @@ class GammaEcoreUtil {
 					.map[it.eCrossReferences].flatten.toSet
 			references += elem -> refs
 		}
+		val entries = references.entrySet
+		checkState(!entries.exists[
+				val node = it.key
+				val refs = it.value
+				entries.exists[it.key !== node && it.value.contains(node) && refs.contains(it.key)]],
+			"Elements with circular references cannot be sorted topologically")
 		
 		while (!references.empty) {
 			val nonReferencedElem = references.keySet
-					.findFirst[elem | !references.entrySet
+					.findFirst[elem | !entries
 							.exists[it.key !== elem && it.value.contains(elem)]]
 			references -= nonReferencedElem
 			
