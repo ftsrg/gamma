@@ -869,7 +869,7 @@ public class ExpressionModelValidator {
 	}
 	
 	static public class ReferenceInfo {
-		
+		//
 		private EStructuralFeature reference;
 		private EObject source;
 		private Integer index;

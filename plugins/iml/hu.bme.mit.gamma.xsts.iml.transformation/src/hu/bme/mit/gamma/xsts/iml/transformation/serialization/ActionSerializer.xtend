@@ -147,7 +147,12 @@ class ActionSerializer {
 		return '''«localVariableDeclarations»(«globalVariableName», «string») in'''
 	}
 	
-	protected def dispatch serializeAction(FunctionCallAction action) '''«action.functionCallExpression.serialize»'''
+	protected def dispatch serializeAction(FunctionCallAction action) '''
+		«val functionCall = action.functionCallExpression»
+		«IF functionCall.hasFunctionCallSideEffect /* Serialize only if the function has side effect */»
+			«functionCall.serialize»
+		«ENDIF»
+	'''
 	
 	// Not the same, but a good run-time check
 	protected def dispatch serializeAction(AssumeAction action) '''
