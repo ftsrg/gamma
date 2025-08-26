@@ -181,12 +181,12 @@ class ActionSerializer {
 		val isTuple = lhs instanceof TupleReferenceExpression
 		val needR = rhs.hasFunctionCallSideEffect
 		if (isTuple || needR) {
-			val declarations = lhs.accessedDeclarations
+			val declarations = lhs.accessedDeclarations // Tuple elements or a simple variable
 			
 			val declarationNames = newArrayList
 			// Method extraction related code
 			if (needR) {
-				declarationNames += globalVariableName
+				declarationNames += globalVariableName // First element
 			}
 			// Tuple-related code (works for basic declarations, too)
 			declarationNames += declarations.map[it.temporaryDeclarationName]
@@ -389,9 +389,11 @@ class ActionSerializer {
 		if (lhs instanceof AssignmentAction) {
 			val lhsRef = lhs.lhs.accessReference
 			if (lhsRef instanceof TupleReferenceExpression) {
+				// Assignment to tuples as a lhs are "extracted" in the low-level mapping and are separately handled here: '(_0_createR, _1_createR) := createR(67, true)'
 				return false
 			}
 			if (lhs.rhs.hasFunctionCallSideEffect) {
+				// Functions with a side effect are "extracted" in the low-level mapping and are separately handled here (to handle the 'r' record)
 				return false
 			}
 		}
