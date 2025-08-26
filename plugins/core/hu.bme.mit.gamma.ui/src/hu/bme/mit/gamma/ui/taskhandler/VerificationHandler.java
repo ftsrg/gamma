@@ -308,7 +308,8 @@ public class VerificationHandler extends TaskHandler {
 			// Saving the string
 			File file = modelFile;
 			String fileName = fileNamer.getHiddenSerializedPropertyFileName(file.getName());
-			File queryFile = new File(file.getParentFile().toString() + File.separator + fileName);
+			String queryFilePath = file.getParentFile().toString() + File.separator + fileName;
+			File queryFile = new File(queryFilePath);
 			fileUtil.saveString(queryFile, serializedFormula);
 			queryFile.deleteOnExit();
 			
@@ -326,6 +327,8 @@ public class VerificationHandler extends TaskHandler {
 			verificationResults.add(result);
 			ExecutionTrace trace = result.getTrace();
 			ThreeStateBoolean verificationResult = result.getResult();
+			
+			logger.info("Verification result: " + verificationResult);
 			
 			// Adding comment to connect the trace with the property
 			if (trace != null) {

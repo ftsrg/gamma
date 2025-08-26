@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.DivExpression
 import hu.bme.mit.gamma.expression.model.DivideExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
@@ -95,6 +96,8 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	override String _serialize(MultiplyExpression expression) { expression.operands.adjustArithmeticExpression("*") }
 	
 	override String _serialize(DivideExpression expression) { expression.adjustArithmeticExpression("/") }
+	
+	override String _serialize(DivExpression expression) { expression.adjustArithmeticExpression("/") }
 	
 	override String _serialize(LessExpression expression) { expression.adjustArithmeticExpression("<") }
 	

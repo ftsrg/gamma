@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration
 import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.DivExpression
 import hu.bme.mit.gamma.expression.model.DivideExpression
 import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
@@ -228,6 +229,10 @@ class ExpressionSerializer {
 	}
 	
 	def dispatch String serialize(DivideExpression expression) {
+		return "(" + expression.leftOperand.serialize + " / " + expression.rightOperand.serialize + ")"
+	}
+	
+	def dispatch String serialize(DivExpression expression) {
 		return "(" + expression.leftOperand.serialize + " / " + expression.rightOperand.serialize + ")"
 	}
 	
