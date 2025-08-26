@@ -8,3 +8,8 @@ type Record : record {
 	a : boolean,
 	b : integer
 }
+
+type ComplexRecord : record {
+	a : decimal,
+	b : Record
+}
