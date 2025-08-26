@@ -49,6 +49,7 @@ import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.InequalityExpression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
+import hu.bme.mit.gamma.expression.model.LambdaDeclaration;
 import hu.bme.mit.gamma.expression.model.LessEqualExpression;
 import hu.bme.mit.gamma.expression.model.LessExpression;
 import hu.bme.mit.gamma.expression.model.ModExpression;
@@ -260,29 +261,53 @@ public class ExpressionModelValidator {
 		return checkDeclarationAndExpressionConformance(fieldDeclaration, value, new ReferenceInfo(fieldAssignment));
 	}
 	
+	public Collection<ValidationResultMessage> checkLambdaDeclaration(LambdaDeclaration lambdaDeclaration) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		Expression expression = lambdaDeclaration.getExpression();
+		for (FunctionAccessExpression functionCall :
+					ecoreUtil.getSelfAndAllContentsOfType(expression, FunctionAccessExpression.class)) {
+			Declaration declaration = expressionUtil.getAccessedDeclaration(functionCall);
+			if (!(declaration instanceof LambdaDeclaration)) {
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR,
+						"Calling non-lambda functions from lambda declarations is forbidden", 
+							new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND, functionCall)));
+			}
+		}
+		
+		return validationResultMessages;
+	}
+
+	
 	public Collection<ValidationResultMessage> checkFunctionAccessExpression(FunctionAccessExpression functionAccessExpression) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		List<Expression> arguments = functionAccessExpression.getArguments();
 		Expression operand = functionAccessExpression.getOperand();
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		// check if the referred object is a function
+		
 		if (!(operand instanceof DirectReferenceExpression)) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.ERROR,
 					"The referenced object is not a valid function declaration", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND)));
 			return validationResultMessages;
 		}
+		
 		DirectReferenceExpression operandAsReference = (DirectReferenceExpression) operand;
-		if (!(operandAsReference.getDeclaration() instanceof FunctionDeclaration)) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+		Declaration declaration = operandAsReference.getDeclaration();
+		if (!(declaration instanceof FunctionDeclaration)) {
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.ERROR,
 					"The referenced object is not a valid function declaration", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND)));
 			return validationResultMessages;
 		}
-		// check if the number of arguments equals the number of parameters
-		final FunctionDeclaration functionDeclaration = (FunctionDeclaration) operandAsReference.getDeclaration();
+		
+		FunctionDeclaration functionDeclaration = (FunctionDeclaration) declaration;
 		List<ParameterDeclaration> parameters = functionDeclaration.getParameterDeclarations();
 		if (arguments.size() != parameters.size()) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.ERROR,
 					"The number of arguments does not match the number of declared parameters for the function", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)));
 			return validationResultMessages;
@@ -292,7 +317,8 @@ public class ExpressionModelValidator {
 		for (Expression arg : arguments) {
 			Type argumentType = typeDeterminator.getType(arg);
 			if (!typeDeterminator.equals(parameters.get(i).getType(), argumentType)) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR,
 						"The types of the arguments and the types of the declared function parameters do not match", 
 						new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)));
 				return validationResultMessages;
@@ -325,7 +351,8 @@ public class ExpressionModelValidator {
 		Expression operand = expression.getOperand();
 		TypeDefinition typeDefinition = typeDeterminator.getTypeDefinition(operand);
 		if (!(typeDefinition instanceof ArrayTypeDefinition)) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.ERROR,
 					"The accessed operand is not of type array", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.ARRAY_ACCESS_EXPRESSION__INDEX)));
 			return validationResultMessages;
