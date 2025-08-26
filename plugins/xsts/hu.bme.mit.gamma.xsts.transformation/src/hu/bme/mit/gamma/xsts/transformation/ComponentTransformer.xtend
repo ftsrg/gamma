@@ -1042,7 +1042,7 @@ class ComponentTransformer {
 		var instanceEndcodingVariable = xSts.getVariable(name)
 		if (instanceEndcodingVariable === null) {
 			instanceEndcodingVariable = createIntegerTypeDefinition
-					.createVariableDeclaration(name)
+					.createVariableDeclarationWithDefaultInitialValue(name)
 			
 			instanceEndcodingVariable.addUnremovableAnnotation
 			instanceEndcodingVariable.addResettableAnnotation
