@@ -5,7 +5,9 @@ import "Interfaces/Interfaces.gcd"
 statechart UninlinedFunctions [
 	port Execute : requires Execute
 ] {
+	var _complexRecord : ComplexRecord
 	var _record : Record
+	var _decimal : decimal
 	var _int : integer
 	var _bool : boolean
 	region main {
@@ -20,6 +22,9 @@ statechart UninlinedFunctions [
 		state _BB
 		state _H
 		state _I
+		state _BBB
+		state _J
+		state _K
 	}
 	
 	transition from Initial to _A
@@ -44,12 +49,21 @@ statechart UninlinedFunctions [
 	transition from _E to _F when Execute.^execute / _bool := checkLambda(1.2);
 	transition from _F to _G when Execute.^execute / factorialLambda(-1); _int := factorialLambda(4);
 	
-	transition from _A to _BB when Execute.^execute / addRecord(#Record{ b := -3, a := true });
+	transition from _A to _BB when Execute.^execute_2 / addRecord(#Record{ b := -3, a := true });
 	transition from _BB to _H when Execute.^execute / _int := addRecord(createRecord(11, false));
 	transition from _H to _I when Execute.^execute / {
 		_record := createRecord(67, true);
 		addRecord(_record);
 		_record.b := _record.b div 8;
+	}
+	
+	transition from _A to _BBB when Execute.^execute_3 / addComplexRecord(#ComplexRecord{ a := 3.14, b := #Record{ a := false, b := 2 } });
+	transition from _BBB to _J when Execute.^execute / _decimal := addComplexRecord(createComplexRecord(-1.2, 13, true));
+	transition from _J to _K when Execute.^execute / {
+		var _record : ComplexRecord := createComplexRecord(-2.1, -67, true);
+		addComplexRecord(_record);
+		_record.a := _record.a / -1.7;
+		_record.b.b := _record.b.b mod 3;
 	}
 	
 	lambda checkLambda(a : decimal) : boolean := _bool xor a >= -1.0
@@ -68,6 +82,17 @@ statechart UninlinedFunctions [
 		}
 		_bool := _record.a;
 		return _record.b;
+	}
+	
+	procedure addComplexRecord(rec : ComplexRecord) : decimal {
+		_complexRecord.a := _complexRecord.a * rec.a;
+		if (rec.b.b - 9 < 3 + 5) {
+			var _temp : ComplexRecord := createComplexRecord(-2.743, 88, true);
+			_temp.a := rec.a * 0.2;
+			_complexRecord.a := _temp.a / rec.a;
+		}
+		_bool := _record.a or rec.b.a;
+		return _complexRecord.a;
 	}
 	
 	procedure factorialIfElse(value : integer) : integer {
@@ -95,6 +120,10 @@ statechart UninlinedFunctions [
 	
 	procedure createRecord(b : integer, a : boolean) : Record {
 		return #Record{ a := a, b := b };
+	}
+	
+	procedure createComplexRecord(c : decimal, b : integer, a : boolean) : ComplexRecord {
+		return #ComplexRecord{ a := c, b := createRecord(b, a) };
 	}
 	
 }
