@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.java
 
+import hu.bme.mit.gamma.codegeneration.java.util.Namings
 import hu.bme.mit.gamma.codegeneration.java.util.TypeDeclarationSerializer
 import hu.bme.mit.gamma.codegeneration.java.util.TypeSerializer
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration
@@ -55,11 +56,15 @@ class StatechartCodeGenerator {
 	
 	protected def createStatechartClass() '''
 		package «STATECHART_PACKAGE_NAME»;
+		«val containsTuples = xSts.containsTypeTransitively(TupleTypeDefinition)»
 		
 		«FOR _package : gammaStatechart.containingPackage.importsWithComponentsOrInterfacesOrTypes.toSet»
 			import «_package.getPackageString(BASE_PACKAGE_NAME)».*;
 		«ENDFOR»
-		«IF xSts.containsTypeTransitively(TupleTypeDefinition)»import java.util.List;«ENDIF»
+		«IF containsTuples»
+			import java.util.List;
+			import java.util.ArrayList;
+		«ENDIF»
 		
 		public class «CLASS_NAME» {
 			
@@ -170,6 +175,25 @@ class StatechartCodeGenerator {
 				}
 				
 			«ENDFOR»
+			«IF containsTuples»
+				«val listName = "flattenedList"»
+				List<Object> «Namings.FLATTEN_LIST_METHOD_NAME»(List<?> list) {
+					List<Object> «listName» = new ArrayList<Object>();
+					
+					for (Object object : list) {
+						if (object instanceof List<?> sublist) {
+							«listName».addAll(
+									«Namings.FLATTEN_LIST_METHOD_NAME»(sublist));
+						}
+						else {
+							«listName».add(object);
+						}
+					}
+					
+					return «listName»;
+				}
+				
+			«ENDIF»
 			@Override
 			public String toString() {
 				return

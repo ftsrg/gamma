@@ -43,6 +43,8 @@ class Namings {
 	
 	public static final String CHANNEL_PACKAGE_POSTFIX = "channels"
 	
+	public static final String FLATTEN_LIST_METHOD_NAME = "_flatten"
+	
 	static def String getPackageString(Package _package, String base) '''«base».«_package.name.toLowerCase»'''
 	
 	static def String getPackageString(Component component, String base) '''«component.containingPackage.getPackageString(base)»'''

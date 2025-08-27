@@ -136,11 +136,14 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 		val string = '''«lhs.serialize» = «action.rhs.serialize»;'''
 		
 		if (lhs instanceof TupleReferenceExpression) {
-			val references = lhs.references
+			val name = Namings.getName(lhs)
+			val references = lhs.accessedDeclarations // Unfolding hierarchical tuples!
 			return '''
 				«string»
-				«FOR reference : references»
-					«reference.serialize» = («reference.declaration.type.serialize») «Namings.getName(lhs)».get(«references.indexOf(reference)»);
+				«name» = «Namings.FLATTEN_LIST_METHOD_NAME»(«name»);
+				«FOR declaration : references»
+					«val i = references.indexOf(declaration)»
+					«declaration.name» = («declaration.type.serialize») «name».get(«i»);
 				«ENDFOR»
 			'''
 		}
