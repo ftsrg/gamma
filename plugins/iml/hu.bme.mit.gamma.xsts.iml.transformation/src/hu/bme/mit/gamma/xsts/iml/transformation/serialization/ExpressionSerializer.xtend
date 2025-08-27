@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.BinaryExpression
+import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.DivExpression
@@ -137,7 +138,16 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 		val string = super._serialize(expression)
 		val value = expression.value
 		if (value.signum < 0) {
-			return '''(«string»)''' // For some reason, IML needs this (only for integers)
+			return '''(«string»)''' // For some reason, IML needs this
+		}
+		return string
+	}
+	
+	override String _serialize(DecimalLiteralExpression expression) {
+		val string = super._serialize(expression)
+		val value = expression.value
+		if (value.signum < 0) {
+			return '''(«string»)''' // For some reason, IML needs this
 		}
 		return string
 	}
