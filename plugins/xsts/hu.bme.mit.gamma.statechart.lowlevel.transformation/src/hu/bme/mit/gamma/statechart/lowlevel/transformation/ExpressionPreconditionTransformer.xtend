@@ -176,8 +176,7 @@ class ExpressionPreconditionTransformer {
 				val lowlevelVariables = lowlevelDeclarations.map[it.variableDeclaration].toList
 				
 				val access = (lowlevelType instanceof TupleTypeDefinition) ?
-						lowlevelVariables.map[it.createReferenceExpression].toList
-								.createTupleAccessExpression :
+						lowlevelType.createTupleAccessExpression(lowlevelVariables) :
 						lowlevelVariables.head.createReferenceExpression
 				
 				val lowlevelFunctionCall = expression.transformSimpleExpression

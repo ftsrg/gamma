@@ -182,19 +182,16 @@ class ActionSerializer {
 		val needR = rhs.hasFunctionCallSideEffect
 		if (isTuple || needR) {
 			val declarations = lhs.accessedDeclarations // Tuple elements or a simple variable
-			
-			val declarationNames = newArrayList
+			var declarationNames = lhs.serializeTemporaryDeclarationNames // Tuple-related code (works for basic declarations, too)
 			// Method extraction related code
 			if (needR) {
-				declarationNames += globalVariableName // First element
+				declarationNames = '''(«globalVariableName», «declarationNames»)''' // First element
 			}
-			// Tuple-related code (works for basic declarations, too)
-			declarationNames += declarations.map[it.temporaryDeclarationName]
 			
 			val ids = declarations.map[it.id].toSet
 			val isSameId = ids.size == 1
 			return '''
-				let («FOR name : declarationNames SEPARATOR ', '»«name»«ENDFOR») = «rhs.serialize» in
+				let «declarationNames» = «rhs.serialize» in
 				«IF isSameId»
 					«val id = ids.head»
 					let «id» = { «id» with «FOR declaration : declarations»«declaration.serializeName» = «declaration.temporaryDeclarationName»; «ENDFOR»} in
@@ -439,7 +436,7 @@ class ActionSerializer {
 			
 			// Tuple
 			if (lhs instanceof TupleReferenceExpression) {
-				val declaratations = lhs.references.map[it.declaration]
+				val declaratations = lhs.accessedDeclarations
 				val ids = declaratations.map[it.id].toSet
 				if (ids.size == 1) {
 					return ids.head

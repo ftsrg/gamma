@@ -66,6 +66,7 @@ import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ResettableVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.ScheduledClockVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.TransientVariableDeclarationAnnotation;
+import hu.bme.mit.gamma.expression.model.TupleReferenceExpression;
 import hu.bme.mit.gamma.expression.model.TupleTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
@@ -456,6 +457,28 @@ public class ExpressionModelDerivedFeatures {
 		}
 		
 		return types;
+	}
+	
+	public static List<Declaration> getNativeDeclarations(TupleReferenceExpression tuple) {
+//		List<Declaration> declarations = new ArrayList<Declaration>();
+//		
+//		List<ReferenceExpression> references = tuple.getReferences();
+//		for (ReferenceExpression reference : references) {
+//			if (reference instanceof TupleReferenceExpression tupleReferenceExpression) {
+//				declarations.addAll(
+//						getNativeDeclarations(tupleReferenceExpression));
+//			}
+//			else if (reference instanceof RecordAccessExpression || reference instanceof ArrayAccessExpression) {
+//				throw new IllegalArgumentException("Not supported type: " + reference);
+//			}
+//			else {
+//				declarations.add(
+//						expressionUtil.getDeclaration(reference));
+//			}
+//		}
+//		
+//		return declarations;
+		return expressionUtil.getAccessedDeclarations(tuple);
 	}
 	
 	public static TypeDeclaration getTypeDeclaration(Type type) {

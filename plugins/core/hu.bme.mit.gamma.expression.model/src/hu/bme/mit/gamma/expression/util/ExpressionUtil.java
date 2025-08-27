@@ -1157,6 +1157,37 @@ public class ExpressionUtil {
 		return tuple;
 	}
 	
+	public TupleReferenceExpression createTupleAccessExpression(TupleTypeDefinition tupleType) {
+		TupleReferenceExpression tuple = factory.createTupleReferenceExpression();
+		List<ReferenceExpression> references = tuple.getReferences();
+		
+		for (Type subtype : tupleType.getTypes()) {
+			TypeDefinition subtypeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(subtype);
+			if (subtypeDefinition instanceof TupleTypeDefinition subtupleType) {
+				references.add(
+						createTupleAccessExpression(subtupleType));
+			}
+			else {
+				references.add(
+						factory.createDirectReferenceExpression());
+			}
+		}
+		
+		return tuple;
+	}
+	
+	public TupleReferenceExpression createTupleAccessExpression(TupleTypeDefinition tupleType,
+			List<? extends Declaration> variables) {
+		TupleReferenceExpression tuple = createTupleAccessExpression(tupleType);
+		int i = 0;
+		for (DirectReferenceExpression reference :
+				ecoreUtil.getAllContentsOfType(tuple, DirectReferenceExpression.class)) {
+			Declaration variable = variables.get(i++);
+			reference.setDeclaration(variable);
+		}
+		return tuple;
+	}
+	
 	public IntegerRangeLiteralExpression createIntegerRangeLiteralExpression(
 			Expression start, boolean leftInclusive, Expression end, boolean rightIclusive) {
 		IntegerRangeLiteralExpression range = factory.createIntegerRangeLiteralExpression();

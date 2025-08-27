@@ -41,8 +41,10 @@ import hu.bme.mit.gamma.expression.model.MultiplyExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
 import hu.bme.mit.gamma.expression.model.NullaryExpression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.SubtractExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
+import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
@@ -236,6 +238,16 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	
 	def String serializeAsRhs(Declaration declaration) {
 		return declaration.createReferenceExpression.serialize
+	}
+	
+	def String serializeTemporaryDeclarationNames(ReferenceExpression reference) {
+		if (reference instanceof TupleReferenceExpression) {
+			return '''(«FOR subreference : reference.references SEPARATOR ', '»«subreference.serializeTemporaryDeclarationNames»«ENDFOR»)'''
+		}
+		if (reference instanceof DirectReferenceExpression) {
+			val declaration = reference.declaration
+			return declaration.temporaryDeclarationName
+		}
 	}
 
 	/**
