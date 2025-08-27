@@ -915,7 +915,7 @@ public class ExpressionModelValidator {
 			return source;
 		}
 		
-		public int getIndex() {
+		public Integer getIndex() {
 			return index;
 		}
 		

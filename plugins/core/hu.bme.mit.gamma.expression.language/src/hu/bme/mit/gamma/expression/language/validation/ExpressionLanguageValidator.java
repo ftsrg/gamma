@@ -59,7 +59,7 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 			String resultText = element.getResultText();
 			EStructuralFeature reference = referenceInfo.getReference();
 			EObject source = referenceInfo.getSource();
-			int index = referenceInfo.getIndex();
+			Integer index = referenceInfo.getIndex();
 			
 			if (result == ValidationResult.ERROR) {
 				if (hasInteger && hasSource) {
