@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023-2024 Contributors to the Gamma project
+ * Copyright (c) 2023-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -323,7 +323,8 @@ class MessageQueueUtil {
 			rhs = declaration.expression
 		}
 		
-		if (rhs instanceof ReferenceExpression) {
+		if (rhs instanceof ReferenceExpression &&
+				rhs.containsTypeTransitively(DirectReferenceExpression)) {
 			val queue = rhs.declaration
 			if (queue.global) {
 				val xSts = queue.containingXsts

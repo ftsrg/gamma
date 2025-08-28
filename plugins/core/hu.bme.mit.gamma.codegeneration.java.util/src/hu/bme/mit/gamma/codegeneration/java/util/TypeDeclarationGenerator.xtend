@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,9 +10,12 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegeneration.java.util
 
+import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 import static extension hu.bme.mit.gamma.codegeneration.java.util.Namings.*
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class TypeDeclarationGenerator {
@@ -20,6 +23,8 @@ class TypeDeclarationGenerator {
 	protected final String BASE_PACKAGE_NAME
 	
 	protected final extension TypeDeclarationSerializer typeDeclarationSerializer = TypeDeclarationSerializer.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	
 	
 	new(String basePackageName) {
 		this.BASE_PACKAGE_NAME = basePackageName
@@ -31,6 +36,7 @@ class TypeDeclarationGenerator {
 		«FOR _package : type.containingPackage.imports.toSet»
 			import «_package.getPackageString(BASE_PACKAGE_NAME)».*;
 		«ENDFOR»
+		«IF type.getAllContentsOfType(Type).exists[!it.primitive]»import java.util.Objects;«ENDIF»
 		
 		public «type.serialize»
 	'''

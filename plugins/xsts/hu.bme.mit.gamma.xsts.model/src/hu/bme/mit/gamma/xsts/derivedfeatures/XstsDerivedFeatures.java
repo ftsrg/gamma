@@ -153,12 +153,14 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 				function, AbstractAssignmentAction.class);
 		for (AbstractAssignmentAction assignment : assignments) {
 			ReferenceExpression lhs = assignment.getLhs();
-			Declaration declaration = xStsActionUtil.getDeclaration(lhs);
-			EObject container = declaration.eContainer();
-			if (container instanceof XSTS xSts) {
-				List<VariableDeclaration> variableDeclarations = xSts.getVariableDeclarations();
-				if (variableDeclarations.contains(declaration)) {
-					return false;
+			List<Declaration> declarations = xStsActionUtil.getAccessedDeclarations(lhs);
+			for (Declaration declaration : declarations) {
+				EObject container = declaration.eContainer();
+				if (container instanceof XSTS xSts) {
+					List<VariableDeclaration> variableDeclarations = xSts.getVariableDeclarations();
+					if (variableDeclarations.contains(declaration)) {
+						return false;
+					}
 				}
 			}
 		}
