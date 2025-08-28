@@ -1,9 +1,7 @@
-package nondetchoice
+package functions
 
 interface Execute {
 	out event ^execute
-	out event ^execute_2
-	out event ^execute_3
 }
 
 type Record : record {

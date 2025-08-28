@@ -1,0 +1,66 @@
+package functions
+
+import "Interfaces/Interfaces.gcd"
+
+statechart Functions_2 [
+	port Execute : requires Execute
+] {
+	var _record : Record
+	var _int : integer
+	var _bool : boolean
+	region main {
+		initial Initial
+		state _A
+		
+		state _BB
+		state _H
+		state _I
+	}
+	
+	transition from Initial to _A
+	
+	transition from _A to _BB when Execute.^execute / addRecord(#Record{ b := -3, a := true });
+	transition from _BB to _H when Execute.^execute / _int := addRecord(createRecord(11, false));
+	transition from _H to _I when Execute.^execute / {
+		_record := createRecord(67, true);
+		addRecord(_record);
+		_record.b := _record.b div 8;
+	}
+	
+	lambda factorialLambda(val : integer) : integer := (val <= 1) ? 1 : val * factorialLambda(val - 1)
+	
+	procedure addRecord(rec : Record) : integer {
+		_record.a := _record.a xor rec.a;
+		choice {
+			branch [rec.b < 10] {
+				_record.b := _record.b mod rec.b;
+			}
+			branch [rec.b > 0] { // In test - one branch shall never be true
+				_record.b := _record.b - rec.b;
+			}
+		}
+		_bool := _record.a;
+		return _record.b;
+	}
+	
+	procedure factorialIfElse(value : integer) : integer {
+		if (value <= 1) {
+			return 1;
+		}
+		else {
+			return value * factorialIfElse(value - 1);
+		}
+	}
+	
+	procedure factorialIf(value : integer) : integer {
+		if (value <= 1) {
+			return 1;
+		}
+		return value * factorialIf(value - 1);
+	}
+	
+	procedure createRecord(b : integer, a : boolean) : Record {
+		return #Record{ a := a, b := b };
+	}
+	
+}
