@@ -2,11 +2,11 @@ package functions
 
 import "Interfaces/Interfaces.gcd"
 
-statechart Functions_1 [
+statechart Functions_4 [
 	port Execute : requires Execute
 ] {
+	var _record : ArrayEnumRecord
 	var _int : integer
-	var _bool : boolean
 	region main {
 		initial Initial
 		state _A
@@ -14,58 +14,33 @@ statechart Functions_1 [
 		state _B
 		state _C
 		state _D
-		state _E
-		state _F
-		state _G
 	}
 	
 	transition from Initial to _A
-	transition from _A to _B when Execute.^execute / {
-		var a : integer := _int;
-		if (checkLambda(4.56)) {
-			_int := factorialIfElse(5) + a;
-			a := 2;
-		}
-		else {
-			_int := factorialIfElse(4);
-			a := 3;
-		}
-		_int := _int / a;
+	transition from _A to _B when Execute.^execute /
+			_record := createRecord(1, 2, EnumTest::_A);
+			_int := handleRecord(_record);
+	transition from _B to _C when Execute.^execute / {
+			var _record : ArrayEnumRecord := createRecord(-1, -2, EnumTest::_B);
+			_int := handleRecord(_record);
 	}
-	transition from _B to _C when Execute.^execute / _int := factorialIf(_int mod 4);
 	transition from _C to _D when Execute.^execute / {
-		var a : integer := _int mod 5;
-		_int := factorialMerged(a);
-	}
-	transition from _D to _E when Execute.^execute / _int := factorialMerged(3);
-	transition from _E to _F when Execute.^execute / _bool := checkLambda(1.2);
-	transition from _F to _G when Execute.^execute / factorialLambda(-1); _int := factorialLambda(4);
-	
-	lambda checkLambda(a : decimal) : boolean := _bool xor a >= -1.0
-	
-	lambda factorialLambda(val : integer) : integer := (val <= 1) ? 1 : val * factorialLambda(val - 1)
-	
-	procedure factorialIfElse(value : integer) : integer {
-		if (value <= 1) {
-			return 1;
-		}
-		else {
-			return value * factorialIfElse(value - 1);
-		}
+			if (handleRecord(_record) < 100) {
+				_int := _int * handleRecord(_record);
+			}
 	}
 	
-	procedure factorialIf(value : integer) : integer {
-		if (value <= 1) {
-			return 1;
-		}
-		return value * factorialIf(value - 1);
+	procedure createRecord(a : int, b : int, c : EnumTest) : ArrayEnumRecord {
+		return #ArrayEnumRecord {a := #[a, b], b := c};
 	}
-	
-	procedure factorialMerged(value : integer) : integer {
-		if (value <= 1) {
-			return 1;
+
+	procedure handleRecord(val : ArrayEnumRecord) : int {
+		if (val.a[1] <= 0) {
+			_record.a[0] := _record.a[1] + 2;
+			return _record.a[0];
 		}
-		return value * factorialIfElse(value - 1);
+		_record.a[1] := val.a[0];
+		return val.a[1];
 	}
 	
 }

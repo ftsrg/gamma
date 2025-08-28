@@ -13,3 +13,14 @@ type ComplexRecord : record {
 	a : decimal,
 	b : Record
 }
+
+type int : integer
+
+type EnumTest : enum {
+	_A, _B
+}
+
+type ArrayEnumRecord : record {
+	a : [2]int,
+	b : EnumTest
+}
