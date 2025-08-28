@@ -124,7 +124,7 @@ class ExpressionPreconditionTransformer {
 				// Reached max recursion
 				val functionType = function.type.clone
 				val localStatement = functionType.createDeclarationStatement(
-					'''_defaultValueOf_«function.name»_«expression.uniqueIndex»_''')
+					'''_defaultValue_«function.name»_«expression.uniqueIndex»_''')
 				val localDefaultDeclaration = localStatement.variableDeclaration
 				
 				val lowlevelStatement = localStatement.transformAction
@@ -206,13 +206,15 @@ class ExpressionPreconditionTransformer {
 		val inlinedActions = <Action>newArrayList
 		val clonedBlock = procedure.body.clone
 		
+		val namePostfix = expression.uniqueIndex + "_" + currentRecursionDepth
+		
 		// Rename local declarations
 		val declarations = clonedBlock.getAllContentsOfType(VariableDeclarationStatement)
 				.map[it.variableDeclaration] + 
 			clonedBlock.getAllContentsOfType(ConstantDeclarationStatement).map[it.constantDeclaration]
 		for (declaration : declarations) {
 			val name = declaration.name
-			declaration.name = '''«name»_«expression.uniqueIndex»'''
+			declaration.name = '''«name»_«namePostfix»'''
 			// A default expression is needed, otherwise some uninitialized parts of record can be havoced
 			if (declaration.expression === null) {
 				declaration.expression = declaration.type.defaultExpression
@@ -225,8 +227,8 @@ class ExpressionPreconditionTransformer {
 			val parameterDeclaration = parameterDeclarations.get(i)
 			
 			val parameterType = parameterDeclaration.type.clone
-			val localStatement = parameterType.createDeclarationStatement(
-				'''_«parameterDeclaration.name»_«expression.randomizeName»''', argument.clone)
+			val name = '''_«parameterDeclaration.name»_«namePostfix»'''
+			val localStatement = parameterType.createDeclarationStatement(name, argument.clone)
 			val localParameterDeclaration = localStatement.variableDeclaration
 			
 			inlinedActions += localStatement
@@ -238,12 +240,12 @@ class ExpressionPreconditionTransformer {
 		val returnStatements = clonedBlock.getSelfAndAllContentsOfType(ReturnStatement)
 		if (!returnStatements.empty) {
 			val procedureType = procedure.type.clone // typeDefinition is not correct due to record literals
-			val localDeclarationPostfix = '''_«procedure.name»_«expression.randomizeName»'''
+			val localDeclarationPostfix = '''_«procedure.name»_«namePostfix»'''
 			// This declaration will store the return value
 			val isVoid = procedureType.typeDefinition instanceof VoidTypeDefinition 
 			if (!isVoid) {
 				val localStatement = procedureType.createDeclarationStatement(
-					'''_returnValueOf«localDeclarationPostfix»''')
+					'''_returnValue«localDeclarationPostfix»''')
 				localReturnDeclaration = localStatement.variableDeclaration
 				inlinedActions += localStatement
 			}
