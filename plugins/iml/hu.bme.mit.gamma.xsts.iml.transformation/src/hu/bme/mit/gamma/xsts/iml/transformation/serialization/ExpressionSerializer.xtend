@@ -211,7 +211,7 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 		val function = expression.operand.declaration as FunctionDeclaration
 		val isLambda = function.lambdaDeclaration
 		
-		val functionCall = '''(«function.name» «GLOBAL_RECORD_IDENTIFIER» «
+		val functionCall = '''(«function.serializeName» «GLOBAL_RECORD_IDENTIFIER» «
 				FOR argument : expression.arguments SEPARATOR ' '»«argument.serialize»«ENDFOR»)'''
 		
 		if (isLambda || /* (r) is not returned */

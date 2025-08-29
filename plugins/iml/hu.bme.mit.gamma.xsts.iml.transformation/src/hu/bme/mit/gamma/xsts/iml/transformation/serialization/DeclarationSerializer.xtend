@@ -75,7 +75,7 @@ class DeclarationSerializer {
 			}
 		«ENDIF»
 		
-		let «IF function.recursive»rec «ENDIF»«function.name» («GLOBAL_RECORD_IDENTIFIER» : «GLOBAL_RECORD_TYPE_NAME») «
+		let «IF function.recursive»rec «ENDIF»«function.serializeName» («GLOBAL_RECORD_IDENTIFIER» : «GLOBAL_RECORD_TYPE_NAME») «
 				FOR parameter : function.parameterDeclarations SEPARATOR ' '»(«parameter.serializeParameterDeclaration»)«ENDFOR» =
 			«function.serializeFunctionDeclarationBody»
 		«IF function.recursive»«

@@ -372,8 +372,10 @@ public class XstsActionUtil extends ExpressionUtil {
 	public List<AbstractAssignmentAction> getAssignments(
 			Collection<? extends VariableDeclaration> variables,
 			Collection<? extends AbstractAssignmentAction> assignments) {
-		return assignments.stream().filter(it -> variables.contains(
-				getDeclaration(it.getLhs()))).collect(Collectors.toList());
+		return assignments.stream().filter(it ->
+			javaUtil.containsAny(variables,
+					getAccessedDeclarations(it.getLhs())))
+							.collect(Collectors.toList());
 	}
 	
 	public List<AbstractAssignmentAction> getAssignments(

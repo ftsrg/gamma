@@ -54,7 +54,7 @@ class Namings {
 	//
 	
 	public static final String DECLARATION_NAME_PREFIX = "_"
-	def static customizeName(Declaration variable) { variable.name.customizeDeclarationName }
+	def static customizeName(Declaration declaration) { declaration.name.customizeDeclarationName }
 	def static customizeDeclarationName(String name) { DECLARATION_NAME_PREFIX + name }
 	
 	def static String customizeLocalDeclarationName(Declaration variable) { '''«variable.name.customizeDeclarationName»_«variable.uniqueIndex»''' }

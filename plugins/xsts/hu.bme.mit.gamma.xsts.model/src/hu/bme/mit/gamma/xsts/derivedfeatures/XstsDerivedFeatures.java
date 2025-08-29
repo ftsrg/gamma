@@ -459,9 +459,10 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 	
 	public static boolean isLhs(Expression expression) {
-		EObject container = expression.eContainer();
-		if (container instanceof AbstractAssignmentAction action) {
-			return action.getLhs() == expression;
+		AbstractAssignmentAction assignmentAction = ecoreUtil.getContainerOfType(expression, AbstractAssignmentAction.class);
+		if (assignmentAction != null) {
+			ReferenceExpression lhs = assignmentAction.getLhs();
+			return ecoreUtil.selfOrContainsTransitively(lhs, expression);
 		}
 		return false;
 	}

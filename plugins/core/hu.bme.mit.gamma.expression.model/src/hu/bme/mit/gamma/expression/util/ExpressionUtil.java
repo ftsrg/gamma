@@ -1340,6 +1340,33 @@ public class ExpressionUtil {
 		return reference;
 	}
 	
+	public FieldAssignment createFieldAssignment(FieldDeclaration field, Expression value) {
+		FieldReferenceExpression reference = createReferenceExpression(field);
+		FieldAssignment fieldAssignment = factory.createFieldAssignment();
+		
+		fieldAssignment.setReference(reference);
+		fieldAssignment.setValue(value);
+		
+		return fieldAssignment;
+	}
+	
+	public RecordLiteralExpression createRecordLiteral(RecordTypeDefinition record, List<? extends Expression> values) {
+		RecordLiteralExpression recordLiteral = factory.createRecordLiteralExpression();
+		TypeDeclaration typeDeclaration = ExpressionModelDerivedFeatures.getTypeDeclaration(record);
+		recordLiteral.setTypeDeclaration(typeDeclaration);
+		
+		List<FieldDeclaration> fieldDeclarations = record.getFieldDeclarations();
+		for (int i = 0; i < values.size(); i++) {
+			Expression expression = values.get(i);
+			FieldDeclaration fieldDeclaration = fieldDeclarations.get(i);
+			
+			FieldAssignment fieldAssignment = createFieldAssignment(fieldDeclaration, expression);
+			recordLiteral.getFieldAssignments().add(fieldAssignment);
+		}
+		
+		return recordLiteral;
+	}
+	
 	public EqualityExpression createEqualityExpression(VariableDeclaration variable, Expression expression) {
 		EqualityExpression equalityExpression = factory.createEqualityExpression();
 		equalityExpression.setLeftOperand(
