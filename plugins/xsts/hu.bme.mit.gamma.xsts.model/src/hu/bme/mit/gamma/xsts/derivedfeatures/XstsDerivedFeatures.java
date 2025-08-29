@@ -38,6 +38,7 @@ import hu.bme.mit.gamma.expression.model.LambdaDeclaration;
 import hu.bme.mit.gamma.expression.model.LiteralExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
+import hu.bme.mit.gamma.expression.model.TupleReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.util.Triple;
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction;
@@ -1368,6 +1369,12 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 						// Havoc
 						notLiteralVariables.add(variable);
 					}
+				}
+			}
+			else if (firstExpr instanceof TupleReferenceExpression) {
+				for (Declaration declaration : xStsActionUtil.getAccessedDeclarations(firstExpr)) {
+					VariableDeclaration variableDeclaration = (VariableDeclaration) declaration;
+					notLiteralVariables.add(variableDeclaration);
 				}
 			}
 		}
