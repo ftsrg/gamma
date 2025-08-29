@@ -274,6 +274,10 @@ public class ActionUtil extends ExpressionUtil {
 				ExpressionModelDerivedFeatures.getDefaultExpression(type));
 	}
 	
+	public EmptyStatement createEmptyStatement_() {
+		return actionFactory.createEmptyStatement();
+	}
+	
 	public VariableDeclarationStatement createDeclarationStatement(Type type,
 			String name, Expression initialExpression) {
 		VariableDeclaration variable = factory.createVariableDeclaration();
