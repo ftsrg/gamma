@@ -411,7 +411,7 @@ class StaticSingleAssignmentTransformer {
 			val name = localVariable.name
 			localVariableNames += localVariable -> name
 			
-			localVariable.name = localVariable.name + "_" + localVariable.hashCode.toString.replaceAll("-","_")
+			localVariable.name = localVariable.name + "_" + localVariable.uniqueIndex
 		}
 	}
 	

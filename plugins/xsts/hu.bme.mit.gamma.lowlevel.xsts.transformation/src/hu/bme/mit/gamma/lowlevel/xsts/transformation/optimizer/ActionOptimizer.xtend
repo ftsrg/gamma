@@ -47,6 +47,7 @@ import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 class ActionOptimizer {
@@ -663,6 +664,17 @@ class ActionOptimizer {
 									removeableXStsActions += xStsFirstAction
 								}
 							}
+						}
+					}
+				}
+				
+				// Rhs evaluation
+				if (!removeableXStsActions.contains(xStsFirstAction)) {
+					if (xStsFirstAction instanceof AssignmentAction) {
+						val rhs = xStsFirstAction.rhs
+						if (rhs.evaluable) {
+							val literal = rhs.evaluateExpression
+							xStsFirstAction.rhs = literal
 						}
 					}
 				}

@@ -31,6 +31,7 @@ import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
+import hu.bme.mit.gamma.expression.model.BooleanLiteralExpression;
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression;
@@ -983,6 +984,13 @@ public class ExpressionUtil {
 	}
 	
 	// Creators
+	
+	public BooleanLiteralExpression toBooleanLiteral(boolean bool) {
+		if (bool) {
+			return factory.createTrueExpression();
+		}
+		return factory.createFalseExpression();
+	}
 	
 	public BigInteger toBigInt(long value) {
 		return BigInteger.valueOf(value);
