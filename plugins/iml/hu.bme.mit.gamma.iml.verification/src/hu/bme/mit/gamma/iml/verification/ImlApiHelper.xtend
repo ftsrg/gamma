@@ -22,7 +22,7 @@ class ImlApiHelper {
 	
 	protected static val MODULE_PREFIX = "M." // Given by Imandra
 	
-	protected static val TIMEOUT = 60
+	protected static val TIMEOUT = 300
 	
 	/* ImandraX (new Imandra) - IMANDRA_API_KEY environment variable must be set */
 	static def String getInvariantCall(String model, String command, String commandlessQuery) '''
