@@ -244,26 +244,28 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		actions.add(xSts.getEntryEventTransition().getAction());
 		actions.add(xSts.getInEventTransition().getAction());
 		actions.add(xSts.getOutEventTransition().getAction());
-		actions.add(getMergedAction(xSts));
+		actions.add(
+				getMergedAction(xSts));
 		return actions;
 	}
 	
 	public static SequentialAction getInitializingAction(XSTS xSts) {
 		SequentialAction sequentialAction = xStsFactory.createSequentialAction();
 		Action variableInitializingAction = xSts.getVariableInitializingTransition().getAction();
+		List<Action> actions = sequentialAction.getActions();
 		if (!(variableInitializingAction instanceof EmptyAction)) {
-			sequentialAction.getActions().add(
+			actions.add(
 					ecoreUtil.clone(variableInitializingAction));
 		}
 		Action configurationInitializingAction =
 				xSts.getConfigurationInitializingTransition().getAction();
 		if (!(configurationInitializingAction instanceof EmptyAction)) {
-			sequentialAction.getActions().add(
+			actions.add(
 					ecoreUtil.clone(configurationInitializingAction));
 		}
 		Action entryEventAction = xSts.getEntryEventTransition().getAction();
 		if (!(entryEventAction instanceof EmptyAction)) {
-			sequentialAction.getActions().add(
+			actions.add(
 					ecoreUtil.clone(entryEventAction));
 		}
 		return sequentialAction;
@@ -271,10 +273,11 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static SequentialAction getEnvironmentalAction(XSTS xSts) {
 		SequentialAction sequentialAction = xStsFactory.createSequentialAction();
-		sequentialAction.getActions().add(
+		List<Action> actions = sequentialAction.getActions();
+		actions.add(
 				ecoreUtil.clone(
 						xSts.getInEventTransition().getAction()));
-		sequentialAction.getActions().add(
+		actions.add(
 				ecoreUtil.clone(
 						xSts.getOutEventTransition().getAction()));
 		return sequentialAction;
@@ -296,13 +299,14 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		if (variable instanceof PrimedVariable newPrimedVariable) {
 			VariableDeclaration primedVariable = newPrimedVariable.getPrimedVariable();
 			return getOriginalVariable(primedVariable);
-		} else {
+		}
+		else {
 			return variable;
 		}
 	}
 
 	public static boolean isFinalPrimedVariable(VariableDeclaration variable) {
-		XSTS xSts = (XSTS) variable.eContainer();
+		XSTS xSts = XstsDerivedFeatures.getContainingXsts(variable);
 		return xSts.getVariableDeclarations().stream()
 				.noneMatch(it -> it instanceof PrimedVariable &&
 						((PrimedVariable) it).getPrimedVariable() == variable);
@@ -338,36 +342,40 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 			return 0;
 		}
 		PrimedVariable primedVariable = (PrimedVariable) variable;
-		return getPrimeCount(primedVariable.getPrimedVariable()) + 1;
+		return getPrimeCount(
+				primedVariable.getPrimedVariable()) + 1;
 	}
 	
 	//
 	
 	public static List<Action> getBranches(IfAction action) {
 		List<Action> branches = new ArrayList<Action>();
-		branches.add(action.getThen());
+		branches.add(
+				action.getThen());
 		Action _else = action.getElse();
-		if (_else instanceof IfAction) {
-			IfAction elseIfAction = (IfAction) _else;
-			branches.addAll(getBranches(elseIfAction));
+		if (_else instanceof IfAction elseIfAction) {
+			branches.addAll(
+					getBranches(elseIfAction));
 		}
 		else if (_else != null) {
 			branches.add(_else);
 		}
 		else {
 			// Necessary for variable inline
-			branches.add(xStsFactory.createEmptyAction());
+			branches.add(
+					xStsFactory.createEmptyAction());
 		}
 		return branches;
 	}
 	
 	public static List<Expression> getConditions(IfAction action) {
 		List<Expression> conditions = new ArrayList<Expression>();
-		conditions.add(action.getCondition());
+		conditions.add(
+				action.getCondition());
 		Action _else = action.getElse();
-		if (_else instanceof IfAction) {
-			IfAction elseIfAction = (IfAction) _else;
-			conditions.addAll(getConditions(elseIfAction));
+		if (_else instanceof IfAction elseIfAction) {
+			conditions.addAll(
+					getConditions(elseIfAction));
 		}
 		// Else is not If - no more conditions
 		return conditions;
@@ -375,8 +383,7 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static IfAction getLastIfAction(IfAction action) {
 		Action _else = action.getElse();
-		if (_else instanceof IfAction) {
-			IfAction elseIfAction = (IfAction) _else;
+		if (_else instanceof IfAction elseIfAction) {
 			return getLastIfAction(elseIfAction);
 		}
 		return action;
@@ -400,8 +407,8 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static boolean isTrivialAssignment(SequentialAction action) {
 		List<Action> xStsSubactions = action.getActions();
-		if (xStsSubactions.stream().filter(it -> it instanceof AssumeAction).count() == 1
-				&& xStsSubactions.stream().filter(it -> it instanceof AssignmentAction).count() == 1) {
+		if (xStsSubactions.stream().filter(it -> it instanceof AssumeAction).count() == 1 &&
+				xStsSubactions.stream().filter(it -> it instanceof AssignmentAction).count() == 1) {
 			return isTrivialAssignment(
 					(AssumeAction) xStsSubactions.stream()
 						.filter(it -> it instanceof AssumeAction).findFirst().get(),
@@ -414,18 +421,17 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static boolean isTrivialAssignment(AssumeAction assumeAction, AssignmentAction action) {
 		Expression xStsAssumption = assumeAction.getAssumption();
-		if (xStsAssumption instanceof EqualityExpression) {
-			return isTrivialAssignment((EqualityExpression) xStsAssumption, action);
+		if (xStsAssumption instanceof EqualityExpression xStsEqualityExpression) {
+			return isTrivialAssignment(xStsEqualityExpression, action);
 		}
 		return false;
 	}
 	
 	public static AtomicAction getFirstAtomicAction(Action action) {
-		if (action instanceof AtomicAction) {
-			return (AtomicAction) action;
+		if (action instanceof AtomicAction atomicAction) {
+			return atomicAction;
 		}
-		if (action instanceof MultiaryAction) {
-			MultiaryAction multiaryAction = (MultiaryAction) action;
+		if (action instanceof MultiaryAction multiaryAction) {
 			List<Action> actions = multiaryAction.getActions();
 			if (actions.isEmpty()) {
 				throw new IllegalArgumentException("Empty action list");
@@ -439,21 +445,23 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	private static boolean isTrivialAssignment(EqualityExpression expression, AssignmentAction action) {
 		Expression xStsLeftOperand = expression.getLeftOperand();
 		Expression xStsRightOperand = expression.getRightOperand();
-		DirectReferenceExpression reference = (DirectReferenceExpression) action.getLhs();
-		Declaration xStsDeclaration = reference.getDeclaration();
-		Expression xStsAssignmentRhs = action.getRhs();
-		// region_name == state_name
-		if (xStsLeftOperand instanceof DirectReferenceExpression) {
-			if (expressionUtil.getDeclaration(xStsLeftOperand) == xStsDeclaration
-					&& ecoreUtil.helperEquals(xStsRightOperand, xStsAssignmentRhs)) {
-				return true;
+		ReferenceExpression lhs = action.getLhs();
+		if (lhs instanceof DirectReferenceExpression reference) {
+			Declaration xStsDeclaration = reference.getDeclaration();
+			Expression xStsAssignmentRhs = action.getRhs();
+			// region_name == state_name
+			if (xStsLeftOperand instanceof DirectReferenceExpression) {
+				if (expressionUtil.getDeclaration(xStsLeftOperand) == xStsDeclaration &&
+						ecoreUtil.helperEquals(xStsRightOperand, xStsAssignmentRhs)) {
+					return true;
+				}
 			}
-		}
-		// state_name == region_name
-		if (xStsRightOperand instanceof DirectReferenceExpression) {
-			if (expressionUtil.getDeclaration(xStsRightOperand) == xStsDeclaration
-					&& ecoreUtil.helperEquals(xStsLeftOperand, xStsAssignmentRhs)) {
-				return true;
+			// state_name == region_name
+			if (xStsRightOperand instanceof DirectReferenceExpression) {
+				if (expressionUtil.getDeclaration(xStsRightOperand) == xStsDeclaration &&
+						ecoreUtil.helperEquals(xStsLeftOperand, xStsAssignmentRhs)) {
+					return true;
+				}
 			}
 		}
 		return false;
@@ -486,20 +494,17 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		if (isNullOrEmptyAction(action)) {
 			return true;
 		}
-		if (action instanceof AssignmentAction) {
-			AssignmentAction assignmentAction = (AssignmentAction) action;
+		if (action instanceof AssignmentAction assignmentAction) {
 			ReferenceExpression lhs = assignmentAction.getLhs();
 			Expression rhs = assignmentAction.getRhs();
 			return ecoreUtil.helperEquals(lhs, rhs);
 		}
-		if (action instanceof IfAction) {
-			IfAction ifAction = (IfAction) action;
+		if (action instanceof IfAction ifAction) {
 			Action then = ifAction.getThen();
 			Action _else = ifAction.getElse();
 			return isEffectlessAction(then) && isEffectlessAction(_else);
 		}
-		if (action instanceof LoopAction) {
-			LoopAction loopAction = (LoopAction) action;
+		if (action instanceof LoopAction loopAction) {
 			Action forAction = loopAction.getAction();
 			// Examining range
 			IntegerRangeLiteralExpression range = loopAction.getRange();
@@ -513,8 +518,7 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 			// Range is good, examining action
 			return isEffectlessAction(forAction);
 		}
-		if (action instanceof MultiaryAction) {
-			MultiaryAction multiaryAction = (MultiaryAction) action;
+		if (action instanceof MultiaryAction multiaryAction) {
 			return multiaryAction.getActions().stream().allMatch(it -> isEffectlessAction(it));
 		}
 		return false;

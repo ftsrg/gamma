@@ -15,6 +15,8 @@ import static hu.bme.mit.gamma.property.derivedfeatures.PropertyModelDerivedFeat
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.emf.ecore.EObject;
+
 import hu.bme.mit.gamma.expression.model.Comment;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
@@ -141,8 +143,7 @@ public class PropertyUtil extends StatechartUtil {
 		Expression lastExpression = javaUtil.getLastElement(expressions);
 		if (lastExpression instanceof DirectReferenceExpression) {
 			Declaration declaration = getDeclaration(lastExpression);
-			if (declaration instanceof VariableDeclaration) {
-				VariableDeclaration variableDeclaration = (VariableDeclaration) declaration;
+			if (declaration instanceof VariableDeclaration variableDeclaration) {
 				ComponentInstanceVariableReferenceExpression variableReference =
 						createVariableReference(rootInstance, variableDeclaration);
 				return variableReference;
@@ -165,7 +166,8 @@ public class PropertyUtil extends StatechartUtil {
 		}
 		
 		UnaryOperandLogicalPathFormula notFormula = createNotFormula();
-		if (formula.eContainer() != null) {
+		EObject container = formula.eContainer();
+		if (container != null) {
 			ecoreUtil.replace(notFormula, formula);
 		}
 		notFormula.setOperand(formula);
@@ -213,7 +215,8 @@ public class PropertyUtil extends StatechartUtil {
 			return createBinaryOperandLogicalFormula(negatedLeftOperand, newOperator, negatedRightOperand);
 		}
 		else if (formula instanceof UnaryOperandLogicalPathFormula _formula) {
-			assert _formula.getOperator() == UnaryLogicalOperator.NOT;
+			UnaryLogicalOperator operator = _formula.getOperator();
+			assert operator == UnaryLogicalOperator.NOT;
 			PathFormula operand = _formula.getOperand();
 			
 			return ecoreUtil.clone(operand);
@@ -372,13 +375,11 @@ public class PropertyUtil extends StatechartUtil {
 	// Getter
 	
 	public PathFormula getEgLessFormula(StateFormula formula) {
-		if (formula instanceof QuantifiedFormula) {
-			QuantifiedFormula quantifiedFormula = (QuantifiedFormula) formula;
+		if (formula instanceof QuantifiedFormula quantifiedFormula) {
 			PathQuantifier quantifier = quantifiedFormula.getQuantifier();
 			if (quantifier == PathQuantifier.EXISTS) {
 				PathFormula pathFormula = quantifiedFormula.getFormula();
-				if (pathFormula instanceof UnaryOperandPathFormula) {
-					UnaryOperandPathFormula unaryOperandPathFormula = (UnaryOperandPathFormula) pathFormula;
+				if (pathFormula instanceof UnaryOperandPathFormula unaryOperandPathFormula) {
 					UnaryPathOperator operator = unaryOperandPathFormula.getOperator();
 					if (operator == UnaryPathOperator.FUTURE) {
 						PathFormula egLessFormula = unaryOperandPathFormula.getOperand();

@@ -241,8 +241,7 @@ public class XstsActionUtil extends ExpressionUtil {
 	}
 	
 	public void prependToAction(Action action, Action pivot) {
-		if (pivot instanceof SequentialAction) {
-			SequentialAction sequentialAction = (SequentialAction) pivot;
+		if (pivot instanceof SequentialAction sequentialAction) {
 			sequentialAction.getActions().add(0, action);
 			return;
 		}
@@ -265,8 +264,7 @@ public class XstsActionUtil extends ExpressionUtil {
 	}
 	
 	public void appendToAction(Action pivot, Action action) {
-		if (pivot instanceof SequentialAction) {
-			SequentialAction sequentialAction = (SequentialAction) pivot;
+		if (pivot instanceof SequentialAction sequentialAction) {
 			sequentialAction.getActions().add(action);
 			return;
 		}
@@ -289,7 +287,8 @@ public class XstsActionUtil extends ExpressionUtil {
 			SequentialAction block = xStsFactory.createSequentialAction();
 			List<Action> actions = block.getActions();
 			for (AssignmentAction assignmentAction : assignmentActions) {
-				actions.addAll(extractArrayLiteralAssignments(assignmentAction));
+				actions.addAll(
+						extractArrayLiteralAssignments(assignmentAction));
 			}
 			ecoreUtil.replace(block, action);
 		}
@@ -301,8 +300,7 @@ public class XstsActionUtil extends ExpressionUtil {
 		ReferenceExpression lhs = action.getLhs();
 		Expression rhs = action.getRhs();
 		// Note that 'a := b' like assignments (a and b are array variables) are supported in UPPAAL 
-		if (rhs instanceof ArrayLiteralExpression) {
-			ArrayLiteralExpression literal = (ArrayLiteralExpression) rhs;
+		if (rhs instanceof ArrayLiteralExpression literal) {
 			List<Expression> operands = new ArrayList<Expression>(
 					literal.getOperands()); // To prevent messing up containment and indexing
 			int size = operands.size();
@@ -351,7 +349,8 @@ public class XstsActionUtil extends ExpressionUtil {
 	public List<VariableDeclaration> getVariables(XSTS xSts, Collection<String> names) {
 		List<VariableDeclaration> variables = new ArrayList<VariableDeclaration>();
 		for (String name : names) {
-			variables.add(getVariable(xSts, name));
+			variables.add(
+					getVariable(xSts, name));
 		}
 		return variables;
 	}
@@ -492,11 +491,13 @@ public class XstsActionUtil extends ExpressionUtil {
 	}
 	
 	public AssignmentAction createAssignmentAction(VariableDeclaration variable, VariableDeclaration rhs) {
-		return createAssignmentAction(variable, createReferenceExpression(rhs));
+		return createAssignmentAction(variable,
+				createReferenceExpression(rhs));
 	}
 	
 	public AssignmentAction createAssignmentAction(VariableDeclaration variable, Expression rhs) {
-		return createAssignmentAction(createReferenceExpression(variable), rhs);
+		return createAssignmentAction(
+				createReferenceExpression(variable), rhs);
 	}
 	
 	public List<AssignmentAction> createAssignmentActions(
@@ -541,7 +542,8 @@ public class XstsActionUtil extends ExpressionUtil {
 	
 	public HavocAction createHavocAction(VariableDeclaration variable) {
 		HavocAction havocAction = xStsFactory.createHavocAction();
-		havocAction.setLhs(createReferenceExpression(variable));
+		havocAction.setLhs(
+				createReferenceExpression(variable));
 		return havocAction;
 	}
 	
@@ -618,7 +620,8 @@ public class XstsActionUtil extends ExpressionUtil {
 		List<IfAction> ifActions = new ArrayList<IfAction>();
 		
 		for (SequentialAction sequentialAction : actions) {
-			ifActions.add(createIfAction(sequentialAction));
+			ifActions.add(
+					createIfAction(sequentialAction));
 		}
 		
 		return weave(ifActions);
@@ -685,8 +688,7 @@ public class XstsActionUtil extends ExpressionUtil {
 			ifAction.setElse(action);
 		}
 		else {
-			if (elseAction instanceof IfAction) {
-				IfAction _elseAction = (IfAction) elseAction;
+			if (elseAction instanceof IfAction _elseAction) {
 				append(_elseAction, action);
 			}
 			else {
@@ -725,9 +727,9 @@ public class XstsActionUtil extends ExpressionUtil {
 	public IfAction createSwitchAction(
 			Expression controlExpresion, List<Expression> conditions, List<Action> actions) {
 		if (conditions.size() != actions.size() && conditions.size() + 1 != actions.size()) {
-			throw new IllegalArgumentException("The two lists must be of same size or the size of"
-				+ "the action list must be the size of the condition list + 1: "
-					+ conditions + " " + actions);
+			throw new IllegalArgumentException("The two lists must be of same size or the size of" +
+				"the action list must be the size of the condition list + 1: " +
+					conditions + " " + actions);
 		}
 		List<Expression> newConditions = new ArrayList<Expression>();
 		for (Expression condition : conditions) {
@@ -768,7 +770,8 @@ public class XstsActionUtil extends ExpressionUtil {
 		NonDeterministicAction choiceAction = createChoiceActionBranch(condition, thenAction);
 		// Else
 		NotExpression negatedCondition = expressionFactory.createNotExpression();
-		negatedCondition.setOperand(ecoreUtil.clone(condition)); // Cloning needed
+		negatedCondition.setOperand(
+				ecoreUtil.clone(condition)); // Cloning needed
 		return extendChoiceWithBranch(choiceAction, negatedCondition, xStsFactory.createEmptyAction());
 	}
 	
@@ -778,7 +781,8 @@ public class XstsActionUtil extends ExpressionUtil {
 		NonDeterministicAction choiceAction = createChoiceActionBranch(condition, thenAction);
 		// Else
 		NotExpression negatedCondition = expressionFactory.createNotExpression();
-		negatedCondition.setOperand(ecoreUtil.clone(condition)); // Cloning needed
+		negatedCondition.setOperand(
+				ecoreUtil.clone(condition)); // Cloning needed
 		return extendChoiceWithBranch(choiceAction, negatedCondition, elseAction);
 	}
 
@@ -810,7 +814,8 @@ public class XstsActionUtil extends ExpressionUtil {
 		}
 		// Else branch if needed
 		if (conditions.size() + 1 == actions.size()) {
-			extendChoiceWithDefaultBranch(choiceAction, actions.get(actions.size() - 1));
+			Action lastAction = actions.get(actions.size() - 1);
+			extendChoiceWithDefaultBranch(choiceAction, lastAction);
 		}
 		return choiceAction;
 	}
@@ -849,7 +854,8 @@ public class XstsActionUtil extends ExpressionUtil {
 	public NonDeterministicAction createChoiceActionWithExclusiveBranches(
 			List<Expression> conditions, List<Action> actions) {
 		int conditionsSize = conditions.size();
-		if (conditionsSize != actions.size() && conditionsSize + 1 != actions.size()) {
+		if (conditionsSize != actions.size() &&
+				conditionsSize + 1 != actions.size()) {
 			throw new IllegalArgumentException("The two lists must be of same size or the size of"
 				+ "the action list must be the size of the condition list + 1: "
 					+ conditions + " " + actions);
@@ -891,8 +897,7 @@ public class XstsActionUtil extends ExpressionUtil {
 	public List<Action> createChoiceActionWithExtractedPreconditionsAndEmptyDefaultBranch(
 			Action action, String name) {
 		List<Action> actions = new ArrayList<Action>();
-		if (action instanceof SequentialAction) {
-			SequentialAction sequentialAction = (SequentialAction) action;
+		if (action instanceof SequentialAction sequentialAction) {
 			AssumeAction assumeAction = (AssumeAction) sequentialAction.getActions().get(0);
 			Expression expression = assumeAction.getAssumption();
 			VariableDeclarationAction variableDeclarationAction = extractExpression(
@@ -974,7 +979,8 @@ public class XstsActionUtil extends ExpressionUtil {
 	//
 	
 	public boolean hasDefaultBranch(NonDeterministicAction choice) {
-		List<Action> branches = new ArrayList<Action>(choice.getActions());
+		List<Action> branches = new ArrayList<Action>(
+				choice.getActions());
 		int lastIndex = branches.size() - 1;
 		
 		Action lastBranch = branches.get(lastIndex);
@@ -987,15 +993,13 @@ public class XstsActionUtil extends ExpressionUtil {
 	}
 	
 	public Expression getPrecondition(Action action) {
-		if (action instanceof AssumeAction) {
-			AssumeAction assumeAction = (AssumeAction) action;
+		if (action instanceof AssumeAction assumeAction) {
 			return ecoreUtil.clone(assumeAction.getAssumption());
 		}
 		// Checking for all composite actions: if it is empty,
 		// we return null, and the caller decides what needs to be done
 		if (action instanceof CompositeAction) {
-			if (action instanceof MultiaryAction) {
-				MultiaryAction multiaryAction = (MultiaryAction) action;
+			if (action instanceof MultiaryAction multiaryAction) {
 				if (multiaryAction.getActions().isEmpty()) {
 					throw new IllegalArgumentException("Empty multiary action");
 				}
@@ -1005,23 +1009,23 @@ public class XstsActionUtil extends ExpressionUtil {
 			}
 		}
 		//
-		if (action instanceof SequentialAction) {
-			SequentialAction sequentialAction = (SequentialAction) action;
-			return getPrecondition(sequentialAction.getActions().get(0));
+		if (action instanceof SequentialAction sequentialAction) {
+			Action firstSubaction = sequentialAction.getActions().get(0);
+			return getPrecondition(firstSubaction);
 		}
-		if (action instanceof ParallelAction) {
-			ParallelAction parallelAction = (ParallelAction) action;
+		if (action instanceof ParallelAction parallelAction) {
 			AndExpression andExpression = expressionFactory.createAndExpression();
 			for (Action subaction : parallelAction.getActions()) {
-				andExpression.getOperands().add(getPrecondition(subaction));
+				andExpression.getOperands().add(
+						getPrecondition(subaction));
 			}
 			return andExpression;
 		}
-		if (action instanceof NonDeterministicAction) {
-			NonDeterministicAction nonDeterministicAction = (NonDeterministicAction) action;
+		if (action instanceof NonDeterministicAction nonDeterministicAction) {
 			OrExpression orExpression = expressionFactory.createOrExpression();
 			for (Action subaction : nonDeterministicAction.getActions()) {
-				orExpression.getOperands().add(getPrecondition(subaction));
+				orExpression.getOperands().add(
+						getPrecondition(subaction));
 			}
 			return orExpression;
 		}
@@ -1067,8 +1071,7 @@ public class XstsActionUtil extends ExpressionUtil {
 	
 	public void deleteDeclaration(Declaration declaration) {
 		EObject container = declaration.eContainer();
-		if (container instanceof VariableDeclarationAction) {
-			VariableDeclarationAction action = (VariableDeclarationAction) container;
+		if (container instanceof VariableDeclarationAction action) {
 			replaceWithEmptyAction(action);
 		}
 		ecoreUtil.delete(declaration);
@@ -1079,8 +1082,7 @@ public class XstsActionUtil extends ExpressionUtil {
 	public VariableDeclarationAction createVariableDeclarationActionForArray(
 			VariableDeclaration queue, String name) {
 		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(queue);
-		if (typeDefinition instanceof ArrayTypeDefinition) {
-			ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) typeDefinition;
+		if (typeDefinition instanceof ArrayTypeDefinition arrayTypeDefinition) {
 			Type elementType = arrayTypeDefinition.getElementType();
 			return createVariableDeclarationAction(
 					ecoreUtil.clone(elementType), name);
@@ -1090,8 +1092,7 @@ public class XstsActionUtil extends ExpressionUtil {
 	 
 	public Action pop(VariableDeclaration queue) {
 		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(queue);
-		if (typeDefinition instanceof ArrayTypeDefinition) {
-			ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) typeDefinition;
+		if (typeDefinition instanceof ArrayTypeDefinition arrayTypeDefinition) {
 			Type elementType = arrayTypeDefinition.getElementType();
 			int size = evaluator.evaluateInteger(arrayTypeDefinition.getSize());
 			
