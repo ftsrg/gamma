@@ -89,7 +89,9 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	// Annotations
 	
 	public static boolean hasAssertInFirstStep(ExecutionTrace trace) {
-		return !trace.getSteps().get(0).getAsserts().isEmpty();
+		List<Step> steps = trace.getSteps();
+		Step firstStep = steps.get(0);
+		return !firstStep.getAsserts().isEmpty();
 	}
 	
 	public static boolean hasAllowedWaitingAnnotation(ExecutionTrace trace) {
@@ -168,7 +170,8 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 			else {
 				Expression generalElapsedTime = schedulingTimeElapse.getElapsedTime();
 				Expression actualElapsedTime = timeElapse.getElapsedTime();
-				if (evaluator.evaluateInteger(generalElapsedTime) != evaluator.evaluateInteger(actualElapsedTime)) {
+				if (evaluator.evaluateInteger(generalElapsedTime) !=
+						evaluator.evaluateInteger(actualElapsedTime)) {
 					return null;
 				}
 			}
@@ -347,7 +350,8 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 			Step lhsStep = lhs.get(i);
 			Step rhsStep = rhs.get(i);
 			
-			if (!areAssertsEquivalent(lhsStep, rhsStep, considerInstanceNames, considerInjectedVariables)) {
+			if (!areAssertsEquivalent(lhsStep, rhsStep,
+					considerInstanceNames, considerInjectedVariables)) {
 				return false;
 			}
 		}

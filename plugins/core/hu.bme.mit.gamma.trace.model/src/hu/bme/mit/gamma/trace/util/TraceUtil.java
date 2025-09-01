@@ -41,6 +41,7 @@ import hu.bme.mit.gamma.trace.model.Act;
 import hu.bme.mit.gamma.trace.model.Cycle;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.model.ExecutionTraceAllowedWaitingAnnotation;
+import hu.bme.mit.gamma.trace.model.ExecutionTraceAnnotation;
 import hu.bme.mit.gamma.trace.model.ExecutionTraceCommentAnnotation;
 import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Reset;
@@ -140,10 +141,12 @@ public class TraceUtil extends StatechartUtil {
 	public ExecutionTrace createTrace(Component component) {
 		ExecutionTrace trace = factory.createExecutionTrace();
 		
+		String componentName = component.getName();
+		
 		trace.setImport(
 				StatechartModelDerivedFeatures.getContainingPackage(component));
 		trace.setComponent(component);
-		trace.setName(component.getName() + "Trace");
+		trace.setName(componentName + "Trace");
 		
 		addTimeUnitAnnotation(trace);
 		
@@ -177,10 +180,12 @@ public class TraceUtil extends StatechartUtil {
 	}
 	
 	public void sortInstanceStates(ExecutionTrace executionTrace) {
-		sortInstanceStates(executionTrace.getSteps());
+		sortInstanceStates(
+				executionTrace.getSteps());
 		Cycle cycle = executionTrace.getCycle();
 		if (cycle != null) {
-			sortInstanceStates(cycle.getSteps());
+			sortInstanceStates(
+					cycle.getSteps());
 		}
 	}
 	
@@ -205,8 +210,9 @@ public class TraceUtil extends StatechartUtil {
 			annotation.setComment(annotation.getComment() + comment);
 		}
 		else {
+			List<ExecutionTraceAnnotation> annotations = trace.getAnnotations();
 			annotation = factory.createExecutionTraceCommentAnnotation();
-			trace.getAnnotations().add(annotation);
+			annotations.add(annotation);
 			annotation.setComment(comment);
 		}
 	}
@@ -262,7 +268,8 @@ public class TraceUtil extends StatechartUtil {
 		List<List<Step>> stepsList = new ArrayList<List<Step>>();
 		List<Step> actualSteps = null;
 		for (Step step : trace.getSteps()) {
-			if (step.getActions().stream().anyMatch(it -> it instanceof Reset)) {
+			List<Act> actions = step.getActions();
+			if (actions.stream().anyMatch(it -> it instanceof Reset)) {
 				if (actualSteps != null) {
 					stepsList.add(actualSteps);
 				}
@@ -351,7 +358,8 @@ public class TraceUtil extends StatechartUtil {
 	}
 	
 	public void setupExecutionTrace(ExecutionTrace trace, List<Step> steps,
-			String name, Component component, Package imports, ScenarioAllowedWaitAnnotation annotation) {
+			String name, Component component, Package imports,
+			ScenarioAllowedWaitAnnotation annotation) {
 		if (name != null) {
 			trace.setName(name);
 		}

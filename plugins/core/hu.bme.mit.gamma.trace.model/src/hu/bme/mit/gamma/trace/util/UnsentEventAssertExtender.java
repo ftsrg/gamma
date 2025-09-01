@@ -18,6 +18,7 @@ import java.util.Set;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.NotExpression;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
@@ -60,7 +61,8 @@ public class UnsentEventAssertExtender {
 			List<NotExpression> negatedAsserts = new ArrayList<NotExpression>();
 			for (Port port : ports) {
 				for (Event event : StatechartModelDerivedFeatures.getOutputEvents(port)) {
-					if (event.getParameterDeclarations().isEmpty()) {
+					List<ParameterDeclaration> parameterDeclarations = event.getParameterDeclarations();
+					if (parameterDeclarations.isEmpty()) {
 						NotExpression negatedAssert = expressionFactory.createNotExpression();
 						RaiseEventAct raise = traceFactory.createRaiseEventAct();
 						raise.setPort(port);
@@ -71,17 +73,17 @@ public class UnsentEventAssertExtender {
 				}
 			}
 
-			List<Expression> baseAsserts = step.getAsserts();
+			List<Expression> asserts = step.getAsserts();
+			List<Expression> baseAsserts = asserts;
 
 			for (Expression assertion : baseAsserts) {
 				Set<Expression> removable = new HashSet<Expression>();
-				if (assertion instanceof RaiseEventAct) {
-					RaiseEventAct raise = (RaiseEventAct) assertion;
+				if (assertion instanceof RaiseEventAct raise) {
 					Port aPort = raise.getPort();
 					Event aEvent = raise.getEvent();
 					for (NotExpression negatedAssert : negatedAsserts) {
-						if (negatedAssert.getOperand() instanceof RaiseEventAct) {
-							RaiseEventAct raiseEvent = (RaiseEventAct) negatedAssert.getOperand();
+						Expression operand = negatedAssert.getOperand();
+						if (operand instanceof RaiseEventAct raiseEvent) {
 							if (equals(aPort, aEvent, raiseEvent)) {
 								removable.add(negatedAssert);
 							}
@@ -90,7 +92,7 @@ public class UnsentEventAssertExtender {
 				}
 				negatedAsserts.removeAll(removable);
 			}
-			step.getAsserts().addAll(negatedAsserts);
+			asserts.addAll(negatedAsserts);
 		}
 	}
 
