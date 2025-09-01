@@ -74,7 +74,7 @@ class StatechartToLowlevelTransformer {
 	}
 	
 	new(TimeUnit baseTimeUnit) {
-		this(true, true, 10, baseTimeUnit)
+		this(true, true, 7, baseTimeUnit)
 	}
 	
 	new(boolean functionInlining, boolean addReturnGuards, int maxRecursionDepth, TimeUnit baseTimeUnit) {

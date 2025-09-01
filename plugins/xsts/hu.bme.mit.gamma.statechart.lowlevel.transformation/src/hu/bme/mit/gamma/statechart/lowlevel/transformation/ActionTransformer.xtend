@@ -58,7 +58,7 @@ class ActionTransformer {
 	protected final boolean FUNCTION_INLINING
 	
 	new(Trace trace) {
-		this(trace, true, true, 10, null)
+		this(trace, true, true, 7, null)
 	}
 	
 	new(Trace trace, boolean functionInlining, boolean addReturnGuards, int maxRecursionDepth, TimeUnit baseTimeUnit) {

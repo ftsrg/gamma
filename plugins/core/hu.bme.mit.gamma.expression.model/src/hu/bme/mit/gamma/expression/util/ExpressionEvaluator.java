@@ -404,6 +404,15 @@ public class ExpressionEvaluator {
 			
 			return evaluateDecimal(leftOperand) - evaluateDecimal(rightOperand);
 		}
+		if (expression instanceof IfThenElseExpression ifThenElseExpression) {
+			Expression condition = ifThenElseExpression.getCondition();
+			if (evaluateBoolean(condition)) {
+				return evaluateDecimal(
+						ifThenElseExpression.getThen());
+			}
+			return evaluateDecimal(
+					ifThenElseExpression.getElse());
+		}
 		throw new IllegalArgumentException("Not transformable expression: " + expression);
 	} 
 	

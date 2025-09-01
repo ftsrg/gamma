@@ -89,7 +89,7 @@ class ExpressionTransformer {
 	}
 	
 	new(Trace trace) {
-		this(trace, true, true, 10, null)
+		this(trace, true, true, 7, null)
 	}
 	
 	new(Trace trace, boolean functionInlining, boolean addReturnGuards, int maxRecursionDepth) {
@@ -349,7 +349,7 @@ class ExpressionTransformer {
 					currentRecursionDepth--
 					
 					var clonedBody = expression.createInlinedLambaExpression
-					result += clonedBody.transformSimpleExpression // Possible recursion
+					result += clonedBody.transformExpression // Possible recursion
 					
 					currentRecursionDepth++
 				}

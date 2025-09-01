@@ -63,7 +63,7 @@ class ExpressionPreconditionTransformer {
 	protected int currentRecursionDepth // For procedures
 	
 	new(Trace trace, ActionTransformer actionTransformer) {
-		this(trace, actionTransformer, true, true, 10)
+		this(trace, actionTransformer, true, true, 7)
 	}
 	
 	new(Trace trace, ActionTransformer actionTransformer,
