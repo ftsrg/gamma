@@ -77,7 +77,8 @@ class ImlVerifier extends AbstractVerifier {
 			errorReader = new ScannerLogger(
 					new Scanner(process.errorReader),
 					#["imandra_http_api_client.exceptions.ServiceException", "HTTP Error",
-						"urllib.error.HTTPError", "ValueError", "Error:", "TimeoutError:"],
+						"urllib.error.HTTPError", "ValueError", "Error:", "TimeoutError:",
+						"NameError: name 'api_response' is not defined"],
 					4,
 					false) // Set to 'true' for debugging
 			errorReader.start
