@@ -1103,7 +1103,8 @@ class GammaEcoreUtil {
 			return object.randomizeName
 		}
 		val containers = object.getSelfAndAllContainersOfType(EObject)
-		val index = containers.map[it.indexOrZero].join
+		val index = containers.map[
+				it.eContainingFeature.indexOrZero.toString + it.indexOrZero].join
 		return index
 	}
 	
