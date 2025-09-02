@@ -26,6 +26,10 @@ statechart TrainDoorController [
 		state Open
 	}
 	transition from InitialDoorState to Closed
+	// Added for the sake of completeness (but should not happen)
+	transition from Closed to Open when FeedbackDoorState.feedback [FeedbackDoorState.feedback::doorState == DoorState::OPEN]
+	transition from Open to Closed when FeedbackDoorState.feedback [FeedbackDoorState.feedback::doorState == DoorState::CLOSED]
+	//
 	transition from Closed to Opening when FeedbackDoorState.feedback [FeedbackDoorState.feedback::doorState == DoorState::OPENING]
 	transition from Opening to Open when FeedbackDoorState.feedback [FeedbackDoorState.feedback::doorState == DoorState::OPEN]
 	transition from Opening to Closing when FeedbackDoorState.feedback [FeedbackDoorState.feedback::doorState == DoorState::CLOSING]
