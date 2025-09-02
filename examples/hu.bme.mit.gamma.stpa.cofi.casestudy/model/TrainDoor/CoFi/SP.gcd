@@ -27,6 +27,7 @@ statechart CoFiController [
 		state _9
 		state _10
 		state _11
+		state _12
 	}
 	transition from Initial to _1
 	transition from _1 to _2 when ExternalCommunication.movement
@@ -207,4 +208,13 @@ statechart CoFiController [
 				FeedbackDoorState.feedback::doorState = DoorState::OPENING]
 	transition from _9 to _11 when FeedbackDoorState.feedback
 			[FeedbackDoorState.feedback::doorState = DoorState::OPENING]
+			
+	// Blue
+	transition from _7 to _12 when FeedbackPresence.feedback
+			[FeedbackPresence.feedback::isPresent] / upPresence := true;
+	transition from _12 to _9 when FeedbackDoorState.feedback
+			[FeedbackDoorState.feedback::doorState = DoorState::OPEN]
+			
+	transition from _5 to _5 when FeedbackPresence.feedback
+			[FeedbackPresence.feedback::isPresent] / upPresence := true;
 }
