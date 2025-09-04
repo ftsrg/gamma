@@ -23,6 +23,7 @@ import hu.bme.mit.gamma.xsts.model.ProcedureDeclaration
 import hu.bme.mit.gamma.xsts.transformation.util.MessageQueueUtil
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.iml.transformation.util.Namings.*
 
@@ -30,6 +31,10 @@ class DeclarationSerializer {
 	// Singleton
 	public static final DeclarationSerializer INSTANCE = new DeclarationSerializer
 	protected new() {}
+	//
+	
+	protected final String TYPE = "type nonrec"
+	
 	//
 	protected final extension MessageQueueHandler queueHandler = MessageQueueHandler.INSTANCE
 	protected final extension MessageQueueUtil queueUtil = MessageQueueUtil.INSTANCE
@@ -61,13 +66,13 @@ class DeclarationSerializer {
 	// Type declaration: enumeration types are serialized using modules to ease 'literal -> type' linking
 	
 	def serializeTypeDeclaration(TypeDeclaration declaration) '''
-		module «declaration.serializeName» = struct type t = «declaration.type.serializeType» end
+		module «declaration.serializeName» = struct «TYPE» t = «declaration.type.serializeType» end
 	'''
 	// type nonrec «declaration.serializeName» = «declaration.type.serializeType»
 	
 	def serializeFunctionDeclaration(FunctionDeclaration function) '''
 		«IF function instanceof ProcedureDeclaration»
-			type nonrec «function.customizeLocalVariablesTypeName» = {
+			«TYPE» «function.customizeLocalVariablesTypeName» = {
 				«FOR localVariable : function.localVariables»
 					«localVariable.serializeFieldDeclaration»
 				«ENDFOR»

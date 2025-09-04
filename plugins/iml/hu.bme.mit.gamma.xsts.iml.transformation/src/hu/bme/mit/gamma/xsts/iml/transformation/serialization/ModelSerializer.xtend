@@ -81,7 +81,7 @@ class ModelSerializer {
 			«FOR typeDeclaration : xSts.typeDeclarations AFTER System.lineSeparator»
 				«typeDeclaration.serializeTypeDeclaration»
 			«ENDFOR»
-			type nonrec «GLOBAL_RECORD_TYPE_NAME» = {
+			«TYPE» «GLOBAL_RECORD_TYPE_NAME» = {
 				«FOR variableDeclaration : globalVariables»
 					«variableDeclaration.serializeFieldDeclaration»
 				«ENDFOR»
@@ -91,7 +91,7 @@ class ModelSerializer {
 			}
 			
 			«IF !localVariables.empty»
-				type nonrec «LOCAL_RECORD_TYPE_NAME» = {
+				«TYPE» «LOCAL_RECORD_TYPE_NAME» = {
 					«FOR variableDeclaration : localVariables»
 						«variableDeclaration.serializeFieldDeclaration»
 					«ENDFOR»
@@ -99,7 +99,7 @@ class ModelSerializer {
 				
 			«ENDIF»
 			«IF !initLocalVariables.empty»
-				type nonrec «INIT_LOCAL_RECORD_TYPE_NAME» = {
+				«TYPE» «INIT_LOCAL_RECORD_TYPE_NAME» = {
 					«FOR variableDeclaration : initLocalVariables»
 						«variableDeclaration.serializeFieldDeclaration»
 					«ENDFOR»
@@ -107,7 +107,7 @@ class ModelSerializer {
 				
 			«ENDIF»
 			«IF !envLocalVariables.empty»
-				type nonrec «ENV_LOCAL_RECORD_TYPE_NAME» = {
+				«TYPE» «ENV_LOCAL_RECORD_TYPE_NAME» = {
 					«FOR variableDeclaration : envLocalVariables»
 						«variableDeclaration.serializeFieldDeclaration»
 					«ENDFOR»
@@ -115,7 +115,7 @@ class ModelSerializer {
 				
 			«ENDIF»
 			«IF !havocs.empty»
-				type nonrec «ENV_HAVOC_RECORD_TYPE_NAME» = {
+				«TYPE» «ENV_HAVOC_RECORD_TYPE_NAME» = {
 					«FOR envHavoc : havocs»
 						«envHavoc.serializeEnvFieldDeclaration»
 					«ENDFOR»
@@ -126,7 +126,7 @@ class ModelSerializer {
 				
 			«ENDIF»
 			«IF needNonDet»
-				type «NONDET_BRANCH_TYPE_NAME» = «FOR i : 0 ..< choices.map[it.actions.size].max SEPARATOR ' | '»«i.branchLiteralName»«ENDFOR»
+				«TYPE» «NONDET_BRANCH_TYPE_NAME» = «FOR i : 0 ..< choices.map[it.actions.size].max SEPARATOR ' | '»«i.branchLiteralName»«ENDFOR»
 			«ENDIF»
 		'''
 		

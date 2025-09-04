@@ -375,8 +375,8 @@ abstract class ImlSemanticDiffer {
 			var line = ""
 			while (scanner.hasNextLine && (line = scanner.nextLine).startsWith(M)) {
 				val name = line.substring(M.length, line.indexOf('=')).trim
-				val literals =  line.substring(line.lastIndexOf('=') + 1, line.indexOf("end"))
-						.split('\\|').map[it.trim].reject[it.nullOrEmpty].toList
+				val content = line.substring(line.lastIndexOf('=') + 1, line.lastIndexOf("end"))
+				val literals = content.split('\\|').map[it.trim].reject[it.nullOrEmpty].toList
 				
 				modules += name -> literals
 			}
