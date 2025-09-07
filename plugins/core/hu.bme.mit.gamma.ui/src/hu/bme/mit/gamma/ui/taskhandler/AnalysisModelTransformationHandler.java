@@ -310,7 +310,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				return null;
 			}
 			InteractionDataflowCoverage notNullCoverage = (InteractionDataflowCoverage) coverage.get();
-			return transformCoverageCriterion(notNullCoverage.getInteractionDataflowCoverageCriterion());
+			return transformCoverageCriterion(
+					notNullCoverage.getInteractionDataflowCoverageCriterion());
 		}
 				
 		protected Entry<Integer, Integer> evaluateConstraint(hu.bme.mit.gamma.genmodel.model.Constraint constraint) {
@@ -861,7 +862,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			transformer.execute();
 			// Property serialization
 			serializeProperties(fileName);
-			logger.info("The Gamma -> XSTS-NuXMV transformation has been finished");
+			logger.info("The Gamma -> XSTS-nuXmv transformation has been finished");
 		}
 		
 		@Override
