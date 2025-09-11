@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.expression.model.Comment;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.property.model.AtomicFormula;
 import hu.bme.mit.gamma.property.model.BinaryLogicalOperator;
@@ -40,12 +41,18 @@ import hu.bme.mit.gamma.property.model.UnaryOperandPathFormula;
 import hu.bme.mit.gamma.property.model.UnaryPathOperator;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.Event;
+import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.statechart.interface_.Port;
+import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
@@ -152,8 +159,23 @@ public class PropertyUtil extends StatechartUtil {
 				throw new IllegalArgumentException("Not known type: " + declaration);
 			}
 		}
-		else if (lastExpression instanceof StateReferenceExpression stateReferenceExpression) {
-			State state = stateReferenceExpression.getState();
+		else if (lastExpression instanceof PortEventReference reference) {
+			Port port = reference.getPort();
+			Event event = reference.getEvent();
+			ComponentInstanceEventReferenceExpression eventReference =
+					createEventReference(rootInstance, port, event);
+			return eventReference;
+		}
+		if (lastExpression instanceof EventParameterReferenceExpression reference) {
+			Port port = reference.getPort();
+			Event event = reference.getEvent();
+			ParameterDeclaration parameter = reference.getParameter();
+			ComponentInstanceEventParameterReferenceExpression parameterReference =
+					createParameterReference(rootInstance, port, event, parameter);
+			return parameterReference;
+		}
+		else if (lastExpression instanceof StateReferenceExpression reference) {
+			State state = reference.getState();
 			ComponentInstanceStateReferenceExpression stateReference =
 					createStateReference(rootInstance, state);
 			return stateReference;

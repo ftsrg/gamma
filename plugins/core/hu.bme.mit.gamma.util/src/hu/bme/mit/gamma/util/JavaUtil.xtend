@@ -79,6 +79,14 @@ class JavaUtil {
 		return list.remove(list.size - 1)
 	}
 	
+	def <T, R> void removeElementsOfType(List<T> list, Class<R> clazz) {
+		list.removeIf[clazz.isInstance(it)]
+	}
+	
+	def <T, R> void removeElementsOfOtherType(List<T> list, Class<R> clazz) {
+		list.removeIf[!clazz.isInstance(it)]
+	}
+	
 	def <T> void removeAllButFirst(List<T> list) {
 		for (var i = 1; i < list.size; /* No op */) {
 			list.remove(i)
