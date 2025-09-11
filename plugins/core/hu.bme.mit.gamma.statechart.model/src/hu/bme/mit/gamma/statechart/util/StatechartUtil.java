@@ -97,6 +97,7 @@ import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.Region;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StateNode;
+import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory;
 import hu.bme.mit.gamma.statechart.statechart.SynchronousStatechartDefinition;
@@ -1096,6 +1097,14 @@ public class StatechartUtil extends ActionUtil {
 		raiseEventAction.setEvent(event);
 		raiseEventAction.getArguments().addAll(arguments);
 		return raiseEventAction;
+	}
+	
+	public StateReferenceExpression createStateReference(State state) {
+		StateReferenceExpression stateReferenceExpression = statechartFactory.createStateReferenceExpression();
+		stateReferenceExpression.setState(state);
+		stateReferenceExpression.setRegion(
+				StatechartModelDerivedFeatures.getParentRegion(state));
+		return stateReferenceExpression;
 	}
 	
 	// Atomic component instance reference expressions

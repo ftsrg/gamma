@@ -41,11 +41,13 @@ import hu.bme.mit.gamma.property.model.UnaryPathOperator;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.statechart.State;
+import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 
 public class PropertyUtil extends StatechartUtil {
@@ -129,11 +131,9 @@ public class PropertyUtil extends StatechartUtil {
 	
 	//
 	
-	public ComponentInstanceElementReferenceExpression chainReferences(
-			List<? extends Expression> operands) {
+	public ComponentInstanceElementReferenceExpression chainReferences(List<? extends Expression> operands) {
 		List<Expression> expressions = new ArrayList<Expression>(operands);
-		// If it is a variable reference, we expect the first "n" elements
-		// to be ComponentInstanceReference
+		// If it is a variable reference, we expect the first 'n' elements to be ComponentInstanceReference
 		List<ComponentInstanceReferenceExpression> instanceReferences =
 				javaUtil.filterIntoList(expressions, ComponentInstanceReferenceExpression.class);
 		ComponentInstanceReferenceExpression rootInstance =
@@ -151,6 +151,12 @@ public class PropertyUtil extends StatechartUtil {
 			else {
 				throw new IllegalArgumentException("Not known type: " + declaration);
 			}
+		}
+		else if (lastExpression instanceof StateReferenceExpression stateReferenceExpression) {
+			State state = stateReferenceExpression.getState();
+			ComponentInstanceStateReferenceExpression stateReference =
+					createStateReference(rootInstance, state);
+			return stateReference;
 		}
 		else {
 			throw new IllegalArgumentException("Not known type: " + lastExpression);
