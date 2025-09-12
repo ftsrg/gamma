@@ -358,8 +358,7 @@ public class TraceUtil extends StatechartUtil {
 	}
 	
 	public void setupExecutionTrace(ExecutionTrace trace, List<Step> steps,
-			String name, Component component, Package imports,
-			ScenarioAllowedWaitAnnotation annotation) {
+			String name, Component component, Package imports, ScenarioAllowedWaitAnnotation annotation) {
 		if (name != null) {
 			trace.setName(name);
 		}

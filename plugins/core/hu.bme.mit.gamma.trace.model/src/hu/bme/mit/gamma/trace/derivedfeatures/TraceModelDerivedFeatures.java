@@ -67,7 +67,8 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 			return event.getParameterDeclarations();
 		}
 		if (element instanceof ExecutionTrace trace) {
-			return trace.getComponent().getParameterDeclarations();
+			Component component = trace.getComponent();
+			return component.getParameterDeclarations();
 		}
 		throw new IllegalArgumentException("Not supported element: " + element);
 	}
@@ -106,19 +107,25 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	public static <T extends ExecutionTraceAnnotation> T getAnnotation(
 			ExecutionTrace trace, Class<T> annotation) {
 		List<ExecutionTraceAnnotation> annotations = trace.getAnnotations();
-		return javaUtil.filterIntoList(annotations, annotation).get(0);
+		List<T> filteredAnnotations = javaUtil.filterIntoList(annotations, annotation);
+		T filteredAnnotation = filteredAnnotations.get(0);
+		return filteredAnnotation;
 	}
 	
 	public static ExecutionTraceAllowedWaitingAnnotation getAllowedWaitingAnnotation(
 				ExecutionTrace trace) {
 		List<ExecutionTraceAnnotation> annotations = trace.getAnnotations();
-		return javaUtil.filterIntoList(annotations,
-				ExecutionTraceAllowedWaitingAnnotation.class).get(0);
+		List<ExecutionTraceAllowedWaitingAnnotation> waitingAnnotations = javaUtil.filterIntoList(annotations,
+				ExecutionTraceAllowedWaitingAnnotation.class);
+		ExecutionTraceAllowedWaitingAnnotation annotation = waitingAnnotations.get(0);
+		return annotation;
 	}
 	
 	public static TimeUnitAnnotation getTimeUnitAnnotation(ExecutionTrace trace) {
 		List<ExecutionTraceAnnotation> annotations = trace.getAnnotations();
-		return javaUtil.filterIntoList(annotations, TimeUnitAnnotation.class).get(0);
+		List<TimeUnitAnnotation> timeUnitAnnotations = javaUtil.filterIntoList(annotations, TimeUnitAnnotation.class);
+		TimeUnitAnnotation timeUnitAnnotation = timeUnitAnnotations.get(0);
+		return timeUnitAnnotation;
 	}
 	
 	public static boolean isNegativeTest(ExecutionTrace trace) {

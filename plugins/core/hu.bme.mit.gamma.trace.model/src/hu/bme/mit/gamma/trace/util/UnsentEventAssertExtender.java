@@ -97,8 +97,10 @@ public class UnsentEventAssertExtender {
 	}
 
 	private boolean equals(Port aPort, Event aEvent, RaiseEventAct raiseEvent) {
-		return raiseEvent.getPort().getName().equals(aPort.getName())
-				&& raiseEvent.getEvent().getName().equals(aEvent.getName());
+		Port bPort = raiseEvent.getPort();
+		Event bEvent = raiseEvent.getEvent();
+		return bPort.getName().equals(aPort.getName())
+				&& bEvent.getName().equals(aEvent.getName());
 	}
 
 }
