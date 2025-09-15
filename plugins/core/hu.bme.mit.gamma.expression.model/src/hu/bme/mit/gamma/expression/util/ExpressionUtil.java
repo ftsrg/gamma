@@ -1080,6 +1080,37 @@ public class ExpressionUtil {
 		}
 	}
 	
+	public LiteralExpression toNegated(LiteralExpression literalExpression) {
+		if (literalExpression instanceof IntegerLiteralExpression integer) {
+			IntegerLiteralExpression negative = ecoreUtil.clone(integer);
+			BigInteger negativeValue = negative.getValue().negate();
+			negative.setValue(negativeValue);
+			return negative;
+		}
+		else if (literalExpression instanceof DecimalLiteralExpression double_) {
+			DecimalLiteralExpression negative = ecoreUtil.clone(double_);
+			BigDecimal negativeValue = negative.getValue().negate();
+			negative.setValue(negativeValue);
+			return negative;
+		}
+		else if (literalExpression instanceof RationalLiteralExpression rational) {
+			RationalLiteralExpression negative = ecoreUtil.clone(rational);
+			BigInteger negativeValue = negative.getNumerator().negate();
+			negative.setNumerator(negativeValue);
+			return negative;
+		}
+		else if (literalExpression instanceof TrueExpression) {
+			return factory.createFalseExpression();
+		}
+		else if (literalExpression instanceof FalseExpression) {
+			return factory.createTrueExpression();
+		}
+		else {
+			throw new IllegalArgumentException("Not known literal: " + literalExpression);
+		}
+	}
+
+	
 	public VariableDeclaration createVariableDeclaration(Type type, String name) {
 		return createVariableDeclaration(type, name, null);
 	}
