@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -37,6 +37,7 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         // Line break after declarations
         c.setLinewrap(1).after(f.getConstantDeclarationRule());
         c.setLinewrap(1).after(f.getFunctionDeclarationRule());
+        c.setLinewrap(1).before(f.getVariableDeclarationRule());
         c.setLinewrap(1).before(f.getLambdaDeclarationRule());
         c.setLinewrap(1).before(f.getProcedureDeclarationRule());
         c.setLinewrap(1).after(f.getTypeDeclarationRule());
