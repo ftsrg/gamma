@@ -36,6 +36,7 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
+import hu.bme.mit.gamma.expression.model.OpaqueExpression;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
@@ -262,6 +263,11 @@ public class ActionUtil extends ExpressionUtil {
 	}
 	
 	//
+	
+	public ExpressionStatement createOpaqueStatement(String string) {
+		OpaqueExpression opaqueExpression = factory.createOpaqueExpression();
+		return createExpressionStatement(opaqueExpression);
+	}
 	
 	public ExpressionStatement createExpressionStatement(Expression expression) {
 		ExpressionStatement statement = actionFactory.createExpressionStatement();
