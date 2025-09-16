@@ -192,10 +192,11 @@ class ValueDeclarationTransformer {
 		val lowlevelVariables = newArrayList
 		for (var i = 0; i < size; i++) {
 			val fieldHierarchy = fieldHierarchies.get(i)
-			val nativeType = nativeTypes.get(i).transformType // Only native and arrays
+			val nativeType = nativeTypes.get(i)
+			val lowlevelNativeType = nativeType.transformType // Only native and arrays
 			val lowlevelVariable = tracer.createValueDeclaration => [
 				// Name added later
-				it.type = nativeType
+				it.type = lowlevelNativeType
 			]
 			if (lowlevelVariable instanceof VariableDeclaration) { // Only for "variables" - not for function parameters
 				if (declaration instanceof VariableDeclaration) {

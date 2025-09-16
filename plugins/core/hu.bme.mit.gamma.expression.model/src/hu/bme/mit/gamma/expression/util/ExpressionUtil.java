@@ -1354,10 +1354,14 @@ public class ExpressionUtil {
 	}
 	
 	public ArrayAccessExpression createArrayAccessExpression(Expression operand, int index) {
+		IntegerLiteralExpression integerLiteralExpression = toIntegerLiteral(index);
+		return createArrayAccessExpression(operand, integerLiteralExpression);
+	}
+	
+	public ArrayAccessExpression createArrayAccessExpression(Expression operand, Expression index) {
 		ArrayAccessExpression access = factory.createArrayAccessExpression();
 		access.setOperand(operand);
-		access.setIndex(
-				toIntegerLiteral(index));
+		access.setIndex(index);
 		return access;
 	}
 	

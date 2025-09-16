@@ -72,8 +72,9 @@ class TypeTransformer {
 	}
 	
 	protected def dispatch Type transformType(ArrayTypeDefinition type) {
-		// ExpressionModelDerivedFeatures.getNativeTypes creates the correct types, cloning is enough
-		return type.clone
+		val arrayType = type.clone
+		arrayType.elementType = arrayType.elementType.transformType // To transform potential enums
+		return arrayType
 	}
 	
 	protected def dispatch Type transformType(RecordTypeDefinition type) {

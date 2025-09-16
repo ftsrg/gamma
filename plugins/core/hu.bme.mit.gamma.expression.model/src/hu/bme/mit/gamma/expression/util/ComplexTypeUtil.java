@@ -108,7 +108,8 @@ public class ComplexTypeUtil {
 		if (typeDefinition instanceof RecordTypeDefinition record) {
 			for (FieldDeclaration field : record.getFieldDeclarations()) {
 				Type fieldType = field.getType();
-				nativeTypes.addAll(getNativeTypes(fieldType));
+				nativeTypes.addAll(
+						getNativeTypes(fieldType));
 			}
 		}
 		else if (typeDefinition instanceof ArrayTypeDefinition array) {
