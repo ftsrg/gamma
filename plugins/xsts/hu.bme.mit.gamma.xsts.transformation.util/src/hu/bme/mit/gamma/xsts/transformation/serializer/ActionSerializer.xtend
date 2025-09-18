@@ -80,8 +80,8 @@ class ActionSerializer {
 	// nop cannot be parsed by Theta
 	def dispatch String serialize(EmptyAction action) ''''''
 	
-	// nop cannot be parsed by Theta
-	def dispatch String serialize(OpaqueAction action) ''''''
+	// Comments - could not be parsed by Theta otherwise
+	def dispatch String serialize(OpaqueAction action) '''/* «action.action.trim» */'''
 	
 	// Cannot be parsed by Theta
 	def dispatch String serialize(FunctionCallAction action) {
