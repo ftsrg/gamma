@@ -54,6 +54,9 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AssumeAction/assumption"/>
     </genClasses>
     <genClasses ecoreClass="model.ecore#//EmptyAction"/>
+    <genClasses ecoreClass="model.ecore#//OpaqueAction">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//OpaqueAction/action"/>
+    </genClasses>
     <genClasses ecoreClass="model.ecore#//AssignmentAction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AssignmentAction/rhs"/>
     </genClasses>

@@ -266,6 +266,7 @@ public class ActionUtil extends ExpressionUtil {
 	
 	public ExpressionStatement createOpaqueStatement(String string) {
 		OpaqueExpression opaqueExpression = factory.createOpaqueExpression();
+		opaqueExpression.setExpression(string);
 		return createExpressionStatement(opaqueExpression);
 	}
 	

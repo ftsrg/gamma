@@ -31,6 +31,7 @@ import hu.bme.mit.gamma.action.util.ActionUtil
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.InitializableElement
+import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
@@ -155,6 +156,13 @@ class ActionTransformer {
 				}
 			}
 			// Otherwise, everything is in 'preconditions'
+		}
+		
+		if (expression instanceof OpaqueExpression) {
+			val string = expression.expression
+			if (string.startsWith("language ")) {
+				actions += action.clone
+			}
 		}
 		
 		return actions

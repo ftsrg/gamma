@@ -62,6 +62,7 @@ import hu.bme.mit.gamma.xsts.model.IfAction;
 import hu.bme.mit.gamma.xsts.model.LoopAction;
 import hu.bme.mit.gamma.xsts.model.MultiaryAction;
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction;
+import hu.bme.mit.gamma.xsts.model.OpaqueAction;
 import hu.bme.mit.gamma.xsts.model.ParallelAction;
 import hu.bme.mit.gamma.xsts.model.SequentialAction;
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction;
@@ -540,6 +541,12 @@ public class XstsActionUtil extends ExpressionUtil {
 		}
 		
 		return actions;
+	}
+	
+	public OpaqueAction createOpaqueAction(String action) {
+		OpaqueAction opaqueAction = xStsFactory.createOpaqueAction();
+		opaqueAction.setAction(action);
+		return opaqueAction;
 	}
 	
 	public HavocAction createHavocAction(VariableDeclaration variable) {

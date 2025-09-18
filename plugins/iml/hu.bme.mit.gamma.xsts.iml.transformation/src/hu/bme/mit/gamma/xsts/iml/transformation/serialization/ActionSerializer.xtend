@@ -26,6 +26,7 @@ import hu.bme.mit.gamma.xsts.model.FunctionCallAction
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
+import hu.bme.mit.gamma.xsts.model.OpaqueAction
 import hu.bme.mit.gamma.xsts.model.ReturnAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
@@ -139,6 +140,16 @@ class ActionSerializer {
 	}
 	
 	protected def dispatch serializeAction(EmptyAction action) ''''''
+	
+	protected def dispatch serializeAction(OpaqueAction action) {
+		val IML = "language IML"
+		val string = action.action.trim
+		if (string.startsWith(IML)) {
+			val serialization = string.substring(IML.length).trim
+			return serialization
+		}
+		return ""
+	}
 	
 	protected def dispatch serializeAction(ReturnAction action) {
 		val expression = action.expression

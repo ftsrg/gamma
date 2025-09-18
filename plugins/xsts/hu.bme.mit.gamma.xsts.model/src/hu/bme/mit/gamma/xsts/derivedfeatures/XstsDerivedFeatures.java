@@ -58,6 +58,7 @@ import hu.bme.mit.gamma.xsts.model.InvariantAnnotation;
 import hu.bme.mit.gamma.xsts.model.LoopAction;
 import hu.bme.mit.gamma.xsts.model.MessageQueueGroup;
 import hu.bme.mit.gamma.xsts.model.MultiaryAction;
+import hu.bme.mit.gamma.xsts.model.OpaqueAction;
 import hu.bme.mit.gamma.xsts.model.PrimedVariable;
 import hu.bme.mit.gamma.xsts.model.ProcedureDeclaration;
 import hu.bme.mit.gamma.xsts.model.ReturnAction;
@@ -824,6 +825,9 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		else if (action instanceof FunctionCallAction _action) {
 			return _getReadVariables(_action);
 		}
+		else if (action instanceof OpaqueAction) {
+			return Set.of();
+		}
 		else {
 			throw new IllegalArgumentException("Unhandled action type: " + action);
 		}
@@ -860,6 +864,9 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		else if (action instanceof FunctionCallAction _action) {
 			return _getReadVariables(_action);
 		}
+		else if (action instanceof OpaqueAction) {
+			return Set.of();
+		}
 		else {
 			throw new IllegalArgumentException("Unhandled action type: " + action);
 		}
@@ -892,6 +899,9 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		}
 		else if (action instanceof FunctionCallAction _action) {
 			return _getWrittenVariables(_action);
+		}
+		else if (action instanceof OpaqueAction) {
+			return Set.of();
 		}
 		else {
 			throw new IllegalArgumentException("Unhandled action type: " + action);

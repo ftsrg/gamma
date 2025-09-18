@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
+import hu.bme.mit.gamma.xsts.model.OpaqueAction
 import hu.bme.mit.gamma.xsts.model.OrthogonalAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.ReturnAction
@@ -78,6 +79,9 @@ class ActionSerializer {
 	
 	// nop cannot be parsed by Theta
 	def dispatch String serialize(EmptyAction action) ''''''
+	
+	// nop cannot be parsed by Theta
+	def dispatch String serialize(OpaqueAction action) ''''''
 	
 	// Cannot be parsed by Theta
 	def dispatch String serialize(FunctionCallAction action) {
