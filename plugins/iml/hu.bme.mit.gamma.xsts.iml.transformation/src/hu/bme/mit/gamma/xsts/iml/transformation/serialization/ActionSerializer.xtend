@@ -142,13 +142,8 @@ class ActionSerializer {
 	protected def dispatch serializeAction(EmptyAction action) ''''''
 	
 	protected def dispatch serializeAction(OpaqueAction action) {
-		val IML = "language IML"
-		val string = action.action.trim
-		if (string.startsWith(IML)) {
-			val serialization = string.substring(IML.length).trim
-			return serialization
-		}
-		return ""
+		val string = action.action
+		return string.serializeOpaqueElement
 	}
 	
 	protected def dispatch serializeAction(ReturnAction action) {

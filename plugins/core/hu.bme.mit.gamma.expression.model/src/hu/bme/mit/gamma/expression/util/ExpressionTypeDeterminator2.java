@@ -308,7 +308,10 @@ public class ExpressionTypeDeterminator2 {
 	private Type getArithmeticType(Collection<Type> collection) {
 		// Wrong types, not suitable for arithmetic operations
 		if (collection.stream().anyMatch(it -> !isNumber(it))) {
-			throw new IllegalArgumentException("Type is not suitable for arithmetic operations: " + collection);
+			// Probably an opaque expression - not the "soundest" way to determine this but works most of the time
+			if (collection.stream().anyMatch(it -> !isNumber(it) && !(it instanceof VoidTypeDefinition))) {
+				throw new IllegalArgumentException("Type is not suitable for arithmetic operations: " + collection);
+			}
 		}
 		// All types are numbers
 		if (collection.stream().anyMatch(it ->

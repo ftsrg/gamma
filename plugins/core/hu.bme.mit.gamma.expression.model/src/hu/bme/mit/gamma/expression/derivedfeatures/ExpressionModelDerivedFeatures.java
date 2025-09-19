@@ -55,6 +55,7 @@ import hu.bme.mit.gamma.expression.model.InternalParameterDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.InternalVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration;
 import hu.bme.mit.gamma.expression.model.NotExpression;
+import hu.bme.mit.gamma.expression.model.OpaqueExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ParameterDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
@@ -636,6 +637,12 @@ public class ExpressionModelDerivedFeatures {
 	}
 	
 	public static boolean isEvaluable(Expression expression) {
+		List<OpaqueExpression> opaqueExpressions = ecoreUtil.getSelfAndAllContentsOfType(
+				expression, OpaqueExpression.class);
+		if (!opaqueExpressions.isEmpty()) {
+			return false;
+		}
+		
 		List<ReferenceExpression> references = ecoreUtil.getSelfAndAllContentsOfType(
 				expression, ReferenceExpression.class);
 		for (ReferenceExpression reference : new ArrayList<ReferenceExpression>(references)) {

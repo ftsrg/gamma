@@ -40,6 +40,7 @@ import hu.bme.mit.gamma.expression.model.LiteralExpression
 import hu.bme.mit.gamma.expression.model.MultiplyExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
 import hu.bme.mit.gamma.expression.model.NullaryExpression
+import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.SubtractExpression
@@ -115,7 +116,8 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	}
 	
 	protected def adjustArithmeticExpression(List<? extends Expression> operands, String operator) {
-		val isEachOperandInteger = operands.map[it.typeDefinition].forall[it instanceof IntegerTypeDefinition]
+		val operandTypes = operands.map[it.typeDefinition]
+		val isEachOperandInteger = operandTypes.forall[it instanceof IntegerTypeDefinition]
 		
 		if (isEachOperandInteger) {
 			return '''(«FOR operand : operands SEPARATOR ''' «operator» '''»«operand.serialize»«ENDFOR»)'''
@@ -152,6 +154,11 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 			return '''(«string»)''' // For some reason, IML needs this
 		}
 		return string
+	}
+	
+	override String _serialize(OpaqueExpression expression) {
+		val string = expression.expression
+		return string.serializeOpaqueElement
 	}
 	
 	override String _serialize(TrueExpression expression) '''true'''
@@ -229,6 +236,15 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	}
 	
 	def getFunctionReturnValues() '''«GLOBAL_RECORD_IDENTIFIER», «LOCAL_RECORD_IDENTIFIER».«FUNCTION_RETURN_VALUE_NAME.customizeDeclarationName»'''
+	
+	def serializeOpaqueElement(String string) {
+		val IML = "language IML"
+		if (string.startsWith(IML)) {
+			val serialization = string.substring(IML.length).trim
+			return serialization
+		}
+		return ""
+	}
 	
 	//
 
