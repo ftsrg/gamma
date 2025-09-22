@@ -1244,6 +1244,18 @@ public class ExpressionUtil {
 		return parameterDeclaration;
 	}
 	
+	public ConstantDeclaration createConstantDeclaration(Type type, String name) {
+		return createConstantDeclaration(type, name, null);
+	}
+	
+	public ConstantDeclaration createConstantDeclaration(Type type, String name, Expression expression) {
+		ConstantDeclaration constantDeclaration = factory.createConstantDeclaration();
+		constantDeclaration.setType(type);
+		constantDeclaration.setName(name);
+		constantDeclaration.setExpression(expression);
+		return constantDeclaration;
+	}
+	
 	public TypeDeclaration createTypeDeclaration(Type type, String name) {
 		TypeDeclaration typeDeclaration = factory.createTypeDeclaration();
 		typeDeclaration.setType(type);
