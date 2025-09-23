@@ -35,6 +35,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.emf.ecore.util.EcoreUtil.Copier
 import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper
 import org.eclipse.emf.ecore.util.EcoreUtil.UsageCrossReferencer
+import org.eclipse.xtext.xbase.lib.Functions.Function1
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -341,6 +342,16 @@ class GammaEcoreUtil {
 			return newArrayList
 		}
 		val containers = container.getAllContainersUntil(top)
+		containers += container
+		return containers
+	}
+	
+	def <T> List<EObject>  getAllContainersUntil(EObject object, Class<T> type) {
+		val container = object.eContainer
+		if (type.isInstance(container)) { // Note: excluding top
+			return newArrayList
+		}
+		val containers = container.getAllContainersUntil(type)
 		containers += container
 		return containers
 	}
@@ -664,6 +675,10 @@ class GammaEcoreUtil {
 		return helper.equals(lhs, rhs)
 	}
 	
+	def boolean allHelperEquals(Iterable<? extends EObject> objects) {
+		return objects.toList.allHelperEquals
+	}
+	
 	def boolean allHelperEquals(List<? extends EObject> objects) {
 		for (var i = 0; i < objects.size - 1; i++) {
 			val lhs = objects.get(i)
@@ -953,6 +968,53 @@ class GammaEcoreUtil {
 		return array
 	}
 	
+	def <T extends EObject> List<T> sortTopologically(List<T> list) {
+		val array = newArrayList
+		
+		val references = newLinkedHashMap
+		for (elem : list) {
+			val refs = elem.getSelfAndAllContentsOfType(EObject)
+					.map[it.eCrossReferences].flatten.toSet
+			references += elem -> refs
+		}
+		val entries = references.entrySet
+		checkState(!entries.exists[
+				val node = it.key
+				val refs = it.value
+				entries.exists[it.key !== node && it.value.contains(node) && refs.contains(it.key)]],
+			"Elements with circular references cannot be sorted topologically")
+		
+		while (!references.empty) {
+			val nonReferencedElem = references.keySet
+					.findFirst[elem | !entries
+							.exists[it.key !== elem && it.value.contains(elem)]]
+			references -= nonReferencedElem
+			
+			array += nonReferencedElem
+		}
+		array.reverse
+		
+		return array
+	}
+	
+	def <T extends EObject> void sortTopologicallyInplace(List<T> list) {
+		val sortedList = list.sortTopologically
+		list.clear
+		list += sortedList
+	}
+	
+	def <T extends EObject, C extends Comparable<? super C>> List<T> sortInplaceWith(
+			List<T> list, Function1<? super T, C> key) {
+		val sortedList = newArrayList
+		sortedList += list
+		sortedList.sortInplaceBy(key)
+		
+		list.clear
+		list += sortedList
+		
+		return list
+	}
+	
 	def <T extends EObject> void removeEqualElements(List<T> list) {
 		for (var i = 0; i < list.size - 1; i++) {
 			for (var j = i + 1; j < list.size; j++) {
@@ -1028,6 +1090,22 @@ class GammaEcoreUtil {
 				root.add(containmentFeature, clone)
 			}
 		}
+	}
+	
+	//
+	
+	def randomizeName(EObject object) {
+		return object.hashCode.toString.replaceAll("-", "0")
+	}
+	
+	def uniqueIndex(EObject object) {
+		if (object.eContainer === null) {
+			return object.randomizeName
+		}
+		val containers = object.getSelfAndAllContainersOfType(EObject)
+		val index = containers.map[
+				it.eContainingFeature.indexOrZero.toString + it.indexOrZero].join
+		return index
 	}
 	
 }

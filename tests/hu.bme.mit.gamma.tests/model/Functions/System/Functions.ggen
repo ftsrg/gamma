@@ -1,0 +1,80 @@
+import "Statechart/Functions_1.gcd"
+import "Statechart/Functions_2.gcd"
+import "Statechart/Functions_3.gcd"
+import "Statechart/Functions_4.gcd"
+
+code {
+	component : Functions_1
+	language : java
+}
+
+analysis {
+	component : Functions_1
+	language : Imandra
+	state-coverage
+}
+
+verification {
+	file : "Functions_1.iml"
+	language : Imandra
+	property-file : ".Functions_1.gpd"
+	test-language : java
+	optimize-traces : true
+}
+
+code {
+	component : Functions_2
+	language : java
+}
+
+analysis {
+	component : Functions_2
+	language : Imandra
+	state-coverage
+}
+
+verification {
+	file : "Functions_2.iml"
+	language : Imandra
+	property-file : ".Functions_2.gpd"
+	test-language : java
+	optimize-traces : true
+}
+
+code {
+	component : Functions_3
+	language : java
+}
+
+analysis {
+	component : Functions_3
+	language : Imandra
+	state-coverage
+}
+
+verification {
+	file : "Functions_3.iml"
+	language : Imandra
+	property-file : ".Functions_3.gpd"
+	test-language : java
+	optimize-traces : true
+}
+
+code {
+	component : Functions_4
+	language : java
+}
+
+analysis {
+	component : Functions_4
+	language : Imandra
+	state-coverage
+}
+
+verification {
+	file : "Functions_4.iml"
+	language : Imandra
+	property-file : ".Functions_4.gpd"
+	test-language : java
+	optimize-traces : true
+}

@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.trace.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -40,6 +41,7 @@ import hu.bme.mit.gamma.trace.model.Act;
 import hu.bme.mit.gamma.trace.model.Cycle;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.model.ExecutionTraceAllowedWaitingAnnotation;
+import hu.bme.mit.gamma.trace.model.ExecutionTraceAnnotation;
 import hu.bme.mit.gamma.trace.model.ExecutionTraceCommentAnnotation;
 import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Reset;
@@ -87,10 +89,9 @@ public class TraceUtil extends StatechartUtil {
 			if (rhs instanceof RaiseEventAct) {
 				return 1;
 			}
-			if (lhs instanceof ComponentInstanceStateReferenceExpression && rhs instanceof ComponentInstanceStateReferenceExpression) {
+			if (lhs instanceof ComponentInstanceStateReferenceExpression lhsInstanceStateConfiguration &&
+					rhs instanceof ComponentInstanceStateReferenceExpression rhsInstanceStateConfiguration) {
 				// Two instance states: first - instance name, second - state level
-				ComponentInstanceStateReferenceExpression lhsInstanceStateConfiguration = (ComponentInstanceStateReferenceExpression) lhs;
-				ComponentInstanceStateReferenceExpression rhsInstanceStateConfiguration = (ComponentInstanceStateReferenceExpression) rhs;
 				ComponentInstance lhsInstance = StatechartModelDerivedFeatures.getLastInstance(
 						lhsInstanceStateConfiguration.getInstance());
 				ComponentInstance rhsInstance = StatechartModelDerivedFeatures.getLastInstance(
@@ -112,10 +113,9 @@ public class TraceUtil extends StatechartUtil {
 				return lhsRegion.getName().compareTo(
 						rhsRegion.getName());
 			}
-			else if (lhs instanceof ComponentInstanceVariableReferenceExpression && rhs instanceof ComponentInstanceVariableReferenceExpression) {
+			else if (lhs instanceof ComponentInstanceVariableReferenceExpression lhsVariableReference &&
+					rhs instanceof ComponentInstanceVariableReferenceExpression rhsVariableReference) {
 				// Two instance variable: name
-				ComponentInstanceVariableReferenceExpression lhsVariableReference = (ComponentInstanceVariableReferenceExpression) lhs;
-				ComponentInstanceVariableReferenceExpression rhsVariableReference = (ComponentInstanceVariableReferenceExpression) rhs;
 				ComponentInstance lhsInstance = StatechartModelDerivedFeatures.getLastInstance(
 						lhsVariableReference.getInstance());
 				ComponentInstance rhsInstance = StatechartModelDerivedFeatures.getLastInstance(
@@ -141,10 +141,12 @@ public class TraceUtil extends StatechartUtil {
 	public ExecutionTrace createTrace(Component component) {
 		ExecutionTrace trace = factory.createExecutionTrace();
 		
+		String componentName = component.getName();
+		
 		trace.setImport(
 				StatechartModelDerivedFeatures.getContainingPackage(component));
 		trace.setComponent(component);
-		trace.setName(component.getName() + "Trace");
+		trace.setName(componentName + "Trace");
 		
 		addTimeUnitAnnotation(trace);
 		
@@ -178,10 +180,12 @@ public class TraceUtil extends StatechartUtil {
 	}
 	
 	public void sortInstanceStates(ExecutionTrace executionTrace) {
-		sortInstanceStates(executionTrace.getSteps());
+		sortInstanceStates(
+				executionTrace.getSteps());
 		Cycle cycle = executionTrace.getCycle();
 		if (cycle != null) {
-			sortInstanceStates(cycle.getSteps());
+			sortInstanceStates(
+					cycle.getSteps());
 		}
 	}
 	
@@ -206,8 +210,9 @@ public class TraceUtil extends StatechartUtil {
 			annotation.setComment(annotation.getComment() + comment);
 		}
 		else {
+			List<ExecutionTraceAnnotation> annotations = trace.getAnnotations();
 			annotation = factory.createExecutionTraceCommentAnnotation();
-			trace.getAnnotations().add(annotation);
+			annotations.add(annotation);
 			annotation.setComment(comment);
 		}
 	}
@@ -228,7 +233,9 @@ public class TraceUtil extends StatechartUtil {
 	
 	// Trace coverage
 	
-	public void removeCoveredExecutionTraces(List<ExecutionTrace> traces) {
+	public Collection<ExecutionTrace> removeCoveredExecutionTraces(List<ExecutionTrace> traces) {
+		Collection<ExecutionTrace> removedTraces = new ArrayList<ExecutionTrace>(traces);
+		
 		for (int i = 0; i < traces.size() - 1; ++i) {
 			ExecutionTrace lhs = traces.get(i);
 			boolean isLhsDeleted = false;
@@ -246,6 +253,10 @@ public class TraceUtil extends StatechartUtil {
 				}
 			}
 		}
+		
+		removedTraces.removeAll(traces);
+		
+		return removedTraces;
 	}
 	
 	public void removeCoveredSteps(ExecutionTrace trace) {
@@ -257,7 +268,8 @@ public class TraceUtil extends StatechartUtil {
 		List<List<Step>> stepsList = new ArrayList<List<Step>>();
 		List<Step> actualSteps = null;
 		for (Step step : trace.getSteps()) {
-			if (step.getActions().stream().anyMatch(it -> it instanceof Reset)) {
+			List<Act> actions = step.getActions();
+			if (actions.stream().anyMatch(it -> it instanceof Reset)) {
 				if (actualSteps != null) {
 					stepsList.add(actualSteps);
 				}
@@ -379,16 +391,32 @@ public class TraceUtil extends StatechartUtil {
 		}
 		
 		Step last = javaUtil.getLastElement(steps);
+		Step lastClone = ecoreUtil.clone(last);
+		lastClone.getActions().clear();
 		for (Step step : steps) {
-			if (ecoreUtil.helperEquals(step, last) && step != last) {
-				int i = ecoreUtil.getIndex(step);
+			Step stepClone = ecoreUtil.clone(step);
+			stepClone.getActions().clear();
+			if (ecoreUtil.helperEquals(stepClone, lastClone) && step != last) {
+				int i = ecoreUtil.getIndex(step) + 1;
 				Cycle cycle = factory.createCycle();
 				trace.setCycle(cycle);
+				List<Step> cycleSteps = cycle.getSteps();
 				while (i < steps.size()) {
 					Step nextStep = steps.get(i);
-					cycle.getSteps().add(nextStep);
+					cycleSteps.add(nextStep);
 				}
-				ecoreUtil.remove(last);
+				
+				// Removing potential step duplications
+				Step previous = null;
+				Iterator<Step> iterator = cycleSteps.iterator();
+				while (iterator.hasNext()) {
+					Step actual = iterator.next();
+					if (ecoreUtil.helperEquals(previous, actual)) {
+						iterator.remove();
+					}
+					previous = actual;
+				}
+				
 				return;
 			}
 		}

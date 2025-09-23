@@ -14,7 +14,7 @@ The processes and steps described in this document were executed on Windows 10 a
 
 These packages can be installed on Ubuntu using the `apt-get install <package>` command:
 
- - Java 17 - `openjdk-17-jdk`, `openjdk-17-jre`,
+ - Java 21 - `openjdk-21-jdk`, `openjdk-21-jre`,
  - SWT - `libswt-gtk*`,
  - (Optionally) Maven - `maven`.
 
@@ -32,7 +32,7 @@ The `hu.bme.mit.gamma.headless.api` creates the headless version of Gamma. This 
  
 That is, click on the `Add` button on the right, start typing `*gamma` and later again, `*xtext` in the search field and make sure no plugin pops up in the `Plug-in Selection` window.
 
-Also, make sure that every required plugin is added by clicking on the `Add Required Plug-ins` button on the right. Make sure that `org.eclipse.search` is included  as it is an Xtext dependency not declared by Xtext explicitly.
+Also, make sure that every required plugin is added by clicking on the `Add Required Plug-ins` button on the right. Make sure that `org.eclipse.search` is included  as it is an Xtext dependency not declared by Xtext explicitly (maybe this issue will have been resolved in newer releases).
 
 ## Step 4 - Setting up the Start Levels of plugins
 
@@ -67,19 +67,21 @@ Make sure to remove the Gamma plugins from the required plugin list of your targ
 
 ## Step 6 - Set Java compliance level
 
-Go to `Window > Preferences > Java > Compiler` and set the `Compiler compliance level` to `17`.
+Go to `Window > Preferences > Java > Compiler` and set the `Compiler compliance level` to `21`.
 
 ## Step 7 - Exporting the product
 
 Select the product file named `linux.product` or `windows.product` according to your OS to begin the exporting process. The files can be found in the `product` folder inside the `hu.bme.mit.gamma.headless.api` project.
 
-In the Overview tab, under `Product Definition`, check if the appropriate `Application` is selected for the `Product`. The application is `gamma.api.headless.application` for `hu.bme.mit.gamma.headless.api.product`.
+In the Overview tab, under `General Information`, check if the `The product includes a native launcher artifact` box is selected - this setting will generate the expected `eclipse.exe` file. In addition, if you do not have a JRE installed on your machine (at least of version 21), make sure to check the `The product includes a JRE` box, which will package the required JRE with the exported Gamma application.
+
+Still in the Overview tab, under `Product Definition`, check if the appropriate `Application` is selected for the `Product`. The application is `gamma.api.headless.application` for `hu.bme.mit.gamma.headless.api.product`.
 
 Still in the Overview tab, under `Exporting`, select the `Eclipse Product export wizard` option. Make sure that the `Root directory` option is `eclipse`.
 
 The `Directory` under `Destination` should be the `headless_eclipse` folder in `hu.bme.mit.gamma.headless.server`.
 
-In the Export pop-up window, deselect the `Synchronise before exporting` and `Generate p2 repository` options.
+In the `Export` pop-up window, deselect the `Synchronise before exporting` and `Generate p2 repository` options.
 
 To summarize, the selection of options in the `Exporting` tab should look like this:
 
@@ -97,7 +99,7 @@ The following paragraphs include some notable errors users tend to stumble upon 
  - Make sure that the `Contents` page contains every **Gamma** and **Xtext** plugin, as well as all the required plugins (see corresponding part of Step 2).
  - Make sure that the `gamma.api.headless.product` file (on the `Source` page) sets autoStart for the `org.apache.felix.scr` plugin: `<plugin id="org.apache.felix.scr" autoStart="true" startLevel="<N>" />` (see corresponding part of Step 3).
  - Make sure that the target platform contains a *single version* of each referenced plugin (see corresponding part of Step 4).
- - Make sure that the plugins you are trying to export into a product (i.e., the Gamma plugins imported into the workspace, containing the source code) do not rely on old Java execution environments in their _MANIFEST.MF_ files, e.g., Java 1.8. The plugins should either not specify the execution environment explicitly, or rely on Java 17.
+ - Make sure that the plugins you are trying to export into a product (i.e., the Gamma plugins imported into the workspace, containing the source code) do not rely on old Java execution environments in their _MANIFEST.MF_ files, e.g., Java 1.8. The plugins should either not specify the execution environment explicitly, or rely on Java 21.
  
 If the above modifications do not solve the issue, you should move onto the following points.
 
@@ -141,7 +143,7 @@ The following solutions resolved these issues:
 	- Adding `org.eclipse.swt.browser.chromium.gtk.linux.x86_64.source` and `org.eclipse.swt.gtk.linux.x86_64.source` (or equivalent, in the case of a 32-bit system) fixed SWT-related issues. These plugins have to be imported manually, after importing the required plugins with the `Add Required Plug-Ins` button.
 	- Some SWT errors can still persist even after removing the `hu.bme.mit.gamma.dialog` project. The following steps provided solution for this problem.
 	- Adding `org.eclipse.swt.browser.chromium.gtk.linux.x86_64.source` and `org.eclipse.swt.gtk.linux.x86_64.source` (or equivalent, in the case of a 32-bit system) fixed SWT-related issues. These plugins have to be imported manually, after importing the reuqired plugins with the `Add Required Plug-Ins` button.
-	- In the Docker container, `libswt-gtk*` has to be installed, even with Java 17 installed in the container. This can be done with the `apt-get install libswt-gtk` command. This fixed the Docker-specific SWT errors.
+	- In the Docker container, `libswt-gtk*` has to be installed, even with Java 21 installed in the container. This can be done with the `apt-get install libswt-gtk` command. This fixed the Docker-specific SWT errors.
 
 **The exported plug-in jars do not contain any .class file**
 
@@ -154,11 +156,11 @@ This error can occur after exporting the Headless Gamma. A `logs.zip` archive is
 ```
 5/10/21, 2:32:41 PM CEST 
 Eclipse Compiler for Java(TM) v20210223-0522, 3.25.0, Copyright IBM Corp 2000, 2020. All rights reserved. 
-Compliance level '17' is incompatible with target level '21'. A compliance level '21' or better is required
+Compliance level '21' is incompatible with target level '24'. A compliance level '24' or better is required
 ``` 
 
-This means that the compiler compliance level is set too high. Open the Eclipse IDE, select `Window > Preferences > Java > Compiler`, and under `JDK Compliance`, set the `Compiler compliance level` to 17. After this, export the products again, and the problem should be resolved.
+This means that the compiler compliance level is set too high. Open the Eclipse IDE, select `Window > Preferences > Java > Compiler`, and under `JDK Compliance`, set the `Compiler compliance level` to 21. After this, export the products again, and the problem should be resolved.
 
-**The execution of the invokedheadless Eclipse process stops without any messages or exceptions**
+**The execution of the invoked headless Eclipse process stops without any messages or exceptions**
 
-This error can occur when the plugins you are trying to export into a product (i.e., the Gamma plugins imported into the workspace, containing the source code) rely on old Java execution environments in their _MANIFEST.MF_ files, e.g., Java 1.8. The plugins should either not specify the execution environment explicitly, or rely on Java 17.
+This error can occur when the plugins you are trying to export into a product (i.e., the Gamma plugins imported into the workspace, containing the source code) rely on old Java execution environments in their _MANIFEST.MF_ files, e.g., Java 1.8. The plugins should either not specify the execution environment explicitly, or rely on Java 21.

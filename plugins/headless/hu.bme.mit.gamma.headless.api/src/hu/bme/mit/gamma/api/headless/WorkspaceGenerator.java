@@ -20,10 +20,9 @@ public class WorkspaceGenerator extends HeadlessApplicationCommandHandler {
 
 	public WorkspaceGenerator(IApplicationContext context, String[] appArgs, Level level) {
 		super(context, appArgs, level);
-		logger.setLevel(level);
 	}
 
-	public void execute() throws Exception {
+	public void execute() throws Throwable {
 		// The workspace will be generated at the destination specified after the -data argument
 		ResourcesPlugin.getWorkspace();
 		logger.info("Workspace generated successfully");

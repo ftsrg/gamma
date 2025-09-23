@@ -13,12 +13,19 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns
 import epackage "http://www.mit.bme.hu/gamma/expression/Model"
 import epackage "http://www.mit.bme.hu/gamma/xSTS/Model"
 
-private pattern referencedVariables(reference : DirectReferenceExpression, variable : VariableDeclaration) {
+private pattern tupleReferences(tuple : TupleReferenceExpression, subreference : ReferenceExpression) {
+	TupleReferenceExpression.references(tuple, subreference);
+}
+
+private pattern referencedVariables(reference : ReferenceExpression, variable : VariableDeclaration) {
 	DirectReferenceExpression.declaration(reference, variable);
+} or {
+	find tupleReferences+(reference, subreference);
+	DirectReferenceExpression.declaration(subreference, variable);
 }
 
 pattern assignmentActions(action : AbstractAssignmentAction,
-		reference : DirectReferenceExpression, variable : VariableDeclaration) {
+		reference : ReferenceExpression, variable : VariableDeclaration) {
 	AbstractAssignmentAction.lhs(action, reference);
 	find referencedVariables(reference, variable);
 }

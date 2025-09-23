@@ -27,16 +27,12 @@ public class ExpressionTypeDeterminator extends ExpressionTypeDeterminator2 {
 	
 	@Override
 	public Type getType(Expression expression) {
-		if (expression instanceof ComponentInstanceVariableReferenceExpression) {
-			ComponentInstanceVariableReferenceExpression reference =
-					(ComponentInstanceVariableReferenceExpression) expression;
+		if (expression instanceof ComponentInstanceVariableReferenceExpression reference) {
 			VariableDeclaration variable = reference.getVariableDeclaration();
 			Type declarationType = variable.getType();
 			return ecoreUtil.clone(declarationType);
 		}
-		else if (expression instanceof ComponentInstanceEventParameterReferenceExpression) {
-			ComponentInstanceEventParameterReferenceExpression reference =
-					(ComponentInstanceEventParameterReferenceExpression) expression;
+		else if (expression instanceof ComponentInstanceEventParameterReferenceExpression reference) {
 			ParameterDeclaration parameter = reference.getParameterDeclaration();
 			Type declarationType = parameter.getType();
 			return ecoreUtil.clone(declarationType);
@@ -44,6 +40,7 @@ public class ExpressionTypeDeterminator extends ExpressionTypeDeterminator2 {
 		else if (expression instanceof ComponentInstanceElementReferenceExpression) {
 			return factory.createBooleanTypeDefinition();
 		}
+		
 		return super.getType(expression);
 	}	
 	

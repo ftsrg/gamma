@@ -68,7 +68,11 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	def protected getSingleTargetStateName(State state, Region parentRegion, SynchronousComponentInstance instance) {
-		return '''«parentRegion.customizeName(instance)» == «parentRegion.customizeRegionTypeName».«state.customizeName»'''
+		return '''«parentRegion.getTargetRegionName(instance)» == «parentRegion.customizeRegionTypeName».«state.customizeName»'''
+	}
+	
+	override protected getTargetRegionName(Region parentRegion, SynchronousComponentInstance instance) {
+		return '''«parentRegion.customizeName(instance)»'''
 	}
 	
 	override protected getTargetVariableNames(VariableDeclaration variable, SynchronousComponentInstance instance) {
@@ -130,6 +134,15 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		}
 	}
 	
+	def isSourceRegion(String targetRegionName) {
+		try {
+			targetRegionName.getSourceRegion
+			return true
+		} catch (IllegalArgumentException e) {
+			return false
+		}
+	}
+	
 	def isSourceVariable(String targetVariableName) {
 		try {
 			targetVariableName.getSourceVariable
@@ -184,10 +197,14 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	def isSynchronousSourceInEvent(String targetInEventName) {
+		if (!component.synchronous) {
+			return false
+		}
+		return targetInEventName.isSynchronousStatechartSourceInEvent
+	}
+	
+	def isSynchronousStatechartSourceInEvent(String targetInEventName) {
 		try {
-			if (!component.synchronous) {
-				return false
-			}
 			targetInEventName.getSynchronousSourceInEvent
 			return true
 		} catch (IllegalArgumentException e) {
@@ -196,10 +213,14 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	def isSynchronousSourceInEventParameter(String targetInEventParameterName) {
+		if (!component.synchronous) {
+			return false
+		}
+		return targetInEventParameterName.isSynchronousStatechartSourceInEventParameter
+	}
+	
+	def isSynchronousStatechartSourceInEventParameter(String targetInEventParameterName) {
 		try {
-			if (!component.synchronous) {
-				return false
-			}
 			targetInEventParameterName.getSynchronousSourceInEventParameter
 			return true
 		} catch (IllegalArgumentException e) {
@@ -271,6 +292,16 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 			val name = getSingleTargetStateName(match.state, match.parentRegion, match.instance)
 			if (name == targetStateName) {
 				return match.state -> match.instance
+			}
+		}
+		throw new IllegalArgumentException("Not known id")
+	}
+	
+	def getSourceRegion(String targetRegionName) {
+		for (match : instanceStates) {
+			val name = getTargetRegionName(match.parentRegion, match.instance)
+			if (name == targetRegionName) {
+				return match.parentRegion -> match.instance
 			}
 		}
 		throw new IllegalArgumentException("Not known id")

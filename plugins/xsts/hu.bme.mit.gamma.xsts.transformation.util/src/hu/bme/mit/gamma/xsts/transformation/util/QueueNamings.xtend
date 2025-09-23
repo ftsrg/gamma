@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,28 +15,40 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.interface_.Port
-
-import static extension java.lang.Math.*
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 class QueueNamings {
+	//
+	public static final String MASTER_PREFIX = "master_"
+	public static final String SLAVE_PREFIX = "slave_"
+	
+	public static final String OF = "Of"
+	
+	protected static final String SIZE = "size"
+	
+	public static final String SIZE_MASTER_PREFIX = SIZE + MASTER_PREFIX
+	public static final String SIZE_SLAVE_PREFIX = SIZE + SLAVE_PREFIX
+	//
+	protected final static extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	//
 	
 	def static String getMasterQueueName(
-		MessageQueue queue, ComponentInstance instance) '''master_«queue.name»Of«instance.name»'''
+		MessageQueue queue, ComponentInstance instance) '''«MASTER_PREFIX»«queue.name»«OF»«instance.name»'''
 	def static String getMasterSizeVariableName(
-		MessageQueue queue, ComponentInstance instance) '''sizeMaster«queue.name.toFirstUpper»Of«instance.name»'''
+		MessageQueue queue, ComponentInstance instance) '''«SIZE_MASTER_PREFIX»«queue.name.toFirstUpper»«OF»«instance.name»'''
 	
 	def static String getSlaveQueueName(ParameterDeclaration parameterDeclaration,
 			Port port, ComponentInstance instance) // For traceability reasons, parameterDeclaration is needed
-		'''slave_«port.name»_«parameterDeclaration.name»Of«instance.name»'''
+		'''«SLAVE_PREFIX»«port.name»_«parameterDeclaration.name»«OF»«instance.name»'''
 	def static String getSlaveSizeVariableName(
 			ParameterDeclaration parameterDeclaration, Port port, ComponentInstance instance)
-		'''sizeSlave«parameterDeclaration.name.toFirstUpper»«port.name.toFirstUpper»Of«instance.name»'''
+		'''«SIZE_SLAVE_PREFIX»«parameterDeclaration.name.toFirstUpper»«port.name.toFirstUpper»«OF»«instance.name»'''
 	
 	def static String getEventIdLocalVariableName(VariableDeclaration queue)
-		'''eventId_«queue.name»_«queue.hashCode.abs»'''
+		'''eventId_«queue.name»_«queue.uniqueIndex»'''
 	def static String getRandomValueLocalVariableName(VariableDeclaration queue)
-		'''random_«queue.name»_«queue.hashCode.abs»'''
+		'''random_«queue.name»_«queue.uniqueIndex»'''
 	
 	def static String getLoopIterationVariableName() '''i'''
-		
+	
 }

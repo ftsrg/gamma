@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer
 
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
+import hu.bme.mit.gamma.xsts.model.ProcedureDeclaration
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
@@ -71,7 +72,14 @@ class XstsOptimizer {
 		}
 		//
 		
+		for (function : xSts.functionDeclarations.filter(ProcedureDeclaration)) {
+			val body = function.body
+			val optimizedBody = body.optimizeAction
+			function.body = optimizedBody.wrapIfNeeded
+		}
+		
 		// Finally, removing unreferenced transient variables
+		xSts.removeUnusedSlaveQueueVariables
 		xSts.removeTransientVariables
 	}
 	

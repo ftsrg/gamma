@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Statechart Language IDE
 Bundle-Vendor: BME-FTSRG
-Bundle-Version: 2.11.0.qualifier
+Bundle-Version: 2.13.0.qualifier
 Bundle-SymbolicName: hu.bme.mit.gamma.statechart.language.ide; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: hu.bme.mit.gamma.statechart.language,
@@ -12,7 +12,7 @@ Require-Bundle: hu.bme.mit.gamma.statechart.language,
  org.antlr.runtime;bundle-version="[3.2.0,3.2.1)",
  hu.bme.mit.gamma.action.language,
  hu.bme.mit.gamma.expression.language
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: hu.bme.mit.gamma.statechart.language.ide.contentassist.antlr.internal,
  hu.bme.mit.gamma.statechart.language.ide.contentassist.antlr
 Automatic-Module-Name: hu.bme.mit.gamma.statechart.language.ide

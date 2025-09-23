@@ -62,7 +62,7 @@ public class ArgumentInliner {
 			ParameterDeclaration parameter = parameters.get(i);
 			// Precondition: here parameters can be referenced only via DirectReferenceExpressions
 			for (DirectReferenceExpression directReference : ecoreUtil.getSelfAndAllContentsOfType(
-					result, DirectReferenceExpression.class).stream()
+						result, DirectReferenceExpression.class).stream()
 					.filter(it -> it.getDeclaration() == parameter)
 					.collect(Collectors.toList())) {
 				Expression clonedArgument = ecoreUtil.clone(argument);

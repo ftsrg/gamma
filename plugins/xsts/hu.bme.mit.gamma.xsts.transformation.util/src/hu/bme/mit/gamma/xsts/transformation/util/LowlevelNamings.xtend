@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.xsts.transformation.util
 
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
@@ -43,6 +44,7 @@ class LowlevelNamings {
 	static def String getOutName(ParameterDeclaration parameterDeclaration, Port port) '''«parameterDeclaration.containingEvent.getOutputName(port)»_«parameterDeclaration.name»'''
 	static def String getComponentParameterName(ParameterDeclaration parameter) '''«parameter.name»'''
 	static def String getName(VariableDeclaration variable) '''«variable.name»'''
+	static def String getName(FunctionDeclaration function) '''«function.name»'''
 	static def String getName(TimeoutDeclaration timeout) '''«timeout.name»'''
 	static def String getName(Clock clock) '''«clock.name»'''
 	static def String getName(TypeDeclaration type) '''«type.name»'''

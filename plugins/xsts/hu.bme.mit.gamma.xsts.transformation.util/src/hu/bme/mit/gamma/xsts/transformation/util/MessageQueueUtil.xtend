@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023-2024 Contributors to the Gamma project
+ * Copyright (c) 2023-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -26,6 +26,7 @@ import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.LessEqualExpression
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
+import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -60,6 +61,9 @@ class MessageQueueUtil {
 		val type = variable.typeDefinition
 		if (type instanceof ArrayTypeDefinition) {
 			val xSts = variable.containingXsts
+			if (xSts === null) {
+				return false
+			}
 			val queueVariables = xSts.masterMessageQueueGroup.variables
 			
 			return queueVariables.contains(variable)
@@ -71,6 +75,9 @@ class MessageQueueUtil {
 		val type = variable.typeDefinition
 		if (type instanceof ArrayTypeDefinition) {
 			val xSts = variable.containingXsts
+			if (xSts === null) {
+				return false
+			}
 			val queueVariables = xSts.messageQueueGroup.variables
 			
 			return queueVariables.contains(variable)
@@ -82,6 +89,9 @@ class MessageQueueUtil {
 		val type = variable.typeDefinition
 		if (type instanceof IntegerTypeDefinition) {
 			val xSts = variable.containingXsts
+			if (xSts === null) {
+				return false
+			}
 			val sizeVariables = xSts.messageQueueSizeGroup.variables
 			
 			return sizeVariables.contains(variable)
@@ -240,6 +250,10 @@ class MessageQueueUtil {
 	def isQueueAddAction(Action action) {
 		if (action instanceof AssignmentAction) {
 			val lhs = action.lhs
+			if (lhs instanceof TupleReferenceExpression) {
+				return false
+			}
+			
 			val queue = lhs.declaration
 			if (queue.global) {
 				val xSts = queue.containingXsts
@@ -309,7 +323,8 @@ class MessageQueueUtil {
 			rhs = declaration.expression
 		}
 		
-		if (rhs instanceof ReferenceExpression) {
+		if (rhs instanceof ReferenceExpression &&
+				rhs.containsTypeTransitively(DirectReferenceExpression)) {
 			val queue = rhs.declaration
 			if (queue.global) {
 				val xSts = queue.containingXsts

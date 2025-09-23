@@ -57,7 +57,7 @@ import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class SystemReducer {
 	// Singleton
-	public static final SystemReducer INSTANCE =  new SystemReducer
+	public static final SystemReducer INSTANCE = new SystemReducer
 	protected new() {}
 	// Auxiliary objects
 	protected final extension XstsOptimizer xStsOptimizer = XstsOptimizer.INSTANCE
@@ -75,7 +75,7 @@ class SystemReducer {
 	def void deleteUnusedPorts(XSTS xSts, CompositeComponent component) {
 		// In theory, only AssignmentAction would be enough, still we use AbstractAssignmentAction to be sure
 		val xStsAssignmentActions = xSts.getAllContentsOfType(AbstractAssignmentAction) // Caching
-		val xStsDefaultableVariables = newHashSet
+		val xStsDefaultableVariables = newLinkedHashSet
 		val xStsDeletableVariables = newHashSet
 		val xStsDeletableAssignmentActions = newHashSet
 		for (instance : component.derivedComponents) {
@@ -410,7 +410,9 @@ class SystemReducer {
 	def void deleteTrivialCodomainVariablesExceptOutEvents(XSTS xSts,
 			Collection<? extends VariableDeclaration> keepableVariables, // Unfolded Gamma variables
 			Collection<? extends State> keepableStates) {
-		val keepableXStsVariables = xSts.nonInternalOutputVariables
+		val keepableXStsVariables = newLinkedHashSet
+		keepableXStsVariables += xSts.nonInternalOutputVariables
+		keepableXStsVariables += xSts.clockVariables
 		
 		xSts.deleteTrivialCodomainVariables(keepableVariables, keepableStates, keepableXStsVariables)
 	}

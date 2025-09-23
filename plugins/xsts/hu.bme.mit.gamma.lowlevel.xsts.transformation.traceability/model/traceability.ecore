@@ -82,4 +82,10 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="xStsTypeDeclaration" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//TypeDeclaration"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="FunctionDeclarationTrace" eSuperTypes="#//AbstractTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="lowlevelFunctionDeclaration"
+        lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//FunctionDeclaration"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="xStsFunctionDeclaration"
+        lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//FunctionDeclaration"/>
+  </eClassifiers>
 </ecore:EPackage>

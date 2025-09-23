@@ -1,0 +1,220 @@
+package traindoorcontrol
+
+import "Interface/Interface.gcd"
+
+@TransitionPriority = order-based
+statechart CoFiController [
+	port ControlActions : provides ControlActions
+	port FeedbackDoorState : requires FeedbackDoorState
+	port FeedbackPresence : requires FeedbackPresence
+	port ExternalCommunication : requires ExternalCommunication
+	port OpenTimeout : requires Timeout { invariant OpenTimeout.^timeout:: imply (in-state(Main._4) or in-state(Main._5) or in-state(Main._9)) }
+] {
+	var upMov : boolean := false
+	var upAlign : boolean := true
+	var upPresence : boolean := false
+	
+	region Main {
+		initial Initial
+		state _1
+		state _2
+		state _3
+		state _4
+		state _5
+		state _6
+		state _7
+		state _8
+		state _9
+		state _10
+		state _11
+		state _12
+	}
+	transition from Initial to _1
+	transition from _1 to _2 when ExternalCommunication.movement
+			[ExternalCommunication.movement::motionState = MotionState::ARRIVING] /
+				upMov := true;
+	transition from _2 to _3 when ExternalCommunication.alignment
+			[ExternalCommunication.alignment::isAligned = false] /
+				upAlign := false;
+	// Changed
+	transition from _3 to _6 when ExternalCommunication.movement
+			[ExternalCommunication.movement::motionState = MotionState::STILL] /
+				upMov := false;
+	// Removed
+//	transition from _2 to _4 when ExternalCommunication.movement
+//			[ExternalCommunication.movement::motionState = MotionState::STILL] /
+//				upMov := false;
+//				raise ControlActions.controlDoor(ControlAction::OPEN);
+	transition from _4 to _8 when OpenTimeout.^timeout /
+				raise ControlActions.controlDoor(ControlAction::CLOSE);
+	transition from _4 to _9 when FeedbackPresence.feedback
+			[FeedbackPresence.feedback::isPresent] /
+				upPresence := true;
+//	transition from _5 to _4 when FeedbackPresence.feedback
+//			[not FeedbackPresence.feedback::isPresent] /
+//				upPresence := false;
+//	transition from _5 to _5 when FeedbackPresence.feedback
+//			[FeedbackPresence.feedback::isPresent]
+//	transition from _1 to _5 when FeedbackPresence.feedback
+//			[FeedbackPresence.feedback::isPresent] /
+//				upPresence := true;
+//				raise ControlActions.controlDoor(ControlAction::OPEN);
+	
+	// Introduced
+	
+	transition from _6 to _7 when ExternalCommunication.alignment
+			[ExternalCommunication.alignment::isAligned = true] /
+				upAlign := true;
+				raise ControlActions.controlDoor(ControlAction::OPEN);
+	transition from _7 to _7 when FeedbackDoorState.feedback
+			[FeedbackDoorState.feedback::doorState = DoorState::OPENING]
+	transition from _7 to _4 when FeedbackDoorState.feedback
+			[FeedbackDoorState.feedback::doorState = DoorState::OPEN]
+	
+	transition from _8 to _8 when FeedbackDoorState.feedback
+			[FeedbackDoorState.feedback::doorState = DoorState::CLOSING]
+	transition from _8 to _1 when FeedbackDoorState.feedback
+			[FeedbackDoorState.feedback::doorState = DoorState::CLOSED]
+	transition from _8 to _5 when FeedbackPresence.feedback
+			[FeedbackPresence.feedback::isPresent] /
+				upPresence := true;
+				raise ControlActions.controlDoor(ControlAction::OPEN);
+				
+	transition from _5 to _9 when FeedbackDoorState.feedback
+			[FeedbackDoorState.feedback::doorState = DoorState::OPEN]
+	transition from _9 to _9 when FeedbackPresence.feedback
+			[FeedbackPresence.feedback::isPresent] / upPresence := true;
+	transition from _9 to _4 when FeedbackPresence.feedback
+			[!FeedbackPresence.feedback::isPresent] / upPresence := false;
+			
+//	// Recommendations (present in the SP model, added below)
+//	transition from _6 to _3 when ExternalCommunication.movement
+//			[ExternalCommunication.movement::motionState != MotionState::STILL] /
+//				upMov := true;
+				
+	// Added in addition to nominal
+	
+	// Green
+	
+	transition from _1 to _1 when ExternalCommunication.alignment
+			[ExternalCommunication.alignment::isAligned or ExternalCommunication.alignment::isAligned = false]
+	transition from _1 to _1 when ExternalCommunication.movement
+			[ExternalCommunication.movement::motionState = MotionState::STILL] /
+				upMov := false;
+			
+	transition from _2 to _2 when ExternalCommunication.alignment
+			[ExternalCommunication.alignment::isAligned]
+	transition from _2 to _2 when ExternalCommunication.movement
+			[ExternalCommunication.movement::motionState != MotionState::STILL] /
+				upMov := true;
+	transition from _2 to _1 when ExternalCommunication.movement
+			[ExternalCommunication.movement::motionState = MotionState::STILL]
+			
+	transition from _3 to _3 when ExternalCommunication.alignment
+			[ExternalCommunication.alignment::isAligned = false]
+	transition from _3 to _3 when ExternalCommunication.movement
+			[ExternalCommunication.movement::motionState != MotionState::STILL] /
+				upMov := true;
+	transition from _3 to _2 when ExternalCommunication.alignment
+			[ExternalCommunication.alignment::isAligned] /
+				upAlign := true;
+				
+	transition from _4 to _4 when ExternalCommunication.alignment
+			[ExternalCommunication.alignment::isAligned or ExternalCommunication.alignment::isAligned = false]
+	transition from _4 to _4 when ExternalCommunication.movement
+			[ExternalCommunication.movement::motionState = MotionState::STILL]
+			
+	transition from _5 to _5 when ExternalCommunication.alignment
+			[ExternalCommunication.alignment::isAligned or ExternalCommunication.alignment::isAligned = false]
+	transition from _5 to _5 when ExternalCommunication.movement
+			[ExternalCommunication.movement::motionState = MotionState::STILL]
+	transition from _5 to _5 when OpenTimeout.^timeout
+	transition from _5 to _5 when FeedbackPresence.feedback
+			[FeedbackPresence.feedback::isPresent = false]
+			
+	transition from _6 to _6 when ExternalCommunication.alignment
+			[ExternalCommunication.alignment::isAligned = false]
+	transition from _6 to _6 when ExternalCommunication.movement
+			[ExternalCommunication.movement::motionState = MotionState::STILL]
+	transition from _6 to _3 when ExternalCommunication.movement
+			[ExternalCommunication.movement::motionState != MotionState::STILL] /
+				upMov := true;
+				
+	transition from _7 to _7 when ExternalCommunication.alignment
+			[ExternalCommunication.alignment::isAligned = false]
+	transition from _7 to _7 when ExternalCommunication.movement
+			[ExternalCommunication.movement::motionState = MotionState::STILL]
+	transition from _7 to _7 when FeedbackPresence.feedback
+			[FeedbackPresence.feedback::isPresent] / upPresence := false;
+	
+	transition from _8 to _8 when ExternalCommunication.alignment
+			[ExternalCommunication.alignment::isAligned or ExternalCommunication.alignment::isAligned = false]
+	transition from _8 to _8 when ExternalCommunication.movement
+			[ExternalCommunication.movement::motionState = MotionState::STILL]
+	
+	transition from _9 to _9 when ExternalCommunication.alignment
+			[ExternalCommunication.alignment::isAligned or ExternalCommunication.alignment::isAligned = false]
+	transition from _9 to _9 when ExternalCommunication.movement
+			[ExternalCommunication.movement::motionState = MotionState::STILL]
+	transition from _9 to _9 when OpenTimeout.^timeout
+	
+	// Red
+	
+	transition from _4 to _10 when ExternalCommunication.movement
+			[ExternalCommunication.movement::motionState != MotionState::STILL]
+	transition from _5 to _10 when ExternalCommunication.movement
+			[ExternalCommunication.movement::motionState != MotionState::STILL]
+	transition from _7 to _10 when ExternalCommunication.movement
+			[ExternalCommunication.movement::motionState != MotionState::STILL]
+	transition from _8 to _10 when ExternalCommunication.movement
+			[ExternalCommunication.movement::motionState != MotionState::STILL]
+	transition from _9 to _10 when ExternalCommunication.movement
+			[ExternalCommunication.movement::motionState != MotionState::STILL]
+	
+	transition from _7 to _10 when ExternalCommunication.alignment
+			[ExternalCommunication.alignment::isAligned = false]
+	
+	transition from _2 to _10 when FeedbackDoorState.feedback
+			[FeedbackDoorState.feedback::doorState = DoorState::OPEN or
+				FeedbackDoorState.feedback::doorState = DoorState::OPENING or
+				FeedbackDoorState.feedback::doorState = DoorState::CLOSING]
+	transition from _3 to _10 when FeedbackDoorState.feedback
+			[FeedbackDoorState.feedback::doorState = DoorState::OPEN or
+				FeedbackDoorState.feedback::doorState = DoorState::OPENING or
+				FeedbackDoorState.feedback::doorState = DoorState::CLOSING]
+	transition from _5 to _10 when FeedbackDoorState.feedback
+			[FeedbackDoorState.feedback::doorState = DoorState::CLOSED or
+				FeedbackDoorState.feedback::doorState = DoorState::CLOSING]
+	transition from _9 to _10 when FeedbackDoorState.feedback
+			[FeedbackDoorState.feedback::doorState = DoorState::CLOSED or
+				FeedbackDoorState.feedback::doorState = DoorState::CLOSING]
+	
+	transition from _1 to _11 when FeedbackDoorState.feedback
+			[FeedbackDoorState.feedback::doorState = DoorState::OPEN or
+				FeedbackDoorState.feedback::doorState = DoorState::OPENING or
+				FeedbackDoorState.feedback::doorState = DoorState::CLOSING]
+	transition from _4 to _11 when FeedbackDoorState.feedback
+			[FeedbackDoorState.feedback::doorState = DoorState::CLOSED or
+				FeedbackDoorState.feedback::doorState = DoorState::CLOSING]
+	transition from _6 to _11 when FeedbackDoorState.feedback
+			[FeedbackDoorState.feedback::doorState = DoorState::OPEN or
+				FeedbackDoorState.feedback::doorState = DoorState::OPENING or
+				FeedbackDoorState.feedback::doorState = DoorState::CLOSING]
+	transition from _7 to _11 when FeedbackDoorState.feedback
+			[FeedbackDoorState.feedback::doorState = DoorState::CLOSED or
+				FeedbackDoorState.feedback::doorState = DoorState::CLOSING]
+	transition from _8 to _11 when FeedbackDoorState.feedback
+			[FeedbackDoorState.feedback::doorState = DoorState::OPEN or
+				FeedbackDoorState.feedback::doorState = DoorState::OPENING]
+	transition from _9 to _11 when FeedbackDoorState.feedback
+			[FeedbackDoorState.feedback::doorState = DoorState::OPENING]
+			
+	// Blue
+	transition from _7 to _12 when FeedbackPresence.feedback
+			[FeedbackPresence.feedback::isPresent] / upPresence := true;
+	transition from _12 to _9 when FeedbackDoorState.feedback
+			[FeedbackDoorState.feedback::doorState = DoorState::OPEN]
+			
+	transition from _5 to _5 when FeedbackPresence.feedback
+			[FeedbackPresence.feedback::isPresent] / upPresence := true;
+}

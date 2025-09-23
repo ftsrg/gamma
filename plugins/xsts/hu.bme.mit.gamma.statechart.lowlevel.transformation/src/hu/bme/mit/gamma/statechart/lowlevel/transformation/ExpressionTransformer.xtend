@@ -17,11 +17,14 @@ import hu.bme.mit.gamma.expression.model.DefaultExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
+import hu.bme.mit.gamma.expression.model.EqualityExpression
+import hu.bme.mit.gamma.expression.model.EquivalenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
+import hu.bme.mit.gamma.expression.model.InequalityExpression
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.NullaryExpression
@@ -75,6 +78,7 @@ class ExpressionTransformer {
 	// Trace needed for variable mappings
 	protected final Trace trace
 	protected final boolean FUNCTION_INLINING
+	protected final boolean ADD_RETURN_GUARDS
 	protected final int MAX_RECURSION_DEPTH
 	protected final TimeUnit BASE_TIME_UNIT
 	
@@ -85,18 +89,19 @@ class ExpressionTransformer {
 	}
 	
 	new(Trace trace) {
-		this(trace, true, 10, null)
+		this(trace, true, true, 7, null)
 	}
 	
-	new(Trace trace, boolean functionInlining, int maxRecursionDepth) {
-		this(trace, functionInlining, maxRecursionDepth, null)
+	new(Trace trace, boolean functionInlining, boolean addReturnGuards, int maxRecursionDepth) {
+		this(trace, functionInlining, addReturnGuards, maxRecursionDepth, null)
 	}
 	
-	new(Trace trace, boolean functionInlining, int maxRecursionDepth, TimeUnit baseTimeUnit) {
+	new(Trace trace, boolean functionInlining, boolean addReturnGuards, int maxRecursionDepth, TimeUnit baseTimeUnit) {
 		this.trace = trace
 		this.FUNCTION_INLINING = functionInlining
 		this.MAX_RECURSION_DEPTH = maxRecursionDepth
 		this.BASE_TIME_UNIT = baseTimeUnit
+		this.ADD_RETURN_GUARDS = addReturnGuards
 		this.currentRecursionDepth = maxRecursionDepth
 		this.typeTransformer = new TypeTransformer(trace)
 	}
@@ -135,6 +140,33 @@ class ExpressionTransformer {
 				it.leftOperand = expression.leftOperand.transformSimpleExpression
 				it.rightOperand = expression.rightOperand.transformSimpleExpression
 			]
+		]
+	}
+	
+	def dispatch List<Expression> transformExpression(EquivalenceExpression expression) {
+		val expressions = <Expression>newArrayList
+		
+		val lowlevelLhs = expression.leftOperand.transformExpression
+		val lowlevelRhs = expression.rightOperand.transformExpression
+		val size = lowlevelLhs.size
+		checkState(lowlevelLhs.size == lowlevelRhs.size)
+		
+		for (var i = 0; i < size; i++) {
+			val lhs = lowlevelLhs.get(i)
+			val rhs = lowlevelRhs.get(i)
+			
+			expressions += create(expression.eClass) as EquivalenceExpression => [
+				it.leftOperand = lhs
+				it.rightOperand = rhs
+			]
+		}
+		
+		checkState(expression instanceof EqualityExpression || expression instanceof InequalityExpression, expression)
+		
+		return #[
+			(expression instanceof EqualityExpression) ?
+				expressions.wrapIntoAndExpression :
+				expressions.wrapIntoOrExpression
 		]
 	}
 	
@@ -195,9 +227,12 @@ class ExpressionTransformer {
 	def dispatch List<Expression> transformExpression(RecordLiteralExpression expression) {
 		// Currently the field assignment position has to match the field declaration position
 		val result = newArrayList
-		for (assignment : expression.fieldAssignments) {
+		
+		val sortedRecord = expression.sortedRecordLiteral
+		for (assignment : sortedRecord.fieldAssignments) {
 			result += assignment.value.transformExpression
 		}
+		
 		return result
 	}
 	
@@ -265,6 +300,10 @@ class ExpressionTransformer {
 				val forLoopParameter = declaration as ParameterDeclaration
 				lowlevelVariables += trace.get(forLoopParameter)
 			}
+			else if (trace.isParMapped(declaration -> fieldAccess)) {
+				// Function parameter value
+				lowlevelVariables += trace.getAllPar(declaration -> fieldAccess)
+			}
 			else {
 				// Normal value
 				lowlevelVariables += trace.getAll(declaration -> fieldAccess)
@@ -310,14 +349,34 @@ class ExpressionTransformer {
 					currentRecursionDepth--
 					
 					var clonedBody = expression.createInlinedLambaExpression
-					result += clonedBody.transformSimpleExpression // Possible recursion
+					result += clonedBody.transformExpression // Possible recursion
 					
 					currentRecursionDepth++
 				}
 			}
 		}
 		else {
-			throw new IllegalArgumentException("Currently only function inlining is possible")
+			if (trace.isMapped(expression)) {
+				// Extracted method call
+				for (returnVariable : trace.get(expression)) {
+					result += returnVariable.createReferenceExpression
+				}
+			}
+			else {
+				// Basic method call
+				val gammaFunction = expression.declaration as FunctionDeclaration
+				val arguments = expression.arguments
+				// By now, the procedure must be transformed by ExpressionPreconditionTransformer
+				if (!trace.isMapped(gammaFunction)) { // On-the-fly transformation added here
+					val extension functionTransformer = new FunctionTransformer(trace, ADD_RETURN_GUARDS)
+					gammaFunction.transformAndStoreFunction
+				}
+				
+				val lowlevelFunction = trace.get(gammaFunction)
+				val lowlevelArguments = arguments.map[it.transformExpression].flatten.toList
+				val lowlevelCall = lowlevelFunction.createFunctionAccessExpression(lowlevelArguments)
+				result += lowlevelCall
+			}
 		}
 		return result
 	}
@@ -367,7 +426,7 @@ class ExpressionTransformer {
 			
 			// Trying optimization first 'after 0 s'
 			if (value.evaluable && value.evaluateInteger == 0) {
-				logger.info("Optimzing 'after 0' timeout trigger")
+				logger.info("Optimizing 'after 0' timeout trigger")
 				return createTrueExpression
 			}
 			//

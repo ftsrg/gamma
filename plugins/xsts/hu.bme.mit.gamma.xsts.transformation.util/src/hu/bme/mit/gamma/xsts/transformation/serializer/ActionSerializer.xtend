@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,15 +10,19 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation.serializer
 
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.FunctionCallAction
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
+import hu.bme.mit.gamma.xsts.model.OpaqueAction
 import hu.bme.mit.gamma.xsts.model.OrthogonalAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
+import hu.bme.mit.gamma.xsts.model.ReturnAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
@@ -57,6 +61,10 @@ class ActionSerializer {
 		assume «action.assumption.serialize»;
 	'''
 	
+	def dispatch String serialize(ReturnAction action) '''
+		return «action.expression.serialize»;
+	'''
+	
 	def dispatch String serialize(AssignmentAction action) '''
 		«action.lhs.serialize» := «action.rhs.serialize»;
 	'''
@@ -71,6 +79,18 @@ class ActionSerializer {
 	
 	// nop cannot be parsed by Theta
 	def dispatch String serialize(EmptyAction action) ''''''
+	
+	// Comments - could not be parsed by Theta otherwise
+	def dispatch String serialize(OpaqueAction action) '''/* «action.action.trim» */'''
+	
+	// Cannot be parsed by Theta
+	def dispatch String serialize(FunctionCallAction action) {
+		val call = action.functionCallExpression
+		val operand = call.operand as DirectReferenceExpression
+		val function = operand.declaration
+		val arguments = call.arguments
+		return '''«function.name»(«FOR argument : arguments SEPARATOR ', '»«argument.serialize»«ENDFOR»);'''
+	}
 	
 	def dispatch String serialize(LoopAction action) {
 		val name = action.iterationParameterDeclaration.name

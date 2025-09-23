@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
+import hu.bme.mit.gamma.expression.model.VoidTypeDefinition
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 
@@ -29,7 +30,6 @@ import static hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class TypeTransformer {
-	
 	// Auxiliary object
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
@@ -45,6 +45,10 @@ class TypeTransformer {
 	
 	protected def dispatch Type transformType(Type type) {
 		throw new IllegalArgumentException("Not known type: " + type)
+	}
+	
+	protected def dispatch Type transformType(VoidTypeDefinition type) {
+		return type.clone
 	}
 
 	protected def dispatch Type transformType(BooleanTypeDefinition type) {
@@ -68,14 +72,25 @@ class TypeTransformer {
 	}
 	
 	protected def dispatch Type transformType(ArrayTypeDefinition type) {
-		// ExpressionModelDerivedFeatures.getNativeTypes creates the correct types, cloning is enough
-		return type.clone
+		val arrayType = type.clone
+		arrayType.elementType = arrayType.elementType.transformType // To transform potential enums
+		return arrayType
 	}
 	
 	protected def dispatch Type transformType(RecordTypeDefinition type) {
 		// Due to the transformation and usage of ExpressionModelDerivedFeatures.getNativeTypes,
 		// this situation must never occur
-		throw new IllegalArgumentException("Record types cannot be transformed like this: " + type)
+		
+		// Except when functions are not inlined (function return type)
+		val tupleType = createTupleTypeDefinition
+		
+		val fieldDeclarations = type.fieldDeclarations
+		for (fieldDeclaration : fieldDeclarations) {
+			val fieldType = fieldDeclaration.type
+			tupleType.types += fieldType.transformType
+		}
+		
+		return tupleType
 	}
 	
 	protected def dispatch Type transformType(TypeReference type) {
@@ -83,6 +98,9 @@ class TypeTransformer {
 		val typeDefinition = typeDeclaration.type
 		// Inlining primitive types
 		if (typeDefinition.isPrimitive) {
+			return typeDefinition.transformType
+		}
+		if (typeDefinition instanceof RecordTypeDefinition) {
 			return typeDefinition.transformType
 		}
 		val lowlevelTypeDeclaration = if (trace.isMapped(typeDeclaration)) {

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Gamma project
+ * Copyright (c) 2024-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -29,6 +29,7 @@ class ModelSerializer {
 	
 	protected final extension ActionSerializer actionSerializer = new ActionSerializer // For code hoisting
 	
+	protected final extension XstsValidator validator = XstsValidator.INSTANCE
 	//
 	protected final extension DeclarationSerializer declarationSerializer = DeclarationSerializer.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
@@ -37,7 +38,14 @@ class ModelSerializer {
 	//
 	
 	def String serializeIml(XSTS xSts) {
+		return xSts.serializeIml(false)
+	}
+	
+	def String serializeIml(XSTS xSts, boolean optimizeNonDet) {
 		actionSerializer.clearActions
+		actionSerializer.setOptimizeNonDet = optimizeNonDet
+		//
+		xSts.validate
 		//
 		
 		val globalVariables = xSts.variableDeclarations
@@ -66,14 +74,14 @@ class ModelSerializer {
 		actionSerializer.setHasTransHavoc = !transHavocs.empty
 						
 		val choices = xSts.getAllContentsOfType(NonDeterministicAction)
-		
+		val needNonDet = !optimizeNonDet && !choices.empty // Map non-det choices in a sound way
 		//
 		
 		val types = '''
 			«FOR typeDeclaration : xSts.typeDeclarations AFTER System.lineSeparator»
 				«typeDeclaration.serializeTypeDeclaration»
 			«ENDFOR»
-			type nonrec «GLOBAL_RECORD_TYPE_NAME» = {
+			«TYPE» «GLOBAL_RECORD_TYPE_NAME» = {
 				«FOR variableDeclaration : globalVariables»
 					«variableDeclaration.serializeFieldDeclaration»
 				«ENDFOR»
@@ -83,7 +91,7 @@ class ModelSerializer {
 			}
 			
 			«IF !localVariables.empty»
-				type nonrec «LOCAL_RECORD_TYPE_NAME» = {
+				«TYPE» «LOCAL_RECORD_TYPE_NAME» = {
 					«FOR variableDeclaration : localVariables»
 						«variableDeclaration.serializeFieldDeclaration»
 					«ENDFOR»
@@ -91,7 +99,7 @@ class ModelSerializer {
 				
 			«ENDIF»
 			«IF !initLocalVariables.empty»
-				type nonrec «INIT_LOCAL_RECORD_TYPE_NAME» = {
+				«TYPE» «INIT_LOCAL_RECORD_TYPE_NAME» = {
 					«FOR variableDeclaration : initLocalVariables»
 						«variableDeclaration.serializeFieldDeclaration»
 					«ENDFOR»
@@ -99,7 +107,7 @@ class ModelSerializer {
 				
 			«ENDIF»
 			«IF !envLocalVariables.empty»
-				type nonrec «ENV_LOCAL_RECORD_TYPE_NAME» = {
+				«TYPE» «ENV_LOCAL_RECORD_TYPE_NAME» = {
 					«FOR variableDeclaration : envLocalVariables»
 						«variableDeclaration.serializeFieldDeclaration»
 					«ENDFOR»
@@ -107,7 +115,7 @@ class ModelSerializer {
 				
 			«ENDIF»
 			«IF !havocs.empty»
-				type nonrec «ENV_HAVOC_RECORD_TYPE_NAME» = {
+				«TYPE» «ENV_HAVOC_RECORD_TYPE_NAME» = {
 					«FOR envHavoc : havocs»
 						«envHavoc.serializeEnvFieldDeclaration»
 					«ENDFOR»
@@ -115,6 +123,10 @@ class ModelSerializer {
 						«choice.customizeChoice» : int;
 					«ENDFOR»
 				}
+				
+			«ENDIF»
+			«IF needNonDet»
+				«TYPE» «NONDET_BRANCH_TYPE_NAME» = «FOR i : 0 ..< choices.map[it.actions.size].max SEPARATOR ' | '»«i.branchLiteralName»«ENDFOR»
 			«ENDIF»
 		'''
 		
@@ -180,8 +192,36 @@ class ModelSerializer {
 						pre_trans_r :: «globalVariableName» :: (log_«RUN_FUNCTION_IDENTIFIER» «globalVariableName» tl)
 		'''
 		
+		val aux = '''
+			«IF needNonDet»
+				let «PICK_BRANCH_FUNCTION_NAME» («globalVariableName» : «GLOBAL_RECORD_TYPE_NAME») guard (bs : «NONDET_BRANCH_TYPE_NAME» list) (sel : int) : «NONDET_BRANCH_TYPE_NAME» option =
+					let rec aux branches candidate n =
+						match branches with
+						| [] -> candidate
+						| b::bs ->
+							if guard «globalVariableName» b then (
+								if sel = 0 then Some b
+								else aux bs (Some b) (n - 1))
+							else (
+								aux bs candidate (n - 1))
+					in
+					aux bs None sel
+			«ENDIF»
+		'''
+		
+		val functions = '''
+			«FOR function : xSts.functionDeclarations»
+				«function.serializeFunctionDeclaration»
+				
+			«ENDFOR»
+		'''
+		
 		return '''
 			«types»
+			
+			«aux»
+			
+			«functions»
 			
 			«init»
 			

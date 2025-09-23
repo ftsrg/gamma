@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Java Code Generator
 Bundle-SymbolicName: hu.bme.mit.gamma.codegeneration.java;singleton:=true
-Bundle-Version: 2.11.0.qualifier
+Bundle-Version: 2.13.0.qualifier
 Bundle-Vendor: BME-FTSRG
 Export-Package: hu.bme.mit.gamma.codegeneration.java,
  hu.bme.mit.gamma.codegeneration.java.queries
@@ -15,6 +15,6 @@ Require-Bundle: org.eclipse.emf.ecore,
  hu.bme.mit.gamma.action.model,
  hu.bme.mit.gamma.statechart.model,
  hu.bme.mit.gamma.codegeneration.java.util
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: hu.bme.mit.gamma.codegenerator.java
 Import-Package: org.apache.log4j

@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Setup
 Bundle-SymbolicName: hu.bme.mit.gamma.setup
-Bundle-Version: 2.11.0.qualifier
+Bundle-Version: 2.13.0.qualifier
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.emf.ecore;visibility:=reexport,
  org.eclipse.emf.ecore.xmi;visibility:=reexport,
@@ -27,5 +27,5 @@ Require-Bundle: org.eclipse.core.runtime,
  hu.bme.mit.gamma.genmodel.model,
  hu.bme.mit.gamma.action.language
 Automatic-Module-Name: hu.bme.mit.gamma.setup
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: BME-FTSRG

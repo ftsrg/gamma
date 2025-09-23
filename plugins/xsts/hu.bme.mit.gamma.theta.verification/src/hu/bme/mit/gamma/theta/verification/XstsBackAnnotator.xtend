@@ -11,14 +11,20 @@
 package hu.bme.mit.gamma.theta.verification
 
 import hu.bme.mit.gamma.expression.language.parser.ExpressionLanguageParserAndLinker
+import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.expression.util.IndexHierarchy
 import hu.bme.mit.gamma.querygenerator.ThetaQueryGenerator
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
@@ -41,6 +47,7 @@ import java.util.function.Supplier
 import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
+import static hu.bme.mit.gamma.xsts.transformation.util.QueueNamings.*
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -98,8 +105,10 @@ class XstsBackAnnotator {
 	//
 	
 	def isSchedulingVariable(String id) {
-		return id == SCHEDULING_VARIABLE_PREFIX + Namings.instanceEndcodingVariableName
+		return id == Namings.instanceEndcodingVariableName.prefix
 	}
+	
+	def String prefix(String id) '''«SCHEDULING_VARIABLE_PREFIX»«id»'''
 	
 	def addScheduling(String id, String value, Step step) {
 		val scheduledInstanceId = Integer.valueOf(value)
@@ -378,6 +387,12 @@ class XstsBackAnnotator {
 		return parser
 	}
 	
+	def parseAndPostprocessExpression(String value) {
+		val expression = value.parseExpression
+		val postprocessedExpression = expression.postprocess
+		return postprocessedExpression
+	}
+	
 	def parseExpression(String value) {
 		val parser = getParser
 		val expression = parser.preprocessAndParse(value,
@@ -387,6 +402,91 @@ class XstsBackAnnotator {
 				}
 			},
 			expressionPreprocess)
+		
+		return expression
+	}
+	
+	def Expression postprocess(Expression expression) {
+		if (expression instanceof ComponentInstanceEventReferenceExpression) {
+			val port = expression.port
+			val systemPort = port.boundTopComponentPort
+			
+			val raiseAct = systemPort.createRaiseEventAct(expression.event)
+			raiseAct.arguments.clear
+			return raiseAct
+		}
+		else if (expression instanceof ComponentInstanceEventParameterReferenceExpression) {
+			val port = expression.port
+			val systemPort = port.boundTopComponentPort
+			
+			return systemPort.createEventParameterReference(expression.parameterDeclaration)
+		}
+		else if (expression instanceof EqualityExpression) {
+			val left = expression.leftOperand
+			val right = expression.rightOperand
+			if (left instanceof OpaqueExpression) {
+				val lString = left.expression
+				if (right instanceof ComponentInstanceStateReferenceExpression) { // Control location
+					return right // No else
+				}
+				if (right instanceof OpaqueExpression) {
+					// "_subtraffic_light_Example_ControllerStatechart" = "_subtraffic_light_Example_ControllerStatechart";
+					val rString = right.expression
+					if (lString == rString) {
+						if (xStsQueryGenerator.isSourceRegion(lString)) {
+							val regionInstance = xStsQueryGenerator.getSourceRegion(lString)
+							val region = regionInstance.key
+							val instance = regionInstance.value
+							return '''Region «region.name» of «instance.name» remains the same'''.createOpaqueExpression
+						}
+					}
+					/// Queue handling: note that these are heuristics
+					if (lString.startsWith(MASTER_PREFIX.prefix)) {
+						val lhs = lString.substring(MASTER_PREFIX.prefix.length)
+								.replace(OF, ''' «OF» ''' )
+						val rhs = (rString.endsWith("EMPTY")) ? "is empty" : "contains " + rString.substring(
+								[!it.idChar]).substring([it.idChar])
+								
+						return '''«lhs» «rhs»'''.createOpaqueExpression
+					}
+					///
+				}
+			}
+		}
+		if (expression instanceof BinaryExpression) {
+			val left = expression.leftOperand
+			val right = expression.rightOperand
+			if (left instanceof OpaqueExpression) {
+				val lString = left.expression
+				/// Queue handling: note that these are heuristics
+				var string =
+					if (lString.startsWith(SIZE_MASTER_PREFIX.prefix)) {
+						"Size of " + lString.substring(SIZE_MASTER_PREFIX.prefix.length)
+					}
+					else if (lString.startsWith(SLAVE_PREFIX.prefix)) {
+						lString.substring(SLAVE_PREFIX.prefix.length)
+					}
+					else if (lString.startsWith(SIZE_SLAVE_PREFIX.prefix)) {
+						"Size of " + lString.substring(SIZE_SLAVE_PREFIX.prefix.length)
+					}
+					else { "" }
+				string = string.replace(OF, ''' «OF» ''' )
+				if (!string.nullOrEmpty) {
+					if (left.helperEquals(right)) {
+						return '''«string» retains its value'''.createOpaqueExpression
+					}
+					left.expression = string
+					// No return
+				}
+				///
+			}
+		}
+		
+		val subexpressions = expression.getAllContentsOfType(Expression)
+		for (subexpression : subexpressions) {
+			val newSubexpression = subexpression.postprocess
+			newSubexpression.replace(subexpression)
+		}
 		
 		return expression
 	}
@@ -425,7 +525,7 @@ class XstsBackAnnotator {
 				reference.handleFields([xStsQueryGenerator.getSourceVariableFieldHierarchy(id)])
 			}
 			else if (xStsQueryGenerator.isSourceOutEvent(id) ||
-						xStsQueryGenerator.isSynchronousSourceInEvent(id) /* Only sync, no support for queues */) {
+						xStsQueryGenerator.isSynchronousStatechartSourceInEvent(id) /* Only sync, no support for queues */) {
 				val isOut = xStsQueryGenerator.isSourceOutEvent(id)
 				val instanceEvent = isOut ?
 					xStsQueryGenerator.getSourceOutEvent(id):
@@ -437,7 +537,7 @@ class XstsBackAnnotator {
 				instance.createInstanceReference.createEventReference(port, event)
 			}
 			else if (xStsQueryGenerator.isSourceOutEventParameter(id) ||
-						xStsQueryGenerator.isSynchronousSourceInEventParameter(id) /* Only sync, no support for queues */) {
+						xStsQueryGenerator.isSynchronousStatechartSourceInEventParameter(id) /* Only sync, no support for queues */) {
 				val isOut = xStsQueryGenerator.isSourceOutEventParameter(id)
 				val instanceEvent = isOut ?
 					xStsQueryGenerator.getSourceOutEventParameter(id) :
@@ -499,12 +599,8 @@ class XstsBackAnnotator {
 		
 		protected def handleFields(Expression reference, Supplier<FieldHierarchy> fieldComputer) {
 			val fields = fieldComputer.get
-			return if (fields.empty) {
-				reference
-			}
-			else {
-				reference.createAccess(fields)
-			}
+			return (fields.empty) ? reference :
+					reference.createAccess(fields)
 		}
 		
 	}

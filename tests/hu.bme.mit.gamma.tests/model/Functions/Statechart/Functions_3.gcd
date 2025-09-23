@@ -1,0 +1,71 @@
+package functions
+
+import "Interfaces/Interfaces.gcd"
+
+statechart Functions_3 [
+	port Execute : requires Execute
+] {
+	var _complexRecord : ComplexRecord
+	var _record : Record
+	var _decimal : decimal
+	var _bool : boolean
+	region main {
+		initial Initial
+		state _A
+		
+		state _BBB
+		state _J
+		state _K
+	}
+	
+	transition from Initial to _A
+	
+	transition from _A to _BBB when Execute.^execute / addComplexRecord(#ComplexRecord{ a := 3.14, b := #Record{ a := false, b := 2 } });
+	transition from _BBB to _J when Execute.^execute / _decimal := addComplexRecord(createComplexRecord(-1.2, 13, true));
+	transition from _J to _K when Execute.^execute / {
+		var _record : ComplexRecord := createComplexRecord(-2.1, -67, true);
+		addComplexRecord(_record);
+		_record.a := _record.a / -1.7;
+		_record.b.b := _record.b.b mod 3;
+	}
+	
+	lambda factorialLambda(val : integer) : integer := (val <= 1) ? 1 : val * factorialLambda(val - 1)
+	
+	procedure addComplexRecord(rec : ComplexRecord) : decimal {
+		_complexRecord.a := _complexRecord.a * rec.a;
+		if (rec.b.b - 9 < 3 + 5) {
+			var _temp : ComplexRecord := createComplexRecord(-2.743, 88, true);
+			_temp.a := rec.a * 0.2;
+			_complexRecord.a := _temp.a / rec.a;
+		}
+		_complexRecord.a := _complexRecord.a - _complexRecord.a;
+		_complexRecord.a := 6.9; // Making this double "precise" for testing
+		_bool := _record.a or rec.b.a;
+		return _complexRecord.a;
+	}
+	
+	procedure factorialIfElse(value : integer) : integer {
+		if (value <= 1) {
+			return 1;
+		}
+		else {
+			return value * factorialIfElse(value - 1);
+		}
+	}
+	
+	procedure factorialIf(value : integer) : integer {
+		if (value <= 1) {
+			return 1;
+		}
+		return value * factorialIf(value - 1);
+	}
+	
+	procedure createRecord(b : integer, a : boolean) : Record {
+		return #Record{ a := a, b := b };
+	}
+	
+	procedure createComplexRecord(c : decimal, b : integer, a : boolean) : ComplexRecord {
+		return #ComplexRecord{ a := c, b := createRecord(b, a) };
+	}
+	
+}

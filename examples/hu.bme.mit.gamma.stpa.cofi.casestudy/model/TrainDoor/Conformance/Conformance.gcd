@@ -1,0 +1,36 @@
+package traindoorcontrol
+
+import "Interface/Interface.gcd"
+
+import "TrainDoorController/TrainDoorControllerAdapter.gcd"
+import "CoFi/CoFiAdapter.gcd"
+
+scheduled-async Conformance [
+	port FeedbackDoorState : requires FeedbackDoorState
+	port FeedbackPresence : requires FeedbackPresence
+	port ExternalCommunication : requires ExternalCommunication
+	
+	port OpenTimeout : requires Timeout
+//	port OpeningTimeout : requires Timeout
+//	port ClosingTimeout : requires Timeout
+	
+	port ControlActionsStatechart : provides ControlActions
+	port ControlActionsStateMachine : provides ControlActions
+] {
+	component _statechart : TrainDoorControllerAdapter
+	component _stateMachine : CoFiControllerAdapter
+	
+	bind FeedbackDoorState -> _statechart.FeedbackDoorState
+	bind FeedbackPresence -> _statechart.FeedbackPresence
+	bind ExternalCommunication -> _statechart.ExternalCommunication	
+	bind FeedbackDoorState -> _stateMachine.FeedbackDoorState
+	bind FeedbackPresence -> _stateMachine.FeedbackPresence
+	bind ExternalCommunication -> _stateMachine.ExternalCommunication
+	
+	bind OpenTimeout -> _statechart.OpenTimeout
+	bind OpenTimeout -> _stateMachine.OpenTimeout
+	
+	bind ControlActionsStatechart -> _statechart.ControlActions
+	bind ControlActionsStateMachine -> _stateMachine.ControlActions
+	
+}

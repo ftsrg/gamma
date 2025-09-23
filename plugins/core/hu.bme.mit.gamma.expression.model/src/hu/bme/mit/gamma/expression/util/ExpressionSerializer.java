@@ -50,9 +50,12 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
+import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.SubtractExpression;
 import hu.bme.mit.gamma.expression.model.TrueExpression;
+import hu.bme.mit.gamma.expression.model.TupleLiteralExpression;
+import hu.bme.mit.gamma.expression.model.TupleReferenceExpression;
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression;
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression;
 import hu.bme.mit.gamma.expression.model.XorExpression;
@@ -101,6 +104,21 @@ public class ExpressionSerializer {
 	protected String _serialize(final DirectReferenceExpression expression) {
 		final Declaration declaration = expression.getDeclaration();
 		return declaration.getName();
+	}
+	
+	protected String _serialize(final TupleReferenceExpression expression) {
+		StringBuilder builder = new StringBuilder();
+		
+		List<ReferenceExpression> operands = expression.getReferences();
+		for (ReferenceExpression operand : operands) {
+			if (operands.indexOf(operand) > 0) {
+				builder.append(", ");
+			}
+			String string = serialize(operand);
+			builder.append(string);
+		}
+		
+		return "(" + builder.toString() + ")";
 	}
 	
 	protected String _serialize(final NotExpression expression) {
@@ -341,7 +359,23 @@ public class ExpressionSerializer {
 	}
 
 	protected String _serialize(final ArrayAccessExpression arrayAccessExpression) {
-		return serialize(arrayAccessExpression.getOperand()) + "[" + serialize(arrayAccessExpression.getIndex()) + "]";
+		return serialize(arrayAccessExpression.getOperand()) +
+				"[" + serialize(arrayAccessExpression.getIndex()) + "]";
+	}
+	
+	protected String _serialize(final TupleLiteralExpression tupleLiteralExpression) {
+		StringBuilder builder = new StringBuilder();
+		
+		List<Expression> operands = tupleLiteralExpression.getOperands();
+		for (Expression operand : operands) {
+			if (operands.indexOf(operand) > 0) {
+				builder.append(", ");
+			}
+			String string = serialize(operand);
+			builder.append(string);
+		}
+		
+		return "(" + builder.toString() + ")";
 	}
 
 	protected String _serialize(final FunctionAccessExpression functionAccessExpression) {
@@ -483,85 +517,130 @@ public class ExpressionSerializer {
 	}
 
 	public String serialize(final Expression expression) {
-		if (expression instanceof EqualityExpression) {
-			return _serialize((EqualityExpression) expression);
-		} else if (expression instanceof FalseExpression) {
-			return _serialize((FalseExpression) expression);
-		} else if (expression instanceof GreaterEqualExpression) {
-			return _serialize((GreaterEqualExpression) expression);
-		} else if (expression instanceof GreaterExpression) {
-			return _serialize((GreaterExpression) expression);
-		} else if (expression instanceof InequalityExpression) {
-			return _serialize((InequalityExpression) expression);
-		} else if (expression instanceof LessEqualExpression) {
-			return _serialize((LessEqualExpression) expression);
-		} else if (expression instanceof LessExpression) {
-			return _serialize((LessExpression) expression);
-		} else if (expression instanceof TrueExpression) {
-			return _serialize((TrueExpression) expression);
-		} else if (expression instanceof AndExpression) {
-			return _serialize((AndExpression) expression);
-		} else if (expression instanceof IntegerLiteralExpression) {
-			return _serialize((IntegerLiteralExpression) expression);
-		} else if (expression instanceof DecimalLiteralExpression) {
-			return _serialize((DecimalLiteralExpression) expression);
-		} else if (expression instanceof RationalLiteralExpression) {
-			return _serialize((RationalLiteralExpression) expression);
-		} else if (expression instanceof NotExpression) {
-			return _serialize((NotExpression) expression);
-		} else if (expression instanceof OrExpression) {
-			return _serialize((OrExpression) expression);
-		} else if (expression instanceof XorExpression) {
-			return _serialize((XorExpression) expression);
-		} else if (expression instanceof AddExpression) {
-			return _serialize((AddExpression) expression);
-		} else if (expression instanceof DivideExpression) {
-			return _serialize((DivideExpression) expression);
-		} else if (expression instanceof ModExpression) {
-			return _serialize((ModExpression) expression);
-		} else if (expression instanceof ElseExpression) {
-			return _serialize((ElseExpression) expression);
-		} else if (expression instanceof EnumerationLiteralExpression) {
-			return _serialize((EnumerationLiteralExpression) expression);
-		} else if (expression instanceof MultiplyExpression) {
-			return _serialize((MultiplyExpression) expression);
-		} else if (expression instanceof DirectReferenceExpression) {
-			return _serialize((DirectReferenceExpression) expression);
-		} else if (expression instanceof SubtractExpression) {
-			return _serialize((SubtractExpression) expression);
-		} else if (expression instanceof UnaryMinusExpression) {
-			return _serialize((UnaryMinusExpression) expression);
-		} else if (expression instanceof UnaryPlusExpression) {
-			return _serialize((UnaryPlusExpression) expression);
-		} else if (expression instanceof ForallExpression) {
-			return _serialize((ForallExpression) expression);
-		} else if (expression instanceof ImplyExpression) {
-			return _serialize((ImplyExpression) expression);
-		} else if (expression instanceof ArrayAccessExpression) {
-			return _serialize((ArrayAccessExpression) expression);
-		} else if (expression instanceof DivExpression) {
-			return _serialize((DivExpression) expression);
-		} else if (expression instanceof FunctionAccessExpression) {
-			return _serialize((FunctionAccessExpression) expression);
-		} else if (expression instanceof RecordAccessExpression) {
-			return _serialize((RecordAccessExpression) expression);
-		} else if (expression instanceof SelectExpression) {
-			return _serialize((SelectExpression) expression);
-		} else if (expression instanceof IfThenElseExpression) {
-			return _serialize((IfThenElseExpression) expression);
-		} else if (expression instanceof OpaqueExpression) {
-			return _serialize((OpaqueExpression) expression);
-		} else if (expression instanceof ExistsExpression) {
-			return _serialize((ExistsExpression) expression);
-		} else if (expression instanceof ArrayLiteralExpression) {
-			return _serialize((ArrayLiteralExpression) expression);
-		} else if (expression instanceof RecordLiteralExpression) {
-			return _serialize((RecordLiteralExpression) expression);
-		} else if (expression instanceof IntegerRangeLiteralExpression) {
-			return _serialize((IntegerRangeLiteralExpression) expression);
-		} else if (expression == null) {
+		if (expression instanceof EqualityExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof FalseExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof GreaterEqualExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof GreaterExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof InequalityExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof LessEqualExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof LessExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof TrueExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof AndExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof IntegerLiteralExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof DecimalLiteralExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof RationalLiteralExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof NotExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof OrExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof XorExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof AddExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof DivideExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof ModExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof ElseExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof EnumerationLiteralExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof MultiplyExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof DirectReferenceExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof TupleReferenceExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof SubtractExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof UnaryMinusExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof UnaryPlusExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof ForallExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof ImplyExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof ArrayAccessExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof DivExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof FunctionAccessExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof RecordAccessExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof SelectExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof IfThenElseExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof OpaqueExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof ExistsExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof ArrayLiteralExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof RecordLiteralExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof TupleLiteralExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression instanceof IntegerRangeLiteralExpression _expression) {
+			return _serialize(_expression);
+		}
+		else if (expression == null) {
 			return "null";
-		} else {
+		}
+		else {
 			throw new IllegalArgumentException("Unhandled parameter types: " + expression);
 		}
 	}

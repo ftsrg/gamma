@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,14 +17,18 @@ import hu.bme.mit.gamma.action.model.Branch
 import hu.bme.mit.gamma.action.model.BreakStatement
 import hu.bme.mit.gamma.action.model.ChoiceStatement
 import hu.bme.mit.gamma.action.model.EmptyStatement
+import hu.bme.mit.gamma.action.model.ExpressionStatement
 import hu.bme.mit.gamma.action.model.ForStatement
 import hu.bme.mit.gamma.action.model.HavocStatement
 import hu.bme.mit.gamma.action.model.IfStatement
+import hu.bme.mit.gamma.action.model.ReturnStatement
 import hu.bme.mit.gamma.action.model.SwitchStatement
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
 import hu.bme.mit.gamma.expression.model.DefaultExpression
 import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
+import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -76,6 +80,30 @@ class ActionTransformer {
 //		return createAssertAction => [
 //			it.assertion = action.assertion.transformExpression
 //		]
+	}
+	
+	def dispatch Action transformAction(ReturnStatement action) {
+		val expression = action.expression
+		return createReturnAction => [
+			it.expression = expression?.transformExpression
+		]
+	}
+	
+	def dispatch Action transformAction(ExpressionStatement action) {
+		val expression = action.expression
+		
+		if (expression instanceof FunctionAccessExpression) {
+			return createFunctionCallAction => [
+				it.functionCallExpression = expression.transformExpression as FunctionAccessExpression
+			]
+		}
+		else if (expression instanceof OpaqueExpression) {
+			val string = expression.expression
+			val opaqueAction = string.createOpaqueAction
+			return opaqueAction
+		}
+		
+		return createEmptyAction
 	}
 	
 	def dispatch Action transformAction(VariableDeclarationStatement action) {

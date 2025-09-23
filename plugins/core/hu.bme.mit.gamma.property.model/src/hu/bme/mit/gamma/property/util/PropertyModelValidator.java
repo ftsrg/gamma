@@ -77,10 +77,10 @@ public class PropertyModelValidator extends StatechartModelValidator {
 					Component component = propertyPackage.getComponent();
 					List<ComponentInstance> containedComponents = StatechartModelDerivedFeatures.getInstances(component);
 					if (!containedComponents.contains(firstInstance)) {
-						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"The first component instance must be the component of " + component.getName(),
-							new ReferenceInfo(
-								CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE)));
+						validationResultMessages.add(
+							new ValidationResultMessage(ValidationResult.ERROR,
+								"The first component instance must be the component of " + component.getName(),
+									new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE)));
 					}
 				}
 			}
@@ -89,9 +89,10 @@ public class PropertyModelValidator extends StatechartModelValidator {
 		ComponentInstance lastInstance = StatechartModelDerivedFeatures.getLastInstance(reference);
 		if (lastInstance != null && // Xtext parsing
 				!StatechartModelDerivedFeatures.isStatechart(lastInstance)) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-				"The last component instance must have a statechart type", 
-					new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE)));
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.ERROR, 
+					"The last component instance must have a statechart type", 
+						new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE)));
 		}
 		
 		return validationResultMessages;
@@ -112,26 +113,33 @@ public class PropertyModelValidator extends StatechartModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		// contract.instance = contract.instance.lastInstanceReference
 		if (contract.getInstance() != null) {
-			validationResultMessages.addAll(checkMatchingComponentInstance(contract));
-			validationResultMessages.addAll(checkRootReferencesWhenInstanceProvided(contract));
-		} else {
-			validationResultMessages.addAll(checkNoInstanceProvided(contract));
+			validationResultMessages.addAll(
+					checkMatchingComponentInstance(contract));
+			validationResultMessages.addAll(
+					checkRootReferencesWhenInstanceProvided(contract));
+		}
+		else {
+			validationResultMessages.addAll(
+					checkNoInstanceProvided(contract));
 		}
 		return validationResultMessages;
 	}
 
 	public Collection<ValidationResultMessage> checkMatchingComponentInstance(Contract contract) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		List<ComponentInstanceReferenceExpression> assumeReferences = getLastComponentInstanceReferences(contract.getAssume());
-		List<ComponentInstanceReferenceExpression> guaranteeReferences = getLastComponentInstanceReferences(contract.getGuarantee());
-		ComponentInstanceReferenceExpression contractLastInstance = StatechartModelDerivedFeatures.getLastInstanceReference(contract.getInstance());
+		List<ComponentInstanceReferenceExpression> assumeReferences = getLastComponentInstanceReferences(
+				contract.getAssume());
+		List<ComponentInstanceReferenceExpression> guaranteeReferences = getLastComponentInstanceReferences(
+				contract.getGuarantee());
+		ComponentInstanceReferenceExpression contractLastInstance = StatechartModelDerivedFeatures
+				.getLastInstanceReference(contract.getInstance());
 
 		for (ComponentInstanceReferenceExpression ref : assumeReferences) {
 			if (!isSameComponentInstance(ref, contractLastInstance)) {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.ERROR,
-					"The ComponentInstanceReferenceExpression in the assume formula does not match the instance declared in the contract header.",
-					new ReferenceInfo(PropertyModelPackage.Literals.CONTRACT__ASSUME)));
+						"The ComponentInstanceReferenceExpression in the assume formula does not match the instance declared in the contract header.",
+							new ReferenceInfo(PropertyModelPackage.Literals.CONTRACT__ASSUME)));
 			}
 		}
 
@@ -139,8 +147,8 @@ public class PropertyModelValidator extends StatechartModelValidator {
 			if (!isSameComponentInstance(ref, contractLastInstance)) {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.ERROR,
-					"The ComponentInstanceReferenceExpression in the guarantee formula does not match the instance declared in the contract header.",
-					new ReferenceInfo(PropertyModelPackage.Literals.CONTRACT__GUARANTEE)));
+						"The ComponentInstanceReferenceExpression in the guarantee formula does not match the instance declared in the contract header.",
+							new ReferenceInfo(PropertyModelPackage.Literals.CONTRACT__GUARANTEE)));
 			}
 		}
 		return validationResultMessages;
@@ -148,21 +156,23 @@ public class PropertyModelValidator extends StatechartModelValidator {
 
 	public Collection<ValidationResultMessage> checkRootReferencesWhenInstanceProvided(Contract contract) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		List<PortEventReference> assumeRootReferences = getAllRootElementReferences(contract.getAssume());
-		List<PortEventReference> guaranteeRootReferences = getAllRootElementReferences(contract.getGuarantee());
+		List<PortEventReference> assumeRootReferences = getAllRootElementReferences(
+				contract.getAssume());
+		List<PortEventReference> guaranteeRootReferences = getAllRootElementReferences(
+				contract.getGuarantee());
 
 		if (!assumeRootReferences.isEmpty()) {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.ERROR,
-				"RootElementReference (e.g., 'self') is not allowed in the assume formula when an instance is declared in the contract header.",
-				new ReferenceInfo(PropertyModelPackage.Literals.CONTRACT__ASSUME)));
+					"RootElementReference (e.g., 'self') is not allowed in the assume formula when an instance is declared in the contract header.",
+						new ReferenceInfo(PropertyModelPackage.Literals.CONTRACT__ASSUME)));
 		}
 
 		if (!guaranteeRootReferences.isEmpty()) {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.ERROR,
-				"RootElementReference (e.g., 'self') is not allowed in the guarantee formula when an instance is declared in the contract header.",
-				new ReferenceInfo(PropertyModelPackage.Literals.CONTRACT__GUARANTEE)));
+					"RootElementReference (e.g., 'self') is not allowed in the guarantee formula when an instance is declared in the contract header.",
+						new ReferenceInfo(PropertyModelPackage.Literals.CONTRACT__GUARANTEE)));
 		}
 		return validationResultMessages;
 	}
@@ -175,15 +185,15 @@ public class PropertyModelValidator extends StatechartModelValidator {
 		if (!assumeReferences.isEmpty()) {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.ERROR,
-				"No ComponentInstanceReferenceExpression is allowed in the assume formula since no instance is declared in the contract header.",
-				new ReferenceInfo(PropertyModelPackage.Literals.CONTRACT__ASSUME)));
+					"No ComponentInstanceReferenceExpression is allowed in the assume formula since no instance is declared in the contract header.",
+						new ReferenceInfo(PropertyModelPackage.Literals.CONTRACT__ASSUME)));
 		}
 
 		if (!guaranteeReferences.isEmpty()) {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.ERROR,
-				"No ComponentInstanceReferenceExpression is allowed in the guarantee formula since no instance is declared in the contract header.",
-				new ReferenceInfo(PropertyModelPackage.Literals.CONTRACT__GUARANTEE)));
+					"No ComponentInstanceReferenceExpression is allowed in the guarantee formula since no instance is declared in the contract header.",
+						new ReferenceInfo(PropertyModelPackage.Literals.CONTRACT__GUARANTEE)));
 		}
 		return validationResultMessages;
 	}
@@ -198,8 +208,8 @@ public class PropertyModelValidator extends StatechartModelValidator {
 			if (quantifiedFormula.getQuantifier() == PathQuantifier.EXISTS) {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.ERROR,
-					"EXISTS (E) quantifier is not allowed in the assume formula of contracts.",
-					new ReferenceInfo(PropertyModelPackage.Literals.CONTRACT__ASSUME)));
+						"EXISTS (E) quantifier is not allowed in the assume formula of contracts.",
+							new ReferenceInfo(PropertyModelPackage.Literals.CONTRACT__ASSUME)));
 			}
 		}
 
@@ -207,8 +217,8 @@ public class PropertyModelValidator extends StatechartModelValidator {
 			if (quantifiedFormula.getQuantifier() == PathQuantifier.EXISTS) {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.ERROR,
-					"EXISTS (E) quantifier is not allowed in the guarantee formula of contracts.",
-					new ReferenceInfo(PropertyModelPackage.Literals.CONTRACT__GUARANTEE)));
+						"EXISTS (E) quantifier is not allowed in the guarantee formula of contracts.",
+							new ReferenceInfo(PropertyModelPackage.Literals.CONTRACT__GUARANTEE)));
 			}
 		}
 		return validationResultMessages;

@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.plantuml.transformation
 
+import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.plantuml.serialization.ExpressionSerializer
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
@@ -30,7 +31,9 @@ class TraceToPlantUmlTransformer {
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	//
-	
+	protected final String TRAP_STATE_MESSAGE_PREFIX = "Trap state entered"
+	protected final String TRANSITION_EXECUTION_MESSAGE_PREFIX = "Transition executed:"
+	//
 	new(ExecutionTrace trace) {
 		this.trace = trace
 	}
@@ -96,14 +99,22 @@ class TraceToPlantUmlTransformer {
 		
 		hnote over System
 		«FOR config : step.instanceStateConfigurations
-						.groupBy[it.instance?.serialize].entrySet.sortBy[it.key]»
+						.groupBy[it.instance?.serialize].entrySet
+						.sortBy[it.key]»
 			«config.key» «"in".addKeywordStyle» {«config.value.map[
 					it.region.name + "." + it.state.name.addItalicStyle].uniquate.join(",\n\t")»} «
 						IF step.instanceVariableStates.exists[it.instanceReference?.serialize == config.key]»«"with".addKeywordStyle»«ENDIF»
 			«FOR variableConstraint : step.uniqueInstanceVariableStates
-						.filter[it.instanceReference?.serialize == config.key].sortBy[it.variableDeclaration.name]»
+						.filter[it.instanceReference?.serialize == config.key]
+						.sortBy[it.variableDeclaration.name]»
 				«'''  '''»«variableConstraint.variableDeclaration.name» = «variableConstraint.otherOperandIfContainedByEquality.serialize»
 			«ENDFOR»
+		«ENDFOR»
+		«FOR trapAssert : step.asserts.filter(OpaqueExpression).filter[it.expression.startsWith(TRAP_STATE_MESSAGE_PREFIX)]»
+			<color Red>«trapAssert.expression.replace(TRAP_STATE_MESSAGE_PREFIX, "Nondeterministic behavior triggered").addItalicStyle»
+		«ENDFOR»
+		«FOR trapAssert : step.asserts.filter(OpaqueExpression).filter[it.expression.startsWith(TRANSITION_EXECUTION_MESSAGE_PREFIX)]»
+			<color Green>«trapAssert.expression.remove("when", "of").addItalicStyle»
 		«ENDFOR»
 		endhnote
 	'''

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023-2024 Contributors to the Gamma project
+ * Copyright (c) 2023-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -96,10 +96,11 @@ class NuxmvVerifier extends AbstractVerifier {
 			set on_failure_script_quits
 			set input_file "«modelFile.absolutePath»"
 			«parameters.setupCommand»
+			«modelFile.addAdditionalCommands(parameters)»
 			set default_trace_plugin 1
 			«modelCheckingCommand»
 			quit
-		'''
+		'''.deleteEmptyLines
 		fileUtil.saveString(commandFile, serializedCommand)
 		
 		// nuXmv [-time] -source commands.cmd
@@ -117,12 +118,13 @@ class NuxmvVerifier extends AbstractVerifier {
 			
 			// Reading the result of the command
 			resultReader = new Scanner(process.inputReader)
-			errorReader = new ScannerLogger(new Scanner(process.errorReader), true)
+			errorReader = new ScannerLogger(
+					new Scanner(process.errorReader), true)
 			errorReader.start
 			
 			val resultPattern = '''(.*invariant.*is.*)|(.*specification.*is.*)'''
 			var resultFound = false
-			result  = ThreeStateBoolean.UNDEF
+			result = ThreeStateBoolean.UNDEF
 			while (!resultFound && resultReader.hasNextLine) {
 				val line = resultReader.nextLine
 				if (!line.nullOrEmpty && !line.startsWith("***")) { // No header printing
@@ -205,7 +207,7 @@ class NuxmvVerifier extends AbstractVerifier {
 		val serializedCommand = '''
 			set on_failure_script_quits
 			set input_file "«checkableModel.absolutePath»"
-			«NUXMV_SETUP_UNTIMED /* Always, as we cannot use the below convert command for timed models */»
+			«NUXMV_SETUP_UNTIMED /* Always, as we cannot use the convert command below for timed models */»
 			convert_property_to_invar -l -p "«query.adaptQuery»"
 			show_property -n 0 -F tabular
 			quit
@@ -225,7 +227,8 @@ class NuxmvVerifier extends AbstractVerifier {
 			
 			val process = Runtime.getRuntime().exec(nuXmvCommand)
 			resultReader = new Scanner(process.inputReader)
-			errorReader = new ScannerLogger(new Scanner(process.errorReader), false)
+			errorReader = new ScannerLogger(
+					new Scanner(process.errorReader), false)
 			errorReader.start
 			
 			var line = ""
@@ -276,6 +279,23 @@ class NuxmvVerifier extends AbstractVerifier {
 			default:
 				return ""
 		}
+	}
+	
+	protected def addAdditionalCommands(File modelFile, String arguments) {
+		val builder = new StringBuilder
+		val model = modelFile.loadString
+		val variables = model.substring(
+			model.indexOf("VAR"),
+			model.indexOf("INIT"))
+		
+		if (!variables.contains(" : integer;") &&
+				!variables.contains(" : real;")) {
+			if (arguments == CHECK_UNTIMED_LTL || arguments == CHECK_TIMED_LTL) { // Condition needed?
+				builder.append("build_boolean_model")
+			}
+		}
+		
+		return builder.toString
 	}
 	
 	//

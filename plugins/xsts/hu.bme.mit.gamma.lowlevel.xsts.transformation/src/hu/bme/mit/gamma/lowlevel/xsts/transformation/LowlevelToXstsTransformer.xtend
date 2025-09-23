@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,14 +10,21 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
+import hu.bme.mit.gamma.action.model.ProcedureDeclaration
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
+import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.LambdaDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.RemovableVariableRemover
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.XstsOptimizer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Events
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FirstChoiceStates
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FirstForkStates
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FunctionDeclarations
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.GlobalVariables
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InEvents
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.LastJoinStates
@@ -49,6 +56,7 @@ import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
+import hu.bme.mit.gamma.xsts.transformation.util.Namings
 import hu.bme.mit.gamma.xsts.transformation.util.UnorderedActionTransformer
 import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
@@ -70,16 +78,15 @@ import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeature
 import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
 
 class LowlevelToXstsTransformer {
-	// Transformation-related extensions
 	extension BatchTransformation transformation
 	final extension BatchTransformationStatements statements
-	// Transformation rule-related extensions
 	final extension BatchTransformationRuleFactory = new BatchTransformationRuleFactory
 	// Auxiliary objects
 	protected final extension RegionActivator regionActivator
 	protected final extension EntryActionRetriever entryActionRetriever
 	protected final extension StateAssumptionCreator stateAssumptionCreator
 	protected final extension ExpressionTransformer expressionTransformer
+	protected final extension ActionTransformer actionTransformer
 	protected final extension VariableDeclarationTransformer variableDeclarationTransformer
 	protected final extension LowlevelTransitionToActionTransformer lowlevelTransitionToActionTransformer
 	protected final extension SimpleTransitionToXTransitionTransformer simpleTransitionToActionTransformer
@@ -106,6 +113,8 @@ class LowlevelToXstsTransformer {
 	protected final XSTS xSts
 	// VIATRA rules
 	protected BatchTransformationRule<TypeDeclarations.Match, TypeDeclarations.Matcher> typeDeclarationsRule
+	protected BatchTransformationRule<FunctionDeclarations.Match, FunctionDeclarations.Matcher> functionDeclarationInitializationRule
+	protected BatchTransformationRule<FunctionDeclarations.Match, FunctionDeclarations.Matcher> functionDeclarationsRule
 	protected BatchTransformationRule<Events.Match, Events.Matcher> eventsRule
 	protected BatchTransformationRule<TopRegions.Match, TopRegions.Matcher> topRegionsRule
 	protected BatchTransformationRule<Subregions.Match, Subregions.Matcher> subregionsRule
@@ -152,6 +161,7 @@ class LowlevelToXstsTransformer {
 		this.entryActionRetriever = new EntryActionRetriever(this.trace)
 		this.stateAssumptionCreator = regionActivator.stateAssumptionCreator
 		this.expressionTransformer = new ExpressionTransformer(this.trace)
+		this.actionTransformer = new ActionTransformer(this.trace)
 		this.variableDeclarationTransformer = new VariableDeclarationTransformer(this.trace)
 		this.lowlevelTransitionToActionTransformer =
 				new LowlevelTransitionToActionTransformer(this.engine, this.trace)
@@ -185,6 +195,9 @@ class LowlevelToXstsTransformer {
 		}
 		getComponentParametersRule.fireAllCurrent
 		getPlainVariablesRule.fireAllCurrent
+		// Functions may reference variables
+		getFunctionDeclarationInitializationRule.fireAllCurrent
+		getFunctionDeclarationsRule.fireAllCurrent
 		// Now component parameters come as plain variables (from constants), so TimeoutsRule must follow PlainVariablesRule
 		// Timeouts can refer to constants
 		getTimeoutsRule.fireAllCurrent
@@ -211,6 +224,7 @@ class LowlevelToXstsTransformer {
 		if (optimize) {
 			xSts.removeReadOnlyVariables(true) // Affects parameter and input variables, too
 			// Not internal variables at this point because they are handled later (internal events)
+			optimizeTopRegionLiteralReferences
 		}
 		
 		handleStateInvariants
@@ -219,6 +233,10 @@ class LowlevelToXstsTransformer {
 		
 		handleTransientAndResettableVariableAnnotations
 		handleRunUponExternalEventAnnotation
+		
+		// To have a deterministic result
+		sortDeclarations
+		
 		// The created EMF models are returned
 		return new SimpleEntry<XSTS, L2STrace>(xSts, trace.getTrace)
 	}
@@ -272,12 +290,66 @@ class LowlevelToXstsTransformer {
 			typeDeclarationsRule = createRule(TypeDeclarations.instance).action [
 				val lowlevelTypeDeclaration = it.typeDeclaration
 				val xStsTypeDeclaration = lowlevelTypeDeclaration.clone
+				
 				xSts.typeDeclarations += xStsTypeDeclaration
 				xSts.publicTypeDeclarations += xStsTypeDeclaration
+				
 				trace.put(lowlevelTypeDeclaration, xStsTypeDeclaration)
 			].build
 		}
 		return typeDeclarationsRule
+	}
+	
+	protected def getFunctionDeclarationInitializationRule() { // Needed due to function cross-references
+		if (functionDeclarationInitializationRule === null) {
+			functionDeclarationInitializationRule = createRule(FunctionDeclarations.instance).action [
+				val lowlevelFunctionDeclaration = it.functionDeclaration
+				val xStsFunctionDeclaration = (lowlevelFunctionDeclaration instanceof LambdaDeclaration) ?
+						expressionFactory.createLambdaDeclaration : factory.createProcedureDeclaration
+				
+				xSts.functionDeclarations += xStsFunctionDeclaration
+				trace.put(lowlevelFunctionDeclaration, xStsFunctionDeclaration)
+			].build
+		}
+		return functionDeclarationInitializationRule
+	}
+	
+	protected def getFunctionDeclarationsRule() { // After transforming variables (side effect) and function init rule
+		if (functionDeclarationsRule === null) {
+			functionDeclarationsRule = createRule(FunctionDeclarations.instance).action [
+				val lowlevelFunctionDeclaration = it.functionDeclaration
+				val xStsFunctionDeclaration = trace.getXStsFunctionDeclaration(lowlevelFunctionDeclaration)
+				
+				xStsFunctionDeclaration.name = lowlevelFunctionDeclaration.name.functionName
+				xStsFunctionDeclaration.type = lowlevelFunctionDeclaration.type.transformType
+				
+				for (lowlevelParameter : lowlevelFunctionDeclaration.parameterDeclarations) {
+					val xStsParameter = lowlevelParameter.clone
+					xStsParameter.type = lowlevelParameter.type.transformType
+					xStsFunctionDeclaration.parameterDeclarations += xStsParameter
+					trace.put(lowlevelParameter, xStsParameter)
+				}
+				
+				if (lowlevelFunctionDeclaration instanceof ProcedureDeclaration) {
+					val lowlevelBody = lowlevelFunctionDeclaration.body
+					val xStsBody = lowlevelBody.transformAction as SequentialAction
+					
+					val xStsProcedureDeclaration = xStsFunctionDeclaration as hu.bme.mit.gamma.xsts.model.ProcedureDeclaration
+					xStsProcedureDeclaration.body = xStsBody
+				}
+				else if (lowlevelFunctionDeclaration instanceof LambdaDeclaration) {
+					val lowlevelExpression = lowlevelFunctionDeclaration.expression
+					val xStsExpression = lowlevelExpression.transformExpression
+					
+					val xStsLambdaDeclaration = xStsFunctionDeclaration as LambdaDeclaration
+					xStsLambdaDeclaration.expression = xStsExpression
+				}
+				else {
+					throw new IllegalArgumentException("Not known function: " + lowlevelFunctionDeclaration)
+				}
+			].build
+		}
+		return functionDeclarationsRule
 	}
 
 	/**
@@ -719,6 +791,38 @@ class LowlevelToXstsTransformer {
 		return outEventEnvironmentalActionRule
 	}
 	
+	protected def optimizeTopRegionLiteralReferences() {
+		val statechart = trace.statechart
+		val topRegions = statechart.regions
+		for (topRegion : topRegions) {
+			val xStsTypeDeclaration = trace.getXStsEnumType(topRegion)
+			val xStsRegionVariable = trace.getXStsVariable(topRegion)
+			val xSts = xStsTypeDeclaration.containingXsts
+			val xStsEnumLiterals = xStsTypeDeclaration.literals
+			if (xStsEnumLiterals.size == 2) {
+				val xStsInactiveEnumLiteral = trace.getXStsInactiveEnumLiteral(topRegion) // Non-null
+				val xStsOtherEnumLiteral = xStsInactiveEnumLiteral.next as EnumerationLiteralDefinition
+				
+				val xStsLiteralReferences = xSts.getAllContentsOfType(EnumerationLiteralExpression)
+						.filter[it.reference === xStsOtherEnumLiteral]
+				for (xStsLiteralReference : xStsLiteralReferences) {
+					val container = xStsLiteralReference.eContainer
+					if (container instanceof EqualityExpression) {
+						val lhs = container.leftOperand
+						val rhs = container.rightOperand
+						var optimize = lhs instanceof DirectReferenceExpression &&
+							lhs.declaration === xStsRegionVariable ||
+							rhs instanceof DirectReferenceExpression && rhs.declaration === xStsRegionVariable
+						if (optimize) {
+							createTrueExpression
+								.replace(container)
+						}
+					}
+				}
+			}
+		}
+	}
+	
 	protected def handleStateInvariants() {
 		val lowlevelStatechart = trace.statechart
 		val lowlevelStates = lowlevelStatechart.allStates
@@ -825,6 +929,14 @@ class LowlevelToXstsTransformer {
 			
 			xSts.mergedTransition.action = ifAction
 		}
+	}
+	
+	protected def sortDeclarations() {
+		xSts.typeDeclarations.sortInplaceWith[it.name].sortTopologicallyInplace
+		xSts.publicTypeDeclarations.sortInplaceWith[it.name].sortTopologicallyInplace
+		xSts.variableDeclarations.sortInplaceWith[it.name].sortTopologicallyInplace
+		
+		xSts.functionDeclarations.sortInplaceWith[it.name].sortTopologicallyInplace
 	}
 	
 	def dispose() {

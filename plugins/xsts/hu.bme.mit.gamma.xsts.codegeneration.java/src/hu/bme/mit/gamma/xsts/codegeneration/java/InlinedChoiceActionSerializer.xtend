@@ -129,8 +129,8 @@ class InlinedChoiceActionSerializer extends ActionSerializer {
 		}
 		// Or a single assume action and assignment actions
 		val xStsSubactionsSublist = xStsSubactions.subList(1, xStsSubactions.size)
-		checkArgument(xStsSubactionsSublist.forall[it instanceof AssignmentAction], "An action is not "
-			+ "an assignment action, this code generator does not handle this case: " + xStsSubactionsSublist)
+		checkArgument(xStsSubactionsSublist.forall[it instanceof AssignmentAction], "An action is not " +
+			"an assignment action, this code generator does not handle this case: " + xStsSubactionsSublist)
 		val xStsAssignmentActions = xStsSubactionsSublist.filter(AssignmentAction)
 		'''
 «««		 	First assume action is not serialized

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer
 
 import hu.bme.mit.gamma.expression.model.AndExpression
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FalseExpression
 import hu.bme.mit.gamma.expression.model.ImplyExpression
@@ -28,6 +29,7 @@ import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.AtomicAction
 import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.FunctionCallAction
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
@@ -45,6 +47,7 @@ import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 class ActionOptimizer {
@@ -128,6 +131,10 @@ class ActionOptimizer {
 		return action
 	}
 	
+	protected def dispatch Action simplifyCompositeActions(FunctionCallAction action) {
+		return action
+	}
+	
 	protected def dispatch Action simplifyCompositeActions(LoopAction action) {
 		val xStsSubaction = action.action
 		val simplifiedXStsSubaction = xStsSubaction.simplifyCompositeActions
@@ -206,6 +213,10 @@ class ActionOptimizer {
 	}
 	
 	protected def dispatch List<Action> simplifySequentialActions(AtomicAction action, boolean isTop) {
+		return #[action]
+	}
+	
+	protected def dispatch List<Action> simplifySequentialActions(FunctionCallAction action, boolean isTop) {
 		return #[action]
 	}
 	
@@ -296,6 +307,10 @@ class ActionOptimizer {
 		return #[action]
 	}
 	
+	protected def dispatch List<Action> simplifyParallelActions(FunctionCallAction action, boolean isTop) {
+		return #[action]
+	}
+	
 	protected def dispatch List<Action> simplifyParallelActions(LoopAction action, boolean isTop) {
 		val xStsSubaction = action.action
 		val newXStsSubactions = xStsSubaction.simplifyParallelActions(true)
@@ -374,6 +389,10 @@ class ActionOptimizer {
 		return #[action]
 	}
 	
+	protected def dispatch List<Action> simplifyOrthogonalActions(FunctionCallAction action, boolean isTop) {
+		return #[action]
+	}
+	
 	protected def dispatch List<Action> simplifyOrthogonalActions(LoopAction action, boolean isTop) {
 		val xStsSubaction = action.action
 		val newXStsSubactions = xStsSubaction.simplifyOrthogonalActions(true)
@@ -449,6 +468,10 @@ class ActionOptimizer {
 	}
 	
 	protected def dispatch List<Action> simplifyNonDeterministicActions(AtomicAction action, boolean isTop) {
+		return #[action]
+	}
+	
+	protected def dispatch List<Action> simplifyNonDeterministicActions(FunctionCallAction action, boolean isTop) {
 		return #[action]
 	}
 	
@@ -620,25 +643,38 @@ class ActionOptimizer {
 			
 			if (xStsFirstAction instanceof AbstractAssignmentAction) {
 				val lhs = xStsFirstAction.lhs
-				val variable = lhs.accessedDeclaration
-				var foundAssignmentToTheSameVariable = false
-				for (var j = i + 1; j < xStsActions.size && !foundAssignmentToTheSameVariable; j++) {
-					val xStsSecondAction = xStsActions.get(j)
-					if (xStsSecondAction instanceof AbstractAssignmentAction) {
-						if (xStsSecondAction.lhs.helperEquals(lhs)) {
-							foundAssignmentToTheSameVariable = true
-							var isVariableRead = false
-							for (var k = i + 1; k <= j && !isVariableRead; k++) {
-								val xStsInBetweenAction = xStsActions.get(k)
-								// Not perfect for arrays: a[0] := 1; b := a[2]; a[0] := 2;
-								val readVariables = xStsInBetweenAction.readVariables
-								if (readVariables.contains(variable)) {
-									isVariableRead = true
+				if (lhs instanceof DirectReferenceExpression) { // Only simple lhs now
+					val variable = lhs.accessedDeclaration
+					var foundAssignmentToTheSameVariable = false
+					for (var j = i + 1; j < xStsActions.size && !foundAssignmentToTheSameVariable; j++) {
+						val xStsSecondAction = xStsActions.get(j)
+						if (xStsSecondAction instanceof AbstractAssignmentAction) {
+							if (xStsSecondAction.lhs.helperEquals(lhs)) {
+								foundAssignmentToTheSameVariable = true
+								var isVariableRead = false
+								for (var k = i + 1; k <= j && !isVariableRead; k++) {
+									val xStsInBetweenAction = xStsActions.get(k)
+									// Not perfect for arrays: a[0] := 1; b := a[2]; a[0] := 2;
+									val readVariables = xStsInBetweenAction.readVariables
+									if (readVariables.contains(variable)) {
+										isVariableRead = true
+									}
+								}
+								if (!isVariableRead) {
+									removeableXStsActions += xStsFirstAction
 								}
 							}
-							if (!isVariableRead) {
-								removeableXStsActions += xStsFirstAction
-							}
+						}
+					}
+				}
+				
+				// Rhs evaluation
+				if (!removeableXStsActions.contains(xStsFirstAction)) {
+					if (xStsFirstAction instanceof AssignmentAction) {
+						val rhs = xStsFirstAction.rhs
+						if (rhs.evaluable) {
+							val literal = rhs.evaluateExpression
+							xStsFirstAction.rhs = literal
 						}
 					}
 				}

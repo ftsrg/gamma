@@ -3,7 +3,7 @@ Automatic-Module-Name: hu.bme.mit.gamma.fei.language
 Bundle-ManifestVersion: 2
 Bundle-Name: Fault Extension Instructions Language
 Bundle-Vendor: BME-FTSRG
-Bundle-Version: 2.11.0.qualifier
+Bundle-Version: 2.13.0.qualifier
 Bundle-SymbolicName: hu.bme.mit.gamma.fei.language; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.xtext,
@@ -18,7 +18,7 @@ Require-Bundle: org.eclipse.xtext,
  org.eclipse.xtext.util,
  org.eclipse.xtend.lib;bundle-version="2.14.0",
  org.antlr.runtime;bundle-version="[3.2.0,3.2.1)"
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: hu.bme.mit.gamma.fei.language.generator,
  hu.bme.mit.gamma.fei.language.formatting2,
  hu.bme.mit.gamma.fei.language.parser.antlr,

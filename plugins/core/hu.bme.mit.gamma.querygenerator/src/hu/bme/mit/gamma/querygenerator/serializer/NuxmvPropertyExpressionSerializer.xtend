@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Gamma project
+ * Copyright (c) 2023-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.querygenerator.serializer
 
 import hu.bme.mit.gamma.expression.model.AndExpression
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.FalseExpression
@@ -26,6 +27,8 @@ class NuxmvPropertyExpressionSerializer extends ThetaPropertyExpressionSerialize
 	new(AbstractReferenceSerializer referenceSerializer) {
 		super(referenceSerializer)
 	}
+	
+	override String _serialize(EnumerationLiteralExpression expression) '''«expression.reference.name»'''
 	
 	override String serialize(Expression expression) {
 		return super.serialize(expression)

@@ -16,19 +16,20 @@ import java.util.stream.Collectors;
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.scenario.model.Delay;
 import hu.bme.mit.gamma.scenario.model.DeterministicOccurrence;
-import hu.bme.mit.gamma.scenario.model.InteractionDirection;
 import hu.bme.mit.gamma.scenario.model.DeterministicOccurrenceSet;
+import hu.bme.mit.gamma.scenario.model.Interaction;
+import hu.bme.mit.gamma.scenario.model.InteractionDirection;
 import hu.bme.mit.gamma.scenario.model.ModalityType;
 import hu.bme.mit.gamma.scenario.model.NegatedDeterministicOccurrence;
-import hu.bme.mit.gamma.scenario.model.Interaction;
 
 public class ScenarioModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 
 	public static InteractionDirection getDirection(DeterministicOccurrenceSet set) {
 		boolean isSend = false;
-		List<InteractionDirection> directions = javaUtil.filterIntoList(set.getDeterministicOccurrences(), Interaction.class)
+		List<DeterministicOccurrence> deterministicOccurrences = set.getDeterministicOccurrences();
+		List<InteractionDirection> directions = javaUtil.filterIntoList(deterministicOccurrences, Interaction.class)
 				.stream().map(it -> it.getDirection()).collect(Collectors.toList());
-		List<NegatedDeterministicOccurrence> negatedInteractions = javaUtil.filterIntoList(set.getDeterministicOccurrences(),
+		List<NegatedDeterministicOccurrence> negatedInteractions = javaUtil.filterIntoList(deterministicOccurrences,
 				NegatedDeterministicOccurrence.class);
 		directions.addAll(negatedInteractions.stream()
 				.filter(it -> it.getDeterministicOccurrence() instanceof Interaction)
@@ -39,29 +40,30 @@ public class ScenarioModelDerivedFeatures extends ExpressionModelDerivedFeatures
 		}
 		if (isSend) {
 			return InteractionDirection.SEND;
-		} else {
+		}
+		else {
 			return InteractionDirection.RECEIVE;
 		}
 	}
 
 	public static ModalityType getModality(DeterministicOccurrenceSet set) {
-		List<Interaction> signals = javaUtil.filterIntoList(set.getDeterministicOccurrences(), Interaction.class);
+		List<DeterministicOccurrence> deterministicOccurrences = set.getDeterministicOccurrences();
+		List<Interaction> signals = javaUtil.filterIntoList(deterministicOccurrences, Interaction.class);
 
 		if (!signals.isEmpty()) {
 			return signals.get(0).getModality();
 		}
 		List<DeterministicOccurrence> negatedSignal = javaUtil
-				.filterIntoList(set.getDeterministicOccurrences(), NegatedDeterministicOccurrence.class).stream()
+				.filterIntoList(deterministicOccurrences, NegatedDeterministicOccurrence.class).stream()
 				.map(it -> it.getDeterministicOccurrence()).collect(Collectors.toList());
 		if (!negatedSignal.isEmpty()) {
 			DeterministicOccurrence interactionDefinition = negatedSignal.get(0);
-			if (interactionDefinition instanceof Interaction) {
-				Interaction signal = (Interaction) interactionDefinition;
+			if (interactionDefinition instanceof Interaction signal) {
 				return signal.getModality();
 			}
 		}
 
-		List<Delay> delays = javaUtil.filterIntoList(set.getDeterministicOccurrences(), Delay.class);
+		List<Delay> delays = javaUtil.filterIntoList(deterministicOccurrences, Delay.class);
 		if (!delays.isEmpty()) {
 			return ModalityType.COLD;
 		}
@@ -84,26 +86,26 @@ public class ScenarioModelDerivedFeatures extends ExpressionModelDerivedFeatures
 		if (interaction instanceof Delay) {
 			return ModalityType.COLD; //((Delay) interaction).getModality();
 		}
-		if (interaction instanceof NegatedDeterministicOccurrence) {
-			NegatedDeterministicOccurrence negated = (NegatedDeterministicOccurrence) interaction;
-			if (negated.getDeterministicOccurrence() instanceof Interaction) {
-				return getModality(negated.getDeterministicOccurrence());
+		if (interaction instanceof NegatedDeterministicOccurrence negated) {
+			DeterministicOccurrence deterministicOccurrence = negated.getDeterministicOccurrence();
+			if (deterministicOccurrence instanceof Interaction) {
+				return getModality(deterministicOccurrence);
 			}
 		}
 		return null;
 	}
 
 	public static InteractionDirection getDirection(DeterministicOccurrence interaction) {
-		if (interaction instanceof Interaction) {
-			return ((Interaction) interaction).getDirection();
+		if (interaction instanceof Interaction _interaction) {
+			return _interaction.getDirection();
 		}
 		if (interaction instanceof Delay) {
 			return InteractionDirection.RECEIVE;
 		}
-		if (interaction instanceof NegatedDeterministicOccurrence) {
-			NegatedDeterministicOccurrence negated = (NegatedDeterministicOccurrence) interaction;
-			if (negated.getDeterministicOccurrence() instanceof Interaction) {
-				return getDirection(negated.getDeterministicOccurrence());
+		if (interaction instanceof NegatedDeterministicOccurrence negated) {
+			DeterministicOccurrence deterministicOccurrence = negated.getDeterministicOccurrence();
+			if (deterministicOccurrence instanceof Interaction) {
+				return getDirection(deterministicOccurrence);
 			}
 		}
 		return null;

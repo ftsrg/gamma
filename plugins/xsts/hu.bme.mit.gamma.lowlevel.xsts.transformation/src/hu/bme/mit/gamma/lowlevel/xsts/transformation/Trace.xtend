@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
@@ -22,6 +23,7 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ChoiceTransitionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.EventTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ForkTransitionTrace
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FunctionDeclarationTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.JoinTransitionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.MergeTransitionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.RegionTrace
@@ -50,6 +52,7 @@ import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XTransition
+import hu.bme.mit.gamma.xsts.transformation.util.Namings
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
 import java.util.List
@@ -59,8 +62,8 @@ import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 
 import static com.google.common.base.Preconditions.checkArgument
-import static com.google.common.base.Preconditions.checkState
 import static com.google.common.base.Preconditions.checkNotNull
+import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
@@ -207,6 +210,35 @@ package class Trace {
 	def getLowlevelTypeDeclaration(TypeDeclaration xStsTypeDeclaration) {
 		checkArgument(xStsTypeDeclaration !== null)
 		val matches = TypeDeclarationTrace.Matcher.on(tracingEngine).getAllValuesOflowlevelTypeDeclaration(xStsTypeDeclaration)
+		checkState(matches.size == 1, matches.size)
+		return matches.head
+	}
+	
+	// Function declaration - Function declaration
+	def put(FunctionDeclaration lowlevelFunctionDeclaration, FunctionDeclaration xStsFunctionDeclaration) {
+		checkArgument(lowlevelFunctionDeclaration !== null)
+		checkArgument(xStsFunctionDeclaration !== null)
+		trace.traces += createFunctionDeclarationTrace => [
+			it.lowlevelFunctionDeclaration = lowlevelFunctionDeclaration
+			it.XStsFunctionDeclaration = xStsFunctionDeclaration
+		]
+	}
+	
+	def isTraced(FunctionDeclaration lowlevelFunctionDeclaration) {
+		checkArgument(lowlevelFunctionDeclaration !== null)
+		return FunctionDeclarationTrace.Matcher.on(tracingEngine).hasMatch(lowlevelFunctionDeclaration, null)
+	}
+	
+	def getXStsFunctionDeclaration(FunctionDeclaration lowlevelFunctionDeclaration) {
+		checkArgument(lowlevelFunctionDeclaration !== null)
+		val matches = FunctionDeclarationTrace.Matcher.on(tracingEngine).getAllValuesOfxStsFunctionDeclaration(lowlevelFunctionDeclaration)
+		checkState(matches.size == 1, matches.size)
+		return matches.head
+	}
+	
+	def getLowlevelFunctionDeclaration(FunctionDeclaration xStsFunctionDeclaration) {
+		checkArgument(xStsFunctionDeclaration !== null)
+		val matches = FunctionDeclarationTrace.Matcher.on(tracingEngine).getAllValuesOflowlevelFunctionDeclaration(xStsFunctionDeclaration)
 		checkState(matches.size == 1, matches.size)
 		return matches.head
 	}
@@ -380,7 +412,7 @@ package class Trace {
 	
 	def getXStsInactiveEnumLiteral(EnumerationTypeDefinition enumType) {
 		val enumLiterals = enumType.literals.filter[
-				it.name.equals(Namings.INACTIVE_ENUM_LITERAL)]
+				it.name == Namings.INACTIVE_ENUM_LITERAL]
 		checkState(enumLiterals.size == 1, enumLiterals)
 		return enumLiterals.head
 	}

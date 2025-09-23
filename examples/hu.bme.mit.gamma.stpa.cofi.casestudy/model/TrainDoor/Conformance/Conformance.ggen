@@ -1,0 +1,13 @@
+import "Conformance.gcd"
+
+analysis-model {
+	component : Conformance
+	language : SMV
+}
+
+verification {
+	file : "Conformance.smv"
+	property-file : "Conformance.gpd"
+	language : nuXmv
+	test-language : java
+}

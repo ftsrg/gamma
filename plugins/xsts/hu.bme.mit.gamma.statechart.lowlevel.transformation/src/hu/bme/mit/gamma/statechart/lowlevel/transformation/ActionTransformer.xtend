@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -29,7 +29,9 @@ import hu.bme.mit.gamma.action.model.SwitchStatement
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
 import hu.bme.mit.gamma.action.util.ActionUtil
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.InitializableElement
+import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
@@ -54,18 +56,24 @@ class ActionTransformer {
 	protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
 	// Trace
 	protected final Trace trace
+	protected final boolean FUNCTION_INLINING
 	
 	new(Trace trace) {
-		this(trace, true, 10, null)
+		this(trace, true, true, 7, null)
 	}
 	
-	new(Trace trace, boolean functionInlining, int maxRecursionDepth, TimeUnit baseTimeUnit) {
+	new(Trace trace, boolean functionInlining, boolean addReturnGuards, int maxRecursionDepth, TimeUnit baseTimeUnit) {
 		this.trace = trace
+		this.FUNCTION_INLINING = functionInlining
 		this.expressionTransformer = new ExpressionTransformer(this.trace,
-				functionInlining, maxRecursionDepth, baseTimeUnit)
+				functionInlining, addReturnGuards, maxRecursionDepth, baseTimeUnit)
 		this.preconditionTransformer = new ExpressionPreconditionTransformer(
-			this.trace, this, functionInlining, maxRecursionDepth)
+				this.trace, this, functionInlining, addReturnGuards, maxRecursionDepth)
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
+	}
+	
+	def getExpressionTransformer() {
+		return this.expressionTransformer
 	}
 	
 	protected def transformActions(Collection<? extends Action> actions) {
@@ -118,8 +126,8 @@ class ActionTransformer {
 			T valueDeclaration) {
 		val result = newArrayList
 		val initalExpression = valueDeclaration.expression
-		var lowlevelPrecondition = initalExpression !== null ?
-			initalExpression.transformPrecondition : <Action>newLinkedList
+		var lowlevelPrecondition = (initalExpression !== null) ?
+				initalExpression.transformPrecondition : <Action>newLinkedList
 		result += lowlevelPrecondition
 		
 		val lowlevelVariableDeclarations = valueDeclaration.transform
@@ -127,14 +135,37 @@ class ActionTransformer {
 		for (lowlevelVariableDeclaration : lowlevelVariableDeclarations) {
 			result += createVariableDeclarationStatement => [
 				it.variableDeclaration = lowlevelVariableDeclaration
-			]	
+			]
 		}
 		return result
 	}
 	
 	protected def dispatch List<Action> transformAction(ExpressionStatement action) {
+		val actions = newArrayList
+		
 		val expression = action.expression
-		return expression.transformPrecondition
+		val preconditions = expression.transformPrecondition
+		
+		actions += preconditions
+		if (!FUNCTION_INLINING) {
+			if (expression instanceof FunctionAccessExpression) {
+				if (!trace.isMapped(expression)) {
+					val lowlevelExpressions = expression.transformExpression
+					val lowlevelExpression = lowlevelExpressions.onlyElement
+					actions += lowlevelExpression.createExpressionStatement // Function call
+				}
+			}
+			// Otherwise, everything is in 'preconditions'
+		}
+		
+		if (expression instanceof OpaqueExpression) {
+			val string = expression.expression
+			if (string.startsWith("language ")) {
+				actions += action.clone
+			}
+		}
+		
+		return actions
 	}
 	
 	protected def dispatch List<Action> transformAction(BreakStatement action) {
@@ -142,7 +173,17 @@ class ActionTransformer {
 	}
 	
 	protected def dispatch List<Action> transformAction(ReturnStatement action) {
-		throw new UnsupportedOperationException("Not supported action: " + action)
+		val expression = action.expression
+		val lowlevelExpressions = expression?.transformExpression
+		return #[
+			createReturnStatement => [
+				it.expression = (expression === null) ?
+					null :
+					(lowlevelExpressions.size == 1) ?
+						lowlevelExpressions.head :
+						lowlevelExpressions.createTupleLiteralExpression
+			]
+		]
 	}
 	
 	protected def dispatch List<Action> transformAction(IfStatement action) {
@@ -252,7 +293,9 @@ class ActionTransformer {
 		}
 		// Transform assumption and create actions
 		val lowlevelAssumptions = (assumption === null) ? #[ createTrueExpression ] : assumption.transformExpression
-		val lowlevelAssumption = (lowlevelAssumptions.size == 1) ? lowlevelAssumptions.head : lowlevelAssumptions.wrapIntoAndExpression
+		val lowlevelAssumption = (lowlevelAssumptions.size == 1) ?
+				lowlevelAssumptions.head :
+				lowlevelAssumptions.wrapIntoAndExpression
 		
 		for (lhs : lowlevelLhs) {
 			val lowlevelHavoc = actionFactory.createHavocStatement

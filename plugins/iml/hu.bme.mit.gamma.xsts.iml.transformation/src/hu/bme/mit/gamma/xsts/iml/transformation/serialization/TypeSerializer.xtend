@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Gamma project
+ * Copyright (c) 2024-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition
+import hu.bme.mit.gamma.expression.model.TupleTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
@@ -36,7 +37,13 @@ class TypeSerializer {
 		throw new IllegalArgumentException("Not known type: " + type)
 	}
 	
-	def dispatch String serializeType(TypeReference type) '''«type.reference.serializeName».t''' // See module elements when serializing type declarations
+	def dispatch String serializeType(TypeReference type) '''«
+		val typeDefinition = type.typeDefinition»«
+		IF typeDefinition.primitive»«
+			typeDefinition.serializeType»«
+		ELSE»«
+			type.reference.serializeName /* See module elements when serializing type declarations */».t«
+		ENDIF»'''
 	
 	def dispatch String serializeType(BooleanTypeDefinition type) '''bool'''
 	
@@ -59,6 +66,8 @@ class TypeSerializer {
 	def dispatch String serializeType(EnumerationTypeDefinition type) '''«FOR literal : type.literals SEPARATOR ' | '»«literal.serializeName»«ENDFOR»'''
 	
 	def dispatch String serializeType(ArrayTypeDefinition type) '''((int, «type.elementType.serializeType») Map.t)'''
+	
+	def dispatch String serializeType(TupleTypeDefinition type) '''(«FOR subtype : type.types SEPARATOR ' * '»«subtype.serializeType»«ENDFOR»)'''
 		
 	//
 	

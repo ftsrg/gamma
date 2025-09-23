@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -43,6 +43,9 @@ import hu.bme.mit.gamma.expression.model.EquivalenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.FalseExpression;
+import hu.bme.mit.gamma.expression.model.FieldAssignment;
+import hu.bme.mit.gamma.expression.model.FieldDeclaration;
+import hu.bme.mit.gamma.expression.model.FieldReferenceExpression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.GreaterEqualExpression;
 import hu.bme.mit.gamma.expression.model.GreaterExpression;
@@ -60,6 +63,8 @@ import hu.bme.mit.gamma.expression.model.OrExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
+import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
+import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SubtractExpression;
 import hu.bme.mit.gamma.expression.model.TrueExpression;
@@ -147,6 +152,26 @@ public class ExpressionEvaluator {
 			List<EnumerationLiteralDefinition> literals = type.getLiterals();
 			return literals.indexOf(enumLiteral);
 		}
+		if (expression instanceof RecordAccessExpression recordAccessExpression) {
+			Expression operand = recordAccessExpression.getOperand();
+			FieldReferenceExpression fieldReference = recordAccessExpression.getFieldReference();
+			FieldDeclaration field = fieldReference.getFieldDeclaration();
+			
+			RecordLiteralExpression recordLiteral = null; // Add support for constants
+			if (operand instanceof RecordLiteralExpression recordLiteralExpression) {
+				recordLiteral = recordLiteralExpression;
+			}
+			else {
+				throw new IllegalArgumentException("Not evaluable expression: " + expression);
+			}
+			FieldAssignment fieldAssignment = recordLiteral.getFieldAssignments().stream()
+				.filter(it -> it.getReference().getFieldDeclaration() == field)
+				.findFirst()
+				.get();
+			
+			Expression value = fieldAssignment.getValue();
+			return evaluateInteger(value);
+		}
 		if (expression instanceof ArrayAccessExpression arrayAccessExpression) {
 			Expression index = arrayAccessExpression.getIndex();
 			Expression operand = arrayAccessExpression.getOperand();
@@ -162,7 +187,7 @@ public class ExpressionEvaluator {
 			List<Expression> operands = multiplyExpression.getOperands();
 			List<Integer> evaluatedOperands = new ArrayList<Integer>();
 			IllegalArgumentException potentialException = null;
-			//
+			
 			for (Expression multiplicationOperand : operands) {
 				try {
 					int evaluatedOperand = evaluateInteger(multiplicationOperand);
@@ -176,7 +201,7 @@ public class ExpressionEvaluator {
 					potentialException = e;
 				}
 			}
-			//
+			
 			if (potentialException != null) {
 				throw potentialException;
 			}
@@ -187,17 +212,17 @@ public class ExpressionEvaluator {
 			if (evaluatedNumerator == 0) {
 				return 0;
 			}
-			//
+			
 			return evaluatedNumerator / evaluateInteger(divideExpression.getRightOperand());
 		}
 		if (expression instanceof AddExpression addExpression) {
 			List<Expression> operands = addExpression.getOperands();
 			// Potential optimization
 			List<Expression> negativeOperandPairs = getNegativeExpressionPairs(operands);
-			//
+			
 			List<Expression> evaluableOperands = new ArrayList<Expression>(operands);
 			evaluableOperands.removeAll(negativeOperandPairs);
-			//
+			
 			return evaluableOperands.stream().map(it -> evaluateInteger(it))
 					.reduce(0, (p1, p2) -> p1 + p2);
 		}
@@ -208,7 +233,7 @@ public class ExpressionEvaluator {
 			if (ecoreUtil.helperEquals(leftOperand, rightOperand)) {
 				return 0;
 			}
-			//
+			
 			return evaluateInteger(leftOperand) - evaluateInteger(rightOperand);
 		}
 		if (expression instanceof FunctionAccessExpression functionAccessExpression) {
@@ -252,9 +277,11 @@ public class ExpressionEvaluator {
 		Expression lhs = expression.getLeftOperand();
 		Expression rhs = expression.getRightOperand();
 		
-		// if the expression is left inclusive we leave the lhs as is, if exclusive we have to increase the lhs by 1
-		// similarly if the expression is right inclusive we have to increase the rhs by 1, if exlusive we can leave as is
-		for (int i = (evaluate(lhs) + (expression.isLeftInclusive() ? 0 : 1)); i < (evaluate(rhs) + (expression.isRightInclusive() ? 1 : 0)); i++) {
+		// If the expression is left inclusive we leave the lhs as is, if exclusive we have to increase the lhs by 1
+		// similarly if the expression is right inclusive we have to increase the rhs by 1, if exclusive we can leave as is
+		int start = evaluate(lhs) + (expression.isLeftInclusive() ? 0 : 1);
+		int end = evaluate(rhs) + (expression.isRightInclusive() ? 1 : 0);
+		for (int i = start; i < end; i++) {
 			range.add(i);
 		}
 		
@@ -292,6 +319,26 @@ public class ExpressionEvaluator {
 			List<EnumerationLiteralDefinition> literals = type.getLiterals();
 			return (double) literals.indexOf(enumLiteral);
 		}
+		if (expression instanceof RecordAccessExpression recordAccessExpression) {
+			Expression operand = recordAccessExpression.getOperand();
+			FieldReferenceExpression fieldReference = recordAccessExpression.getFieldReference();
+			FieldDeclaration field = fieldReference.getFieldDeclaration();
+			
+			RecordLiteralExpression recordLiteral = null; // Add support for constants
+			if (operand instanceof RecordLiteralExpression recordLiteralExpression) {
+				recordLiteral = recordLiteralExpression;
+			}
+			else {
+				throw new IllegalArgumentException("Not evaluable expression: " + expression);
+			}
+			FieldAssignment fieldAssignment = recordLiteral.getFieldAssignments().stream()
+					.filter(it -> it.getReference().getFieldDeclaration() == field)
+					.findFirst()
+					.get();
+			
+			Expression value = fieldAssignment.getValue();
+			return evaluateDecimal(value);
+		}
 		if (expression instanceof ArrayAccessExpression arrayAccessExpression) {
 			Expression index = arrayAccessExpression.getIndex();
 			Expression operand = arrayAccessExpression.getOperand();
@@ -307,7 +354,7 @@ public class ExpressionEvaluator {
 			List<Expression> operands = multiplyExpression.getOperands();
 			List<Double> evaluatedOperands = new ArrayList<Double>();
 			IllegalArgumentException potentialException = null;
-			//
+			
 			for (Expression multiplicationOperand : operands) {
 				try {
 					double evaluatedOperand = evaluateDecimal(multiplicationOperand);
@@ -321,7 +368,7 @@ public class ExpressionEvaluator {
 					potentialException = e;
 				}
 			}
-			//
+			
 			if (potentialException != null) {
 				throw potentialException;
 			}
@@ -332,17 +379,17 @@ public class ExpressionEvaluator {
 			if (evaluatedNumerator == 0.0) {
 				return 0.0;
 			}
-			//
+			
 			return evaluatedNumerator / evaluateDecimal(divideExpression.getRightOperand());
 		}
 		if (expression instanceof AddExpression addExpression) {
 			List<Expression> operands = addExpression.getOperands();
 			// Potential optimization
 			List<Expression> negativeOperandPairs = getNegativeExpressionPairs(operands);
-			//
+			
 			List<Expression> evaluableOperands = new ArrayList<Expression>(operands);
 			evaluableOperands.removeAll(negativeOperandPairs);
-			//
+			
 			return evaluableOperands.stream().map(it -> evaluateDecimal(it))
 					.reduce(0.0, (p1, p2) -> p1 + p2);
 		}
@@ -354,9 +401,17 @@ public class ExpressionEvaluator {
 			if (ecoreUtil.helperEquals(leftOperand, rightOperand)) {
 				return 0.0;
 			}
-			//
 			
 			return evaluateDecimal(leftOperand) - evaluateDecimal(rightOperand);
+		}
+		if (expression instanceof IfThenElseExpression ifThenElseExpression) {
+			Expression condition = ifThenElseExpression.getCondition();
+			if (evaluateBoolean(condition)) {
+				return evaluateDecimal(
+						ifThenElseExpression.getThen());
+			}
+			return evaluateDecimal(
+					ifThenElseExpression.getElse());
 		}
 		throw new IllegalArgumentException("Not transformable expression: " + expression);
 	} 
@@ -368,6 +423,26 @@ public class ExpressionEvaluator {
 		}
 		if (expression instanceof FalseExpression) {
 			return false;
+		}
+		if (expression instanceof RecordAccessExpression recordAccessExpression) {
+			Expression operand = recordAccessExpression.getOperand();
+			FieldReferenceExpression fieldReference = recordAccessExpression.getFieldReference();
+			FieldDeclaration field = fieldReference.getFieldDeclaration();
+			
+			RecordLiteralExpression recordLiteral = null; // Add support for constants
+			if (operand instanceof RecordLiteralExpression recordLiteralExpression) {
+				recordLiteral = recordLiteralExpression;
+			}
+			else {
+				throw new IllegalArgumentException("Not evaluable expression: " + expression);
+			}
+			FieldAssignment fieldAssignment = recordLiteral.getFieldAssignments().stream()
+				.filter(it -> it.getReference().getFieldDeclaration() == field)
+				.findFirst()
+				.get();
+			
+			Expression value = fieldAssignment.getValue();
+			return evaluateBoolean(value);
 		}
 		if (expression instanceof ArrayAccessExpression arrayAccessExpression) {
 			Expression index = arrayAccessExpression.getIndex();
@@ -398,7 +473,7 @@ public class ExpressionEvaluator {
 			if (hasEqualityToDifferentLiterals(referenceEqualityExpressions)) {
 				return false;
 			}
-			//
+			
 			if (unevaluableException != null) {
 				throw unevaluableException; // At least one was unevaluable
 			}
@@ -436,9 +511,9 @@ public class ExpressionEvaluator {
 		if (expression instanceof BinaryExpression binaryExpression) {
 			Expression left = binaryExpression.getLeftOperand();
 			Expression right = binaryExpression.getRightOperand();
-			//
+			
 			boolean leftEqualsRight = ecoreUtil.helperEquals(left, right); // For optimization
-			//
+			
 			if (expression instanceof ImplyExpression) {
 				return !evaluateBoolean(left) || evaluateBoolean(right);
 			}
@@ -464,7 +539,7 @@ public class ExpressionEvaluator {
 				if (leftEqualsRight) {
 					return false;
 				}
-				//
+				
 				return evaluate(left) < evaluate(right);
 			}
 			if (expression instanceof LessEqualExpression) {
@@ -472,7 +547,7 @@ public class ExpressionEvaluator {
 				if (leftEqualsRight) {
 					return true;
 				}
-				//
+				
 				return evaluate(left) <= evaluate(right);
 			}
 			if (expression instanceof GreaterExpression) {
@@ -480,7 +555,7 @@ public class ExpressionEvaluator {
 				if (leftEqualsRight) {
 					return false;
 				}
-				//
+				
 				return evaluate(left) > evaluate(right);
 			}
 			if (expression instanceof GreaterEqualExpression) {
@@ -488,7 +563,7 @@ public class ExpressionEvaluator {
 				if (leftEqualsRight) {
 					return true;
 				}
-				//
+				
 				return evaluate(left) >= evaluate(right);
 			}
 		}
@@ -619,13 +694,12 @@ public class ExpressionEvaluator {
 	protected List<EqualityExpression> collectAllEqualityExpressions(AndExpression expression) {
 		List<EqualityExpression> equalityExpressions = new ArrayList<EqualityExpression>();
 		for (Expression subexpression : expression.getOperands()) {
-			if (subexpression instanceof EqualityExpression) {
-				EqualityExpression equalityExpression = (EqualityExpression) subexpression;
+			if (subexpression instanceof EqualityExpression equalityExpression) {
 				equalityExpressions.add(equalityExpression);
 			}
-			else if (subexpression instanceof AndExpression) {
-				AndExpression andExpression = (AndExpression) subexpression;
-				equalityExpressions.addAll(collectAllEqualityExpressions(andExpression));
+			else if (subexpression instanceof AndExpression andExpression) {
+				equalityExpressions.addAll(
+						collectAllEqualityExpressions(andExpression));
 			}
 		}
 		return equalityExpressions;

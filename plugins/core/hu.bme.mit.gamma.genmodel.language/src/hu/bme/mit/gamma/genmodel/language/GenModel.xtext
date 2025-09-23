@@ -43,7 +43,7 @@ Task returns Task:
 		AdaptiveBehaviorConformanceChecking | PhaseStatechartGeneration |
 		Verification | TraceReplayModelGeneration | Slicing | StatechartContractTestGeneration |
 		StatechartContractGeneration | TraceGeneration  | FaultTreeGeneration | FmeaTableGeneration |
-		ModelMutation | MutationBasedTestGeneration | SemanticDiff
+		ModelMutation | MutationBasedTestGeneration | RegionDecomposition | SemanticDiff
 ;
 
 //YakinduCompilation returns YakinduCompilation:
@@ -532,6 +532,16 @@ MutationBasedTestGeneration returns MutationBasedTestGeneration:
 			'trace-folder' ':' traceFolders+=STRING |
 			'test-class-name-pattern' ':' testClassNamePattern=STRING |
 			'pattern-class-name' ':' patternClassNames+=STRING
+		)*
+	'}'
+;
+
+RegionDecomposition returns RegionDecomposition:
+	{RegionDecomposition} 'region-decomposition' '{'
+		(
+			'folder' ':' targetFolder+=STRING |
+			'file' ':' fileName+=STRING |
+			'language' ':' analysisLanguages+=AnalysisLanguage
 		)*
 	'}'
 ;

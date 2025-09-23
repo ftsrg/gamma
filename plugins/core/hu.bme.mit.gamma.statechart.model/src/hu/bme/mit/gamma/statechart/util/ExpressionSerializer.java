@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -32,11 +32,14 @@ import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference;
 import hu.bme.mit.gamma.statechart.statechart.TimeoutReferenceExpression;
+import hu.bme.mit.gamma.util.JavaUtil;
 
 public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSerializer {
 	// Singleton
 	public static final ExpressionSerializer INSTANCE = new ExpressionSerializer();
 	protected ExpressionSerializer() {}
+	
+	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	//
 	
 	//
@@ -201,7 +204,8 @@ public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.Expre
 		if (expression instanceof ComponentInstanceEventParameterReferenceExpression reference) {
 			return _serialize(reference);
 		}
-		return super.serialize(expression);
+		String string = super.serialize(expression);
+		return javaUtil.deparenthesize(string);
 	}
 	
 }

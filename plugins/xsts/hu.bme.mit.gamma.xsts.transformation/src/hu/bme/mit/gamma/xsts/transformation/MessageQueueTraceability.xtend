@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -102,7 +102,7 @@ class MessageQueueTraceability {
 	//
 	
 	def getMasterQueues() {
-		val masterQueues = newHashSet
+		val masterQueues = newLinkedHashSet
 		for (messageQueue : messageQueues.values) {
 			masterQueues += messageQueue.masterQueue
 		}
@@ -110,7 +110,7 @@ class MessageQueueTraceability {
 	}
 	
 	def getAllSlaveQueues() {
-		val slaveQueues = newHashSet
+		val slaveQueues = newLinkedHashSet
 		for (messageQueue : messageQueues.values) {
 			slaveQueues += messageQueue.slaveQueues.values.flatten
 		}
@@ -118,7 +118,7 @@ class MessageQueueTraceability {
 	}
 	
 	def getAllQueues() {
-		val queues = newHashSet
+		val queues = newLinkedHashSet
 		queues += masterQueues
 		queues += allSlaveQueues
 		return queues

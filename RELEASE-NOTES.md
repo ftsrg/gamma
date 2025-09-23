@@ -296,9 +296,17 @@
 * Bugs been fixed related to the SSA conversion as it contained a fault in regard to assigning values to elements of array variables in different branches of an if-else statement.
 
 
-## 202X.YY.ZZ. - Version 2.12.0
+## 2025.07.11. - Version 2.12.0
 
 ### What is New
 
 * Yakindu is no longer supported due to compatibility reasons in the newer Eclipse versions.
 * Imandra is now fully integrated as a verification back-end.
+* Imandra can now be used for region decomposition and computing semantic diff based on GCL and GSL models.
+* Gamma now supports checking additional pre-defined properties, such as non-deterministic transitions, trap states and deadlock.
+* Gamma now supports contract-based verification via the integration with OCRA.
+
+### Improvements
+
+* Bugs have been fixed related to multiple port bindings to ports of asynchronous adapters, model reduction before verification, back-annotation of unwritten variables and array-indexes after verification.
+* GAL has been extended with havoc statements. 

@@ -15,7 +15,9 @@ import java.util.Collection
 import java.util.List
 import java.util.Map
 import java.util.Map.Entry
+import java.util.Scanner
 import java.util.Set
+import java.util.function.Predicate
 
 class JavaUtil {
 	// Singleton
@@ -77,6 +79,14 @@ class JavaUtil {
 		return list.remove(list.size - 1)
 	}
 	
+	def <T, R> void removeElementsOfType(List<T> list, Class<R> clazz) {
+		list.removeIf[clazz.isInstance(it)]
+	}
+	
+	def <T, R> void removeElementsOfOtherType(List<T> list, Class<R> clazz) {
+		list.removeIf[!clazz.isInstance(it)]
+	}
+	
 	def <T> void removeAllButFirst(List<T> list) {
 		for (var i = 1; i < list.size; /* No op */) {
 			list.remove(i)
@@ -100,6 +110,29 @@ class JavaUtil {
 		return set
 	}
 	
+	def <T, K extends T> subCollection(Collection<T> collection, K firstElement) {
+		val list = newArrayList
+		
+		var move = false
+		for (element : collection) {
+			if (element === firstElement) {
+				move = true
+			}
+			if (move) {
+				list += element
+			}
+		}
+		
+		return list
+	}
+	
+	def <T, K extends T> subCollectionExclusive(Collection<T> collection, K firstElement) {
+		val list = collection.subCollection(firstElement)
+		list.removeFirstElement
+		
+		return list
+	}
+	
 	def boolean containsAny(Collection<?> lhs, Iterable<?> rhs) {
 		for (element : rhs) {
 			if (lhs.contains(element)) {
@@ -111,6 +144,24 @@ class JavaUtil {
 	
 	def boolean containsNone(Collection<?> lhs, Iterable<?> rhs) {
 		return !lhs.containsAny(rhs)
+	}
+	
+	def <T> Set<T> union(Iterable<T> lhs, Iterable<? extends T> rhs) {
+		val set = newLinkedHashSet
+		
+		set += lhs
+		set += rhs
+		
+		return set
+	}
+	
+	def <T> Set<T> intersection(Iterable<T> lhs, Iterable<?> rhs) {
+		val set = newLinkedHashSet
+		
+		set += lhs
+		set.retainAll(rhs.toList)
+		
+		return set
 	}
 	
 	def <T> T getOnlyElement(Iterable<T> collection) {
@@ -209,6 +260,19 @@ class JavaUtil {
 	
 	//
 	
+	def String getCommonPrefix(String a, String b) {
+		for (var i = 0; i < a.length && i < b.length; i++) {
+			if (a.charAt(i) != b.charAt(i)) {
+				return a.substring(0, i)
+			}
+		}
+		
+		if (a.length < b.length) {
+			return a
+		}
+		return b
+	}
+	
 	def getStringBetweenChars(String string, char character) {
 		return string.getStringBetweenChars(character, character)
 	}
@@ -218,6 +282,38 @@ class JavaUtil {
 		val lastI = string.lastIndexOf(last)
 		
 		return string.substring(firstI + 1, lastI)
+	}
+	
+	def substring(String string, Predicate<Character> predicate) {
+		for (var i = 0; i < string.length; i++) {
+			val character = string.charAt(i)
+			if (predicate.test(character)) {
+				return string.substring(i)
+			}
+		}
+		return string
+	}
+	
+	def remove(String string, String start, String end) {
+		val i = string.indexOf(start)
+		val j = string.indexOf(end, i)
+		
+		if (0 < i && 0 < j) {
+			val result = string.substring(0, i) + string.substring(j)
+			return result
+		}
+		
+		return string
+	}
+	
+	def isAlfaNumerical(char character) {
+		val String string = character.toString
+		return string.matches("[A-Za-z0-9]")
+	}
+	
+	def isIdChar(char character) {
+		val String string = character.toString
+		return string.matches("[_A-Za-z0-9]")
 	}
 	
 	def countChar(String string, char character) {
@@ -231,6 +327,24 @@ class JavaUtil {
 		}
 		
 		return count
+	}
+	
+	def String deleteEmptyLines(CharSequence string) {
+//		val pattern = "((?m)^\\s*\\r?\\n|\\r?\\n\\s*(?!.*\\r?\\n))+"
+//		return string.toString.replaceAll(pattern, System.lineSeparator)
+		val builder = new StringBuilder(string.length)
+		try (val scanner = new Scanner(string.toString)) {
+			while (scanner.hasNextLine) {
+				val line = scanner.nextLine
+				if (!line.nullOrEmpty) {
+					if (builder.length > 0) { // Not first line
+						builder.append(System.lineSeparator)
+					}
+					builder.append(line)
+				}
+			}
+		}
+		return builder.toString
 	}
 	
 	def String deleteAll(String string, String regex) {
@@ -251,7 +365,7 @@ class JavaUtil {
 	}
 	
 	def String replaceLast(String string, String regex, String replacement) {
-		return string.replaceFirst("(?s)(.*)" + regex, "$1" + replacement);
+		return string.replaceFirst("(?s)(.*)" + regex, "$1" + replacement)
 	}
 	
 	def matchFirstCharacterCapitalization(String string, String example) {

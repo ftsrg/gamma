@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -58,6 +58,7 @@ import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.UppaalPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.XstsUppaalPropertySerializer;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
@@ -309,7 +310,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				return null;
 			}
 			InteractionDataflowCoverage notNullCoverage = (InteractionDataflowCoverage) coverage.get();
-			return transformCoverageCriterion(notNullCoverage.getInteractionDataflowCoverageCriterion());
+			return transformCoverageCriterion(
+					notNullCoverage.getInteractionDataflowCoverageCriterion());
 		}
 				
 		protected Entry<Integer, Integer> evaluateConstraint(hu.bme.mit.gamma.genmodel.model.Constraint constraint) {
@@ -860,7 +862,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			transformer.execute();
 			// Property serialization
 			serializeProperties(fileName);
-			logger.info("The Gamma -> XSTS-NuXMV transformation has been finished");
+			logger.info("The Gamma -> XSTS-nuXmv transformation has been finished");
 		}
 		
 		@Override
@@ -966,10 +968,14 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			InitialStateSetting initialStateSetting = transformInitialStateSetting(
 					transformation.getInitialStateSetting());
 			
+			boolean inlineFunctions = !StatechartModelDerivedFeatures.getSelfOrAllContainedStatecharts(component).stream()
+						.anyMatch(it -> StatechartModelDerivedFeatures.callsRecursiveFunctions(it));
+			
 			Gamma2XstsImlTransformerSerializer transformer = new Gamma2XstsImlTransformerSerializer(
 					component, reference.getArguments(),
 					targetFolderUri, fileName,
 					minSchedulingConstraint, maxSchedulingConstraint,
+					inlineFunctions,
 					transformation.isOptimize(),
 					TransitionMerging.HIERARCHICAL,
 					transformation.getPropertyPackage(),

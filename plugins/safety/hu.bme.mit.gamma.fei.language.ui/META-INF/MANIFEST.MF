@@ -3,7 +3,7 @@ Automatic-Module-Name: hu.bme.mit.gamma.fei.language.ui
 Bundle-ManifestVersion: 2
 Bundle-Name: Fault Extension Instructions Language UI
 Bundle-Vendor: BME-FTSRG
-Bundle-Version: 2.11.0.qualifier
+Bundle-Version: 2.13.0.qualifier
 Bundle-SymbolicName: hu.bme.mit.gamma.fei.language.ui; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: hu.bme.mit.gamma.fei.language,
@@ -24,7 +24,7 @@ Require-Bundle: hu.bme.mit.gamma.fei.language,
  hu.bme.mit.gamma.statechart.language.ui,
  hu.bme.mit.gamma.language.util
 Import-Package: org.apache.log4j
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: hu.bme.mit.gamma.fei.language.ui.contentassist,
  hu.bme.mit.gamma.fei.language.ui.internal,
  hu.bme.mit.gamma.fei.language.ui.quickfix

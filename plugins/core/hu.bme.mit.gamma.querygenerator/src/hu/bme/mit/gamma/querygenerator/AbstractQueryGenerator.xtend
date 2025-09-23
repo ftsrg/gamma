@@ -300,6 +300,9 @@ abstract class AbstractQueryGenerator {
 	protected abstract def String getTargetStateName(State state, Region parentRegion,
 		SynchronousComponentInstance instance)
 	
+	protected abstract def String getTargetRegionName(Region parentRegion,
+		SynchronousComponentInstance instance)
+	
 	protected abstract def List<String> getTargetVariableNames(VariableDeclaration variable,
 		SynchronousComponentInstance instance)
 	

@@ -58,11 +58,10 @@ public abstract class AbstractEntryPoint extends HeadlessApplicationCommandHandl
 
 	public AbstractEntryPoint(IApplicationContext context, String[] appArgs, Level level) {
 		super(context, appArgs, level);
-		logger.setLevel(level);
 	}
 
 	@Override
-	public void execute() throws Exception {
+	public void execute() throws Throwable {
 		// Necessary setup of Xtext parsers
 		setupXtext();
 		
@@ -93,7 +92,7 @@ public abstract class AbstractEntryPoint extends HeadlessApplicationCommandHandl
 		}
 	}
 
-	protected void copyProject(File projectFolder, String projectName) throws CoreException, Exception {
+	protected void copyProject(File projectFolder, String projectName) throws Exception {
 		IProject project = openProject(projectName);
 		IProjectDescription description = project.getDescription();
 		project.setDescription(description, new NullProgressMonitor());
@@ -129,9 +128,9 @@ public abstract class AbstractEntryPoint extends HeadlessApplicationCommandHandl
 		return project;
 	}
 
-	protected abstract void setup() throws Exception;
+	protected abstract void setup() throws Throwable;
 	
-	protected abstract void run(String fileWorkspaceRelativePath) throws Exception;
+	protected abstract void run(String fileWorkspaceRelativePath) throws Throwable;
 	
 	protected abstract void setupXtext();
 	

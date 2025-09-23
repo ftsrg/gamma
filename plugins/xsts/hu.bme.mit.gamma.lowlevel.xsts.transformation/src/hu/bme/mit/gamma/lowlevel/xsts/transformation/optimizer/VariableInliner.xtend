@@ -13,17 +13,21 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.FunctionCallAction
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
+import hu.bme.mit.gamma.xsts.model.OpaqueAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
+import hu.bme.mit.gamma.xsts.model.ReturnAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XTransition
@@ -73,7 +77,7 @@ class VariableInliner {
 		action.inline(concreteValues, symbolicValues)
 	}
 	
-	// The concreteValues and symbolicValues sets are disjunct!
+	// The concreteValues and symbolicValues sets are disjoint!
 	
 	protected def dispatch void inline(Action action,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
@@ -87,11 +91,31 @@ class VariableInliner {
 		// Nop
 	}
 	
+	protected def dispatch void inline(OpaqueAction action,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
+		// Nop
+	}
+	
 	protected def dispatch void inline(HavocAction action,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		val writtenVariables = action.writtenVariables
-				
+		
+		concreteValues.keySet -= writtenVariables
+		symbolicValues.keySet -= writtenVariables
+	}
+	
+	protected def dispatch void inline(FunctionCallAction action,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
+		val call = action.functionCallExpression
+		for (argument : call.arguments) {
+			argument.inlineExpression(concreteValues, symbolicValues)
+		}
+		
+		val writtenVariables = action.writtenVariables
+		// We do not consider function bodies (yet)
 		concreteValues.keySet -= writtenVariables
 		symbolicValues.keySet -= writtenVariables
 	}
@@ -189,6 +213,13 @@ class VariableInliner {
 		// TODO 'assume (a = 10)' like actions could be handled like assignments (see next dispatch)
 	}
 	
+	protected def dispatch void inline(ReturnAction action,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
+		val expression = action.expression
+		expression.inlineExpression(concreteValues, symbolicValues)
+	}
+	
 	protected def dispatch void inline(AssignmentAction action,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
@@ -200,6 +231,12 @@ class VariableInliner {
 			if (declaration instanceof VariableDeclaration) {
 				declaration.handleMaps(action, rhs, concreteValues, symbolicValues)
 			}
+		}
+		else if (lhs instanceof TupleReferenceExpression) {
+			// Used for function calls: we do not consider function bodies (yet)
+			val writtenVariables = action.writtenVariables
+			concreteValues.keySet -= writtenVariables
+			symbolicValues.keySet -= writtenVariables
 		}
 		else if (lhs instanceof ArrayAccessExpression) {
 			val index = lhs.index

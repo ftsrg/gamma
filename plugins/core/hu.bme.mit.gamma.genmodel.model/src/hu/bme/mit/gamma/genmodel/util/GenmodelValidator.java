@@ -54,6 +54,7 @@ import hu.bme.mit.gamma.genmodel.model.ModelReference;
 import hu.bme.mit.gamma.genmodel.model.MutationBasedTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint;
 import hu.bme.mit.gamma.genmodel.model.PhaseStatechartGeneration;
+import hu.bme.mit.gamma.genmodel.model.RegionDecomposition;
 import hu.bme.mit.gamma.genmodel.model.SafetyAssessment;
 import hu.bme.mit.gamma.genmodel.model.SchedulingConstraint;
 import hu.bme.mit.gamma.genmodel.model.SemanticDiff;
@@ -249,43 +250,63 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
+	public Collection<ValidationResultMessage> checkTasks(RegionDecomposition regionDecomp) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		List<String> fileNames = regionDecomp.getFileName();
+		validationResultMessages.addAll(
+				checkRelativeFilePaths(regionDecomp, fileNames, GenmodelModelPackage.Literals.TASK__FILE_NAME));
+		
+		List<AnalysisLanguage> analysisLanguages = regionDecomp.getAnalysisLanguages();
+		for (int i = 0; i < analysisLanguages.size(); i++) {
+			AnalysisLanguage analysisLanguage = analysisLanguages.get(i);
+			if (analysisLanguage != AnalysisLanguage.IML) {
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR,
+						"Currently, only Imandra supports this functionality",
+							new ReferenceInfo(GenmodelModelPackage.Literals.REGION_DECOMPOSITION__ANALYSIS_LANGUAGES, i)));
+			}
+		}
+		
+		return validationResultMessages;
+	}
+	
 	public Collection<ValidationResultMessage> checkTasks(SemanticDiff semanticDiff) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
 		List<String> fileNames = semanticDiff.getFileName();
-		validationResultMessages.addAll(
-				checkRelativeFilePaths(semanticDiff, fileNames, GenmodelModelPackage.Literals.TASK__FILE_NAME));
-		
 		if (fileNames.size() > 1) {
-			validationResultMessages.add(
-				new ValidationResultMessage(ValidationResult.INFO,
-					"Make sure that this new model variant does not contain new states, inputs or variables compared to the original version",
-						new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, 1)));
-			
 			File anchor = ecoreUtil.getFile(semanticDiff.eResource());
-			boolean hasTraceability = false;
+			boolean hasTraceability = true;
 			for (String fileName : fileNames) {
 				String unfoldedPackageFileName = fileNamer.getUnfoldedPackageFileName(fileName);
+				int index = fileNames.indexOf(fileName);
 				if (fileUtil.isValidRelativeFile(anchor, unfoldedPackageFileName)) {
-					hasTraceability = true;
 					validationResultMessages.add(
 						new ValidationResultMessage(ValidationResult.INFO,
 							"Back-annotation will be conducted using " + unfoldedPackageFileName,
-								new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, 0)));
-					break;
+								new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, index)));
+				}
+				else {
+					hasTraceability = false;
 				}
 			}
 			if (!hasTraceability) {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.WARNING,
 						"Back-annotation will not be carried out as a corresponding Gamma model is not found",
-							new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, 0)));
+							new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME)));
 			}
+		}
+		else {
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.ERROR,
+					"Two files are expected among which semantic diff is computed",
+						new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME)));
 		}
 		
 		return validationResultMessages;
 	}
-
 	
 	public Collection<ValidationResultMessage> checkTasks(AbstractComplementaryTestGeneration testGeneration) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();

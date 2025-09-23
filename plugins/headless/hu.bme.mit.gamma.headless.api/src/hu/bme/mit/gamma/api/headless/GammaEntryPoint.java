@@ -23,11 +23,10 @@ public class GammaEntryPoint extends AbstractEntryPoint {
 
 	public GammaEntryPoint(IApplicationContext context, String[] appArgs, Level level) {
 		super(context, appArgs, level);
-		logger.setLevel(level);
 	}
 	
 	@Override
-	protected void run(String fileWorkspaceRelativePath) throws Exception {
+	protected void run(String fileWorkspaceRelativePath) throws Throwable {
 		GammaApi gammaApi = new GammaApi();
 		gammaApi.run(fileWorkspaceRelativePath, createResourceSetCreator());
 	}

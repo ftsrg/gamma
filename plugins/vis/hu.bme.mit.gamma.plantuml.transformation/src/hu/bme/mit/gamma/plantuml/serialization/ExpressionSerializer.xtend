@@ -20,7 +20,7 @@ class ExpressionSerializer extends hu.bme.mit.gamma.statechart.util.ExpressionSe
 	
 	override _serialize(RecordLiteralExpression expression) {
 		val fields = expression.fieldAssignments
-		val DELIMETER = fields.size < 2 ? '' : '\\n'
+		val DELIMETER = fields.size < 2 ? '' : System.lineSeparator // Works for trace serialization
 		val INDENT = (fields.size > 1) ? "\t" : ""
 		return '''# {«FOR field : fields BEFORE DELIMETER + INDENT SEPARATOR ',' + DELIMETER + INDENT AFTER DELIMETER»«
 			field.reference.fieldDeclaration.name» := «field.value.serialize»«ENDFOR»}'''

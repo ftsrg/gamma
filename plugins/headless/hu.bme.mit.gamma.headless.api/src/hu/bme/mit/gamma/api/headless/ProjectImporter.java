@@ -37,11 +37,10 @@ public class ProjectImporter extends HeadlessApplicationCommandHandler {
 
 	public ProjectImporter(IApplicationContext context, String[] appArgs, Level level) {
 		super(context, appArgs, level);
-		logger.setLevel(level);
 	}
 
 	@Override
-	public void execute() throws Exception {
+	public void execute() throws Throwable {
 		IContentTypeManager contentTypeManager = Platform.getContentTypeManager();
 		System.out.println(contentTypeManager);
 		IWorkspace workspace = ResourcesPlugin.getWorkspace(); // Workspace will be created where the -data argument specifies it

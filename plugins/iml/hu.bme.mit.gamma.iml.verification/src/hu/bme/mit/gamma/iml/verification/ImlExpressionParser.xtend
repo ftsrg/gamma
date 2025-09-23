@@ -11,15 +11,11 @@
 package hu.bme.mit.gamma.iml.verification
 
 import hu.bme.mit.gamma.expression.model.BinaryExpression
-import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.expression.model.UnaryExpression
 import hu.bme.mit.gamma.querygenerator.ImlQueryGenerator
 import hu.bme.mit.gamma.querygenerator.ThetaQueryGenerator
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.theta.verification.XstsBackAnnotator
@@ -36,9 +32,10 @@ import static hu.bme.mit.gamma.xsts.iml.transformation.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class ImlExpressionParser {
-	//
-	public static val preprocessExpressions = #{ "&&" -> "and", "||" -> "or", "=" -> "==", "<>" -> "!=",
-			"+." -> "+", "-." -> "-", "*." -> "*", "/." -> "/", "." + ENUM_LITERAL_PREFIX -> "::" + ENUM_LITERAL_PREFIX /* Only for enums, not records */}
+	// We support both of these 'equal' operators "=" -> "=="
+	public static val preprocessExpressions = newLinkedHashMap( // Note: order matters
+			"&&" -> "and", "||" -> "or", "<>" -> "!=", "+." -> "+", "-." -> "-", "*." -> "*", "/." -> "/",
+			"." + ENUM_LITERAL_PREFIX -> "::" + ENUM_LITERAL_PREFIX /* Only for enums, not records */)
 	// TODO arrays?
 	protected final ThetaQueryGenerator imlQueryGenerator
 	protected final extension XstsBackAnnotator xStsBackAnnotator
@@ -121,43 +118,11 @@ class ImlExpressionParser {
 			}
 			
 			if (!filtered) {
-				newExpressions += expression.postprocess
+				newExpressions += xStsBackAnnotator.postprocess(expression)
 			}
 		}
 		
 		return newExpressions
-	}
-	
-	protected def Expression postprocess(Expression expression) {
-		if (expression instanceof ComponentInstanceEventReferenceExpression) {
-			val port = expression.port
-			val systemPort = port.boundTopComponentPort
-			
-			return systemPort.createRaiseEventAct(expression.event)
-		}
-		else if (expression instanceof ComponentInstanceEventParameterReferenceExpression) {
-			val port = expression.port
-			val systemPort = port.boundTopComponentPort
-			
-			return systemPort.createEventParameterReference(expression.parameterDeclaration)
-		}
-		else if (expression instanceof EqualityExpression) {
-			val left = expression.leftOperand
-			val right = expression.rightOperand
-			if (left instanceof OpaqueExpression) {
-				if (right instanceof ComponentInstanceStateReferenceExpression) {
-					return right // No else
-				}
-			}
-		}
-		
-		val subexpressions = expression.getAllContentsOfType(Expression)
-		for (subexpression : subexpressions) {
-			val newSubexpression = subexpression.postprocess
-			newSubexpression.replace(subexpression)
-		}
-		
-		return expression
 	}
 	
 	protected def needsFiltering(Expression expression) {

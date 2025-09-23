@@ -51,7 +51,7 @@ class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvide
 				_scope = new SimpleScope(getParentScope(context, reference), _scope.getAllElements());
 				scope = Scopes.scopeFor(variables, _scope)
 			} else if (context instanceof ScenarioPackage &&
-				reference == ScenarioModelPackage.Literals.SCENARIO_PACKAGE__COMPONENT) {
+					reference == ScenarioModelPackage.Literals.SCENARIO_PACKAGE__COMPONENT) {
 				val scenarioPackage = context as ScenarioPackage
 				val importedPackages = scenarioPackage.imports
 				scope = createScopeFor(importedPackages.flatMap[it.components])
@@ -59,13 +59,13 @@ class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvide
 				val package = ecoreUtil.getContainerOfType(context, ScenarioPackage)
 				return Scopes.scopeFor(package.component.ports)
 			} else if (context instanceof EventParameterReferenceExpression && reference ==
-				InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT) {
+					InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT) {
 				val expression = context as EventParameterReferenceExpression
 				checkState(expression.port !== null)
 				val port = expression.port
 				return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllEvents(port))
 			} else if (context instanceof EventParameterReferenceExpression && reference ==
-				InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PARAMETER) {
+					InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PARAMETER) {
 				val expression = context as EventParameterReferenceExpression
 				checkState(expression.port !== null)
 				val event = expression.event
@@ -82,7 +82,7 @@ class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvide
 		} catch (Exception ex) {
 			// left empty on purpose
 		} finally {
-			scope = if (scope === null) getParentScopeP(context, reference) else scope
+			scope = (scope === null) ? getParentScopeP(context, reference) : scope
 		}
 
 		return scope

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,15 +10,19 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util
 
+import hu.bme.mit.gamma.action.model.AssignmentStatement
 import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
+import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
+import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.UnaryExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory
@@ -26,6 +30,11 @@ import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
+import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
+import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.Transition
+import hu.bme.mit.gamma.statechart.util.ElementSerializer
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.Cycle
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
@@ -37,7 +46,7 @@ import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import java.util.List
+import java.util.Collection
 import java.util.logging.Logger
 
 import static com.google.common.base.Preconditions.checkArgument
@@ -50,27 +59,48 @@ class UnfoldedExecutionTraceBackAnnotator {
 	
 	protected final ExecutionTrace trace
 	protected final Component originalTopComponent
+	protected final boolean sortTrace
 	
 	//
 	
-	protected final List<Expression> dummyAsserts = newArrayList
+	protected final Collection<Expression> dummyAsserts = newArrayList
+	protected final Collection<OpaqueExpression> metadata = newArrayList
 	
 	protected final InterfaceModelFactory interfaceModelFactory = InterfaceModelFactory.eINSTANCE
 	protected final CompositeModelFactory compositeModelFactory = CompositeModelFactory.eINSTANCE
 	protected final ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension TraceModelFactory traceModelFactory = TraceModelFactory.eINSTANCE
+	protected final extension ElementSerializer elementSerializer = ElementSerializer.INSTANCE
 	protected final extension UnfoldingTraceability traceability = UnfoldingTraceability.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
+	public static final String TRAP_STATE_ID = "_TrapState_"
+	public static final String TRAP_STATE_MESSAGE_BEGINNING = "Trap state entered in"
+	
+	public static final String EXECUTED_TRANSITION_VARIABLE_BEGINNING = "__id_"
+	public static final String EXECUTED_TRANSITION_VARIABLE_END = "_"
+	public static final String EXECUTED_TRANSITION_MESSAGE_BEGINNING = "Transition executed: "
+	
+	public static final String SENT_INTERACTION_VARIABLE_BEGINNING = EXECUTED_TRANSITION_VARIABLE_BEGINNING + "first_"
+	public static final String RECEIVED_INTERACTION_VARIABLE_BEGINNING = EXECUTED_TRANSITION_VARIABLE_BEGINNING + "second_"
+	public static final String INTERACTION_SENDING_BEGINNING = "Interaction sent by: "
+	public static final String INTERACTION_RECEIVING_BEGINNING = "Interaction received by: "
+	//
+	
 	new(ExecutionTrace trace, Component originalTopComponent) {
+		this(trace, originalTopComponent, true)
+	}
+	
+	new(ExecutionTrace trace, Component originalTopComponent, boolean sortTrace) {
 		checkNotNull(originalTopComponent)
 		checkArgument(!originalTopComponent.statechart,
-			"The original component cannot be a statechart")
+				"The original component cannot be a statechart")
 		this.trace = trace
 		this.originalTopComponent = originalTopComponent
+		this.sortTrace = sortTrace
 	}
 	
 	def execute() {
@@ -95,6 +125,11 @@ class UnfoldedExecutionTraceBackAnnotator {
 		
 		// There are injected variables that cannot be back-annotated
 		removeDummyAsserts
+		handleMetadata
+		// After removing dummy asserts (nulls)
+		if (sortTrace) {
+			originalExecutionTrace.sortInstanceStates
+		}
 		
 		return originalExecutionTrace
 	}
@@ -112,6 +147,8 @@ class UnfoldedExecutionTraceBackAnnotator {
 		for (assert : step.asserts) {
 			newStep.asserts += assert.transformAssert
 		}
+		// Handling removed (reduced) variables (if any)
+		newStep.handleRemovedVariables
 		
 		return newStep
 	}
@@ -167,18 +204,21 @@ class UnfoldedExecutionTraceBackAnnotator {
 	// Asserts
 	
 	protected def dispatch Expression transformAssert(ComponentInstanceStateReferenceExpression assert) {
+		val newState = assert.state
+		val instance = assert.instance.lastInstance as SynchronousComponentInstance
+		val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
 		try {
-			val instance = assert.instance.lastInstance as SynchronousComponentInstance
-			val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
-				val originalState = originalInstance.getOriginalState(assert.state)
-			return compositeModelFactory.createComponentInstanceStateReferenceExpression => [
-				it.instance = originalInstance
-				it.state = originalState
-				it.region = it.state.parentRegion
-			]
+			val originalState = originalInstance.getOriginalState(newState)
+			val originalReference = originalInstance.createStateReference(originalState)
+			return originalReference
 		} catch (IllegalArgumentException e) {
 			val message = e.message.trim
 			if (message.startsWith("Not found state")) {
+				val metadataMessage = assert.backAnnotate
+				if (metadataMessage !== null) {
+					return metadataMessage
+				}
+				
 				logger.warning(message)
 				val trueExpression = expressionModelFactory.createTrueExpression
 				dummyAsserts += trueExpression
@@ -195,14 +235,24 @@ class UnfoldedExecutionTraceBackAnnotator {
 		val originalVariable = try {
 			originalInstance.getOriginalVariable(variable)
 		} catch (IllegalArgumentException e) {
+			val message = e.message.trim
+			if (message.startsWith("Not found variable")) {
+				val metadataMessage = assert.backAnnotate
+				if (metadataMessage !== null) {
+					return metadataMessage
+				}
+			}
+			
 			logger.info("Not found original variable for " + variable)
 			null
 		}
+		
 		val variableState = statechartUtil.createVariableReference(
 				originalInstance, originalVariable)
 		if (originalVariable === null) {
 			dummyAsserts += variableState
 		}
+		
 		return variableState
 	}
 	
@@ -257,7 +307,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 		val clonedValue = value.clone
 		
 		// Type declarations
-		val typeDeclarations = newHashSet
+		val typeDeclarations = newLinkedHashSet
 		
 		val typeReferences = clonedValue.getSelfAndAllContentsOfType(TypeReference)
 		typeDeclarations += typeReferences.map[it.reference]
@@ -267,7 +317,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 		for (typeDeclaration : typeDeclarations) {
 			val originalTypeDeclaration = originalTopComponent
 					.getOriginalTypeDeclaration(typeDeclaration)
-			//
+			
 			typeReferences.filter[it.reference === typeDeclaration]
 					.forEach[it.reference = originalTypeDeclaration]
 			recordLiterals.filter[it.typeDeclaration === typeDeclaration]
@@ -298,9 +348,166 @@ class UnfoldedExecutionTraceBackAnnotator {
 	
 	//
 	
+	protected def void handleRemovedVariables(Step step) {
+		val variableInstances = step.asserts
+				.map[it.getSelfAndAllContentsOfType(ComponentInstanceVariableReferenceExpression)]
+				.flatten
+		
+		val instances = originalTopComponent.allSimpleInstanceReferences
+		for (instance : instances) {
+			val statechart = instance.lastInstance.derivedType
+			if (statechart instanceof StatechartDefinition) {
+				val statechartVariables = statechart.variableDeclarations
+				val presentInstanceVariables = variableInstances.filter[it.instance.name == instance.name]
+				val presentVariables = presentInstanceVariables.map[it.variableDeclaration]
+				
+				val unpresentVariables = statechartVariables.filter[!presentVariables.contains(it)]
+				for (unpresentVariable : unpresentVariables) {
+					// We know what to do only if the variable is unwritten
+					if (unpresentVariable.unwritten) {
+						val unwrittenVariable = instance.clone
+								.createVariableReference(unpresentVariable)
+						val value = unpresentVariable.initialValue
+						
+						val assertion = unwrittenVariable.createEqualityExpression(value)
+						step.asserts += assertion
+					}
+				}
+			}
+		}
+	}
+	
+	//
+	
+	protected def backAnnotate(ComponentInstanceStateReferenceExpression assert) {
+		val instance = assert.instance.lastInstance as SynchronousComponentInstance
+		val state = assert.state
+		val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
+		val name = state.name
+		
+		// Injected state for checking nondeterministic behavior
+		if (name == TRAP_STATE_ID) {
+			val regionName = state.parentRegion.name
+			val instanceName = originalInstance.name
+			
+			val metadataMessage = '''«TRAP_STATE_MESSAGE_BEGINNING» region «regionName» of «instanceName»'''
+					.createOpaqueExpression
+			
+			return metadataMessage
+		}
+		
+		return null
+	}
+	
+	protected def backAnnotate(ComponentInstanceVariableReferenceExpression assert) {
+		val instance = assert.instance.lastInstance as SynchronousComponentInstance
+		val variable = assert.variableDeclaration
+		val name = variable.name
+		
+		// All for 'transition', 'transition-pair' and 'interaction' coverage
+		if (name.startsWith(EXECUTED_TRANSITION_VARIABLE_BEGINNING) &&
+				name.endsWith(EXECUTED_TRANSITION_VARIABLE_END)) {
+			val container = assert.eContainer
+			if (container instanceof Step || container instanceof EqualityExpression) {
+				val rhs = (container instanceof EqualityExpression) ? container.rightOperand : 
+						expressionModelFactory.createTrueExpression
+				// There should be one 'true' or 'integer literal' assignment to this variable
+				val statechart = instance.derivedType
+				if (statechart instanceof StatechartDefinition) {
+					val transitions = statechart.transitions
+					val executedTransitions = transitions.filter[
+							it.effects.filter(AssignmentStatement)
+								.exists[it.lhs.declaration == variable && it.rhs.helperEquals(rhs)]]
+					if (!executedTransitions.empty) {
+						// 'Transition' (and/or '-pair') or 'interaction reception'
+						val executedTransition = executedTransitions.head
+						val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
+						
+						val prefix = name.startsWith(RECEIVED_INTERACTION_VARIABLE_BEGINNING) ?
+								INTERACTION_RECEIVING_BEGINNING : EXECUTED_TRANSITION_MESSAGE_BEGINNING
+						val metadataMessage = executedTransition.getMetadata(originalInstance, prefix)
+						
+						return metadataMessage
+					}
+					else {
+						// Sender of 'interaction' coverage
+						val newComponent = trace.component
+						for (senderInstance : newComponent.allSimpleInstances) {
+							val senderStatechart = senderInstance.getStatechart
+							
+							val allStates = senderStatechart.allStates
+							val allTransitions = senderStatechart.transitions
+							val actions = allStates.map[it.entryActions + it.exitActions].flatten +
+									allTransitions.map[it.effects].flatten
+							val raiseEventActions = actions.map[it.getSelfAndAllContentsOfType(RaiseEventAction)].flatten.toSet
+							val executedActions = raiseEventActions
+									.filter[!it.arguments.empty && it.arguments.lastOrNull.helperEquals(rhs)]
+							if (!executedActions.empty) {
+								val originalSenderInstance = senderInstance.getOriginalSimpleInstanceReference(originalTopComponent)
+								val action = executedActions.head
+								val transitionOrState = action.containingTransitionOrState
+								if (transitionOrState instanceof Transition) {
+									val metadataMessage = transitionOrState.getMetadata(originalSenderInstance, INTERACTION_SENDING_BEGINNING)
+									
+									return metadataMessage
+								}
+								else if (transitionOrState instanceof State) {
+									val stateName = transitionOrState.name
+									val regionName = transitionOrState.parentRegion.name
+									val instanceName = originalSenderInstance.name
+									
+									val metadataMessage = '''«INTERACTION_SENDING_BEGINNING»state «stateName» region «regionName» of «instanceName»'''
+											.createOpaqueExpression
+									
+									return metadataMessage
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		return null
+	}
+	
+	protected def getMetadata(Transition newTransition,
+			ComponentInstanceReferenceExpression originalInstance, String prefix) {
+		val transition = try {
+			originalInstance.getOriginalTransition(newTransition)
+		} catch (IllegalArgumentException e2) {
+			// Did not find the original transition
+			newTransition
+		}
+		val instanceName = originalInstance.name
+		
+		val metadataMessage = prefix.getTransitionMessage(transition, instanceName)
+					.createOpaqueExpression
+		metadata += metadataMessage
+		
+		return metadataMessage
+	}
+	
+	protected def getTransitionMessage(String prefix, Transition transition, String instanceName)
+		'''«prefix»«transition.serialize» of «instanceName»'''
+	
+	//
+	
 	protected def removeDummyAsserts() {
 		dummyAsserts.removeContainmentChains(Expression)
 		dummyAsserts.clear
+	}
+	
+	protected def handleMetadata() {
+		for (data : metadata) {
+			val container = data.eContainer
+			if (!(container instanceof Step)) {
+				val topmostExpression = data.getChildOfContainerOfType(Step)
+				data.replace(topmostExpression)
+			}
+		}
+		
+		metadata.clear
 	}
 	
 }

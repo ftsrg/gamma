@@ -1,0 +1,27 @@
+package nondetchoice
+
+import "Interfaces/Interfaces.gcd"
+
+statechart NonDetChoice [
+	port Execute : requires Execute
+] {
+	var count : integer
+	region main {
+		initial Initial
+		state _A
+		state _B
+		state _BB
+		state _C
+	}
+	
+	transition from Initial to _A
+	transition from _A to _B when Execute.^execute
+	transition from _A to _BB when Execute.^execute [count < 10]
+	transition from _B to _C when cycle / increment(5);
+	
+	procedure increment(value : integer) : integer {
+		count := value;
+		return count + value;
+	}
+	
+}
