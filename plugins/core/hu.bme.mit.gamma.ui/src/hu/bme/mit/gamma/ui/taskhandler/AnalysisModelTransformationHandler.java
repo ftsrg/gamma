@@ -29,6 +29,7 @@ import com.google.common.collect.Maps;
 
 import hu.bme.mit.gamma.composition.xsts.uppaal.transformation.Gamma2XstsUppaalTransformerSerializer;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.OpaqueExpression;
 import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
@@ -968,8 +969,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			InitialStateSetting initialStateSetting = transformInitialStateSetting(
 					transformation.getInitialStateSetting());
 			
-			boolean inlineFunctions = !StatechartModelDerivedFeatures.getSelfOrAllContainedStatecharts(component).stream()
-						.anyMatch(it -> StatechartModelDerivedFeatures.callsRecursiveFunctions(it));
+			boolean inlineFunctions = !StatechartModelDerivedFeatures.getSelfOrAllContainedStatecharts(component).stream().anyMatch(
+					it -> StatechartModelDerivedFeatures.callsRecursiveFunctions(it) ||
+						it.getFunctionDeclarations().stream().anyMatch(fun -> !ecoreUtil.getSelfAndAllContentsOfType(fun, OpaqueExpression.class).isEmpty()));
 			
 			Gamma2XstsImlTransformerSerializer transformer = new Gamma2XstsImlTransformerSerializer(
 					component, reference.getArguments(),
