@@ -307,10 +307,14 @@ public class ExpressionUtil {
 	}
 	
 	public Expression wrapIntoMultiply(Expression expression, long value) {
+		IntegerLiteralExpression integerLiteral = toIntegerLiteral(value);
+		return wrapIntoMultiply(expression, integerLiteral);
+	}
+	
+	public Expression wrapIntoMultiply(Expression lhs, Expression rhs) {
 		MultiplyExpression multiplyExpression = factory.createMultiplyExpression();
-		multiplyExpression.getOperands().add(expression);
-		multiplyExpression.getOperands().add(
-				toIntegerLiteral(value));
+		multiplyExpression.getOperands().add(lhs);
+		multiplyExpression.getOperands().add(rhs);
 		return multiplyExpression;
 	}
 
