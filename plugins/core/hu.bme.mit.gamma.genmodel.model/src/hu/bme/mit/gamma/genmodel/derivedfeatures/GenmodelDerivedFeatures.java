@@ -18,6 +18,7 @@ import org.eclipse.emf.ecore.EObject;
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.AnalysisTask;
 import hu.bme.mit.gamma.genmodel.model.ComponentReference;
@@ -88,6 +89,41 @@ public class GenmodelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static boolean isNegativeContractGeneration(StatechartContractGeneration statechartGeneration) {
 		return statechartGeneration.getTestType() == TestAutomatonType.NEGATIVE;
+	}
+	
+	public static AnalysisLanguage getAnalysisLanguage(String name) {
+		switch (name.toUpperCase()) {
+			case "UPPAAL": {
+				return AnalysisLanguage.UPPAAL;
+			}
+			case "XSTS_UPPAAL":
+			case "XTA": {
+				return AnalysisLanguage.XSTS_UPPAAL;
+			}
+			case "THETA":
+			case "XSTS": {
+				return AnalysisLanguage.THETA;
+			}
+			case "SPIN":
+			case "PROMELA": {
+				return AnalysisLanguage.PROMELA;
+			}
+			case "SMV":
+			case "NUXMV": {
+				return AnalysisLanguage.NUXMV;
+			}
+			case "OCRA":
+			case "OSS":
+			case "OTHELLO": {
+				return AnalysisLanguage.OCRA;
+			}
+			case "IMANDRA":
+			case "IML": {
+				return AnalysisLanguage.IML;
+			}
+			default:
+				throw new IllegalArgumentException("Not known language: " + name);
+		}
 	}
 	
 }
