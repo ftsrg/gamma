@@ -33,9 +33,9 @@ abstract class AbstractVerifier {
 	
 	protected final GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
 	
-	protected extension FileUtil fileUtil = FileUtil.INSTANCE
-	protected extension PathEscaper pathEscaper = PathEscaper.INSTANCE
-	protected extension TraceUtil traceUtil = TraceUtil.INSTANCE
+	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
+	protected final extension PathEscaper pathEscaper = PathEscaper.INSTANCE
+	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	
 	//

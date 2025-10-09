@@ -10,14 +10,11 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.ocra.verification
 
-import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.verification.util.AbstractVerifier
 import java.io.File
 
 class OcraVerifier extends AbstractVerifier {
 	//
-	protected final static extension FileUtil fileUtil = FileUtil.INSTANCE
-	
 	public static final String SET_OCRA_TIMED = "set ocra_timed 1"
 	//
 	

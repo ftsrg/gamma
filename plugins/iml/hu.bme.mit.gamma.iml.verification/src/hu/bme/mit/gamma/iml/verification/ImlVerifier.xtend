@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.iml.verification
 
 import hu.bme.mit.gamma.statechart.interface_.Package
-import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.ScannerLogger
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier
@@ -21,8 +20,6 @@ import java.util.Scanner
 class ImlVerifier extends AbstractVerifier {
 	//
 	public static final String IMANDRA_TEMPORARY_COMMAND_FOLDER = ".imandra"
-	//
-	protected final static extension FileUtil fileUtil = FileUtil.INSTANCE
 	//
 	
 	override verifyQuery(Object traceability, String parameters, File modelFile, File queryFile) {
