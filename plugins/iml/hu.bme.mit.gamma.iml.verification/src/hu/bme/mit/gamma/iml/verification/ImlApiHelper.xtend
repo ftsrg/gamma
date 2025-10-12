@@ -22,10 +22,13 @@ class ImlApiHelper {
 	
 	protected static val MODULE_PREFIX = "M." // Given by Imandra
 	
-	protected static val TIMEOUT = 300
+	static def String getInvariantCall(String model, String command, String commandlessQuery) {
+		val DEFAULT_TIMEOUT = 300
+		return model.getInvariantCall(command, commandlessQuery, DEFAULT_TIMEOUT)
+	}
 	
 	/* ImandraX (new Imandra) - IMANDRA_API_KEY environment variable must be set */
-	static def String getInvariantCall(String model, String command, String commandlessQuery) '''
+	static def String getInvariantCall(String model, String command, String commandlessQuery, long timeout) '''
 		from imandrax_api import Client
 		# from imandra.core import Client
 		
@@ -35,8 +38,8 @@ class ImlApiHelper {
 		def print_eval_res(eval, i=0):
 			return print(get_eval_res(eval, i))
 		
-		client = Client(auth_token="«System.getenv("IMANDRA_API_KEY")»", url="https://api.dev.imandracapital.com/internal/imandrax", timeout=«TIMEOUT»)
-		# client = Client(timeout=«TIMEOUT»)
+		client = Client(auth_token="«System.getenv("IMANDRA_API_KEY")»", url="https://api.dev.imandracapital.com/internal/imandrax", timeout=«timeout»)
+		# client = Client(timeout=«timeout»)
 		
 		client.eval_src("""
 			«model»

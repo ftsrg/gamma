@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Gamma project
+ * Copyright (c) 2024-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -24,8 +24,8 @@ class ImlVerification extends AbstractVerification {
 		return fileName.unfoldedPackageFileName
 	}
 	
-	protected override createVerifier() {
-		return new ImlVerifier
+	protected override createVerifier(Long timeout) {
+		return new ImlVerifier(timeout)
 	}
 	
 	//

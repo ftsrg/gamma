@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -37,6 +37,18 @@ abstract class AbstractVerifier {
 	protected final extension PathEscaper pathEscaper = PathEscaper.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
+	
+	protected final Long timeout
+	
+	//
+	
+	new() {
+		this(null)
+	}
+	
+	new(Long timeout) {
+		this.timeout = timeout
+	}
 	
 	//
 	
@@ -104,6 +116,14 @@ abstract class AbstractVerifier {
 	
 	protected def getTemporaryQueryFilename(File modelFile) {
 		return fileNamer.getHiddenSerializedPropertyFileName(modelFile.name)
+	}
+	
+	def isTimeoutSet() {
+		return timeout !== null && 0 < timeout
+	}
+	
+	def getTimeout() {
+		return timeout
 	}
 	
 	//

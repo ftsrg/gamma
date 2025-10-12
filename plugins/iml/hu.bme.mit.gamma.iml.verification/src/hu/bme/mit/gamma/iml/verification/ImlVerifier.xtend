@@ -22,6 +22,12 @@ class ImlVerifier extends AbstractVerifier {
 	public static final String IMANDRA_TEMPORARY_COMMAND_FOLDER = ".imandra"
 	//
 	
+	new(Long timeout) {
+		super(timeout)
+	}
+	
+	//
+	
 	override verifyQuery(Object traceability, String parameters, File modelFile, File queryFile) {
 		val query = queryFile.loadString
 		var Result result = null
@@ -55,7 +61,9 @@ class ImlVerifier extends AbstractVerifier {
 		
 		// "Old" Imandra API vs. ImandraX API
 		val serializedPython = ImlApiHelper.getBasicInvariantCall(parameters, modelString, command, commandlessQuery)
-//		val serializedPython = ImlApiHelper.getInvariantCall(modelString, command, commandlessQuery)
+//		val serializedPython = (timeoutSet) ?
+//				ImlApiHelper.getInvariantCall(modelString, command, commandlessQuery, timeout) :
+//				ImlApiHelper.getInvariantCall(modelString, command, commandlessQuery)
 		fileUtil.saveString(pythonFile, serializedPython)
 		
 		// python3 .\imandra-test.py

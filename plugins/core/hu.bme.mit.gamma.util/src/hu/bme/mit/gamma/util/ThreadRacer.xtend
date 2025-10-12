@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -73,7 +73,8 @@ class ThreadRacer<T> {
 				logger.info('''A result has been returned''') // One of the threads won
 			}
 			else {
-				latch.await(timeout, unit)
+				val gracePeriod = unit.convert(3, TimeUnit.SECONDS)
+				latch.await(timeout + gracePeriod, unit)
 				logger.info('''«timeout» «unit» timeout has been reached''')
 			}
 			//
