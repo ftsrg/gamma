@@ -10,7 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.util
 
+import java.io.UnsupportedEncodingException
 import java.util.AbstractMap.SimpleEntry
+import java.util.Arrays
 import java.util.Collection
 import java.util.List
 import java.util.Map
@@ -314,6 +316,61 @@ class JavaUtil {
 	def isIdChar(char character) {
 		val String string = character.toString
 		return string.matches("[_A-Za-z0-9]")
+	}
+	
+	def toId(String string) {
+		val DELIM_CHAR = "_"
+		return string.toId(DELIM_CHAR)
+	}
+	
+	def toId(String string, String delimiter) {
+		try {
+			val bytes = string.getBytes("UTF-8")
+			return Arrays.toString(bytes)
+					.replaceAll("\\D+", delimiter)
+		} catch (UnsupportedEncodingException e) {
+			return null
+		}
+	}
+	
+	def isByteSequence(String string) {
+		val DELIM_CHAR = "_"
+		return string.isByteSequence(DELIM_CHAR)
+	}
+	
+	def isByteSequence(String string, String delimiter) {
+		try {
+			string.fromId(delimiter)
+			return true
+		} catch (Exception e) {
+			return false
+		}
+	}
+	
+	def fromId(String byteSequence) {
+		val DELIM_CHAR = "_"
+		return byteSequence.fromId(DELIM_CHAR)
+	}
+	
+	def fromId(String byteSequence, String delimiter) {
+		val byteCharacters = byteSequence.split(delimiter)
+		val bytes = byteCharacters
+				.reject[it.nullOrEmpty]
+				.map[Byte.valueOf(it)].toList
+		val string = bytes.fromId
+		return string
+	}
+	
+	def fromId(byte[] bytes) {
+		return new String(bytes, "UTF-8")
+	}
+	
+	def isIdString(String string) {
+		if (string.nullOrEmpty) {
+			return false
+		}
+		val pattern = "[_A-Za-z][_A-Za-z0-9]*"
+		return string.matches(pattern)
 	}
 	
 	def countChar(String string, char character) {
