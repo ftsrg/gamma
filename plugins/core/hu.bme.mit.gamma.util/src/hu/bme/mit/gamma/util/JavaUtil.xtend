@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -25,6 +25,8 @@ class JavaUtil {
 	// Singleton
 	public static final JavaUtil INSTANCE = new JavaUtil
 	protected new() {}
+	//
+	public static final String DELIM_CHAR = "_"
 	//
 
 	def <T> List<T> filterIntoList(Iterable<? super T> collection, Class<T> clazz) {
@@ -319,7 +321,6 @@ class JavaUtil {
 	}
 	
 	def toId(String string) {
-		val DELIM_CHAR = "_"
 		return string.toId(DELIM_CHAR)
 	}
 	
@@ -334,7 +335,6 @@ class JavaUtil {
 	}
 	
 	def isByteSequence(String string) {
-		val DELIM_CHAR = "_"
 		return string.isByteSequence(DELIM_CHAR)
 	}
 	
@@ -348,7 +348,6 @@ class JavaUtil {
 	}
 	
 	def fromId(String byteSequence) {
-		val DELIM_CHAR = "_"
 		return byteSequence.fromId(DELIM_CHAR)
 	}
 	
@@ -365,12 +364,27 @@ class JavaUtil {
 		return new String(bytes, "UTF-8")
 	}
 	
+	def fromIdIfByteSequence(String string) {
+		return string.fromIdIfByteSequence(DELIM_CHAR)
+	}
+	
+	def fromIdIfByteSequence(String string, String delimiter) {
+		return string.isByteSequence(delimiter) ?
+				string.fromId(delimiter) :
+				string
+	}
+	
 	def isIdString(String string) {
 		if (string.nullOrEmpty) {
 			return false
 		}
 		val pattern = "[_A-Za-z][_A-Za-z0-9]*"
 		return string.matches(pattern)
+	}
+	
+	def countChar(String string, String _char) {
+		val character = _char.toCharArray.onlyElement
+		return string.countChar(character)
 	}
 	
 	def countChar(String string, char character) {
