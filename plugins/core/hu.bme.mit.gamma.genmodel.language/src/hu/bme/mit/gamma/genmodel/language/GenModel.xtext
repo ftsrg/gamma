@@ -333,6 +333,7 @@ Verification returns Verification:
 			'file' ':' fileName+=STRING | // Analysis model file name
 			'trace-folder' ':' targetFolder+=STRING | // Trace folder
 			'trace-file' ':' fileName2+=STRING | // Trace file name
+			'tested-file' ':' testedFileName+=STRING |
 			'project' ':' projectName+=STRING |
 			'optimize-model' ':' ('false' | (optimizeModel?='true' ('optimize-out-events' ':' ('false' | optimizeOutEvents?='true'))?)) |
 			'svg-file' ':' svgFileName+=STRING |

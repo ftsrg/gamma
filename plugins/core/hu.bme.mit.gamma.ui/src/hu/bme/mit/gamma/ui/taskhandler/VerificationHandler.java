@@ -108,7 +108,7 @@ public class VerificationHandler extends TaskHandler {
 	protected String svgFileName; // Set in setVerification
 	protected ProgrammingLanguage programmingLanguage; // Set in setVerification
 	protected String traceFileName = "ExecutionTrace";
-	protected final String testFileName = traceFileName + "Simulation";
+	protected String testedFileName;
 	
 	protected TimeSpecification timeout = null;
 	
@@ -557,6 +557,10 @@ public class VerificationHandler extends TaskHandler {
 		if (testFolders.isEmpty()) {
 			testFolders.add("test-gen");
 		}
+		List<String> testedFileName = verification.getTestedFileName();
+		if (!testedFileName.isEmpty()) {
+			this.testedFileName = testedFileName.get(0);
+		}
 		List<String> svgFileNames = verification.getSvgFileName();
 		if (!svgFileNames.isEmpty()) {
 			this.svgFileName = svgFileNames.get(0);
@@ -627,13 +631,18 @@ public class VerificationHandler extends TaskHandler {
 	public void serializeTraces(ProgrammingLanguage programmingLanguage) throws IOException {
 		// Serializing
 		String testFolderUri = serializeTest ? this.testFolderUri : null;
-		String testFileName = serializeTest ? this.testFileName : null;
+		String testFileName = serializeTest ? this.getTestFileName() : null;
+		String testedFileName = serializeTest ? this.testedFileName : null;
 		String packageName = serializeTest ? this.packageName : null;
 		for (ExecutionTrace trace : traces) {
 			serializer.serialize(targetFolderUri, traceFileName, svgFileName,
-					testFolderUri, testFileName, packageName, trace,
+					testFolderUri, testFileName, testedFileName, packageName, trace,
 					file, programmingLanguage);
 		}
+	}
+	
+	public String getTestFileName() {
+		return traceFileName + "Simulation";
 	}
 	
 	public ProgrammingLanguage getProgrammingLanguage() {
@@ -659,13 +668,13 @@ public class VerificationHandler extends TaskHandler {
 				String testFolderUri, String testFileName, String basePackage, ExecutionTrace trace,
 				IFile file, ProgrammingLanguage programmingLanguage) throws IOException {
 			this.serialize(traceFolderUri, traceFileName, null, testFolderUri, testFileName,
-					basePackage, trace, file, programmingLanguage);
+					null, basePackage, trace, file, programmingLanguage);
 		}
 		
 		public void serialize(String traceFolderUri, String traceFileName, String svgFileName,
-				String testFolderUri, String testFileName, String basePackage, ExecutionTrace trace,
+				String testFolderUri, String testFileName, String testedFileName,
+				String basePackage, ExecutionTrace trace,
 				IFile file, ProgrammingLanguage programmingLanguage) throws IOException {
-			
 			// Model
 			File traceFolder = new File(traceFolderUri);
 			String baseFileName = traceFileName;
@@ -694,6 +703,9 @@ public class VerificationHandler extends TaskHandler {
 			if (serializeTest) {
 				TestGeneration testGeneration = GenmodelModelFactory.eINSTANCE.createTestGeneration();
 				testGeneration.setExecutionTrace(trace);
+				if (testedFileName != null) {
+					testGeneration.getFileName2().add(testedFileName);
+				}
 				
 				String className = testFileName + id;
 				testGeneration.getFileName().add(className);

@@ -153,6 +153,7 @@
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//AbstractComplementaryTestGeneration">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AbstractComplementaryTestGeneration/testFolder"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AbstractComplementaryTestGeneration/testedFileName"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//AdaptiveContractTestGeneration">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//AdaptiveContractTestGeneration/modelTransformation"/>
