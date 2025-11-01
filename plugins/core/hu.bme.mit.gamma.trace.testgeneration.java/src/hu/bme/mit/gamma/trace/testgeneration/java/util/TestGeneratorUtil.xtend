@@ -12,12 +12,14 @@ package hu.bme.mit.gamma.trace.testgeneration.java.util
 
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.EqualityExpression
+import hu.bme.mit.gamma.expression.model.NotExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.testgeneration.java.ExpressionSerializer
 import hu.bme.mit.gamma.trace.util.TraceUtil
@@ -27,8 +29,6 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
-import hu.bme.mit.gamma.expression.model.NotExpression
-import hu.bme.mit.gamma.trace.model.RaiseEventAct
 
 class TestGeneratorUtil {
 	//
@@ -86,7 +86,7 @@ class TestGeneratorUtil {
 			asserts.removeIf[it.isOrContainsTypesTransitively(ComponentInstanceElementReferenceExpression)]
 		}
 		
-		if (filterInstanceAssertions) {
+		if (filterNegatedRaiseAssertions) {
 			asserts.removeIf[it instanceof NotExpression ? it.operand instanceof RaiseEventAct : false]
 		}
 		
