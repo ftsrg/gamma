@@ -124,7 +124,7 @@ statechart TrainDoorController [
 			in-state(PresenceRegion.PersonInDoorway)]
 	// SC-C
 	transition from Control to OpenDoor when cycle [
-			!(in-state(DoorStateRegion.Opening) or in-state(DoorStateRegion.Open)) and // Needed?
+			!(in-state(DoorStateRegion.Opening) or in-state(DoorStateRegion.Open) or in-state(DoorStateRegion.Closing) /* Added later */) and // Needed?
 			in-state(MovementRegion.Still) and in-state(AlignmentRegion.Aligned)]
 	
 	transition from OpenDoor to Control / raise ControlActions.controlDoor(ControlAction::OPEN);
