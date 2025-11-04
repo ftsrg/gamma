@@ -157,6 +157,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="RunUponExternalEventAnnotation" eSuperTypes="#//StatechartAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="RunUponExternalEventOrInternalTimeoutAnnotation"
       eSuperTypes="#//StatechartAnnotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="IncompleteStatechartAnnotation" eSuperTypes="#//StatechartAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="StateAnnotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="TransitionAnnotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="TransitionIdAnnotation" eSuperTypes="#//TransitionAnnotation ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement"/>

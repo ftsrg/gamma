@@ -399,6 +399,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			// Unfolding the given system
 			ComponentReference reference = (ComponentReference) transformation.getModel();
 			Component component = reference.getComponent();
+			preprocessModel(component);
 			// Coverages
 			List<Coverage> coverages = transformation.getCoverages();
 			
@@ -513,6 +514,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			logger.info("Starting XSTS transformation");
 			ComponentReference reference = (ComponentReference) transformation.getModel();
 			Component component = reference.getComponent();
+			preprocessModel(component);
 			Entry<Integer, Integer> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
 			Integer minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
 			Integer maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
@@ -632,6 +634,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			logger.info("Starting Gamma -> XSTS-UPPAAL transformation");
 			ComponentReference reference = (ComponentReference) transformation.getModel();
 			Component component = reference.getComponent();
+			preprocessModel(component);
 			Entry<Integer, Integer> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
 			Integer minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
 			Integer maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
@@ -716,6 +719,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		public void execute(AnalysisModelTransformation transformation) throws IOException {
 			ComponentReference reference = (ComponentReference) transformation.getModel();
 			Component component = reference.getComponent();
+			preprocessModel(component);
 			Entry<Integer, Integer> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
 			Integer minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
 			Integer maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
@@ -799,6 +803,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		public void execute(AnalysisModelTransformation transformation) throws IOException {
 			ComponentReference reference = (ComponentReference) transformation.getModel();
 			Component component = reference.getComponent();
+			preprocessModel(component);
 			Entry<Integer, Integer> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
 			Integer minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
 			Integer maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
@@ -930,6 +935,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		public void execute(AnalysisModelTransformation transformation) throws IOException {
 			ComponentReference reference = (ComponentReference) transformation.getModel();
 			Component component = reference.getComponent();
+			preprocessModel(component);
 			Entry<Integer, Integer> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
 			Integer minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
 			Integer maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
