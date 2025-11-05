@@ -939,10 +939,46 @@ public class StatechartUtil extends ActionUtil {
 		return transition;
 	}
 	
+	public Transition createDefaultTransition(Collection<? extends Transition> transitions) {
+		Expression guard = createDefaultGuard(transitions);
+		
+		Transition transition = statechartFactory.createTransition();
+		transition.setTrigger(
+				statechartFactory.createOnCycleTrigger());
+		transition.setGuard(guard);
+		
+		return transition;
+	}
+	
+	public Expression createDefaultGuard(Collection<? extends Transition> transitions) {
+		if (transitions.isEmpty()) {
+			return factory.createTrueExpression();
+		}
+		
+		TriggerTransformer triggerTransformer = TriggerTransformer.INSTANCE;
+		
+		List<Expression> preconditions = new ArrayList<Expression>();
+		for (Transition transition : transitions) {
+			Trigger trigger = transition.getTrigger();
+			Expression triggerExpression = triggerTransformer.transformTrigger(trigger);
+			
+			Expression guard = transition.getGuard();
+			Expression guardExpression = (guard == null) ? factory.createTrueExpression() : ecoreUtil.clone(guard);
+			
+			Expression precondition = wrapIntoAndExpression(
+					List.of(triggerExpression, guardExpression));
+			preconditions.add(precondition);
+		}
+		
+		Expression defaultExpression = createDefaultExpression(preconditions);
+		
+		return defaultExpression;
+	}
+	
 	public Transition createMaximumPriorityTransition(StateNode sourceState, StateNode targetState) {
 		Transition transition = createTransition(sourceState, targetState);
 		maximizeTransitionPriority(transition); // To support if-else over nondeterministic choices
-
+		
 		return transition;
 	}
 	

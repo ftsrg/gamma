@@ -15,12 +15,12 @@ import hu.bme.mit.gamma.statechart.statechart.IncompleteStatechartAnnotation
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
+import hu.bme.mit.gamma.statechart.util.TriggerTransformer
 import java.math.BigInteger
 import java.util.Map
-
-import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -30,8 +30,11 @@ class CompletenessTrapStateInjector {
 	
 	protected final Map<Region, State> trapStates = newHashMap
 	
+	protected final extension TriggerTransformer triggerTransformer = TriggerTransformer.INSTANCE
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final extension InterfaceModelFactory interfaceFactory = InterfaceModelFactory.eINSTANCE;
+	protected final extension StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE;
+	
 	
 	new(StatechartDefinition statechart) {
 		this.statechart = statechart
@@ -42,23 +45,29 @@ class CompletenessTrapStateInjector {
 			return
 		}
 		
-		checkState(statechart.transitionPriority != TransitionPriority.OFF)
-		
 		val states = statechart.allStates
 		for (state : states) {
 			val parentRegion = state.parentRegion
 			
 			val outgoingTransitions = state.outgoingTransitions
 			val lowestPriority = (outgoingTransitions.empty) ?
-					BigInteger.ONE :
+					BigInteger.ZERO :
 					outgoingTransitions.map[it.priority].min
 			val priority = lowestPriority.subtract(BigInteger.ONE)
 			
 			val trapState = parentRegion.getOrCreateTrapState
 			
 			val trapTransition = state.createTransition(trapState)
-			trapTransition.trigger = createAnyTrigger
+			
 			trapTransition.priority = priority
+			if (statechart.transitionPriority != TransitionPriority.OFF) {
+				trapTransition.trigger = createAnyTrigger
+			}
+			else {
+				val defaultGuard = outgoingTransitions.createDefaultGuard
+				trapTransition.trigger = createOnCycleTrigger
+				trapTransition.guard = defaultGuard
+			}
 		}
 	}
 	
