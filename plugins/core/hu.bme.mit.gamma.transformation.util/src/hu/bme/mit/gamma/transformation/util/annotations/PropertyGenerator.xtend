@@ -32,6 +32,7 @@ import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeature
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.CoverageAvoidanceAnnotation
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StateNode
@@ -85,6 +86,7 @@ class PropertyGenerator {
 			val type = instance.type
 			if (type instanceof StatechartDefinition) {
 				val states = type.allStates
+						.reject[it.hasAnnotation(CoverageAvoidanceAnnotation)]
 				formulas += states.createStateReachabilityFormulas
 			}
 		}

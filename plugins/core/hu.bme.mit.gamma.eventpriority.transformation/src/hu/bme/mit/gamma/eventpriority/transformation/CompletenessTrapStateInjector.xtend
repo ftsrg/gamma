@@ -56,10 +56,12 @@ class CompletenessTrapStateInjector {
 			val priority = lowestPriority.subtract(BigInteger.ONE)
 			
 			val trapState = parentRegion.getOrCreateTrapState
+			trapState.annotations += createCoverageAvoidanceAnnotation
 			
 			val trapTransition = state.createTransition(trapState)
-			
+			trapTransition.annotations += createCoverageAvoidanceAnnotation
 			trapTransition.priority = priority
+			
 			if (statechart.transitionPriority != TransitionPriority.OFF) {
 				trapTransition.trigger = createAnyTrigger
 			}

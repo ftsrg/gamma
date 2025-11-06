@@ -435,6 +435,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return statechart.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
 	}
 	
+	public static boolean hasAnnotation(State state, Class<? extends StateAnnotation> annotation) {
+		return state.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
+	}
+	
+	public static boolean hasAnnotation(Transition transition, Class<? extends TransitionAnnotation> annotation) {
+		return transition.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
+	}
+	
 	public static TimeUnit getSmallestTimeUnit(NamedElement element) {
 		TimeUnit[] supportedTimeUnits = new TimeUnit[] { TimeUnit.NANOSECOND, // Order is important
 				TimeUnit.MICROSECOND, TimeUnit.MILLISECOND, TimeUnit.SECOND, TimeUnit.HOUR };
