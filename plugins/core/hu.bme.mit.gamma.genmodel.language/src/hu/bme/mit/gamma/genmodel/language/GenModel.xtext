@@ -223,7 +223,8 @@ Coverage returns Coverage:
 	StateCoverage | UnstableStateCoverage | TrapStateCoverage |
 	DeadlockCoverage | NonDeterministicTransitionCoverage |
 	TransitionCoverage | TransitionPairCoverage | OutEventCoverage |
-	InteractionCoverage | DataflowCoverage | InteractionDataflowCoverage
+	InteractionCoverage | DataflowCoverage | InteractionDataflowCoverage |
+	QueueOverflowCoverage
 ;
 
 StateCoverage returns StateCoverage:
@@ -316,6 +317,13 @@ InteractionDataflowCoverage returns InteractionDataflowCoverage:
 		('exclude' ':' '[' exclude+=ComponentInstanceReferenceExpression (',' exclude+=ComponentInstanceReferenceExpression)* ']')?
 		('port-include' ':' '[' portInclude+=ComponentInstancePortReferenceExpression (',' portInclude+=ComponentInstancePortReferenceExpression)* ']')?
 		('port-exclude' ':' '[' portExclude+=ComponentInstancePortReferenceExpression (',' portExclude+=ComponentInstancePortReferenceExpression)* ']')?
+	'}')?
+;
+
+QueueOverflowCoverage returns QueueOverflowCoverage:
+	{QueueOverflowCoverage} 'queue-overflow-coverage' ('{' 
+		('include' ':' '[' include+=ComponentInstanceReferenceExpression (',' include+=ComponentInstanceReferenceExpression)* ']')?
+		('exclude' ':' '[' exclude+=ComponentInstanceReferenceExpression (',' exclude+=ComponentInstanceReferenceExpression)* ']')?
 	'}')?
 ;
 
