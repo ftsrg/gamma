@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.transformation.util.annotations
 
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
@@ -24,6 +25,8 @@ class AnnotatableElements {
 	Collection<SynchronousComponentInstance> deadlockCoverableComponents
 	
 	Collection<SynchronousComponentInstance> nondeterministicTransitionCoverableComponents
+	
+	Collection<AsynchronousComponentInstance> queueOverflowCoverableComponents
 	
 	Collection<SynchronousComponentInstance> transitionCoverableComponents
 	

@@ -30,7 +30,6 @@ class PropertyLanguageValidator extends AbstractPropertyLanguageValidator {
 		handleValidationResultMessage(validator.checkComponentInstanceReferences(reference))
 	}
 	
-	
 	@Check
 	def checkContractInstance(Contract contract) {
 		handleValidationResultMessage(validator.checkContractInstance(contract))

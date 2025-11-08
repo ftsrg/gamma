@@ -440,12 +440,12 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 		}
 		if (context instanceof ComponentInstanceElementReferenceExpression) {
 			ComponentInstance instance = StatechartModelDerivedFeatures.getLastInstance(((ComponentInstanceElementReferenceExpression) context).getInstance());
-			Component statechart = StatechartModelDerivedFeatures.getDerivedType(instance);
-			if (statechart != null) {
-				if (statechart instanceof StatechartDefinition) {
+			Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
+			if (type != null) {
+				if (type instanceof StatechartDefinition) {
 					boolean _equals_1 = Objects.equal(reference, CompositeModelPackage.Literals.COMPONENT_INSTANCE_STATE_REFERENCE_EXPRESSION__REGION);
 					if (_equals_1) {
-						return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllRegions((CompositeElement) statechart));
+						return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllRegions((CompositeElement) type));
 					}
 					boolean _equals_2 = Objects.equal(reference, CompositeModelPackage.Literals.COMPONENT_INSTANCE_STATE_REFERENCE_EXPRESSION__STATE);
 					if (_equals_2) {
@@ -455,11 +455,11 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					}
 					boolean _equals_3 = Objects.equal(reference, CompositeModelPackage.Literals.COMPONENT_INSTANCE_VARIABLE_REFERENCE_EXPRESSION__VARIABLE_DECLARATION);
 					if (_equals_3) {
-						return Scopes.scopeFor(((StatechartDefinition) statechart).getVariableDeclarations());
+						return Scopes.scopeFor(((StatechartDefinition) type).getVariableDeclarations());
 					}
 					if (Objects.equal(reference, CompositeModelPackage.Literals.COMPONENT_INSTANCE_EVENT_REFERENCE_EXPRESSION__PORT) || 
 						Objects.equal(reference, CompositeModelPackage.Literals.COMPONENT_INSTANCE_EVENT_PARAMETER_REFERENCE_EXPRESSION__PORT)) {
-						return Scopes.scopeFor(((StatechartDefinition) statechart).getPorts());
+						return Scopes.scopeFor(((StatechartDefinition) type).getPorts());
 					}
 					if (Objects.equal(reference, CompositeModelPackage.Literals.COMPONENT_INSTANCE_EVENT_REFERENCE_EXPRESSION__EVENT) || 
 						Objects.equal(reference, CompositeModelPackage.Literals.COMPONENT_INSTANCE_EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT)) {
@@ -484,6 +484,11 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					if (_equals_4) {
 						ComponentInstanceEventParameterReferenceExpression eventParameterReference = (ComponentInstanceEventParameterReferenceExpression) context;
 						return Scopes.scopeFor(eventParameterReference.getEvent().getParameterDeclarations());
+					}
+				}
+				else if (type instanceof AsynchronousAdapter adapter) {
+					if (Objects.equal(reference, CompositeModelPackage.Literals.COMPONENT_INSTANCE_QUEUE_REFERENCE_EXPRESSION__QUEUE)) {
+						return Scopes.scopeFor(adapter.getMessageQueues());
 					}
 				}
 			}

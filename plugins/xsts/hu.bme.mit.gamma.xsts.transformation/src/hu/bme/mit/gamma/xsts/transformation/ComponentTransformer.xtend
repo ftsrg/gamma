@@ -1449,7 +1449,7 @@ class ComponentTransformer {
 			return true
 		}
 		checkState(systemPorts.containsNone(topPorts) || topPorts.forall[it.internal],
-			"All or none of the event references must be of system ports in " + queue.containingComponent.name + "' queue " + queue.name)
+			"All or none of the event references must be of system ports in " + queue.containingComponent.name + "'s queue " + queue.name)
 		return false
 	}
 	

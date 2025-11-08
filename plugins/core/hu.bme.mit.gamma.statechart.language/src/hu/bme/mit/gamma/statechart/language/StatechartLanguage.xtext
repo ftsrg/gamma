@@ -717,6 +717,7 @@ DeactivateTimeoutAction returns DeactivateTimeoutAction:
 
 ComponentInstanceStateExpression returns CompositeModel::ComponentInstanceElementReferenceExpression:
 	ComponentInstanceStateReferenceExpression | ComponentInstanceVariableReferenceExpression |
+		ComponentInstanceQueueReferenceExpression |
 		ComponentInstanceEventReferenceExpression | ComponentInstanceEventParameterReferenceExpression
 ;
 
@@ -726,6 +727,10 @@ ComponentInstanceStateReferenceExpression returns CompositeModel::ComponentInsta
 
 ComponentInstanceVariableReferenceExpression returns CompositeModel::ComponentInstanceVariableReferenceExpression:
 	'variable' instance=ComponentInstanceReferenceExpression '.' variableDeclaration=[ExpressionModel::VariableDeclaration]
+;
+
+ComponentInstanceQueueReferenceExpression returns CompositeModel::ComponentInstanceQueueReferenceExpression:
+	'queue' instance=ComponentInstanceReferenceExpression '.' queue=[CompositeModel::MessageQueue]
 ;
 
 ComponentInstanceEventReferenceExpression returns CompositeModel::ComponentInstanceEventReferenceExpression:

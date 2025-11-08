@@ -22,6 +22,8 @@ import hu.bme.mit.gamma.property.model.CommentableStateFormula
 import hu.bme.mit.gamma.property.model.PropertyModelFactory
 import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.property.util.PropertyUtil
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
@@ -222,6 +224,28 @@ class PropertyGenerator {
 		return formulas
 	}
 	
+	def List<CommentableStateFormula> createQueueOverflowInvariance(Iterable<? extends AsynchronousComponentInstance> instances) {
+		var List<CommentableStateFormula> formulas = newArrayList
+		
+		for (AsynchronousComponentInstance instance : instances) {
+			val type = instance.type
+			if (type instanceof AsynchronousAdapter) {
+				val queues = type.messageQueues
+				for (queue : queues) {
+					val queueReference = propertyUtil.createQueueReference(
+							instance.createInstanceReference, queue)
+					val formula = propertyUtil.createAG( // TODO extend
+							propertyUtil.createAtomicFormula(queueReference))
+					val commentableStateFormula = propertyUtil.createCommentableStateFormula(
+							'''«instance.name».«queue.name»''', formula)
+					formulas += commentableStateFormula
+				}
+			}
+		}
+		
+		return formulas
+	}
+	
 	def List<CommentableStateFormula> createOutEventReachability(Iterable<? extends Port> ports) {
 		val List<CommentableStateFormula> formulas = newArrayList
 		for (notNecessarilySimplePort : ports) {
@@ -231,7 +255,7 @@ class PropertyGenerator {
 					val parameters = outEvent.parameterDeclarations
 					if (parameters.empty) {
 						val eventReference = propertyUtil.createEventReference(
-								createInstanceReference(instance), port, outEvent)
+								instance.createInstanceReference, port, outEvent)
 						val stateFormula = propertyUtil.createEF(
 								propertyUtil.createAtomicFormula(eventReference))
 						val commentableStateFormula = propertyUtil.createCommentableStateFormula(
@@ -245,7 +269,7 @@ class PropertyGenerator {
 							if (parameterValues.empty) {
 								// E.g., integers - plain event
 								val eventReference = propertyUtil.createEventReference(
-										createInstanceReference(instance), port, outEvent)
+										instance.createInstanceReference, port, outEvent)
 								val stateFormula = propertyUtil.createEF(
 										propertyUtil.createAtomicFormula(eventReference))
 								val commentableStateFormula = propertyUtil.createCommentableStateFormula(
@@ -255,9 +279,9 @@ class PropertyGenerator {
 							else {
 								for (value : parameterValues) {
 									val eventReference = propertyUtil.createEventReference(
-											createInstanceReference(instance), port, outEvent)
+											instance.createInstanceReference, port, outEvent)
 									val parameterReference = propertyUtil.createParameterReference(
-											createInstanceReference(instance), port, outEvent, parameter)
+											instance.createInstanceReference, port, outEvent, parameter)
 									val equalityExpression = parameterReference.createEqualityExpression(value)
 									val and = expressionFactory.createAndExpression
 									and.operands += eventReference
@@ -330,7 +354,7 @@ class PropertyGenerator {
 		val statechart = StatechartModelDerivedFeatures.getContainingStatechart(variable)
 		val instance = StatechartModelDerivedFeatures.getReferencingComponentInstance(statechart)
 		val reference = propertyUtil.createVariableReference(
-				createInstanceReference(instance), variable)
+				instance.createInstanceReference, variable)
 		return reference
 	}
 
