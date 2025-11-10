@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -229,15 +229,19 @@ class PropertyGenerator {
 		
 		for (AsynchronousComponentInstance instance : instances) {
 			val type = instance.type
+			val topType = type.topParentComponent
+			val topPorts = topType.allPorts
 			if (type instanceof AsynchronousAdapter) {
 				val queues = type.messageQueues
+						.reject[it.isEnvironmental(topPorts)] // Cannot handle these ports now
+				
 				for (queue : queues) {
 					val queueReference = propertyUtil.createQueueReference(
 							instance.createInstanceReference, queue)
 					val formula = propertyUtil.createAG( // TODO extend
 							propertyUtil.createAtomicFormula(queueReference))
 					val commentableStateFormula = propertyUtil.createCommentableStateFormula(
-							'''«instance.name».«queue.name»''', formula)
+							'''Can «instance.name».«queue.name» be full?''', formula)
 					formulas += commentableStateFormula
 				}
 			}

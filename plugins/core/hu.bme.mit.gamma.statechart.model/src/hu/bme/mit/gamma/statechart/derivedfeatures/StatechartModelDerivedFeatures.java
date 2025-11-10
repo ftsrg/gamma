@@ -3716,7 +3716,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static Collection<ComponentInstance> getReferencingComponentInstances(Component component) {
 		Package _package = getContainingPackage(component);
-		Collection<ComponentInstance> componentInstances = new HashSet<ComponentInstance>();
+		Collection<ComponentInstance> componentInstances = new LinkedHashSet<ComponentInstance>();
 		for (Component siblingComponent : _package.getComponents()) {
 			if (siblingComponent instanceof CompositeComponent compositeComponent) {
 				for (ComponentInstance componentInstance : getDerivedComponents(compositeComponent)) {
@@ -3749,6 +3749,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		ComponentInstance instance = getReferencingComponentInstance(component);
 		Component parentComponent = StatechartModelDerivedFeatures.getContainingComponent(instance);
 		return parentComponent;
+	}
+	
+	public static Component getTopParentComponent(Component component) {
+		if (isTop(component)) {
+			return component;
+		}
+		return getTopParentComponent(
+				getParentComponent(component));
 	}
 	
 	public static ComponentInstance getContainingComponentInstance(EObject object) {
