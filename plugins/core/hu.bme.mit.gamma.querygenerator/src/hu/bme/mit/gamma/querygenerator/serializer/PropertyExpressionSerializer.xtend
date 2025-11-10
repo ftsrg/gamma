@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -16,10 +16,13 @@ import hu.bme.mit.gamma.expression.model.ImplyExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+
+import static com.google.common.base.Preconditions.checkArgument
 
 abstract class PropertyExpressionSerializer extends ExpressionSerializer {
 	//
@@ -81,6 +84,14 @@ abstract class PropertyExpressionSerializer extends ExpressionSerializer {
 		// Could be extended with in-events too
 		// TODO record?
 		return '''«event.getId(port, parameter, instance).head»'''
+	}
+	
+	protected def dispatch serializeStateExpression(ComponentInstanceQueueReferenceExpression expression) {
+		val instance = expression.instance
+		val queue = expression.queue
+		checkArgument(evaluator.evaluate(queue.capacity) > 1) // At this point, it is hard to map queues to their XSTS types ('queue != _EMPTY' would be needed)
+		// TODO extend with other operations
+		return '''(«queue.getSizeId(instance)» < «queue.capacity.serialize»)'''
 	}
 	
 	//

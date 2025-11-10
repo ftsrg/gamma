@@ -15,6 +15,7 @@ import java.util.List;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression;
@@ -39,6 +40,7 @@ public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.Expre
 	public static final ExpressionSerializer INSTANCE = new ExpressionSerializer();
 	protected ExpressionSerializer() {}
 	
+	protected final ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
 	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	//
 	

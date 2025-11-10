@@ -61,6 +61,18 @@ class Namings {
 	
 	// Asynchronous message queue - XSTS customization
 	
+	static def String customizeSizeVariableName(MessageQueue queue, ComponentInstanceReferenceExpression instance) {
+		val lastInstance = instance.lastInstance.clone // Hacking
+		lastInstance.name = instance.FQN
+		return queue.getMasterSizeVariableName(lastInstance)
+	}
+	
+	static def String customizeMasterQueueName(MessageQueue queue, ComponentInstanceReferenceExpression instance) {
+		val lastInstance = instance.lastInstance.clone // Hacking
+		lastInstance.name = instance.FQN
+		return customizeMasterQueueName(queue, lastInstance)
+	}
+	
 	static def String customizeMasterQueueName(MessageQueue queue, ComponentInstance instance) {
 		val type = createIntegerTypeDefinition
 		val names = type.createVariableDeclaration(
@@ -107,7 +119,7 @@ class Namings {
 	
 	static def List<String> customizeNames(VariableDeclaration variable) { variable.names.map[it.variableName].toList }
 	static def List<String> customizeNames(VariableDeclaration variable, ComponentInstance instance) { customizeNames(variable, instance.name) }
-	static def List<String> customizeNames(VariableDeclaration variable, ComponentInstanceReferenceExpression instance) { customizeNames(variable, instance.FQN ) }
+	static def List<String> customizeNames(VariableDeclaration variable, ComponentInstanceReferenceExpression instance) { customizeNames(variable, instance.FQN) }
 	static def List<String> customizeNames(VariableDeclaration variable, String instance) { getNames(variable).map[it.variableName + "_" + instance] }
 	
 	// Region customization
