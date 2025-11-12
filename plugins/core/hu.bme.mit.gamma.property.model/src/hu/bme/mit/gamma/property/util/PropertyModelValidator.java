@@ -25,7 +25,7 @@ import hu.bme.mit.gamma.property.model.QuantifiedFormula;
 import hu.bme.mit.gamma.property.model.StateFormula;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
@@ -91,7 +91,7 @@ public class PropertyModelValidator extends StatechartModelValidator {
 		ComponentInstance lastInstance = StatechartModelDerivedFeatures.getLastInstance(reference);
 		if (lastInstance != null) { // Xtext parsing
 			ComponentInstanceElementReferenceExpression container = ecoreUtil.getContainerOfType(reference, ComponentInstanceElementReferenceExpression.class);
-			boolean isQueueReference = container instanceof ComponentInstanceQueueReferenceExpression;
+			boolean isQueueReference = container instanceof ComponentInstanceQueueSizeReferenceExpression;
 			if (!isQueueReference && !StatechartModelDerivedFeatures.isStatechart(lastInstance)) {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.ERROR, 

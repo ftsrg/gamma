@@ -133,7 +133,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclaration" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceQueueReferenceExpression"
+  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceQueueSizeReferenceExpression"
       eSuperTypes="#//ComponentInstanceElementReferenceExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="queue" lowerBound="1" eType="#//MessageQueue"/>
   </eClassifiers>

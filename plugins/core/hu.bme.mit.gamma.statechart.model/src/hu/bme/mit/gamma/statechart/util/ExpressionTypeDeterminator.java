@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.EventReference;
@@ -64,6 +65,9 @@ public class ExpressionTypeDeterminator extends ExpressionTypeDeterminator2 {
 			ParameterDeclaration parameter = reference.getParameterDeclaration();
 			Type declarationType = parameter.getType();
 			return ecoreUtil.clone(declarationType);
+		}
+		else if (expression instanceof ComponentInstanceQueueSizeReferenceExpression) {
+			return factory.createIntegerTypeDefinition();
 		}
 		else if (expression instanceof ComponentInstanceElementReferenceExpression) {
 			return factory.createBooleanTypeDefinition();

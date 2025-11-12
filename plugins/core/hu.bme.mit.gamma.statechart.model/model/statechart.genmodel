@@ -105,8 +105,8 @@
     <genClasses ecoreClass="composite.ecore#//ComponentInstanceVariableReferenceExpression">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstanceVariableReferenceExpression/variableDeclaration"/>
     </genClasses>
-    <genClasses ecoreClass="composite.ecore#//ComponentInstanceQueueReferenceExpression">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstanceQueueReferenceExpression/queue"/>
+    <genClasses ecoreClass="composite.ecore#//ComponentInstanceQueueSizeReferenceExpression">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstanceQueueSizeReferenceExpression/queue"/>
     </genClasses>
     <genClasses ecoreClass="composite.ecore#//ComponentInstancePortReferenceExpression">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstancePortReferenceExpression/port"/>

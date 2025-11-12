@@ -41,7 +41,6 @@ import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
-import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
 import java.util.Collections
@@ -58,8 +57,7 @@ class PropertyGenerator {
 	protected boolean isSimpleComponentReference
 	protected final boolean optimizePropertyOrder = true
 	//
-	protected final PropertyUtil propertyUtil = PropertyUtil.INSTANCE
-	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
+	protected final extension PropertyUtil propertyUtil = PropertyUtil.INSTANCE
 	protected final ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	protected final CompositeModelFactory compositeFactory = CompositeModelFactory.eINSTANCE
@@ -236,10 +234,10 @@ class PropertyGenerator {
 						.reject[it.isEnvironmental(topPorts)] // Cannot handle these ports now
 				
 				for (queue : queues) {
-					val queueReference = propertyUtil.createQueueReference(
+					val queueSizeReference = propertyUtil.createQueueSizeReference(
 							instance.createInstanceReference, queue)
-					val formula = propertyUtil.createAG( // TODO extend
-							propertyUtil.createAtomicFormula(queueReference))
+					val queueNotFull = queueSizeReference.createLessExpression(queue.capacity.clone)
+					val formula = queueNotFull.createAtomicFormula.createAG
 					val commentableStateFormula = propertyUtil.createCommentableStateFormula(
 							'''Can «instance.name».«queue.name» be full?''', formula)
 					formulas += commentableStateFormula
@@ -512,10 +510,10 @@ class PropertyGenerator {
 	
 	def protected ComponentInstanceReferenceExpression createInstanceReference(ComponentInstance instance) {
 		if (isSimpleComponentReference) {
-			return statechartUtil.createInstanceReference(instance)
+			return propertyUtil.createInstanceReference(instance)
 		}
 		else {
-			return statechartUtil.createInstanceReferenceChain(instance)
+			return propertyUtil.createInstanceReferenceChain(instance)
 		}
 	}
 

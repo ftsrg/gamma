@@ -49,7 +49,7 @@ import hu.bme.mit.gamma.expression.model.UnaryMinusExpression
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
 import hu.bme.mit.gamma.expression.model.XorExpression
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
-import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2
+import hu.bme.mit.gamma.property.util.ExpressionTypeDeterminator
 import hu.bme.mit.gamma.xsts.model.FunctionCallAction
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.List
@@ -60,7 +60,7 @@ import static extension hu.bme.mit.gamma.xsts.iml.transformation.util.Namings.*
 
 class ImlPropertyExpressionSerializer extends ThetaPropertyExpressionSerializer {
 	//
-	protected final extension ExpressionTypeDeterminator2 typeDeterminator = ExpressionTypeDeterminator2.INSTANCE
+	protected final extension ExpressionTypeDeterminator typeDeterminator = ExpressionTypeDeterminator.INSTANCE
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	//

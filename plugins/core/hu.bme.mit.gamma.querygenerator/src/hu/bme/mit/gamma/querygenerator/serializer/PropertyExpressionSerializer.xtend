@@ -16,13 +16,11 @@ import hu.bme.mit.gamma.expression.model.ImplyExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-
-import static com.google.common.base.Preconditions.checkArgument
 
 abstract class PropertyExpressionSerializer extends ExpressionSerializer {
 	//
@@ -86,12 +84,18 @@ abstract class PropertyExpressionSerializer extends ExpressionSerializer {
 		return '''«event.getId(port, parameter, instance).head»'''
 	}
 	
-	protected def dispatch serializeStateExpression(ComponentInstanceQueueReferenceExpression expression) {
+	protected def dispatch serializeStateExpression(ComponentInstanceQueueSizeReferenceExpression expression) {
 		val instance = expression.instance
 		val queue = expression.queue
-		checkArgument(evaluator.evaluate(queue.capacity) > 1) // At this point, it is hard to map queues to their XSTS types ('queue != _EMPTY' would be needed)
-		// TODO extend with other operations
-		return '''(«queue.getSizeId(instance)» < «queue.capacity.serialize»)'''
+		val capacity = evaluator.evaluate(queue.capacity)
+		if (capacity > 1) {
+			return queue.getSizeId(instance)
+		}
+		else {
+			// At this point, it is hard to map queues to their XSTS types ('queue != _EMPTY' would be needed)
+			throw new UnsupportedOperationException
+		}
+		// TODO override in IML
 	}
 	
 	//

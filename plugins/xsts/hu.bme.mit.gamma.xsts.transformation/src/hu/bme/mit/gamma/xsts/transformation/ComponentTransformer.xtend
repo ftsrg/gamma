@@ -194,9 +194,9 @@ class ComponentTransformer {
 				
 				// Creating the event ID type with an EMPTY literal for master message queues
 				val eventIdType = createEnumerationTypeDefinition // To limit the possible values for message identifiers
-				eventIdType.literals += "EMPTY".createEnumerationLiteralDefinition
+				eventIdType.literals += emptyLiteralName.createEnumerationLiteralDefinition
 				val eventIdTypeDeclaration = eventIdType.createTypeDeclaration(
-						"EventIdTypeOf" + masterQueueName)
+						masterQueueName.queueTypeName)
 				//
 				
 				val evaluatedCapacity = queue.getCapacity(systemPorts)
