@@ -50,6 +50,7 @@ import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
 import hu.bme.mit.gamma.expression.model.XorExpression
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.property.util.ExpressionTypeDeterminator
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeReferenceExpression
 import hu.bme.mit.gamma.xsts.model.FunctionCallAction
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.List
@@ -252,6 +253,21 @@ class ImlPropertyExpressionSerializer extends ThetaPropertyExpressionSerializer 
 	
 	def getId(Declaration declaration) {
 		return ImlReferenceSerializer.recordIdentifier
+	}
+	
+	// Unique - do not delete!
+	
+	protected override dispatch serializeStateExpression(ComponentInstanceQueueSizeReferenceExpression expression) {
+		val instance = expression.instance
+		val queue = expression.queue
+		val capacity = evaluator.evaluate(queue.capacity)
+		if (capacity > 1) {
+			return '''(List.length «ImlReferenceSerializer.recordIdentifier».«queue.getId(instance).customizeDeclarationName»)'''
+		}
+		else {
+			// At this point, it is hard to map queues to their XSTS types ('queue != _EMPTY' would be needed)
+			throw new UnsupportedOperationException
+		}
 	}
 	
 }

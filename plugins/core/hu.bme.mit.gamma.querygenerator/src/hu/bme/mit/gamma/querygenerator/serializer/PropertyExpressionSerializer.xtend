@@ -95,7 +95,6 @@ abstract class PropertyExpressionSerializer extends ExpressionSerializer {
 			// At this point, it is hard to map queues to their XSTS types ('queue != _EMPTY' would be needed)
 			throw new UnsupportedOperationException
 		}
-		// TODO override in IML
 	}
 	
 	//
