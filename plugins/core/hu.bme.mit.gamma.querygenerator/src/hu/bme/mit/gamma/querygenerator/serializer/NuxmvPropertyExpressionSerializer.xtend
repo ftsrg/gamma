@@ -21,6 +21,9 @@ import hu.bme.mit.gamma.expression.model.ImplyExpression
 import hu.bme.mit.gamma.expression.model.OrExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.XorExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeReferenceExpression
+
+import static hu.bme.mit.gamma.xsts.transformation.util.QueueNamings.*
 
 class NuxmvPropertyExpressionSerializer extends ThetaPropertyExpressionSerializer {
 	
@@ -51,5 +54,15 @@ class NuxmvPropertyExpressionSerializer extends ThetaPropertyExpressionSerialize
 	override String _serialize(IfThenElseExpression expression) '''((«expression.condition.serialize») ? («expression.then.serialize») : («expression.^else.serialize»))'''
 	
 	override String _serialize(ArrayAccessExpression arrayAccessExpression) '''READ(«arrayAccessExpression.operand.serialize», «arrayAccessExpression.index.serialize»)'''
+	
+	// Unique - do not delete!
+	
+	protected override get1CapacityQueueEmptyExpression(ComponentInstanceQueueSizeReferenceExpression expression) {
+		val instance = expression.instance
+		val queue = expression.queue
+		val queueName = queue.getId(instance)
+		return '''«queueName» == «emptyLiteralName»'''
+				.createOpaqueExpression
+	}
 	
 }
