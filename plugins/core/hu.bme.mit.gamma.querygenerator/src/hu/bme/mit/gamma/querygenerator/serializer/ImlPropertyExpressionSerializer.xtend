@@ -66,6 +66,8 @@ class ImlPropertyExpressionSerializer extends ThetaPropertyExpressionSerializer 
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	//
+	protected final String OPAQUE_PREFIX = "language IML"
+	//
 	
 	new(AbstractReferenceSerializer referenceSerializer) {
 		super(referenceSerializer)
@@ -263,13 +265,23 @@ class ImlPropertyExpressionSerializer extends ThetaPropertyExpressionSerializer 
 		val queue = expression.queue
 		val capacity = evaluator.evaluate(queue.capacity)
 		val r = ImlReferenceSerializer.recordIdentifier
-		val queueName = queue.getId(instance)
 		val imlQueueName = queue.getId(instance).customizeDeclarationName
 		return (capacity > 1) ?
 			'''(List.length «r».«imlQueueName»)''' :
-			'''(if «r».«imlQueueName» = «
-				TYPE_DECLARATION_NAME_PREFIX»«queueName.getQueueTypeName».«
-				emptyLiteralName.customizeEnumLiteralName» then 0 else 1)''' // Single variable due to optimization
+			expression.get1CapacityQueueEmptyExpression
+					.createIfThenElseExpression(0.toIntegerLiteral, 1.toIntegerLiteral)._serialize
+	}
+	
+	protected override get1CapacityQueueEmptyExpression(ComponentInstanceQueueSizeReferenceExpression expression) {
+		val instance = expression.instance
+		val queue = expression.queue
+		val queueName = queue.getId(instance)
+		val imlQueueName = queue.getId(instance).customizeDeclarationName
+		val r = ImlReferenceSerializer.recordIdentifier
+		return '''«OPAQUE_PREFIX»«r».«imlQueueName» = «
+						TYPE_DECLARATION_NAME_PREFIX»«queueName.getQueueTypeName».«
+						emptyLiteralName.customizeEnumLiteralName»'''
+				.createOpaqueExpression
 	}
 	
 }

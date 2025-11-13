@@ -492,6 +492,10 @@ class JavaUtil {
 	}
 	
 	def boolean isDeparenthesizable(String string) {
+		if (string.nullOrEmpty) {
+			return false
+		}
+		
 		val char leftParenthesis = '('
 		val char rightParenthesis = ')'
 		
