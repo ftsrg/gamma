@@ -58,6 +58,7 @@ import java.util.List
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.iml.transformation.util.Namings.*
+import static extension hu.bme.mit.gamma.xsts.transformation.util.QueueNamings.*
 
 class ImlPropertyExpressionSerializer extends ThetaPropertyExpressionSerializer {
 	//
@@ -261,13 +262,14 @@ class ImlPropertyExpressionSerializer extends ThetaPropertyExpressionSerializer 
 		val instance = expression.instance
 		val queue = expression.queue
 		val capacity = evaluator.evaluate(queue.capacity)
-		if (capacity > 1) {
-			return '''(List.length «ImlReferenceSerializer.recordIdentifier».«queue.getId(instance).customizeDeclarationName»)'''
-		}
-		else {
-			// At this point, it is hard to map queues to their XSTS types ('queue != _EMPTY' would be needed)
-			throw new UnsupportedOperationException
-		}
+		val r = ImlReferenceSerializer.recordIdentifier
+		val queueName = queue.getId(instance)
+		val imlQueueName = queue.getId(instance).customizeDeclarationName
+		return (capacity > 1) ?
+			'''(List.length «r».«imlQueueName»)''' :
+			'''(if «r».«imlQueueName» = «
+				TYPE_DECLARATION_NAME_PREFIX»«queueName.getQueueTypeName».«
+				emptyLiteralName.customizeEnumLiteralName» then 0 else 1)''' // Single variable due to optimization
 	}
 	
 }
