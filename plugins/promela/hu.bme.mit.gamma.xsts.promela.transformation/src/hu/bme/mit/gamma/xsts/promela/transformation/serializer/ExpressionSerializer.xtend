@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2024 Contributors to the Gamma project
+ * Copyright (c) 2022-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.expression.model.DivExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
+import hu.bme.mit.gamma.expression.model.ImplyExpression
 import hu.bme.mit.gamma.expression.model.ModExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
 import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2
@@ -39,6 +40,8 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	//
 	
 	override String _serialize(IfThenElseExpression expression) '''(«expression.condition.serialize» -> («expression.then.serialize») : («expression.^else.serialize»))'''
+	
+	override String _serialize(ImplyExpression expression) '''(!(«expression.leftOperand.serialize») || «expression.rightOperand.serialize»)'''
 	
 	override String _serialize(EnumerationLiteralExpression expression) '''«expression.customizeEnumLiteralName»'''
 	
