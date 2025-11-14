@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.querygenerator.serializer
 
 import hu.bme.mit.gamma.expression.model.Expression
-import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.ImplyExpression
 import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.property.util.PropertyUtil
@@ -38,10 +37,7 @@ abstract class PropertyExpressionSerializer extends ExpressionSerializer {
 	}
 	
 	override String serialize(Expression expression) {
-		if (expression instanceof IfThenElseExpression) {
-			return expression.serializeIfThenElseExpression
-		}
-		else if (expression instanceof ComponentInstanceElementReferenceExpression) {
+		if (expression instanceof ComponentInstanceElementReferenceExpression) {
 			return expression.serializeStateExpression
 		}
 		return super.serialize(expression)
@@ -52,10 +48,6 @@ abstract class PropertyExpressionSerializer extends ExpressionSerializer {
 	override _serialize(ImplyExpression expression) '''(!(«expression.leftOperand.serialize») || («expression.rightOperand.serialize»))'''
 	
 	override _serialize(OpaqueExpression expression) '''«expression.expression»'''
-	
-	protected def serializeIfThenElseExpression(IfThenElseExpression expression) {
-		return super.serialize(expression)
-	}
 	
 	//
 	
@@ -97,8 +89,8 @@ abstract class PropertyExpressionSerializer extends ExpressionSerializer {
 		val capacity = evaluator.evaluate(queue.capacity)
 		return (capacity > 1) ?
 			queue.getSizeId(instance) :
-			expression.get1CapacityQueueEmptyExpression
-					.createIfThenElseExpression(0.toIntegerLiteral, 1.toIntegerLiteral).serialize
+			"(" + expression.get1CapacityQueueEmptyExpression
+					.createIfThenElseExpression(0.toIntegerLiteral, 1.toIntegerLiteral).serialize + ")"
 	}
 	
 	protected def get1CapacityQueueEmptyExpression(ComponentInstanceQueueSizeReferenceExpression expression) {

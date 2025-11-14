@@ -61,7 +61,7 @@ class NuxmvPropertyExpressionSerializer extends ThetaPropertyExpressionSerialize
 		val instance = expression.instance
 		val queue = expression.queue
 		val queueName = queue.getId(instance)
-		return '''«queueName» == «emptyLiteralName»'''
+		return '''«queueName» = «emptyLiteralName»'''
 				.createOpaqueExpression
 	}
 	
