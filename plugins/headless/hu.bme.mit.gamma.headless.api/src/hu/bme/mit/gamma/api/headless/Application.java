@@ -10,7 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.api.headless;
 
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,6 +22,8 @@ import org.eclipse.equinox.app.IApplicationContext;
 public class Application implements IApplication {
 	//
 	protected Integer exitCode = IApplication.EXIT_OK;
+	protected final String SESSION_ARG = "session";
+	protected final String EXIT_SESSION_ARG = "exit";
 	//
 	protected final Logger logger = Logger.getLogger("GammaLogger");
 	//
@@ -27,25 +31,48 @@ public class Application implements IApplication {
 	public Object start(final IApplicationContext context) throws Exception {
 		// Use a terminal or git bash for invoking the headless application:
 		final Map<?, ?> args = context.getArguments(); // ./eclipse.exe -data ./ws gamma info .../Genmodelfile.ggen
-		final String[] appArgs = (String[]) args.get(IApplicationContext.APPLICATION_ARGS);
+		String[] appArgs = (String[]) args.get(IApplicationContext.APPLICATION_ARGS);
 		
+		Scanner scanner = null;
 		try {
 			if (appArgs.length == 0) {
 				logger.warning("No argument given; use any of the following: " + serializeAcceptedArguments());
 			}
 			else {
-				Level level = parseLogLevel(appArgs);
-				HeadlessApplicationCommandHandler handler = createHandler(context, appArgs, level);
-				handler.execute();
+				boolean runSession = SESSION_ARG.equals(appArgs[0]);
+				if (runSession) {
+					logger.info("Session mode started...");
+					scanner = new Scanner(System.in);
+				}
+				
+				do {
+					if (runSession) {
+						// Reading new command
+						logger.info("Waiting for input...");
+						String line = scanner.nextLine();
+						appArgs = line.split("\\s+");
+						String firstArg = appArgs[0];
+						runSession = !firstArg.equals(EXIT_SESSION_ARG) &&
+								Arrays.asList(getAcceptedArguments()).contains(firstArg); // If false, then "DummyHandler" will be selected later
+					}
+					
+					Level level = parseLogLevel(appArgs);
+					var handler = createHandler(context, appArgs, level);
+					handler.execute();
+				} while (runSession);
 			}
 		} catch (Throwable t) {
 			// No duplicated error logging - logging must be done at a lower level
 			
 			exitCode = Integer.valueOf(1); // NOT 0 - could be refined in the future
+		} finally {
+			if (scanner != null) {
+				scanner.close();
+			}
 		}
 		// Manual stopping may be needed
 		stop();
-		//
+		
 		return exitCode;
 	}
 
@@ -66,6 +93,8 @@ public class Application implements IApplication {
 				return new ProjectImporter(context, appArgs, level);
 			case "gamma":
 				return new GammaEntryPoint(context, appArgs, level);
+			case "exit":
+				return new DummyHandler(context, appArgs, level);
 			default:
 				throw new IllegalArgumentException("Invalid argument for operation type: " + argument +
 						"; use one of the following: " + serializeAcceptedArguments());
@@ -73,7 +102,7 @@ public class Application implements IApplication {
 	}
 
 	protected String[] getAcceptedArguments() {
-		return new String[] { "workspace", "import", "gamma" };
+		return new String[] { "workspace", "import", "gamma", SESSION_ARG, EXIT_SESSION_ARG };
 	}
 	
 	private Level parseLogLevel(String[] appArgs) {
