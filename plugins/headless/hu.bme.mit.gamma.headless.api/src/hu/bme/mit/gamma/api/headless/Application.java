@@ -17,7 +17,6 @@ import java.util.logging.Logger;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 
-// The application class that gets executed and exported as Headless Gamma
 public class Application implements IApplication {
 	//
 	protected Integer exitCode = IApplication.EXIT_OK;
@@ -30,48 +29,19 @@ public class Application implements IApplication {
 		final Map<?, ?> args = context.getArguments(); // ./eclipse.exe -data ./ws gamma info .../Genmodelfile.ggen
 		final String[] appArgs = (String[]) args.get(IApplicationContext.APPLICATION_ARGS);
 		
-		Level level = Level.INFO;
 		try {
-			/*
-			 * Checks the number of arguments, which decide the operation the Headless Gamma
-			 * executes Note that these arguments are passed through the web server, not by
-			 * the user, so this error should not appear, as the server always passes these arguments.
-			 */
 			if (appArgs.length == 0) {
 				logger.warning("No argument given; use any of the following: " + serializeAcceptedArguments());
 			}
 			else {
-				// The second argument is the log level. This is INFO by default. This can be
-				// modified through the web server. Throws and exception if the setting is incorrect.
-				if (appArgs.length > 1) {
-					switch (appArgs[1]) {
-						case "info":
-							level = Level.INFO;
-							break;
-						case "warning":
-							level = Level.WARNING;
-							break;
-						case "severe":
-							level = Level.SEVERE;
-							break;
-						case "off":
-							level = Level.OFF;
-							break;
-						default:
-							logger.warning("Invalid argument for setting log level: " + appArgs[1]);
-					}
-				}
-				// The first argument is the operation type: creating workspace, importing
-				// project or executing Gamma .ggen file
+				Level level = parseLogLevel(appArgs);
 				HeadlessApplicationCommandHandler handler = createHandler(context, appArgs, level);
 				handler.execute();
 			}
 		} catch (Throwable t) {
 			// No duplicated error logging - logging must be done at a lower level
-//			logger.severe(t.getMessage());
-//			t.printStackTrace();
 			
-			exitCode = Integer.valueOf(1); // Not 0 - could be refined in the future
+			exitCode = Integer.valueOf(1); // NOT 0 - could be refined in the future
 		}
 		// Manual stopping may be needed
 		stop();
@@ -104,6 +74,18 @@ public class Application implements IApplication {
 
 	protected String[] getAcceptedArguments() {
 		return new String[] { "workspace", "import", "gamma" };
+	}
+	
+	private Level parseLogLevel(String[] appArgs) {
+		if (appArgs.length > 1) {
+			String levelString = appArgs[1].toUpperCase();
+			try {
+				return Level.parse(levelString);
+			} catch (IllegalArgumentException e) {
+				logger.warning("Invalid argument for setting log level: " + appArgs[1]);
+			}
+		}
+		return Level.INFO;
 	}
 	
 	private String serializeAcceptedArguments() {
