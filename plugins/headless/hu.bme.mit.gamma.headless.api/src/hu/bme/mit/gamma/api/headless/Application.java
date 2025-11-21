@@ -22,6 +22,7 @@ import org.eclipse.equinox.app.IApplicationContext;
 public class Application implements IApplication {
 	//
 	protected Integer exitCode = IApplication.EXIT_OK;
+	protected final String WORKSPACE_ARG = "workspace";
 	protected final String SESSION_ARG = "session";
 	protected final String EXIT_SESSION_ARG = "exit";
 	//
@@ -40,20 +41,23 @@ public class Application implements IApplication {
 			}
 			else {
 				boolean runSession = SESSION_ARG.equals(appArgs[0]);
-				if (runSession) {
-					logger.info("Session mode started...");
-					scanner = new Scanner(System.in);
-				}
-				
 				do {
 					if (runSession) {
-						// Reading new command
-						logger.info("Waiting for input...");
-						String line = scanner.nextLine();
-						appArgs = line.split("\\s+");
-						String firstArg = appArgs[0];
-						runSession = !firstArg.equals(EXIT_SESSION_ARG) &&
-								Arrays.asList(getAcceptedArguments()).contains(firstArg); // If false, then "DummyHandler" will be selected later
+						if (scanner == null) {
+							// First iteration: creating the workspace
+							logger.info("Session mode started...");
+							scanner = new Scanner(System.in);
+							appArgs = new String[] { WORKSPACE_ARG };
+						}
+						else {
+							// Reading new command
+							logger.info("Waiting for input...");
+							String line = scanner.nextLine();
+							appArgs = line.split("\\s+");
+							String firstArg = appArgs[0];
+							runSession = !firstArg.equals(EXIT_SESSION_ARG) &&
+									Arrays.asList(getAcceptedArguments()).contains(firstArg); // If false, then "DummyHandler" will be selected later
+						}
 					}
 					
 					Level level = parseLogLevel(appArgs);
@@ -87,7 +91,7 @@ public class Application implements IApplication {
 			IApplicationContext context, String[] appArgs, Level level) {
 		String argument = appArgs[0];
 		switch (argument) {
-			case "workspace":
+			case WORKSPACE_ARG:
 				return new WorkspaceGenerator(context, appArgs, level);
 			case "import":
 				return new ProjectImporter(context, appArgs, level);
@@ -102,7 +106,7 @@ public class Application implements IApplication {
 	}
 
 	protected String[] getAcceptedArguments() {
-		return new String[] { "workspace", "import", "gamma", SESSION_ARG, EXIT_SESSION_ARG };
+		return new String[] { WORKSPACE_ARG, "import", "gamma", SESSION_ARG, EXIT_SESSION_ARG };
 	}
 	
 	private Level parseLogLevel(String[] appArgs) {
