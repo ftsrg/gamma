@@ -19,6 +19,8 @@ import java.util.logging.Logger;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 
+import hu.bme.mit.gamma.util.DualConsoleHandler;
+
 public class Application implements IApplication {
 	//
 	protected Integer exitCode = IApplication.EXIT_OK;
@@ -34,6 +36,7 @@ public class Application implements IApplication {
 		final Map<?, ?> args = context.getArguments(); // ./eclipse.exe -data ./ws gamma info .../Genmodelfile.ggen
 		String[] appArgs = (String[]) args.get(IApplicationContext.APPLICATION_ARGS);
 		
+		DualConsoleHandler.register(logger);
 		Scanner scanner = null;
 		try {
 			if (appArgs.length == 0) {
@@ -60,9 +63,16 @@ public class Application implements IApplication {
 						}
 					}
 					
-					Level level = parseLogLevel(appArgs);
-					var handler = createHandler(context, appArgs, level);
-					handler.execute();
+					try {
+						Level level = parseLogLevel(appArgs);
+						var handler = createHandler(context, appArgs, level);
+						handler.execute();
+					} catch (Throwable t) {
+						// Staying in the session even if an exception occurs
+						if (!runSession) {
+							throw t;
+						}
+					}
 				} while (runSession);
 			}
 		} catch (Throwable t) {
