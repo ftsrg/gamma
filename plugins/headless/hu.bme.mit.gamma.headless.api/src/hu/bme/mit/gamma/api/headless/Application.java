@@ -30,6 +30,7 @@ public class Application implements IApplication {
 	//
 	protected final Logger logger = Logger.getLogger("GammaLogger");
 	//
+	
 	@Override
 	public Object start(final IApplicationContext context) throws Exception {
 		// Use a terminal or git bash for invoking the headless application:
