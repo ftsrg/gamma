@@ -31,11 +31,12 @@ class ThetaVerification extends AbstractVerification {
 		return #[
 				"CEGAR",
 				"CEGAR --domain EXPL --refinement SEQ_ITP --maxenum 250 --initprec CTRL",
-				"CEGAR --domain EXPL_PRED_COMBINED --autoexpl NEWOPERANDS --initprec CTRL"
+				"BOUNDED --variant KINDUCTION",
+				"MDD"
 			]
-		// --domain PRED_CART --refinement SEQ_ITP // default - cannot be used with loops
-		// --domain EXPL --refinement SEQ_ITP --maxenum 250 // --initprec CTRL should be used to support loops
-		// --domain EXPL_PRED_COMBINED --autoexpl NEWOPERANDS --initprec CTRL
+		// CEGAR --domain PRED_CART --refinement SEQ_ITP // default - cannot be used with loops
+		// CEGAR --domain EXPL --refinement SEQ_ITP --maxenum 250 // --initprec CTRL should be used to support loops
+		// CEGAR --domain EXPL_PRED_COMBINED --autoexpl NEWOPERANDS --initprec CTRL
 		// BOUNDED --variant KINDUCTION
 		// MDD
 		// BOUNDED --variant IMC
