@@ -48,13 +48,13 @@ public class Application implements IApplication {
 					if (runSession) {
 						if (scanner == null) {
 							// First iteration: creating the workspace
-							logger.info("Session mode started...");
+							logAndPrintln("Session mode started...");
 							scanner = new Scanner(System.in);
 							appArgs = new String[] { WORKSPACE_ARG };
 						}
 						else {
 							// Reading new command
-							logger.info("Waiting for input...");
+							logAndPrintln("Waiting for input...");
 							String line = scanner.nextLine();
 							appArgs = line.split("\\s+");
 							String firstArg = appArgs[0];
@@ -92,10 +92,17 @@ public class Application implements IApplication {
 
 	@Override
 	public void stop() {
-		logger.info("Headless Gamma application stopped");
+		logAndPrintln("Headless Gamma application stopped");
 	}
 	
-	//
+	protected void logAndPrintln(String string) {
+		logAndPrintln(Level.INFO, string);
+	}
+	
+	protected void logAndPrintln(Level level, String string) {
+		logger.log(level, string);
+		System.out.println(string); // Needed for communication with a caller process
+	}
 	
 	protected HeadlessApplicationCommandHandler createHandler(
 			IApplicationContext context, String[] appArgs, Level level) {
