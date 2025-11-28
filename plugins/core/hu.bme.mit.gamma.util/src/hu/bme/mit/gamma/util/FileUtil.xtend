@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -27,8 +27,10 @@ class FileUtil {
 	public static final FileUtil INSTANCE = new FileUtil
 	protected new() {}
 	//
+	
 	def saveString(String uri, String string) {
-		new File(uri).saveString(string)
+		val file = new File(uri)
+		file.saveString(string)
 	}
 	
 	def saveString(File file, String string) {
