@@ -126,4 +126,12 @@ public class GenmodelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		}
 	}
 	
+	public static AnalysisLanguage getXstsBasedAnalysisLanguage(String name) {
+		AnalysisLanguage analysisLanguage = getAnalysisLanguage(name);
+		if (analysisLanguage == AnalysisLanguage.UPPAAL) {
+			return AnalysisLanguage.XSTS_UPPAAL;
+		}
+		return analysisLanguage;
+	}
+	
 }
