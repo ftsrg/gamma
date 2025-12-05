@@ -15,6 +15,8 @@ import java.util.Map
 
 class ImlApiHelper {
 	
+	protected static final int DEFAULT_TIMEOUT = 300
+	
 	protected static final String RET_VALUE = "- : "
 	public static final String CX_START = "module CX :"
 	public static final String CX_INIT_VAR = ImlApiHelper.RET_VALUE + "t =" // Used to be 'module CX :' before refactor
@@ -23,7 +25,6 @@ class ImlApiHelper {
 	protected static val MODULE_PREFIX = "M." // Given by Imandra
 	
 	static def String getInvariantCall(String model, String command, String commandlessQuery) {
-		val DEFAULT_TIMEOUT = 300
 		return model.getInvariantCall(command, commandlessQuery, DEFAULT_TIMEOUT)
 	}
 	
@@ -371,15 +372,19 @@ class ImlApiHelper {
 		return model.getDecomposeCall(decomposeFunctionName, null)
 	}
 	
+	static def String getDecomposeCall(String model, String decomposeFunctionName, String assumingFunctionName) {
+		return model.getDecomposeCall(decomposeFunctionName, assumingFunctionName, DEFAULT_TIMEOUT)
+	}
+	
 	/**
 	 * For this call, the IMANDRA_API_KEY variable has to be set.
 	 */
-	static def String getDecomposeCall(String model, String decomposeFunctionName, String assumingFunctionName) '''
+	static def String getDecomposeCall(String model, String decomposeFunctionName, String assumingFunctionName, int timeout) '''
 		import imandrax_api.lib as xtypes
 		from imandra.core import Client
 «««		from imandra.core import Client, xtypes
 		
-		client = Client()
+		client = Client(timeout=«timeout»)
 		
 		client.eval_src("""
 			«model»
@@ -394,9 +399,9 @@ class ImlApiHelper {
 			raw = dict(dict(region.meta).get('str').arg)
 			parsed_region = {
 				'constraints': [c.arg for c in raw['constraints'].arg],
-				'invariant': raw['invariant'].arg,
-				'model': dict([(k,v.arg) for (k,v) in raw['model'].arg]),
-				'model_eval': raw['model_eval'].arg
+				'invariant': raw['invariant'].arg
+«««				'model': dict([(k,v.arg) for (k,v) in raw['model'].arg]), ««« Unncessary actually
+«««				'model_eval': raw['model_eval'].arg ««« Not supported in new API version?
 			}
 			regions.append(parsed_region)
 		
