@@ -1003,6 +1003,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					minSchedulingConstraint, maxSchedulingConstraint,
 					inlineFunctions,
 					transformation.isOptimize(),
+					transformation.isOptimizeNondeterministicChoices(),
 					TransitionMerging.HIERARCHICAL,
 					transformation.getPropertyPackage(),
 					new AnnotatablePreprocessableElements(

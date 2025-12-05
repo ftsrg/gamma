@@ -36,6 +36,7 @@ class Gamma2XstsImlTransformerSerializer {
 	// Configuration
 	protected final boolean inlineFunctions
 	protected final boolean optimize
+	protected final boolean optimizeNondeterministicChoices
 	protected final TransitionMerging transitionMerging
 	// Slicing
 	protected final PropertyPackage slicingProperties
@@ -63,7 +64,7 @@ class Gamma2XstsImlTransformerSerializer {
 			Integer schedulingConstraint) {
 		this(component, arguments, targetFolderUri, fileName, schedulingConstraint, schedulingConstraint,
 			true,
-			true, TransitionMerging.HIERARCHICAL,
+			true, false, TransitionMerging.HIERARCHICAL,
 			null, new AnnotatablePreprocessableElements(
 				null, null, null, null, null, null, null, null, null, null,
 				InteractionCoverageCriterion.EVERY_INTERACTION,	InteractionCoverageCriterion.EVERY_INTERACTION,
@@ -78,6 +79,7 @@ class Gamma2XstsImlTransformerSerializer {
 			Integer minSchedulingConstraint, Integer maxSchedulingConstraint,
 			boolean inlineFunctions,
 			boolean optimize,
+			boolean optimizeNondeterministicChoices,
 			TransitionMerging transitionMerging,
 			PropertyPackage slicingProperties,
 			AnnotatablePreprocessableElements annotatableElements,
@@ -91,6 +93,7 @@ class Gamma2XstsImlTransformerSerializer {
 		//
 		this.inlineFunctions = inlineFunctions
 		this.optimize = optimize
+		this.optimizeNondeterministicChoices = optimizeNondeterministicChoices
 		this.transitionMerging = transitionMerging
 		//
 		this.slicingProperties = slicingProperties
@@ -116,7 +119,7 @@ class Gamma2XstsImlTransformerSerializer {
 		xStsTransformer.execute
 		val xSts = targetFolderUri.normalLoad(fileName.emfXStsFileName) as XSTS
 		//
-		val imlTransformer = new XstsToImlTransformer(xSts, targetFolderUri, fileName)
+		val imlTransformer = new XstsToImlTransformer(xSts, targetFolderUri, fileName, optimizeNondeterministicChoices)
 		imlTransformer.execute
 	}
 }
