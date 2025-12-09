@@ -35,7 +35,8 @@ import hu.bme.mit.gamma.util.JavaUtil;
 
 public class ExpressionLanguageParserAndLinker {
 	//
-	protected final Injector injector;
+	protected final AbstractAntlrParser parser;
+	//
 	protected final ExpressionUtil util = ExpressionUtil.INSTANCE;
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
@@ -43,7 +44,9 @@ public class ExpressionLanguageParserAndLinker {
 	//
 	
 	public ExpressionLanguageParserAndLinker() {
-		injector = getInjector();
+		Injector injector = getInjector();
+		Class<? extends AbstractAntlrParser> parserClass = getParserClass();
+		this.parser = injector.getInstance(parserClass);
 	}
 	
 	// Needs overriding in derived classes
@@ -64,13 +67,18 @@ public class ExpressionLanguageParserAndLinker {
 	
 	public Expression preprocessAndParse(String expression,
 			Map<String, ? extends EObject> scope, Map<String, String> expressionPreprocess) {
-		return preprocessAndParse(expression, getScope(scope), expressionPreprocess);
+		return preprocessAndParse2(expression, wrapScope(scope), expressionPreprocess);
 	}
 	
 	public Expression preprocessAndParse(String expression,
 			Function<String, ? extends EObject> scope, Map<String, String> expressionPreprocess) {
+		return preprocessAndParse2(expression, wrapScope(scope), expressionPreprocess);
+	}
+	
+	public Expression preprocessAndParse2(String expression,
+			Function<ILeafNode, ? extends EObject> scope, Map<String, String> expressionPreprocess) {
 		String preprocessedExpression = preprocess(expression, expressionPreprocess);
-		return parse(preprocessedExpression, scope);
+		return parse2(preprocessedExpression, scope);
 	}
 	
 	//
@@ -80,14 +88,17 @@ public class ExpressionLanguageParserAndLinker {
 	}
 	
 	public Expression parse(String expression, Map<String, ? extends EObject> scope) {
-		return parse(expression, getScope(scope));
+		return parse2(expression, wrapScope(scope));
 	}
 	
 	public Expression parse(String expression, Function<String, ? extends EObject> scope) {
+		return parse2(expression, wrapScope(scope));
+	}
+	
+	public Expression parse2(String expression, Function<ILeafNode, ? extends EObject> scope) {
 		String trimmedExpression = javaUtil.deparenthesize(expression);
 		StringReader reader = new StringReader(trimmedExpression);
 		
-		AbstractAntlrParser parser = injector.getInstance(getParserClass());
 		IParseResult result = parser.parse(reader);
 
 		if (result.hasSyntaxErrors()) {
@@ -100,34 +111,34 @@ public class ExpressionLanguageParserAndLinker {
 			for (ILeafNode node : rootNode.getLeafNodes()) {
 				EObject grammarElement = node.getGrammarElement();
 				if (grammarElement instanceof CrossReference) {
-					EObject reference = node.getSemanticElement();
+					EObject referenceContainer = node.getSemanticElement();
 
 					String text = node.getText();
-					EObject parsedReference = scope.apply(text);
-					if (parsedReference == null) {
-						parsedReference = util.createOpaqueExpression(text);
+					EObject parsedObject = scope.apply(node);
+					if (parsedObject == null) {
+						parsedObject = util.createOpaqueExpression(text);
 					}
 					
-					EObject container = reference.eContainer();
-					if (container == null) {
+					EObject grandparentContainer = referenceContainer.eContainer();
+					if (grandparentContainer == null) {
 						// Replace would not work as it is a single element
-						return (Expression) parsedReference;
+						return (Expression) parsedObject;
 					}
 					
 					/// Unparsable enum literals (e.g., state references)
-					if (parsedReference instanceof OpaqueExpression) { // I.e., 'parsedReference' was 'null'
-						if (reference instanceof TypeReference && container instanceof EnumerationLiteralExpression) {
+					if (parsedObject instanceof OpaqueExpression) { // I.e., 'parsedReference' was 'null'
+						if (referenceContainer instanceof TypeReference && grandparentContainer instanceof EnumerationLiteralExpression) {
 							typeReferenceId = text;
 							continue; // Next node is the literal id
 						}
-						else if (reference instanceof EnumerationLiteralExpression) {
+						else if (referenceContainer instanceof EnumerationLiteralExpression) {
 							String enumId = typeReferenceId + "::" + text;
-							parsedReference = util.createOpaqueExpression(enumId);
+							parsedObject = util.createOpaqueExpression(enumId);
 						}
 					}
 					///
 					
-					ecoreUtil.replace(parsedReference, reference);
+					ecoreUtil.replace(parsedObject, referenceContainer);
 				}
 			}
 			
@@ -139,14 +150,27 @@ public class ExpressionLanguageParserAndLinker {
 	
 	//
 	
-	protected Function<String, EObject> getScope(Map<String, ? extends EObject> scope) {
-		return new Function<String, EObject>() {
+	protected Function<ILeafNode, EObject> wrapScope(Map<String, ? extends EObject> scope) {
+		return new Function<ILeafNode, EObject>() {
 			@Override
-			public EObject apply(String id) {
+			public EObject apply(ILeafNode node) {
+				String id = node.getText();
 				return scope.get(id);
 			}
 		};
 	}
+	
+	protected Function<ILeafNode, EObject> wrapScope(Function<String, ? extends EObject> scope) {
+		return new Function<ILeafNode, EObject>() {
+			@Override
+			public EObject apply(ILeafNode node) {
+				String id = node.getText();
+				return scope.apply(id);
+			}
+		};
+	}
+	
+	//
 	
 	protected String preprocess(String expression, Map<String, String> preprocess) {
 		String preprocessedExpression = expression;
