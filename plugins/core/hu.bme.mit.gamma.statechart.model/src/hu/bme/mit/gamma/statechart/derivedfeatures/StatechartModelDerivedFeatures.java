@@ -153,7 +153,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		
 		// Explicit imports
 		for (Package importedPackage : StatechartModelDerivedFeatures.getComponentImports(_package)) {
-			types.addAll(importedPackage.getTypeDeclarations());
+			types.addAll(
+					importedPackage.getTypeDeclarations());
 		}
 		
 		// Native references in the case of unfolded packages
@@ -174,11 +175,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			TypeDeclaration typeDeclaration = reference.getReference();
 			types.add(typeDeclaration);
 			Type containedType = typeDeclaration.getType();
-			Type type = getTypeDefinition(containedType);
-			if (type instanceof RecordTypeDefinition recordType) {
-				Collection<TypeDeclaration> containedTypeDeclarations =
-						getAllTypeDeclarations(recordType);
-				types.addAll(containedTypeDeclarations);
+			try {
+				Type type = getTypeDefinition(containedType);
+				if (type instanceof RecordTypeDefinition recordType) {
+					types.addAll(
+							getAllTypeDeclarations(recordType));
+				}
+			} catch (IllegalArgumentException e) {
+				// LazyLinkingResource bug: 'type == null'
 			}
 		}
 		
