@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,15 +11,9 @@
 package hu.bme.mit.gamma.property.util;
 
 import hu.bme.mit.gamma.expression.model.Expression;
-import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.Type;
-import hu.bme.mit.gamma.expression.model.VariableDeclaration;
-import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 
-public class ExpressionTypeDeterminator extends ExpressionTypeDeterminator2 {
+public class ExpressionTypeDeterminator extends hu.bme.mit.gamma.statechart.util.ExpressionTypeDeterminator {
 	// Singleton
 	public static final ExpressionTypeDeterminator INSTANCE = new ExpressionTypeDeterminator();
 	protected ExpressionTypeDeterminator() {}
@@ -27,20 +21,6 @@ public class ExpressionTypeDeterminator extends ExpressionTypeDeterminator2 {
 	
 	@Override
 	public Type getType(Expression expression) {
-		if (expression instanceof ComponentInstanceVariableReferenceExpression reference) {
-			VariableDeclaration variable = reference.getVariableDeclaration();
-			Type declarationType = variable.getType();
-			return ecoreUtil.clone(declarationType);
-		}
-		else if (expression instanceof ComponentInstanceEventParameterReferenceExpression reference) {
-			ParameterDeclaration parameter = reference.getParameterDeclaration();
-			Type declarationType = parameter.getType();
-			return ecoreUtil.clone(declarationType);
-		}
-		else if (expression instanceof ComponentInstanceElementReferenceExpression) {
-			return factory.createBooleanTypeDefinition();
-		}
-		
 		return super.getType(expression);
 	}	
 	

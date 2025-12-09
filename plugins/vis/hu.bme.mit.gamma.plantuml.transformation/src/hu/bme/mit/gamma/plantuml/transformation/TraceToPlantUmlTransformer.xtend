@@ -107,7 +107,8 @@ class TraceToPlantUmlTransformer {
 			«FOR variableConstraint : step.uniqueInstanceVariableStates
 						.filter[it.instanceReference?.serialize == config.key]
 						.sortBy[it.variableDeclaration.name]»
-				«'''  '''»«variableConstraint.variableDeclaration.name» = «variableConstraint.otherOperandIfContainedByEquality.serialize»
+				«'''  '''»«variableConstraint.variableDeclaration.name»«
+					IF !variableConstraint.topmostAssert» = «variableConstraint.otherOperandIfContainedByEquality.serialize»«ENDIF»
 			«ENDFOR»
 		«ENDFOR»
 		«FOR trapAssert : step.asserts.filter(OpaqueExpression).filter[it.expression.startsWith(TRAP_STATE_MESSAGE_PREFIX)]»

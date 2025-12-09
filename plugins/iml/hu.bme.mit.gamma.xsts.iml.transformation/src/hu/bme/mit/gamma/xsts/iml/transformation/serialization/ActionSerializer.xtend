@@ -317,7 +317,8 @@ class ActionSerializer {
 			«localVariableDeclarations»
 			match «PICK_BRANCH_FUNCTION_NAME» «globalVariableName» guard [«FOR branch : choice.actions SEPARATOR "; "»«branch.index.branchLiteralName»«ENDFOR»] «globalVariableName».«choice.customizeChoice» with
 				«FOR branch : choice.actions»
-					| Some «branch.index.branchLiteralName» -> «branch.serialize»
+					| Some «branch.index.branchLiteralName» -> «branch.serialize»« /* When to add 'r, l' at the end: */
+						IF !branch.last && branch.getSelfAndAllContentsOfType(Action).forall[it.effectlessAction || it instanceof AssumeAction]»«localVariableNames»«ENDIF»
 				«ENDFOR»
 				| _ -> «localVariableNames» (* Theoretically unreachable *)
 			in

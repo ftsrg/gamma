@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,7 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.util
 
+import java.io.UnsupportedEncodingException
 import java.util.AbstractMap.SimpleEntry
+import java.util.Arrays
 import java.util.Collection
 import java.util.List
 import java.util.Map
@@ -23,6 +25,8 @@ class JavaUtil {
 	// Singleton
 	public static final JavaUtil INSTANCE = new JavaUtil
 	protected new() {}
+	//
+	public static final String DELIM_CHAR = "_"
 	//
 
 	def <T> List<T> filterIntoList(Iterable<? super T> collection, Class<T> clazz) {
@@ -316,6 +320,73 @@ class JavaUtil {
 		return string.matches("[_A-Za-z0-9]")
 	}
 	
+	def toId(String string) {
+		return string.toId(DELIM_CHAR)
+	}
+	
+	def toId(String string, String delimiter) {
+		try {
+			val bytes = string.getBytes("UTF-8")
+			return Arrays.toString(bytes)
+					.replaceAll("\\D+", delimiter)
+		} catch (UnsupportedEncodingException e) {
+			return null
+		}
+	}
+	
+	def isByteSequence(String string) {
+		return string.isByteSequence(DELIM_CHAR)
+	}
+	
+	def isByteSequence(String string, String delimiter) {
+		try {
+			string.fromId(delimiter)
+			return true
+		} catch (Exception e) {
+			return false
+		}
+	}
+	
+	def fromId(String byteSequence) {
+		return byteSequence.fromId(DELIM_CHAR)
+	}
+	
+	def fromId(String byteSequence, String delimiter) {
+		val byteCharacters = byteSequence.split(delimiter)
+		val bytes = byteCharacters
+				.reject[it.nullOrEmpty]
+				.map[Byte.valueOf(it)].toList
+		val string = bytes.fromId
+		return string
+	}
+	
+	def fromId(byte[] bytes) {
+		return new String(bytes, "UTF-8")
+	}
+	
+	def fromIdIfByteSequence(String string) {
+		return string.fromIdIfByteSequence(DELIM_CHAR)
+	}
+	
+	def fromIdIfByteSequence(String string, String delimiter) {
+		return string.isByteSequence(delimiter) ?
+				string.fromId(delimiter) :
+				string
+	}
+	
+	def isIdString(String string) {
+		if (string.nullOrEmpty) {
+			return false
+		}
+		val pattern = "[_A-Za-z][_A-Za-z0-9]*"
+		return string.matches(pattern)
+	}
+	
+	def countChar(String string, String _char) {
+		val character = _char.toCharArray.onlyElement
+		return string.countChar(character)
+	}
+	
 	def countChar(String string, char character) {
 		var count = 0
 		
@@ -421,6 +492,10 @@ class JavaUtil {
 	}
 	
 	def boolean isDeparenthesizable(String string) {
+		if (string.nullOrEmpty) {
+			return false
+		}
+		
 		val char leftParenthesis = '('
 		val char rightParenthesis = ')'
 		
@@ -470,11 +545,11 @@ class JavaUtil {
 	//
 	
 	def boolean isUnstartableProcessException(Throwable throwable) {
-		val message = throwable.message
-		val cause = throwable.cause
-		val causeMessage = cause.message
-		return message.startsWith("Cannot run program") &&
-			causeMessage.startsWith("CreateProcess error=") // CreateProcess error=2, but not sure about the literal in other OS
+		val message = throwable.message.trim
+//		val cause = throwable.cause
+//		val causeMessage = cause.message.trim
+		return message.startsWith("Cannot run program")
+//			&& causeMessage.contains("error") // CreateProcess error=2, but not sure about the literal in other OS
 	}
 	
 }

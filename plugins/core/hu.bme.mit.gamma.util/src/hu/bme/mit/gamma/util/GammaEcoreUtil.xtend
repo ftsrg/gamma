@@ -52,6 +52,21 @@ class GammaEcoreUtil {
 		EcoreUtil.replace(oldObject, newObject)
 	}
 	
+	def <T extends EObject> void replaceContent(T lhs, T rhs) {
+		val lhsElements = lhs.eContents.map[it.eContainmentFeature -> it].toList
+		lhs.eContents.removeAll
+		val rhsElements = rhs.eContents.map[it.eContainmentFeature -> it].toList
+		rhs.eContents.removeAll
+		
+		for (lhsElement : lhsElements) {
+			rhs.add(lhsElement.key, lhsElement.value)
+		}
+		
+		for (rhsElement : rhsElements) {
+			lhs.add(rhsElement.key, rhsElement.value)
+		}
+	}
+	
 	def isReferenced(EObject target, EObject container) {
 		val settings = UsageCrossReferencer.find(target, container)
 		return !settings.empty

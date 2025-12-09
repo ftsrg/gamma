@@ -354,6 +354,8 @@ abstract class ImlSemanticDiffer {
 			
 			«mergeRecords.serializeRecords»
 			
+			«serializeNondeterministicChoiceHelpers»
+			
 			«trans»
 			«trans2»
 		'''
@@ -403,10 +405,12 @@ abstract class ImlSemanticDiffer {
 			while (scanner.hasNextLine) {
 				line = scanner.nextLine.trim
 				if (line.startsWith("type")) {
-					insideRecord = true
-					val name = line.substring("type nonrec".length, line.indexOf("=")).trim
-					fields = newArrayList
-					records += name -> fields
+					if (line.contains("{")) {
+						insideRecord = true
+						val name = line.substring("type nonrec".length, line.indexOf("=")).trim
+						fields = newArrayList
+						records += name -> fields
+					}
 				}
 				else if (line.startsWith("}")) {
 					insideRecord = false
@@ -449,6 +453,32 @@ abstract class ImlSemanticDiffer {
 				}
 			«ENDFOR»
 		'''
+		
+		protected def serializeNondeterministicChoiceHelpers() {
+			val typeB = "type nonrec b ="
+			
+			val pickBranch = "let pick_branch ("
+			
+			val i = src.indexOf(typeB)
+			val b = (i < 0) ? "" :
+					src.substring(i, src.indexOf(System.lineSeparator, i)) // type nonrec b = B_0 | B_1 | B_2
+			
+			val i2 = src2.indexOf(typeB)
+			val b2 = (i2 < 0) ? "" :
+					src2.substring(i2, src2.indexOf(System.lineSeparator, i2))
+			
+			val finalB = b.startsWith(b2) ? b : b2
+			
+			val j = src.indexOf(pickBranch)
+			val pickBranchMethod = (j < 0) ? "" :
+					src.substring(j, src.indexOf(System.lineSeparator + System.lineSeparator, j))
+			
+			return '''
+				«finalB»
+				
+				«pickBranchMethod»
+			'''.deleteEmptyLines
+		}
 		
 		protected def getTrans() {
 			val trans = src.behavior

@@ -223,7 +223,8 @@ Coverage returns Coverage:
 	StateCoverage | UnstableStateCoverage | TrapStateCoverage |
 	DeadlockCoverage | NonDeterministicTransitionCoverage |
 	TransitionCoverage | TransitionPairCoverage | OutEventCoverage |
-	InteractionCoverage | DataflowCoverage | InteractionDataflowCoverage
+	InteractionCoverage | DataflowCoverage | InteractionDataflowCoverage |
+	QueueOverflowCoverage
 ;
 
 StateCoverage returns StateCoverage:
@@ -319,6 +320,13 @@ InteractionDataflowCoverage returns InteractionDataflowCoverage:
 	'}')?
 ;
 
+QueueOverflowCoverage returns QueueOverflowCoverage:
+	{QueueOverflowCoverage} 'queue-overflow-coverage' ('{' 
+		('include' ':' '[' include+=ComponentInstanceReferenceExpression (',' include+=ComponentInstanceReferenceExpression)* ']')?
+		('exclude' ':' '[' exclude+=ComponentInstanceReferenceExpression (',' exclude+=ComponentInstanceReferenceExpression)* ']')?
+	'}')?
+;
+
 enum InteractionCoverageCriterion returns InteractionCoverageCriterion:
 	EVERY_INTERACTION = 'every-interaction' | STATES_AND_EVENTS = 'states-and-events' | EVENTS = 'events'
 ;
@@ -333,6 +341,7 @@ Verification returns Verification:
 			'file' ':' fileName+=STRING | // Analysis model file name
 			'trace-folder' ':' targetFolder+=STRING | // Trace folder
 			'trace-file' ':' fileName2+=STRING | // Trace file name
+			'tested-file' ':' testedFileName+=STRING |
 			'project' ':' projectName+=STRING |
 			'optimize-model' ':' ('false' | (optimizeModel?='true' ('optimize-out-events' ':' ('false' | optimizeOutEvents?='true'))?)) |
 			'svg-file' ':' svgFileName+=STRING |

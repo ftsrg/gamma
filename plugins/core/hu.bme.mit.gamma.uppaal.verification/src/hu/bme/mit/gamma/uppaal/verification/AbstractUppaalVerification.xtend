@@ -18,7 +18,7 @@ abstract class AbstractUppaalVerification extends AbstractVerification {
 		return "((-A|-C|-H[0-9]*|-n[0-4]|-o[0-4]|-S[0-2]|-T|-Z|-N|-t[0-2])( )?)*"
 	}
 	
-	protected override createVerifier() {
+	protected override createVerifier(Long timeout) {
 		return new UppaalVerifier
 	}
 	

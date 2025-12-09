@@ -120,9 +120,7 @@ public class ActionUtil extends ExpressionUtil {
 	//
 	
 	public Block wrap(Collection<? extends Action> actions) {
-		Block block = actionFactory.createBlock();
-		block.getActions().addAll(actions);
-		return block;
+		return createBlock(actions);
 	}
 	
 	public Action prepend(Action action, Action pivot) {

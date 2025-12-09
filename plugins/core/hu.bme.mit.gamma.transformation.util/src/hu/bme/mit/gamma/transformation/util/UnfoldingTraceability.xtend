@@ -258,11 +258,11 @@ class UnfoldingTraceability {
 	def getNewSimpleInstances(
 			Collection<ComponentInstanceReferenceExpression> originalInstances,
 			Component newType) {
-		val accpedtedNewInstances = newArrayList
+		val acceptedNewInstances = newArrayList
 		for (originalInstance : originalInstances) {
-			accpedtedNewInstances += originalInstance.getNewSimpleInstances(newType)
+			acceptedNewInstances += originalInstance.getNewSimpleInstances(newType)
 		}
-		return accpedtedNewInstances
+		return acceptedNewInstances
 	}
 	
 	def getNewSimpleInstances(ComponentInstanceReferenceExpression originalInstance, Component newType) {
@@ -301,6 +301,30 @@ class UnfoldingTraceability {
 		return newInstances.head
 	}
 	
+	def getNewAsynchronousSimpleInstances(
+			Collection<ComponentInstanceReferenceExpression> includedOriginalInstances,
+			Collection<ComponentInstanceReferenceExpression> excludedOriginalInstances,
+			Component newType) {
+		val newInstances = newArrayList
+		if (includedOriginalInstances.empty) {
+			// If it is empty, it means all simple instances must be covered
+			newInstances += newType.allAsynchronousSimpleInstances
+		}
+		// The semantics is defined here: including has priority over excluding
+		newInstances -= excludedOriginalInstances.getNewAsynchronousSimpleInstances(newType)
+		newInstances += includedOriginalInstances.getNewAsynchronousSimpleInstances(newType)
+		return newInstances
+	}
+	
+	def getNewAsynchronousSimpleInstances(
+			Collection<ComponentInstanceReferenceExpression> originalInstances,
+			Component newType) {
+		val acceptedNewInstances = newArrayList
+		for (originalInstance : originalInstances) {
+			acceptedNewInstances += originalInstance.getNewAsynchronousSimpleInstances(newType)
+		}
+		return acceptedNewInstances
+	}
 	
 	def getNewAsynchronousSimpleInstances(ComponentInstanceReferenceExpression original, Component newType) {
 		return newType.allAsynchronousSimpleInstances

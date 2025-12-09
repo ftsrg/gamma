@@ -32,6 +32,9 @@ class QueueNamings {
 	protected final static extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	//
 	
+	def static String getEmptyLiteralName() '''EMPTY'''
+	def static String getQueueTypeName(String queueName) '''EventIdType«OF»«queueName»'''
+	
 	def static String getMasterQueueName(
 		MessageQueue queue, ComponentInstance instance) '''«MASTER_PREFIX»«queue.name»«OF»«instance.name»'''
 	def static String getMasterSizeVariableName(

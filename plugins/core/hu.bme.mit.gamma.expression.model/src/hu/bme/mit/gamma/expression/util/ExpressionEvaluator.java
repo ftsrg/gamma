@@ -175,12 +175,11 @@ public class ExpressionEvaluator {
 		if (expression instanceof ArrayAccessExpression arrayAccessExpression) {
 			Expression index = arrayAccessExpression.getIndex();
 			Expression operand = arrayAccessExpression.getOperand();
-			if (operand instanceof ArrayLiteralExpression) {
-				ArrayLiteralExpression arrayLiteralExpression = (ArrayLiteralExpression) operand;
+			if (operand instanceof ArrayLiteralExpression arrayLiteralExpression) {
 				List<Expression> operands = arrayLiteralExpression.getOperands();
-				return evaluateInteger(
-						operands.get(
-								evaluateInteger(index)));
+				int i = evaluateInteger(index);
+				Expression element = operands.get(i);
+				return evaluateInteger(element);
 			}
 		}
 		if (expression instanceof MultiplyExpression multiplyExpression) {
@@ -342,12 +341,11 @@ public class ExpressionEvaluator {
 		if (expression instanceof ArrayAccessExpression arrayAccessExpression) {
 			Expression index = arrayAccessExpression.getIndex();
 			Expression operand = arrayAccessExpression.getOperand();
-			if (operand instanceof ArrayLiteralExpression) {
-				ArrayLiteralExpression arrayLiteralExpression = (ArrayLiteralExpression) operand;
+			if (operand instanceof ArrayLiteralExpression arrayLiteralExpression) {
 				List<Expression> operands = arrayLiteralExpression.getOperands();
-				return evaluateDecimal(
-						operands.get(
-								evaluateInteger(index)));
+				int i = evaluateInteger(index);
+				Expression element = operands.get(i);
+				return evaluateDecimal(element);
 			}
 		}
 		if (expression instanceof MultiplyExpression multiplyExpression) {
@@ -449,9 +447,9 @@ public class ExpressionEvaluator {
 			Expression operand = arrayAccessExpression.getOperand();
 			if (operand instanceof ArrayLiteralExpression arrayLiteralExpression) {
 				List<Expression> operands = arrayLiteralExpression.getOperands();
-				return evaluateBoolean(
-						operands.get(
-								evaluateInteger(index)));
+				int i = evaluateInteger(index);
+				Expression element = operands.get(i);
+				return evaluateBoolean(element);
 			}
 		}
 		if (expression instanceof AndExpression andExpression) {

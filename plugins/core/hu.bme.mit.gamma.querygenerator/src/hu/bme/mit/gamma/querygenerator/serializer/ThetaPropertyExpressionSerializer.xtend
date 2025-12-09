@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.querygenerator.serializer
 
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 
 class ThetaPropertyExpressionSerializer extends PropertyExpressionSerializer {
 	
@@ -24,5 +25,7 @@ class ThetaPropertyExpressionSerializer extends PropertyExpressionSerializer {
 	}
 	
 	override String _serialize(EnumerationLiteralExpression expression) '''«expression.typeReference.reference.name».«expression.reference.name»'''
+	
+	override String _serialize(IfThenElseExpression expression) '''(if («expression.condition.serialize») then («expression.then.serialize») else («expression.^else.serialize»))'''
 	
 }

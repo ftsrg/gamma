@@ -105,6 +105,9 @@
     <genClasses ecoreClass="composite.ecore#//ComponentInstanceVariableReferenceExpression">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstanceVariableReferenceExpression/variableDeclaration"/>
     </genClasses>
+    <genClasses ecoreClass="composite.ecore#//ComponentInstanceQueueSizeReferenceExpression">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstanceQueueSizeReferenceExpression/queue"/>
+    </genClasses>
     <genClasses ecoreClass="composite.ecore#//ComponentInstancePortReferenceExpression">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstancePortReferenceExpression/port"/>
     </genClasses>
@@ -391,9 +394,11 @@
     <genClasses image="false" ecoreClass="statechart.ecore#//StatechartAnnotation"/>
     <genClasses ecoreClass="statechart.ecore#//RunUponExternalEventAnnotation"/>
     <genClasses ecoreClass="statechart.ecore#//RunUponExternalEventOrInternalTimeoutAnnotation"/>
+    <genClasses ecoreClass="statechart.ecore#//IncompleteStatechartAnnotation"/>
     <genClasses image="false" ecoreClass="statechart.ecore#//StateAnnotation"/>
     <genClasses image="false" ecoreClass="statechart.ecore#//TransitionAnnotation"/>
     <genClasses ecoreClass="statechart.ecore#//TransitionIdAnnotation"/>
+    <genClasses ecoreClass="statechart.ecore#//CoverageAvoidanceAnnotation"/>
     <genClasses ecoreClass="statechart.ecore#//TimeoutReferenceExpression">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statechart.ecore#//TimeoutReferenceExpression/timeout"/>
     </genClasses>

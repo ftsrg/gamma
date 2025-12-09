@@ -78,6 +78,11 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return trace;
 	}
 	
+	public static boolean isTopmostAssert(Expression expression) {
+		EObject container = expression.eContainer();
+		return !(container instanceof Expression);
+	}
+	
 	public static Step getContainingStep(EObject object) {
 		Step step = ecoreUtil.getContainerOfType(object, Step.class);
 		return step;

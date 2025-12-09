@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019-2024 Contributors to the Gamma project
+ * Copyright (c) 2019-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -78,8 +78,10 @@ public class TestGenerationHandler extends TaskHandler {
 		ExecutionTrace executionTrace = testGeneration.getExecutionTrace();
 		logger.info("Java test generation for: " + executionTrace.getName());
 		String fileName = testGeneration.getFileName().get(0);
-		TestGenerator testGenerator = new TestGenerator(executionTrace,
-				testGeneration.getPackageName().get(0), fileName);
+		String basePackage = testGeneration.getPackageName().get(0);
+		String testedClassName = javaUtil.getLastElement(
+				testGeneration.getFileName2());
+		TestGenerator testGenerator = new TestGenerator(executionTrace, basePackage, fileName, testedClassName);
 		String testClass = testGenerator.execute();
 		saveCode(targetFolderUri + File.separator + testGenerator.getPackageName().replaceAll("\\.", "/"),
 				fileName + ".java", testClass);

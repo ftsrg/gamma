@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -25,6 +25,8 @@ class AnnotatablePreprocessableElements {
 	
 	ComponentInstanceReferences testedComponentsForNondeterministicTransitions
 	
+	ComponentInstanceReferences testedComponentsForQueueOverflow
+	
 	ComponentInstanceReferences testedComponentsForTransitions
 	
 	ComponentInstanceReferences testedComponentsForTransitionPairs
@@ -45,7 +47,8 @@ class AnnotatablePreprocessableElements {
 	
 	new() {
 		// If only a placeholder is needed, this constructor can be used
-		this(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null)
+		this(null, null, null, null, null, null, null, null, null, null, null, null,
+				null, null, null, null)
 	}
 
 	new(ComponentInstanceReferences testedComponentsForStates,
@@ -53,6 +56,7 @@ class AnnotatablePreprocessableElements {
 			ComponentInstanceReferences testedComponentsForTrapStates,
 			ComponentInstanceReferences testedComponentsForDeadlock,
 			ComponentInstanceReferences testedComponentsForNondeterministicTransitions,
+			ComponentInstanceReferences testedComponentsForQueueOverflow,
 			ComponentInstanceReferences testedComponentsForTransitions,
 			ComponentInstanceReferences testedComponentsForTransitionPairs,
 			ComponentInstancePortReferences testedComponentsForOutEvents,
@@ -64,6 +68,7 @@ class AnnotatablePreprocessableElements {
 		this.testedComponentsForTrapStates = testedComponentsForTrapStates
 		this.testedComponentsForDeadlock = testedComponentsForDeadlock
 		this.testedComponentsForNondeterministicTransitions = testedComponentsForNondeterministicTransitions
+		this.testedComponentsForQueueOverflow = testedComponentsForQueueOverflow
 		this.testedComponentsForTransitions = testedComponentsForTransitions
 		this.testedComponentsForTransitionPairs = testedComponentsForTransitionPairs
 		this.testedComponentsForOutEvents = testedComponentsForOutEvents

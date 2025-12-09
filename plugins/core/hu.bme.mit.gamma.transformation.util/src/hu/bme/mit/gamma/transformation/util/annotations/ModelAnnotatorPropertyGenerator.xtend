@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.transformation.util.annotations
 
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.property.model.PropertyPackage
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Port
@@ -62,6 +63,9 @@ class ModelAnnotatorPropertyGenerator {
 		// Nondeterministic transition coverage
 		val testedComponentsForNondeterministicTransitions = getIncludedSynchronousInstances(
 				annotableElements.testedComponentsForNondeterministicTransitions, newTopComponent)
+		// Queue overflow coverage
+		val testedComponentsForQueueOverflow = getIncludedAsynchronousInstances(
+				annotableElements.testedComponentsForQueueOverflow, newTopComponent)
 		// Transition coverage
 		val testedComponentsForTransitions = getIncludedSynchronousInstances(
 				annotableElements.testedComponentsForTransitions, newTopComponent)
@@ -97,6 +101,7 @@ class ModelAnnotatorPropertyGenerator {
 				!testedComponentsForTrapStates.nullOrEmpty ||
 				!testedComponentsForDeadlock.nullOrEmpty ||
 				!testedComponentsForNondeterministicTransitions.nullOrEmpty ||
+				!testedComponentsForQueueOverflow.nullOrEmpty ||
 				!testedComponentsForTransitions.nullOrEmpty ||
 				!testedComponentsForTransitionPairs.nullOrEmpty ||
 				!testedPortsForOutEvents.nullOrEmpty ||
@@ -108,14 +113,13 @@ class ModelAnnotatorPropertyGenerator {
 				new AnnotatableElements(
 					testedComponentsForDeadlock,
 					testedComponentsForNondeterministicTransitions,
+					testedComponentsForQueueOverflow,
 					testedComponentsForTransitions,
 					testedComponentsForTransitionPairs,
 					testedPortsForInteractions, testedStatesForInteractions, testedTransitionsForInteractions,
 					annotableElements.senderCoverageCriterion, annotableElements.receiverCoverageCriterion,
 					dataflowTestedVariables, annotableElements.dataflowCoverageCriterion,
-					testedPortsForInteractionDataflow, annotableElements.interactionDataflowCoverageCriterion
-				)
-			)
+					testedPortsForInteractionDataflow, annotableElements.interactionDataflowCoverageCriterion))
 			annotator.annotateModel
 			newPackage.save // It must be saved so the property package can be serialized
 			
@@ -132,6 +136,7 @@ class ModelAnnotatorPropertyGenerator {
 			formulas += propertyGenerator.createTrapStateInvariance(testedComponentsForTrapStates)
 			formulas += propertyGenerator.createDeadlockInvariance(annotator.getDeadlockTransitionVariables)
 			formulas += propertyGenerator.createStateReachabilityFormulas(annotator.trapStates) // Nondeterministic transition coverage
+			formulas += propertyGenerator.createQueueOverflowInvariance(testedComponentsForQueueOverflow) // Nondeterministic transition coverage
 			
 			formulas += propertyGenerator.createTransitionReachability(
 							annotator.getTransitionVariables)
@@ -148,7 +153,16 @@ class ModelAnnotatorPropertyGenerator {
 		}
 		return new Result(generatedPropertyPackage)
 	}
-	
+
+	protected def List<AsynchronousComponentInstance> getIncludedAsynchronousInstances(
+			ComponentInstanceReferences references, Component component) {
+		if (references === null) {
+			return #[]
+		}
+		return traceability.getNewAsynchronousSimpleInstances(references.include,
+			references.exclude, component)
+	}
+
 	protected def List<SynchronousComponentInstance> getIncludedSynchronousInstances(
 			ComponentInstanceReferences references, Component component) {
 		if (references === null) {

@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.iml.verification
 
 import hu.bme.mit.gamma.statechart.interface_.Package
-import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.ScannerLogger
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier
@@ -22,7 +21,11 @@ class ImlVerifier extends AbstractVerifier {
 	//
 	public static final String IMANDRA_TEMPORARY_COMMAND_FOLDER = ".imandra"
 	//
-	protected final static extension FileUtil fileUtil = FileUtil.INSTANCE
+	
+	new(Long timeout) {
+		super(timeout)
+	}
+	
 	//
 	
 	override verifyQuery(Object traceability, String parameters, File modelFile, File queryFile) {
@@ -58,7 +61,9 @@ class ImlVerifier extends AbstractVerifier {
 		
 		// "Old" Imandra API vs. ImandraX API
 		val serializedPython = ImlApiHelper.getBasicInvariantCall(parameters, modelString, command, commandlessQuery)
-//		val serializedPython = ImlApiHelper.getInvariantCall(modelString, command, commandlessQuery)
+//		val serializedPython = (timeoutSet) ?
+//				ImlApiHelper.getInvariantCall(modelString, command, commandlessQuery, timeout) :
+//				ImlApiHelper.getInvariantCall(modelString, command, commandlessQuery)
 		fileUtil.saveString(pythonFile, serializedPython)
 		
 		// python3 .\imandra-test.py

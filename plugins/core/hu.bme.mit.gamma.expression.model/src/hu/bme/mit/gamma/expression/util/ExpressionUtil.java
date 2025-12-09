@@ -307,10 +307,14 @@ public class ExpressionUtil {
 	}
 	
 	public Expression wrapIntoMultiply(Expression expression, long value) {
+		IntegerLiteralExpression integerLiteral = toIntegerLiteral(value);
+		return wrapIntoMultiply(expression, integerLiteral);
+	}
+	
+	public Expression wrapIntoMultiply(Expression lhs, Expression rhs) {
 		MultiplyExpression multiplyExpression = factory.createMultiplyExpression();
-		multiplyExpression.getOperands().add(expression);
-		multiplyExpression.getOperands().add(
-				toIntegerLiteral(value));
+		multiplyExpression.getOperands().add(lhs);
+		multiplyExpression.getOperands().add(rhs);
 		return multiplyExpression;
 	}
 
@@ -1420,6 +1424,23 @@ public class ExpressionUtil {
 		}
 		
 		return recordLiteral;
+	}
+	
+	public Expression createAnyEqualExpression(Declaration declaration, Collection<? extends Expression> expressions) {
+		return createAnyEqualExpression(
+				createReferenceExpression(declaration), expressions);
+	}
+	
+	public Expression createAnyEqualExpression(Expression expression, Collection<? extends Expression> expressions) {
+		List<Expression> equalityExpressions = new ArrayList<Expression>();
+		
+		for (Expression _expression : expressions) {
+			EqualityExpression equalityExpression = createEqualityExpression(
+					ecoreUtil.clone(expression), _expression);
+			equalityExpressions.add(equalityExpression);
+		}
+		
+		return wrapIntoOrExpression(equalityExpressions);
 	}
 	
 	public EqualityExpression createEqualityExpression(VariableDeclaration variable, Expression expression) {

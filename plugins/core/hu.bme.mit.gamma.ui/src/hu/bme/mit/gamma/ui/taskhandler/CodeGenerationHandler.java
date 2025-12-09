@@ -74,6 +74,7 @@ public class CodeGenerationHandler extends TaskHandler {
 	
 	protected void generateCCode(CodeGeneration codeGeneration) {
 		final Component component = codeGeneration.getComponent();
+		preprocessModel(component);
 		/* Gamma to XSTS transformation */
 		AnalysisModelTransformation transformation = GenmodelModelFactory.eINSTANCE.createAnalysisModelTransformation();
 		transformation.getLanguages().add(AnalysisLanguage.THETA);
@@ -138,7 +139,8 @@ public class CodeGenerationHandler extends TaskHandler {
 	protected void generateJavaCode(CodeGeneration codeGeneration) {
 		Resource codeGenerationResource = codeGeneration.eResource();
 		
-		Component component = codeGeneration.getComponent();
+		final Component component = codeGeneration.getComponent();
+		preprocessModel(component);
 		String componentName = component.getName();
 		if (component instanceof StatechartDefinition statechart) {
 			logger.info("Starting single statechart code generation: " + componentName);

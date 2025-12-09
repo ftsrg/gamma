@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VoidTypeDefinition
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import java.util.logging.Logger
 
 import static hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
 
@@ -33,11 +34,12 @@ class TypeTransformer {
 	// Auxiliary object
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
-	
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 	// Expression factory
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	// Trace needed for variable mappings
 	protected final Trace trace
+	//
 	
 	new(Trace trace) {
 		this.trace = trace
@@ -109,8 +111,14 @@ class TypeTransformer {
 		else {
 			// Transforming type declaration
 			val transformedTypeDeclaration = typeDeclaration.transformTypeDeclaration
-			val lowlevelPackage = trace.lowlevelPackage
-			lowlevelPackage.typeDeclarations += transformedTypeDeclaration
+			if (trace.hasLowlevelPackage) {
+				val lowlevelPackage = trace.lowlevelPackage
+				lowlevelPackage.typeDeclarations += transformedTypeDeclaration
+			}
+			else {
+				logger.warning("Package not found; created type declaration could not be stored: " + transformedTypeDeclaration.name)
+			}
+			
 			transformedTypeDeclaration
 		}
 		return lowlevelTypeDeclaration.createTypeReference

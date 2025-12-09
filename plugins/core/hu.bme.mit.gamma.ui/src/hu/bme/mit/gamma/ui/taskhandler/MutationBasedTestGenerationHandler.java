@@ -369,7 +369,7 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 		// Serializing and concretizing the generated traces
 		for (ExecutionTrace trace : generatedTraces) {
 			traceSerializer.serialize(traceFolderUri, traceFileName, null, testFolderUri,
-					testFileName, packageName, trace, file, programmingLanguage);
+					testFileName, null, packageName, trace, file, programmingLanguage);
 		}
 	}
 	

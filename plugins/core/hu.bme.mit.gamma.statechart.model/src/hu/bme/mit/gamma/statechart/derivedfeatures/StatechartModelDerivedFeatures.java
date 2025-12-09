@@ -153,7 +153,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		
 		// Explicit imports
 		for (Package importedPackage : StatechartModelDerivedFeatures.getComponentImports(_package)) {
-			types.addAll(importedPackage.getTypeDeclarations());
+			types.addAll(
+					importedPackage.getTypeDeclarations());
 		}
 		
 		// Native references in the case of unfolded packages
@@ -174,11 +175,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			TypeDeclaration typeDeclaration = reference.getReference();
 			types.add(typeDeclaration);
 			Type containedType = typeDeclaration.getType();
-			Type type = getTypeDefinition(containedType);
-			if (type instanceof RecordTypeDefinition recordType) {
-				Collection<TypeDeclaration> containedTypeDeclarations =
-						getAllTypeDeclarations(recordType);
-				types.addAll(containedTypeDeclarations);
+			try {
+				Type type = getTypeDefinition(containedType);
+				if (type instanceof RecordTypeDefinition recordType) {
+					types.addAll(
+							getAllTypeDeclarations(recordType));
+				}
+			} catch (IllegalArgumentException e) {
+				// LazyLinkingResource bug: 'type == null'
 			}
 		}
 		
@@ -433,6 +437,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static boolean hasAnnotation(StatechartDefinition statechart,
 			Class<? extends StatechartAnnotation> annotation) {
 		return statechart.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
+	}
+	
+	public static boolean hasAnnotation(State state, Class<? extends StateAnnotation> annotation) {
+		return state.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
+	}
+	
+	public static boolean hasAnnotation(Transition transition, Class<? extends TransitionAnnotation> annotation) {
+		return transition.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
 	}
 	
 	public static TimeUnit getSmallestTimeUnit(NamedElement element) {
@@ -3708,7 +3720,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static Collection<ComponentInstance> getReferencingComponentInstances(Component component) {
 		Package _package = getContainingPackage(component);
-		Collection<ComponentInstance> componentInstances = new HashSet<ComponentInstance>();
+		Collection<ComponentInstance> componentInstances = new LinkedHashSet<ComponentInstance>();
 		for (Component siblingComponent : _package.getComponents()) {
 			if (siblingComponent instanceof CompositeComponent compositeComponent) {
 				for (ComponentInstance componentInstance : getDerivedComponents(compositeComponent)) {
@@ -3741,6 +3753,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		ComponentInstance instance = getReferencingComponentInstance(component);
 		Component parentComponent = StatechartModelDerivedFeatures.getContainingComponent(instance);
 		return parentComponent;
+	}
+	
+	public static Component getTopParentComponent(Component component) {
+		if (isTop(component)) {
+			return component;
+		}
+		return getTopParentComponent(
+				getParentComponent(component));
 	}
 	
 	public static ComponentInstance getContainingComponentInstance(EObject object) {

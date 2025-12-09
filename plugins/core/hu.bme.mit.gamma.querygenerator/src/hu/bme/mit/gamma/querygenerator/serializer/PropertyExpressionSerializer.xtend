@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,20 +11,25 @@
 package hu.bme.mit.gamma.querygenerator.serializer
 
 import hu.bme.mit.gamma.expression.model.Expression
-import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.ImplyExpression
+import hu.bme.mit.gamma.expression.model.OpaqueExpression
+import hu.bme.mit.gamma.property.util.PropertyUtil
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 
+import static extension hu.bme.mit.gamma.xsts.transformation.util.QueueNamings.*
+
 abstract class PropertyExpressionSerializer extends ExpressionSerializer {
 	//
 	protected extension AbstractReferenceSerializer referenceSerializer
 	//
+	protected final extension PropertyUtil propertyUtil = PropertyUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	//
 	new(AbstractReferenceSerializer referenceSerializer) {
@@ -32,10 +37,7 @@ abstract class PropertyExpressionSerializer extends ExpressionSerializer {
 	}
 	
 	override String serialize(Expression expression) {
-		if (expression instanceof IfThenElseExpression) {
-			return expression.serializeIfThenElseExpression
-		}
-		else if (expression instanceof ComponentInstanceElementReferenceExpression) {
+		if (expression instanceof ComponentInstanceElementReferenceExpression) {
 			return expression.serializeStateExpression
 		}
 		return super.serialize(expression)
@@ -45,9 +47,7 @@ abstract class PropertyExpressionSerializer extends ExpressionSerializer {
 	
 	override _serialize(ImplyExpression expression) '''(!(«expression.leftOperand.serialize») || («expression.rightOperand.serialize»))'''
 	
-	protected def serializeIfThenElseExpression(IfThenElseExpression expression) {
-		return super.serialize(expression)
-	}
+	override _serialize(OpaqueExpression expression) '''«expression.expression»'''
 	
 	//
 	
@@ -81,6 +81,24 @@ abstract class PropertyExpressionSerializer extends ExpressionSerializer {
 		// Could be extended with in-events too
 		// TODO record?
 		return '''«event.getId(port, parameter, instance).head»'''
+	}
+	
+	protected def dispatch serializeStateExpression(ComponentInstanceQueueSizeReferenceExpression expression) {
+		val instance = expression.instance
+		val queue = expression.queue
+		val capacity = evaluator.evaluate(queue.capacity)
+		return (capacity > 1) ?
+			queue.getSizeId(instance) :
+			"(" + expression.get1CapacityQueueEmptyExpression
+					.createIfThenElseExpression(0.toIntegerLiteral, 1.toIntegerLiteral).serialize + ")"
+	}
+	
+	protected def get1CapacityQueueEmptyExpression(ComponentInstanceQueueSizeReferenceExpression expression) {
+		val instance = expression.instance
+		val queue = expression.queue
+		val queueName = queue.getId(instance)
+		return '''«queueName» == «queueName.getQueueTypeName».«emptyLiteralName»'''
+				.createOpaqueExpression
 	}
 	
 	//

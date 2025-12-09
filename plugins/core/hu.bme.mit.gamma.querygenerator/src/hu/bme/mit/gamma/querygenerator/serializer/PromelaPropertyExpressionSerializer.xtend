@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the Gamma project
+ * Copyright (c) 2022-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -13,7 +13,11 @@ package hu.bme.mit.gamma.querygenerator.serializer
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
-import hu.bme.mit.gamma.xsts.promela.transformation.util.Namings
+import hu.bme.mit.gamma.expression.model.ImplyExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeReferenceExpression
+
+import static extension hu.bme.mit.gamma.xsts.promela.transformation.util.Namings.*
+import static extension hu.bme.mit.gamma.xsts.transformation.util.QueueNamings.*
 
 class PromelaPropertyExpressionSerializer extends ThetaPropertyExpressionSerializer {
 	
@@ -23,15 +27,25 @@ class PromelaPropertyExpressionSerializer extends ThetaPropertyExpressionSeriali
 	
 	override String serialize(Expression expression) {
 		if (expression instanceof EnumerationLiteralExpression) {
-			return Namings.customizeEnumLiteralName(expression)
+			return expression.customizeEnumLiteralName
 		}
 		return super.serialize(expression)
 	}
 	
 	//
 	
-	override protected serializeIfThenElseExpression(IfThenElseExpression expression) {
-		return '''(«expression.condition.serialize» -> «expression.then.serialize» : «expression.^else.serialize»)'''
+	override String _serialize(IfThenElseExpression expression) '''((«expression.condition.serialize») -> («expression.then.serialize») : («expression.^else.serialize»))'''
+	
+	override String _serialize(ImplyExpression expression) '''(!(«expression.leftOperand.serialize») || «expression.rightOperand.serialize»)'''
+	
+	// Unique - do not delete!
+	
+	protected override get1CapacityQueueEmptyExpression(ComponentInstanceQueueSizeReferenceExpression expression) {
+		val instance = expression.instance
+		val queue = expression.queue
+		val queueName = queue.getId(instance)
+		return '''«queueName» == «queueName.getQueueTypeName.customizeEnumLiteralName(emptyLiteralName)»'''
+				.createOpaqueExpression
 	}
 	
 }

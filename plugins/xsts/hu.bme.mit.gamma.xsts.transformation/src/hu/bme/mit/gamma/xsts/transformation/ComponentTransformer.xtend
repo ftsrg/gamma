@@ -194,9 +194,9 @@ class ComponentTransformer {
 				
 				// Creating the event ID type with an EMPTY literal for master message queues
 				val eventIdType = createEnumerationTypeDefinition // To limit the possible values for message identifiers
-				eventIdType.literals += "EMPTY".createEnumerationLiteralDefinition
+				eventIdType.literals += emptyLiteralName.createEnumerationLiteralDefinition
 				val eventIdTypeDeclaration = eventIdType.createTypeDeclaration(
-						"EventIdTypeOf" + masterQueueName)
+						masterQueueName.queueTypeName)
 				//
 				
 				val evaluatedCapacity = queue.getCapacity(systemPorts)
@@ -1449,7 +1449,7 @@ class ComponentTransformer {
 			return true
 		}
 		checkState(systemPorts.containsNone(topPorts) || topPorts.forall[it.internal],
-			"All or none of the event references must be of system ports in " + queue.containingComponent.name + "' queue " + queue.name)
+			"All or none of the event references must be of system ports in " + queue.containingComponent.name + "'s queue " + queue.name)
 		return false
 	}
 	

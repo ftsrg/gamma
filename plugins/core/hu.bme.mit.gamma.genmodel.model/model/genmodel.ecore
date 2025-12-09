@@ -51,6 +51,8 @@
         defaultValueLiteral="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="optimizeEnvironmentalMessageQueues"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean" defaultValueLiteral="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="optimizeNondeterministicChoices"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean" defaultValueLiteral="false"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="constraint" eType="#//Constraint"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="model" lowerBound="1" eType="#//ModelReference"
@@ -118,6 +120,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="DeadlockCoverage" eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="NonDeterministicTransitionCoverage"
       eSuperTypes="#//Coverage"/>
+  <eClassifiers xsi:type="ecore:EClass" name="QueueOverflowCoverage" eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="TransitionCoverage" eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="StateCoverage" eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="Coverage" abstract="true">
@@ -185,6 +188,8 @@
   <eClassifiers xsi:type="ecore:EClass" name="AbstractComplementaryTestGeneration"
       abstract="true" eSuperTypes="#//AbstractCodeGeneration">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="testFolder" upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="testedFileName" upperBound="-1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AdaptiveContractTestGeneration" eSuperTypes="#//AbstractComplementaryTestGeneration">

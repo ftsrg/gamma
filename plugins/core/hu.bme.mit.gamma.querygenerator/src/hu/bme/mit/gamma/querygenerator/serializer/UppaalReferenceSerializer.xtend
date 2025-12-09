@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.querygenerator.serializer
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
@@ -57,6 +58,14 @@ class UppaalReferenceSerializer implements AbstractReferenceSerializer {
 			return #[getToRaiseValueOfName(event, port, parameter, instance)]
 		}
 		return #[getOutValueOfName(event, port, parameter, instance)]
+	}
+	
+	override getId(MessageQueue queue, ComponentInstanceReferenceExpression instance) {
+		throw new UnsupportedOperationException("Queues are not supported")
+	}
+	
+	override getSizeId(MessageQueue queue, ComponentInstanceReferenceExpression instance) {
+		throw new UnsupportedOperationException("Queues are not supported")
 	}
 	
 }

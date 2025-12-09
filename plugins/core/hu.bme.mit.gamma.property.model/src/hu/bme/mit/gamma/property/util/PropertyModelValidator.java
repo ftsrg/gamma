@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -24,6 +24,8 @@ import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.QuantifiedFormula;
 import hu.bme.mit.gamma.property.model.StateFormula;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
@@ -87,12 +89,21 @@ public class PropertyModelValidator extends StatechartModelValidator {
 		}
 		
 		ComponentInstance lastInstance = StatechartModelDerivedFeatures.getLastInstance(reference);
-		if (lastInstance != null && // Xtext parsing
-				!StatechartModelDerivedFeatures.isStatechart(lastInstance)) {
-			validationResultMessages.add(
-				new ValidationResultMessage(ValidationResult.ERROR, 
-					"The last component instance must have a statechart type", 
-						new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE)));
+		if (lastInstance != null) { // Xtext parsing
+			ComponentInstanceElementReferenceExpression container = ecoreUtil.getContainerOfType(reference, ComponentInstanceElementReferenceExpression.class);
+			boolean isQueueReference = container instanceof ComponentInstanceQueueSizeReferenceExpression;
+			if (!isQueueReference && !StatechartModelDerivedFeatures.isStatechart(lastInstance)) {
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR, 
+						"The last component instance must have a statechart type", 
+							new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE)));
+			}
+			else if (isQueueReference && !StatechartModelDerivedFeatures.isAdapter(lastInstance)) {
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR, 
+						"The last component instance must have an asynchronous adapter type", 
+							new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE)));
+			}
 		}
 		
 		return validationResultMessages;
