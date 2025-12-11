@@ -315,12 +315,17 @@ class SystemReducer {
 	//
 	
 	def void deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(XSTS xSts) {
-		xSts.deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(#[])
+		xSts.deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(#[], #[])
 	}
 	
 	def void deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(XSTS xSts,
-			Collection<? extends VariableDeclaration> keepableVariables) { // Unfolded Gamma variables
-		val keepableXStsVariables = xSts.nonInternalOutputVariables
+			Collection<? extends VariableDeclaration> keepableVariables, // Unfolded Gamma variables
+			Collection<? extends State> keepableStates) { // Unfolded Gamma states
+		val mapper = new ReferenceToXstsVariableMapper(xSts)
+		val keepableXStsVariables = newLinkedHashSet
+		
+		keepableXStsVariables += xSts.nonInternalOutputVariables
+		keepableXStsVariables += keepableStates.map[mapper.getRegionVariable(it.parentRegion)]
 		
 		xSts.deleteUnusedAndWrittenOnlyVariables(keepableVariables, keepableXStsVariables)
 	}
@@ -338,7 +343,7 @@ class SystemReducer {
 		// TODO Handle init action: There can be event transmission e.g., in state entry actions
 		
 		val xStsInputEventVariables = clonedXSts.inputVariables
-		logger.info("Transforming cloned XSTS to check the cone of influence of input events")
+		logger.info("Transforming cloned XSTS to check the cone of influence of input events; the following deletions will not affect the original XSTS...")
 		clonedXSts.deleteUnusedAndWrittenOnlyVariables
 		logger.info("Finished transforming the cloned XSTS")
 		
@@ -366,7 +371,7 @@ class SystemReducer {
 			// Value propagation - inline: XstsOptimizer has this and many other techniques
 			xSts.optimizeXSts
 			// Another deletion of unused variables
-			xSts.deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(keepableVariables)
+			xSts.deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(keepableVariables, #[])
 		}
 	}
 	
@@ -377,6 +382,15 @@ class SystemReducer {
 	def void deleteUnusedAndWrittenOnlyVariables(XSTS xSts,
 			Collection<? extends VariableDeclaration> keepableVariables) { // Unfolded Gamma variables
 		xSts.deleteUnusedAndWrittenOnlyVariables(keepableVariables, #[])
+	}
+	
+	def void deleteUnusedAndWrittenOnlyVariables2(XSTS xSts,
+			Collection<? extends VariableDeclaration> keepableVariables, // Unfolded Gamma variables
+			Collection<? extends State> keepableStates) { // Unfolded Gamma states
+		val mapper = new ReferenceToXstsVariableMapper(xSts)
+		xSts.deleteUnusedAndWrittenOnlyVariables(
+			keepableVariables,
+			keepableStates.map[mapper.getRegionVariable(it.parentRegion)].toList)
 	}
 	
 	def void deleteUnusedAndWrittenOnlyVariables(XSTS xSts,
@@ -504,7 +518,7 @@ class SystemReducer {
 		// Note that only writes are handled - reads are not, so the following can cause
 		// nullptr exceptions if the method call (parameters) is not correct
 		if (!xStsDeletableVariables.empty) {
-			logger.info("Deleting XSTS variables " + xStsDeletableVariables.map[it.name].join(", "))
+			logger.info("Deleting XSTS variables: " + xStsDeletableVariables.map[it.name].join(", "))
 		}
 		for (xStsDeletableVariable : xStsDeletableVariables) {
 			xStsDeletableVariable.deleteDeclaration // Delete needed due to e.g., transientVariables list
