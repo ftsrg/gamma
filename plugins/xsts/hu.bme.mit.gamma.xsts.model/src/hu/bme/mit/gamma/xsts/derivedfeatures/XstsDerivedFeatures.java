@@ -871,7 +871,7 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 			throw new IllegalArgumentException("Unhandled action type: " + action);
 		}
 	}
-
+	
 	public static Set<VariableDeclaration> getWrittenVariables(Action action) {
 		if (action instanceof AbstractAssignmentAction _action) {
 			return _getWrittenVariables(_action);
@@ -1069,17 +1069,22 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		EObject root = ecoreUtil.getRoot(variable);
 		List<AssignmentAction> assignmentActions = ecoreUtil.getSelfAndAllContentsOfType(
 				root, AssignmentAction.class);
+		List<VariableDeclarationAction> variableDeclarationActions = ecoreUtil.getSelfAndAllContentsOfType(
+				root, VariableDeclarationAction.class);
+		
+		List<Action> actions = new ArrayList<Action>(assignmentActions);
+		actions.addAll(variableDeclarationActions);
 		
 		int size = -1;
 		while (size != writtenVariables.size()) {
 			size = writtenVariables.size();
 			
-			for (AssignmentAction assignmentAction : assignmentActions) {
-				Set<VariableDeclaration> readVariables = getReadVariables(assignmentAction);
+			for (Action action : actions) {
+				Set<VariableDeclaration> readVariables = getReadVariables(action);
 				if (readVariables.contains(variable) ||
 						javaUtil.containsAny(readVariables, writtenVariables)) {
 					Set<VariableDeclaration> writtenVariablesOfAction =
-							getWrittenVariables(assignmentAction); // Only one
+							getWrittenAndLocalVariables(action); // Only one
 					
 					writtenVariables.addAll(writtenVariablesOfAction);
 				}
