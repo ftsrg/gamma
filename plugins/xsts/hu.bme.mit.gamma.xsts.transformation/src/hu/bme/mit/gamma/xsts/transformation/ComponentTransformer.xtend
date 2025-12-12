@@ -1142,7 +1142,7 @@ class ComponentTransformer {
 					.map[it.value.getInputEventVariables(it.key)].flatten.toList
 			
 			val randomActions = createChoiceActionForRandomValues(
-					messageQueue.name + "_" + messageQueue.hashCode.abs, min, max + 1 /* exclusive */)
+					messageQueue.name + "_" + messageQueue.hashCode.abs, min, max + 1 + 1 /* exclusive '1' + else branch '1' */)
 			val storageAction = randomActions.key
 			newInEventAction.actions += storageAction
 			val choiceAction = randomActions.value
@@ -1176,7 +1176,11 @@ class ComponentTransformer {
 					}
 				}
 			}
-			removableBranchActions.forEach[it.remove] // Removing now - it would break the indexes in the loop
+			// Else branch (no valid input to/from the queue)
+			branchActions.last.appendToAction(
+					allXStsInputEventVariables.createVariableResetActions)
+			// Removing branches now - it would break the indexes in the loop
+			removableBranchActions.forEach[it.remove]
 			
 			// Note that if the sync component has no port, the event transmission is not mapped
 			
