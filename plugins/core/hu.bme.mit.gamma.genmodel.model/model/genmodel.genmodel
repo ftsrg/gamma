@@ -116,6 +116,7 @@
     <genClasses ecoreClass="genmodel.ecore#//UnstableStateCoverage"/>
     <genClasses ecoreClass="genmodel.ecore#//TrapStateCoverage"/>
     <genClasses ecoreClass="genmodel.ecore#//DeadlockCoverage"/>
+    <genClasses ecoreClass="genmodel.ecore#//CompletenessCoverage"/>
     <genClasses ecoreClass="genmodel.ecore#//NonDeterministicTransitionCoverage"/>
     <genClasses ecoreClass="genmodel.ecore#//QueueOverflowCoverage"/>
     <genClasses ecoreClass="genmodel.ecore#//TransitionCoverage"/>

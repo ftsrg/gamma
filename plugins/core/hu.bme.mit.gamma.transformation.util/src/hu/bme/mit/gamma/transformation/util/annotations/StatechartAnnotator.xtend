@@ -38,6 +38,7 @@ import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
+import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.transformation.util.queries.InteractionCUses
 import hu.bme.mit.gamma.transformation.util.queries.InteractionPUses
@@ -68,11 +69,17 @@ class StatechartAnnotator {
 	protected final Package gammaPackage
 	protected final ViatraQueryEngine engine
 	
-	// Transition coverage
+	// Deadlock coverage
 	protected boolean DEADLOCK_COVERAGE
 	protected final Set<SynchronousComponentInstance> deadlockCoverableComponents = newHashSet
 	protected final Set<Transition> coverableDeadlockTransitions = newHashSet
 	protected final Map<Transition, VariableDeclaration> deadlockTransitionVariables = newHashMap // Boolean variables
+	
+	// Completeness coverage
+	protected boolean COMPLETENESS_COVERAGE
+	protected final Set<SynchronousComponentInstance> completenessCoverableComponents = newHashSet
+	protected final Set<State> coverableCompletenessStates = newHashSet
+	protected final Map<Transition, VariableDeclaration> completenessTransitionVariables = newHashMap // Boolean variables
 	
 	// Nondeterministic transition coverage
 	protected boolean NONDETERMINISTIC_TRANSITION_COVERAGE
@@ -165,6 +172,13 @@ class StatechartAnnotator {
 					.map[it.type].filter(StatechartDefinition)
 					.map[it.transitions].flatten.filter[it.sourceState.state]
 		}
+		if (!annotableElements.completenessCoverableComponents.empty) {
+			this.COMPLETENESS_COVERAGE = true
+			this.completenessCoverableComponents += annotableElements.completenessCoverableComponents
+			this.coverableCompletenessStates += completenessCoverableComponents
+					.map[it.type].filter(StatechartDefinition)
+					.map[it.allStates].flatten
+		}
 		if (!annotableElements.nondeterministicTransitionCoverableComponents.empty) {
 			this.NONDETERMINISTIC_TRANSITION_COVERAGE = true
 			this.nondeterministicTransitionCoverableComponents += annotableElements.nondeterministicTransitionCoverableComponents
@@ -212,6 +226,7 @@ class StatechartAnnotator {
 	
 	def annotateModel() {
 		annotateModelForDeadlockCoverage
+		annotateModelForCompletenessCoverage
 		annotateModelForNondeterministicTransitionCoverage
 		annotateModelForTransitionCoverage
 		annotateModelForTransitionPairCoverage
@@ -234,6 +249,36 @@ class StatechartAnnotator {
 	
 	def getDeadlockTransitionVariables() {
 		return new TransitionAnnotations(this.deadlockTransitionVariables)
+	}
+	
+	// Completeness coverage
+	
+	def annotateModelForCompletenessCoverage() {
+		if (!COMPLETENESS_COVERAGE) {
+			return
+		}
+		for (state : coverableCompletenessStates) {
+			val statechart = state.containingStatechart
+			statechart.transitionPriority = TransitionPriority.ORDER_BASED // Sound?
+			
+			val inputs = statechart.portInputEvents
+			for (input : inputs) {
+				val port = input.key
+				val event = input.value
+				
+				val transition = state.createLoopTransition
+				transition.trigger = port.createEventTrigger(event)
+				
+				val variable = transition.createTransitionVariable(completenessTransitionVariables)
+				transition.effects += variable.createAssignment(createTrueExpression)
+				
+				completenessTransitionVariables += transition -> variable
+			}
+		}
+	}
+	
+	def getCompletenessTransitionVariables() {
+		return new TransitionAnnotations(this.completenessTransitionVariables)
 	}
 	
 	// Nondeterministic transition coverage

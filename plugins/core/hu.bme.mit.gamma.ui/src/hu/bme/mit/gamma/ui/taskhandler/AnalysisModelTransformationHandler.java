@@ -33,6 +33,7 @@ import hu.bme.mit.gamma.expression.model.OpaqueExpression;
 import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
+import hu.bme.mit.gamma.genmodel.model.CompletenessCoverage;
 import hu.bme.mit.gamma.genmodel.model.ComponentReference;
 import hu.bme.mit.gamma.genmodel.model.Coverage;
 import hu.bme.mit.gamma.genmodel.model.DataflowCoverage;
@@ -412,6 +413,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					coverages, TrapStateCoverage.class);
 			ComponentInstanceReferences testedComponentsForDeadlock = getCoverageInstances(
 					coverages, DeadlockCoverage.class);
+			ComponentInstanceReferences testedComponentsForCompleteness = getCoverageInstances(
+					coverages, CompletenessCoverage.class);
 			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
 					coverages, NonDeterministicTransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForQueueOverflow = getCoverageInstances(
@@ -446,6 +449,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 						testedComponentsForUnstableStates,
 						testedComponentsForTrapStates,
 						testedComponentsForDeadlock,
+						testedComponentsForCompleteness,
 						testedComponentsForNondeterministicTransitions,
 						testedComponentsForQueueOverflow,
 						testedComponentsForTransitions,
@@ -535,6 +539,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					coverages, TrapStateCoverage.class);
 			ComponentInstanceReferences testedComponentsForDeadlock = getCoverageInstances(
 					coverages, DeadlockCoverage.class);
+			ComponentInstanceReferences testedComponentsForCompleteness = getCoverageInstances(
+					coverages, CompletenessCoverage.class);
 			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
 					coverages, NonDeterministicTransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForQueueOverflow = getCoverageInstances(
@@ -578,6 +584,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 						testedComponentsForUnstableStates,
 						testedComponentsForTrapStates,
 						testedComponentsForDeadlock,
+						testedComponentsForCompleteness,
 						testedComponentsForNondeterministicTransitions,
 						testedComponentsForQueueOverflow,
 						testedComponentsForTransitions,
@@ -657,6 +664,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					coverages, TrapStateCoverage.class);
 			ComponentInstanceReferences testedComponentsForDeadlock = getCoverageInstances(
 					coverages, DeadlockCoverage.class);
+			ComponentInstanceReferences testedComponentsForCompleteness = getCoverageInstances(
+					coverages, CompletenessCoverage.class);
 			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
 					coverages, NonDeterministicTransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForQueueOverflow = getCoverageInstances(
@@ -695,6 +704,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 						testedComponentsForUnstableStates,
 						testedComponentsForTrapStates,
 						testedComponentsForDeadlock,
+						testedComponentsForCompleteness,
 						testedComponentsForNondeterministicTransitions,
 						testedComponentsForQueueOverflow,
 						testedComponentsForTransitions,
@@ -745,6 +755,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					coverages, TrapStateCoverage.class);
 			ComponentInstanceReferences testedComponentsForDeadlock = getCoverageInstances(
 					coverages, DeadlockCoverage.class);
+			ComponentInstanceReferences testedComponentsForCompleteness = getCoverageInstances(
+					coverages, CompletenessCoverage.class);
 			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
 					coverages, NonDeterministicTransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForQueueOverflow = getCoverageInstances(
@@ -783,6 +795,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 						testedComponentsForUnstableStates,
 						testedComponentsForTrapStates,
 						testedComponentsForDeadlock,
+						testedComponentsForCompleteness,
 						testedComponentsForNondeterministicTransitions,
 						testedComponentsForQueueOverflow,
 						testedComponentsForTransitions,
@@ -832,6 +845,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					coverages, TrapStateCoverage.class);
 			ComponentInstanceReferences testedComponentsForDeadlock = getCoverageInstances(
 					coverages, DeadlockCoverage.class);
+			ComponentInstanceReferences testedComponentsForCompleteness = getCoverageInstances(
+					coverages, CompletenessCoverage.class);
 			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
 					coverages, NonDeterministicTransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForQueueOverflow = getCoverageInstances(
@@ -870,6 +885,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 						testedComponentsForUnstableStates,
 						testedComponentsForTrapStates,
 						testedComponentsForDeadlock,
+						testedComponentsForCompleteness,
 						testedComponentsForNondeterministicTransitions,
 						testedComponentsForQueueOverflow,
 						testedComponentsForTransitions,
@@ -967,6 +983,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					coverages, TrapStateCoverage.class);
 			ComponentInstanceReferences testedComponentsForDeadlock = getCoverageInstances(
 					coverages, DeadlockCoverage.class);
+			ComponentInstanceReferences testedComponentsForCompleteness = getCoverageInstances(
+					coverages, CompletenessCoverage.class);
 			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
 					coverages, NonDeterministicTransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForQueueOverflow = getCoverageInstances(
@@ -1011,6 +1029,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 						testedComponentsForUnstableStates,
 						testedComponentsForTrapStates,
 						testedComponentsForDeadlock,
+						testedComponentsForCompleteness,
 						testedComponentsForNondeterministicTransitions,
 						testedComponentsForQueueOverflow,
 						testedComponentsForTransitions,

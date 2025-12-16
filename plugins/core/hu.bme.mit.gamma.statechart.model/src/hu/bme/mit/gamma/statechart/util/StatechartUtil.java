@@ -940,6 +940,10 @@ public class StatechartUtil extends ActionUtil {
 		return transition;
 	}
 	
+	public Transition createLoopTransition(StateNode stateNode) {
+		return createTransition(stateNode, stateNode);
+	}
+	
 	public Transition createDefaultTransition(Collection<? extends Transition> transitions) {
 		Expression guard = createDefaultGuard(transitions);
 		

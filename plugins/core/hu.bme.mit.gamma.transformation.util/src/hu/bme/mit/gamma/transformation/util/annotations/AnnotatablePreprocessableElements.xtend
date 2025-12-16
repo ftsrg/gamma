@@ -23,6 +23,8 @@ class AnnotatablePreprocessableElements {
 	
 	ComponentInstanceReferences testedComponentsForDeadlock
 	
+	ComponentInstanceReferences testedComponentsForCompleteness
+	
 	ComponentInstanceReferences testedComponentsForNondeterministicTransitions
 	
 	ComponentInstanceReferences testedComponentsForQueueOverflow
@@ -47,7 +49,7 @@ class AnnotatablePreprocessableElements {
 	
 	new() {
 		// If only a placeholder is needed, this constructor can be used
-		this(null, null, null, null, null, null, null, null, null, null, null, null,
+		this(null, null, null, null, null, null, null, null, null, null, null, null, null,
 				null, null, null, null)
 	}
 
@@ -55,6 +57,7 @@ class AnnotatablePreprocessableElements {
 			ComponentInstanceReferences testedComponentsForUnstableStates,
 			ComponentInstanceReferences testedComponentsForTrapStates,
 			ComponentInstanceReferences testedComponentsForDeadlock,
+			ComponentInstanceReferences testedComponentsForCompleteness,
 			ComponentInstanceReferences testedComponentsForNondeterministicTransitions,
 			ComponentInstanceReferences testedComponentsForQueueOverflow,
 			ComponentInstanceReferences testedComponentsForTransitions,
@@ -67,6 +70,7 @@ class AnnotatablePreprocessableElements {
 		this.testedComponentsForUnstableStates = testedComponentsForUnstableStates
 		this.testedComponentsForTrapStates = testedComponentsForTrapStates
 		this.testedComponentsForDeadlock = testedComponentsForDeadlock
+		this.testedComponentsForCompleteness = testedComponentsForCompleteness
 		this.testedComponentsForNondeterministicTransitions = testedComponentsForNondeterministicTransitions
 		this.testedComponentsForQueueOverflow = testedComponentsForQueueOverflow
 		this.testedComponentsForTransitions = testedComponentsForTransitions
