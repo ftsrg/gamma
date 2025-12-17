@@ -72,7 +72,7 @@ class CompletenessCheckPostprocessor extends StateCheckPostprocessor {
 	//
 	
 	def getUnhandledEvents() {
-		val unhandledEvents = newLinkedHashSet
+		val unhandledEvents = newLinkedHashMap
 		
 		for (var i = 0; i < states.size; i++) {
 			val state = states.get(i)
