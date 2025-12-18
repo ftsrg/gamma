@@ -29,3 +29,5 @@
 !/model/RIS/SystemGlobalQueue/RigelSystem.gpd
 !/model/RIS/SystemLocalQueue/RigelSystem.gpd
 !/model/TrafficLight/System/TrafficLightWrapper-LTL.gpd
+!/model/PIL/System/Vaganyut/Cascade/Vaganyut.gpd
+!/model/PIL/System/Vaganyut/Synchronous/Vaganyut.gpd
