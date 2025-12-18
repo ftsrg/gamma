@@ -7,8 +7,9 @@ code {
 
 analysis {
 	component : Vaganyut
-	language : UPPAAL
-	language : Theta
+//	language : UPPAAL
+//	language : Theta
+	language : nuXmv
 }
 
 // Due to the fixing of region optimization
@@ -19,9 +20,16 @@ analysis {
 //	test-language : java
 //}
 
+//verification {
+//	language : Theta
+//	file : "Vaganyut.xsts"
+//	query-file : "CustomQueries.prop"
+//	test-language : java
+//}
+
 verification {
-	language : Theta
-	file : "Vaganyut.xsts"
-	query-file : "CustomQueries.prop"
+	language : nuXmv
+	file : "Vaganyut.smv"
+	property-file : "Vaganyut.gpd"
 	test-language : java
 }
