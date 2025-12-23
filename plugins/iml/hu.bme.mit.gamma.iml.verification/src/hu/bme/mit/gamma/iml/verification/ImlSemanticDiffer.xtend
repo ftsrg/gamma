@@ -298,9 +298,9 @@ abstract class ImlSemanticDiffer {
 				}
 				case SemanticDiffAdapter.CONSTRAINTS:
 					currentBuilder = constraints
-				case SemanticDiffAdapter.O_INVARIANT:
-					currentBuilder = invariants
-				case SemanticDiffAdapter.V_INVARIANT:
+				case SemanticDiffAdapter.O_INVARIANT,
+				case SemanticDiffAdapter.V_INVARIANT,
+				case SemanticDiffAdapter.INVARIANT:
 					currentBuilder = invariants
 				default:
 					currentBuilder.append(string + ";")
