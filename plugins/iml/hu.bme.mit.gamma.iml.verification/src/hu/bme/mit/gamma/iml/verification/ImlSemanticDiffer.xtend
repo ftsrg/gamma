@@ -44,6 +44,7 @@ abstract class ImlSemanticDiffer {
 	//
 	protected static final String INVARIANT_DELIM = " " + ImlApiHelper.CONSTRAINT_DELIM + System.lineSeparator
 	//
+	protected final boolean printDiff
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
@@ -51,6 +52,14 @@ abstract class ImlSemanticDiffer {
 	protected final StatechartEcoreUtil statechartEcoreUtil = StatechartEcoreUtil.INSTANCE
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//
+	
+	new() {
+		this(false)
+	}
+	
+	new(boolean printDiff) {
+		this.printDiff = printDiff
+	}
 	
 	abstract def ExecutionTrace execute(Object traceability, File modelFile, File modelFile2)
 	
@@ -109,7 +118,9 @@ abstract class ImlSemanticDiffer {
 			val diffAdapter = new SemanticDiffAdapter
 			val diffTrace = diffAdapter.execute(diff)
 //			val diffTrace = diffAdapter.exampleDiff // Test
-			println(diffTrace)
+			if (printDiff) {
+				println(diffTrace)
+			}
 			
 			val gammaPackage = traceability as Package
 			val scanner = new Scanner(diffTrace)
@@ -126,7 +137,7 @@ abstract class ImlSemanticDiffer {
 			if (statechartEcoreUtil.existsOriginalComponent(unfoldedComponent)) {
 				val originalComponent = statechartEcoreUtil.loadAndReplaceToOriginalComponent(unfoldedComponent)
 				if (!originalComponent.statechart) {
-					val backAnnotator = new UnfoldedExecutionTraceBackAnnotator(trace, originalComponent)
+					val backAnnotator = new UnfoldedExecutionTraceBackAnnotator(trace, originalComponent, false)
 					val orignalTrace = backAnnotator.execute
 					return orignalTrace
 				}
@@ -150,6 +161,9 @@ abstract class ImlSemanticDiffer {
 			if (assertion instanceof OpaqueExpression) {
 				if (assertion.expression == SemanticDiffAdapter.V_INVARIANT) {
 					assertion.remove
+				}
+				else if (assertion.expression == SemanticDiffAdapter.O_INVARIANT) {
+					assertion.expression = SemanticDiffAdapter.INVARIANT
 				}
 			}
 		}
@@ -911,6 +925,7 @@ abstract class ImlSemanticDiffer {
 		protected static final String CONSTRAINTS = "- Constraints:"
 		protected static final String O_INVARIANT = "- Original invariant:"
 		protected static final String V_INVARIANT = "- New invariant:"
+		protected static final String INVARIANT = "- Invariant:" // For plain region decomp
 		
 		//
 		protected final String REC = "r"
