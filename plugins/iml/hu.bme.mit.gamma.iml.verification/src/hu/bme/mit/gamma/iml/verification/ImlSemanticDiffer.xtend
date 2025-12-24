@@ -284,6 +284,7 @@ abstract class ImlSemanticDiffer {
 		
 		val constraints = new StringBuilder
 		val invariants = new StringBuilder
+		val newInvariants = new StringBuilder
 		
 		var currentBuilder = constraints
 		
@@ -292,22 +293,24 @@ abstract class ImlSemanticDiffer {
 					.deleteAll("\"")
 			switch (string) {
 				case string.startsWith(SemanticDiffAdapter.REGION): {
-					regions += Region.of(constraints.toString, invariants.toString)
+					regions += Region2.of(constraints.toString, invariants.toString, newInvariants.toString)
 					constraints.length = 0
 					invariants.length = 0
+					newInvariants.length = 0
 				}
 				case SemanticDiffAdapter.CONSTRAINTS:
 					currentBuilder = constraints
 				case SemanticDiffAdapter.O_INVARIANT,
-				case SemanticDiffAdapter.V_INVARIANT,
 				case SemanticDiffAdapter.INVARIANT:
 					currentBuilder = invariants
+				case SemanticDiffAdapter.V_INVARIANT:
+					currentBuilder = newInvariants
 				default:
 					currentBuilder.append(string + ";")
 			}
 		}
 		regions.removeFirstElement // Empty region
-		regions += Region.of(constraints.toString, invariants.toString) // Last region
+		regions += Region2.of(constraints.toString, invariants.toString, newInvariants.toString) // Last region
 		
 		return regions
 	}
@@ -622,8 +625,8 @@ abstract class ImlSemanticDiffer {
 	
 	static class Region {
 		//
-		String constraints
-		String invariant
+		protected String constraints
+		protected String invariant
 		//
 		new(String constraints, String invariant) {
 			this.constraints = constraints.trimLine.sort // We use this as key in one of the subclasses; must be sorted: 'canonical' representation
@@ -698,6 +701,31 @@ abstract class ImlSemanticDiffer {
 			sortable.sortInplace
 			val result = sortable.join(ImlApiHelper.CONSTRAINT_DELIM)
 			return result
+		}
+		
+	}
+	
+	static class Region2 extends Region {
+		//
+		protected String invariant2
+		//
+		new(String constraints, String invariant, String invariant2) {
+			super(constraints, invariant)
+			this.invariant2 = invariant2.trimLine.changeTopmostSemicolons
+		}
+		
+		def static of(String constraints, String invariant, String invariant2) {
+			if (invariant2.nullOrEmpty) {
+				return of(constraints, invariant)
+			}
+			val region2 = new Region2(constraints, invariant, invariant2)
+			region2.invariant = invariant
+			region2.invariant2 = invariant2
+			return region2
+		}
+		
+		def getInvariant2() {
+			return invariant2
 		}
 		
 	}
