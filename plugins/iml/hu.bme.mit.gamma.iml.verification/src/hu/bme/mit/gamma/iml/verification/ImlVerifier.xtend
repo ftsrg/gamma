@@ -132,8 +132,8 @@ class ImlVerifier extends AbstractVerifier {
 	}
 	
 	override getUnavailableBackendMessage() {
-		return "The command line tool of Imandra ('Imandra') cannot be found. " +
-				"Imandra can be downloaded from 'https://www.imandra.ai/'. "
+		return "The Imandra Python API is unavailable; see installation instructions at " +
+				"'https://github.com/ftsrg/gamma/tree/dev/plugins/iml#setup'"
 	}
 	
 }
