@@ -70,6 +70,7 @@ import hu.bme.mit.gamma.expression.model.SubtractExpression;
 import hu.bme.mit.gamma.expression.model.TrueExpression;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression;
+import hu.bme.mit.gamma.expression.model.UnaryPlusExpression;
 import hu.bme.mit.gamma.expression.model.XorExpression;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
@@ -145,6 +146,12 @@ public class ExpressionEvaluator {
 		}
 		if (expression instanceof IntegerLiteralExpression integerLiteralExpression) {
 			return integerLiteralExpression.getValue().intValue();
+		}
+		if (expression instanceof UnaryMinusExpression minusExpression) {
+			return -1 * evaluateInteger(minusExpression.getOperand());
+		}
+		if (expression instanceof UnaryPlusExpression plusExpression) {
+			return evaluateInteger(plusExpression.getOperand());
 		}
 		if (expression instanceof EnumerationLiteralExpression enumerationLiteralExpression) {
 			EnumerationLiteralDefinition enumLiteral = enumerationLiteralExpression.getReference();
@@ -311,6 +318,12 @@ public class ExpressionEvaluator {
 		if (expression instanceof RationalLiteralExpression rationalLiteralExpression) {
 			return rationalLiteralExpression.getNumerator().doubleValue() /
 					rationalLiteralExpression.getDenominator().doubleValue();
+		}
+		if (expression instanceof UnaryMinusExpression minusExpression) {
+			return -1 * evaluateDecimal(minusExpression.getOperand());
+		}
+		if (expression instanceof UnaryPlusExpression plusExpression) {
+			return evaluateDecimal(plusExpression.getOperand());
 		}
 		if (expression instanceof EnumerationLiteralExpression literalExpression) {
 			EnumerationLiteralDefinition enumLiteral = literalExpression.getReference();

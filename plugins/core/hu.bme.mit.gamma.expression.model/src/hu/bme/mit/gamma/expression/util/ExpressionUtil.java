@@ -1019,6 +1019,30 @@ public class ExpressionUtil {
 		return toIntegerLiteral(1);
 	}
 	
+	public LiteralExpression createLiteralZero(Type type) {
+		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
+		if (typeDefinition instanceof IntegerTypeDefinition) {
+			return createLiteralZero();
+		}
+		if (typeDefinition instanceof RationalTypeDefinition ||
+				typeDefinition instanceof DecimalTypeDefinition) {
+			return toDecimalLiteral(0);
+		}
+		throw new IllegalArgumentException("Unkown type: " + type);
+	}
+	
+	public LiteralExpression createLiteralOne(Type type) {
+		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
+		if (typeDefinition instanceof IntegerTypeDefinition) {
+			return createLiteralOne();
+		}
+		if (typeDefinition instanceof RationalTypeDefinition ||
+				typeDefinition instanceof DecimalTypeDefinition) {
+			return toDecimalLiteral(1);
+		}
+		throw new IllegalArgumentException("Unkown type: " + type);
+	}
+	
 	public EnumerationLiteralDefinition createEnumerationLiteralDefinition(String name) {
 		EnumerationLiteralDefinition literal = factory.createEnumerationLiteralDefinition();
 		literal.setName(name);
