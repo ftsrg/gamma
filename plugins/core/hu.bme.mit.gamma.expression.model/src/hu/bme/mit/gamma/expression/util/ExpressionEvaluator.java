@@ -425,7 +425,7 @@ public class ExpressionEvaluator {
 					ifThenElseExpression.getElse());
 		}
 		throw new IllegalArgumentException("Not transformable expression: " + expression);
-	} 
+	}
 	
 	// Booleans
 	public boolean evaluateBoolean(Expression expression) {
@@ -535,14 +535,14 @@ public class ExpressionEvaluator {
 							right instanceof EnumerationLiteralExpression) {
 						return leftEqualsRight;
 					}
-					return evaluate(left) == evaluate(right);
+					return evaluateDouble(left) == evaluateDouble(right);
 				}
 				if (expression instanceof InequalityExpression) {
 					if (left instanceof EnumerationLiteralExpression &&
 							right instanceof EnumerationLiteralExpression) {
 						return !leftEqualsRight;
 					}
-					return evaluate(left) != evaluate(right);
+					return evaluateDouble(left) != evaluateDouble(right);
 				}
 			}
 			if (expression instanceof LessExpression) {
@@ -551,7 +551,7 @@ public class ExpressionEvaluator {
 					return false;
 				}
 				
-				return evaluate(left) < evaluate(right);
+				return evaluateDouble(left) < evaluateDouble(right);
 			}
 			if (expression instanceof LessEqualExpression) {
 				// Potential optimization trick
@@ -559,7 +559,7 @@ public class ExpressionEvaluator {
 					return true;
 				}
 				
-				return evaluate(left) <= evaluate(right);
+				return evaluateDouble(left) <= evaluateDouble(right);
 			}
 			if (expression instanceof GreaterExpression) {
 				// Potential optimization trick
@@ -567,7 +567,7 @@ public class ExpressionEvaluator {
 					return false;
 				}
 				
-				return evaluate(left) > evaluate(right);
+				return evaluateDouble(left) > evaluateDouble(right);
 			}
 			if (expression instanceof GreaterEqualExpression) {
 				// Potential optimization trick
@@ -575,7 +575,7 @@ public class ExpressionEvaluator {
 					return true;
 				}
 				
-				return evaluate(left) >= evaluate(right);
+				return evaluateDouble(left) >= evaluateDouble(right);
 			}
 		}
 		if (expression instanceof DirectReferenceExpression referenceExpression) {
