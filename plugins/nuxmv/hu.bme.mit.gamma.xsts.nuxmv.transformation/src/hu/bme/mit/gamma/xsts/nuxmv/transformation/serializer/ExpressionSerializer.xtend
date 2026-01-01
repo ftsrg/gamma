@@ -75,8 +75,8 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 		val smvArrayLiteral = new StringBuilder
 		smvArrayLiteral.append('''CONSTARRAY(«smvType», «smvDefaultValue»)''')
 		
-		val evaluatedDefaultExpression = defaultExpression.evaluate
-		if (operands.forall[it.helperEquals(defaultExpression) || it.isEvaluable && it.evaluate == evaluatedDefaultExpression]) {
+		val evaluatedDefaultExpression = defaultExpression.evaluateDouble
+		if (operands.forall[it.helperEquals(defaultExpression) || it.evaluable && it.evaluateDouble == evaluatedDefaultExpression]) {
 			return smvArrayLiteral.toString // No need for WRITE commands
 		}
 		

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -88,6 +88,7 @@ import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
+import hu.bme.mit.gamma.expression.model.UnaryMinusExpression;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclarationAnnotation;
@@ -280,17 +281,19 @@ public class ExpressionUtil {
 		return opaqueExpression;
 	}
 	
-	public Expression createIncrementExpression(VariableDeclaration variable) {
-		return wrapIntoAdd(
-				createReferenceExpression(variable), 1);
+	public Expression createIncrementExpression(Declaration variable) {
+		Expression _1 = createLiteralOne(variable.getType());
+		return wrapIntoAddExpression(
+				createReferenceExpression(variable), _1);
 	}
 
-	public Expression createDecrementExpression(VariableDeclaration variable) {
-		return wrapIntoSubtract(
-				createReferenceExpression(variable), 1);
+	public Expression createDecrementExpression(Declaration variable) {
+		Expression _1 = createLiteralOne(variable.getType());
+		return createSubtractExpression(
+				createReferenceExpression(variable), _1);
 	}
 	
-	public Expression wrapIntoAdd(Expression expression, int value) {
+	public Expression wrapIntoAdd(Expression expression, long value) {
 		AddExpression addExpression = factory.createAddExpression();
 		addExpression.getOperands().add(expression);
 		addExpression.getOperands().add(
@@ -298,7 +301,7 @@ public class ExpressionUtil {
 		return addExpression;
 	}
 	
-	public Expression wrapIntoSubtract(Expression expression, int value) {
+	public Expression wrapIntoSubtract(Expression expression, long value) {
 		SubtractExpression subtractExpression = factory.createSubtractExpression();
 		subtractExpression.setLeftOperand(expression);
 		subtractExpression.setRightOperand(
@@ -1028,6 +1031,10 @@ public class ExpressionUtil {
 				typeDefinition instanceof DecimalTypeDefinition) {
 			return toDecimalLiteral(0);
 		}
+		if (typeDefinition instanceof ArrayTypeDefinition arrayTypeDefinition) {
+			Type elementType = arrayTypeDefinition.getElementType();
+			return createLiteralZero(elementType);
+		}
 		throw new IllegalArgumentException("Unkown type: " + type);
 	}
 	
@@ -1039,6 +1046,10 @@ public class ExpressionUtil {
 		if (typeDefinition instanceof RationalTypeDefinition ||
 				typeDefinition instanceof DecimalTypeDefinition) {
 			return toDecimalLiteral(1);
+		}
+		if (typeDefinition instanceof ArrayTypeDefinition arrayTypeDefinition) {
+			Type elementType = arrayTypeDefinition.getElementType();
+			return createLiteralOne(elementType);
 		}
 		throw new IllegalArgumentException("Unkown type: " + type);
 	}
@@ -1533,13 +1544,26 @@ public class ExpressionUtil {
 	}
 	
 	public IfThenElseExpression createMinExpression(Expression lhs, Expression rhs) {
-		return createIfThenElseExpression(createLessExpression(lhs, rhs),
+		return createIfThenElseExpression(
+			createLessExpression(lhs, rhs),
 				ecoreUtil.clone(lhs), ecoreUtil.clone(rhs));
 	}
 	
 	public IfThenElseExpression createMaxExpression(Expression lhs, Expression rhs) {
-		return createIfThenElseExpression(createLessExpression(lhs, rhs),
+		return createIfThenElseExpression(
+			createLessExpression(lhs, rhs),
 				ecoreUtil.clone(rhs), ecoreUtil.clone(lhs));
+	}
+	
+	public IfThenElseExpression createAbsExpression(Expression operand) {
+		Type type = typeDeterminator.getType(operand);
+		UnaryMinusExpression minus = factory.createUnaryMinusExpression();
+		minus.setOperand(
+				ecoreUtil.clone(operand));
+		Expression _0 = createLiteralZero(type);
+		return createIfThenElseExpression(
+			createLessExpression(operand, _0),
+				minus, ecoreUtil.clone(operand));
 	}
 	
 	public EnumerationLiteralExpression createEnumerationLiteralExpression(
@@ -1550,6 +1574,13 @@ public class ExpressionUtil {
 		TypeReference typeReference = createTypeReference(typeDeclaration);
 		literalExpression.setTypeReference(typeReference);
 		return literalExpression;
+	}
+	
+	public SubtractExpression createSubtractExpression(Expression lhs, Expression rhs) {
+		SubtractExpression subtractExpression = factory.createSubtractExpression();
+		subtractExpression.setLeftOperand(lhs);
+		subtractExpression.setRightOperand(rhs);
+		return subtractExpression;
 	}
 	
 	public Expression createDefaultExpression(Collection<? extends Expression> expressions) {
