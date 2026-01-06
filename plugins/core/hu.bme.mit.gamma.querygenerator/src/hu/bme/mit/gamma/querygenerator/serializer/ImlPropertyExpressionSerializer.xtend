@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024-2025 Contributors to the Gamma project
+ * Copyright (c) 2024-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -36,7 +36,6 @@ import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.LessEqualExpression
 import hu.bme.mit.gamma.expression.model.LessExpression
-import hu.bme.mit.gamma.expression.model.LiteralExpression
 import hu.bme.mit.gamma.expression.model.MultiplyExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
 import hu.bme.mit.gamma.expression.model.NullaryExpression
@@ -83,7 +82,7 @@ class ImlPropertyExpressionSerializer extends ThetaPropertyExpressionSerializer 
 	
 	override String _serialize(DivideExpression expression) { expression.adjustArithmeticExpression("/") }
 	
-	override String _serialize(DivExpression expression) { expression.adjustArithmeticExpression("/") }
+	override String _serialize(DivExpression expression) { expression.adjustArithmeticExpression("/") } // Actually, no adjustment would be needed
 	
 	override String _serialize(LessExpression expression) { expression.adjustArithmeticExpression("<") }
 	
@@ -110,7 +109,7 @@ class ImlPropertyExpressionSerializer extends ThetaPropertyExpressionSerializer 
 		
 		return '''(«FOR operand : operands SEPARATOR ''' «operator»«OPERATOR_POSTFIX» '''»«IF
 				operand.typeDefinition instanceof IntegerTypeDefinition &&
-					operand instanceof NullaryExpression && operand instanceof LiteralExpression»«
+					operand instanceof NullaryExpression»« // Literals and references
 				OPERAND_PREFIX»«ENDIF»«operand.serialize»«ENDFOR»)'''
 	}
 	
