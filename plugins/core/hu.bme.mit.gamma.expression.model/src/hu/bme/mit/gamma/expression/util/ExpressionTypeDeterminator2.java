@@ -344,10 +344,12 @@ public class ExpressionTypeDeterminator2 {
 	
 	private <T extends ArithmeticExpression & BinaryExpression> Type getArithmeticBinaryType(T expression) {
 		List<Type> types = new ArrayList<Type>();
+		Expression lhs = expression.getLeftOperand();
+		Expression rhs = expression.getRightOperand();
 		types.add(
-				getType(expression.getLeftOperand()));
+				getType(lhs));
 		types.add(
-				getType(expression.getRightOperand()));
+				getType(rhs));
 		return getArithmeticType(types);
 	}
 	
@@ -407,7 +409,8 @@ public class ExpressionTypeDeterminator2 {
 	
 	public boolean isInteger(Expression expression) {
 		try {
-			return expression != null && getTypeDefinition(expression) instanceof IntegerTypeDefinition;
+			return expression != null && isInteger(
+					getTypeDefinition(expression));
 		} catch (IllegalArgumentException e) {
 			return false; // e.g., if getTypeDefinition(expression) throws an exception
 		}

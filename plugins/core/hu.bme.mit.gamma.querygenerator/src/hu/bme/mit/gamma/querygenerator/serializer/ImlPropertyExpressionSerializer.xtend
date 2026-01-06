@@ -33,12 +33,11 @@ import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.ImplyExpression
 import hu.bme.mit.gamma.expression.model.InequalityExpression
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
-import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.LessEqualExpression
 import hu.bme.mit.gamma.expression.model.LessExpression
+import hu.bme.mit.gamma.expression.model.ModExpression
 import hu.bme.mit.gamma.expression.model.MultiplyExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
-import hu.bme.mit.gamma.expression.model.NullaryExpression
 import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.SubtractExpression
@@ -84,6 +83,8 @@ class ImlPropertyExpressionSerializer extends ThetaPropertyExpressionSerializer 
 	
 	override String _serialize(DivExpression expression) { expression.adjustArithmeticExpression("/") } // Actually, no adjustment would be needed
 	
+	override String _serialize(ModExpression expression) { expression.adjustArithmeticExpression("mod") } // Actually, no adjustment would be needed
+	
 	override String _serialize(LessExpression expression) { expression.adjustArithmeticExpression("<") }
 	
 	override String _serialize(LessEqualExpression expression) { expression.adjustArithmeticExpression("<=") }
@@ -97,20 +98,18 @@ class ImlPropertyExpressionSerializer extends ThetaPropertyExpressionSerializer 
 	}
 	
 	protected def adjustArithmeticExpression(List<? extends Expression> operands, String operator) {
-		val operandTypes = operands.map[it.typeDefinition]
-		val isEachOperandInteger = operandTypes.forall[it instanceof IntegerTypeDefinition]
+		val allInteger = operands.forall[it.integer]
 		
-		if (isEachOperandInteger) {
+		if (allInteger) {
 			return '''(«FOR operand : operands SEPARATOR ''' «operator» '''»«operand.serialize»«ENDFOR»)'''
 		}
-		// There is a decimal operand
-		val OPERAND_PREFIX = "Real.of_int "
+		
+		// There is a rational/decimal operand
+		val CASTING = "Real.of_int "
 		val OPERATOR_POSTFIX = "."
 		
-		return '''(«FOR operand : operands SEPARATOR ''' «operator»«OPERATOR_POSTFIX» '''»«IF
-				operand.typeDefinition instanceof IntegerTypeDefinition &&
-					operand instanceof NullaryExpression»« // Literals and references
-				OPERAND_PREFIX»«ENDIF»«operand.serialize»«ENDFOR»)'''
+		return '''(«FOR operand : operands SEPARATOR ''' «operator»«OPERATOR_POSTFIX» '''»(«
+					IF operand.integer»«CASTING»«ENDIF»«operand.serialize»)«ENDFOR»)'''
 	}
 	
 	//
