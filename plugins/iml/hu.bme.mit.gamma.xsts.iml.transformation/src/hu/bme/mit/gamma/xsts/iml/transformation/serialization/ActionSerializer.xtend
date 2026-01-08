@@ -195,7 +195,8 @@ class ActionSerializer {
 				let «declarationNames» = «rhs.serialize» in
 				«IF isSameId»
 					«val id = ids.head»
-					let «id» = { «id» with «FOR declaration : declarations»«declaration.serializeName» = «declaration.temporaryDeclarationName»; «ENDFOR»} in
+					let «id» = { «id» with «FOR declaration : declarations»«
+							declaration.serializeName» = «declaration.temporaryDeclarationName»; «ENDFOR»} in
 				«ELSE»
 					«FOR declaration : declarations»
 						«val id = declaration.id»

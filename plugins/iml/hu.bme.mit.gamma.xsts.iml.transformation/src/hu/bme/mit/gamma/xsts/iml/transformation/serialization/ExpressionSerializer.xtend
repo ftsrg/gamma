@@ -70,6 +70,7 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	protected new() {}
 	//
 	public static final String LANGUAGE_IML = "language IML"
+	public static final String I_R_CAST = "Real.of_int"
 	//
 	protected final extension MessageQueueUtil messageQueueUtil = MessageQueueUtil.INSTANCE
 	protected final extension MessageQueueHandler messageQueueHandler = MessageQueueHandler.INSTANCE
@@ -139,11 +140,10 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 		}
 		
 		// There is a rational/decimal operand
-		val CASTING = "Real.of_int "
 		val OPERATOR_POSTFIX = "."
 		
 		return '''(«FOR operand : operands SEPARATOR ''' «operator»«OPERATOR_POSTFIX» '''»(«
-					IF operand.integer»«CASTING»«ENDIF»«operand.serialize»)«ENDFOR»)'''
+					IF operand.integer»«I_R_CAST» «ENDIF»«operand.serialize»)«ENDFOR»)'''
 	}
 	
 	//
@@ -320,7 +320,7 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	}
 	
 	private def serializeCasting(Type lhs, Type rhs) {
-		return lhs.decimal && rhs.integer ? "Real.of_int " : ""
+		return lhs.decimal && rhs.integer ?  I_R_CAST + " " : ""
 	}
 	
 	//

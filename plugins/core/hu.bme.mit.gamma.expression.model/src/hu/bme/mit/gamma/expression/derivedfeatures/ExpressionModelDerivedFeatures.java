@@ -460,6 +460,14 @@ public class ExpressionModelDerivedFeatures {
 		return types;
 	}
 	
+	public static List<Type> getNativeTypes(Type type) {
+		TypeDefinition typeDefinition = getTypeDefinition(type);
+		if (typeDefinition instanceof TupleTypeDefinition tupleType) {
+			return getNativeTypes(tupleType);
+		}
+		return List.of(type);
+	}
+	
 	public static List<Declaration> getNativeDeclarations(TupleReferenceExpression tuple) {
 //		List<Declaration> declarations = new ArrayList<Declaration>();
 //		
