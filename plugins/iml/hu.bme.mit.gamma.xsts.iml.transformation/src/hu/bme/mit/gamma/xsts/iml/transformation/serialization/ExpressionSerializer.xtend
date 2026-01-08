@@ -315,11 +315,15 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	
 	//
 	
-	private def serializeCasting(Type lhs, Expression rhs) {
+	protected def serializeCasting(Declaration lhs, Type rhs) {
+		return lhs.type.serializeCasting(rhs)
+	}
+	
+	protected def serializeCasting(Type lhs, Expression rhs) {
 		return lhs.serializeCasting(rhs.typeDefinition)
 	}
 	
-	private def serializeCasting(Type lhs, Type rhs) {
+	protected def serializeCasting(Type lhs, Type rhs) {
 		return lhs.decimal && rhs.integer ?  I_R_CAST + " " : ""
 	}
 	

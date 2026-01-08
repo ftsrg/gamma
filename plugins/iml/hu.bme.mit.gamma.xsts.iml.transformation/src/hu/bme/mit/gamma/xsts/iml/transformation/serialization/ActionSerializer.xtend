@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.xsts.iml.transformation.util.MessageQueueHandler
@@ -53,6 +54,7 @@ class ActionSerializer {
 	protected final extension MessageQueueUtil queueUtil = MessageQueueUtil.INSTANCE
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
+	protected final extension ExpressionTypeDeterminator2 typeDeterminator = ExpressionTypeDeterminator2.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	//
@@ -184,6 +186,10 @@ class ActionSerializer {
 		if (isTuple || needR) {
 			val declarations = lhs.accessedDeclarations // Tuple elements or a simple variable
 			var declarationNames = lhs.serializeTemporaryDeclarationNames // Tuple-related code (works for basic declarations, too)
+			
+			val rhsTypes = rhs.type.nativeTypes
+			checkArgument(declarations.size == rhsTypes.size)
+			
 			// Method extraction related code
 			if (needR) {
 				declarationNames = '''(«globalVariableName», «declarationNames»)''' // First element
@@ -196,11 +202,18 @@ class ActionSerializer {
 				«IF isSameId»
 					«val id = ids.head»
 					let «id» = { «id» with «FOR declaration : declarations»«
-							declaration.serializeName» = «declaration.temporaryDeclarationName»; «ENDFOR»} in
+							val i = declarations.indexOf(declaration)»«
+							declaration.serializeName» = «
+							val rhsType = rhsTypes.get(i)»«
+							declaration.serializeCasting(rhsType)»«
+							declaration.temporaryDeclarationName»; «ENDFOR»} in
 				«ELSE»
 					«FOR declaration : declarations»
 						«val id = declaration.id»
-						let «id» = { «id» with «declaration.serializeName» = «declaration.temporaryDeclarationName» } in
+						let «id» = { «id» with «declaration.serializeName» = «
+						val i = declarations.indexOf(declaration)»«
+						val rhsType = rhsTypes.get(i)»«
+						declaration.serializeCasting(rhsType)»«declaration.temporaryDeclarationName» } in
 					«ENDFOR»
 				«ENDIF»
 			''' // See ExpressionSerializer._serialize(FunctionAccessExpression ...)
