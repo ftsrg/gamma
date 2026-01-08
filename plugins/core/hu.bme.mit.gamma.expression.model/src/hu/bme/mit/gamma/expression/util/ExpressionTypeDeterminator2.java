@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -420,6 +420,24 @@ public class ExpressionTypeDeterminator2 {
 		try {
 			return type != null &&
 				ExpressionModelDerivedFeatures.getTypeDefinition(type) instanceof IntegerTypeDefinition;
+		} catch (IllegalArgumentException e) {
+			return false; // e.g., if getType(expression) throws an exception
+		}
+	}
+	
+	public boolean isDecimal(Expression expression) {
+		try {
+			return expression != null && isDecimal(
+					getTypeDefinition(expression));
+		} catch (IllegalArgumentException e) {
+			return false; // e.g., if getTypeDefinition(expression) throws an exception
+		}
+	}
+	
+	public boolean isDecimal(Type type) {
+		try {
+			return type != null &&
+				ExpressionModelDerivedFeatures.getTypeDefinition(type) instanceof DecimalTypeDefinition;
 		} catch (IllegalArgumentException e) {
 			return false; // e.g., if getType(expression) throws an exception
 		}

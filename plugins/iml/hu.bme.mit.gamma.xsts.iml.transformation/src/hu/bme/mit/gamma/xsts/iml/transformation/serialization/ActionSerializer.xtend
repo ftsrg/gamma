@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024-2025 Contributors to the Gamma project
+ * Copyright (c) 2024-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -167,15 +167,10 @@ class ActionSerializer {
 	
 	protected def dispatch serializeAction(HavocAction action) {
 		val variable = action.lhs.declaration as VariableDeclaration
-		val rhsString = '''«ENV_HAVOC_RECORD_IDENTIFIER».«action.serializeFieldName»;'''
+		val rhsString = '''«ExpressionSerializer.LANGUAGE_IML»«ENV_HAVOC_RECORD_IDENTIFIER».«action.serializeFieldName»'''
 		
-		val placeHolderRhs = 0.toIntegerLiteral
-		val placeHolderRhsString = placeHolderRhs.serialize + ";"
-		
-		val placeHolderAction = variable.createAssignmentAction(placeHolderRhs)
-		val placeHolderActionString = placeHolderAction.serialize
-		
-		val actionString = placeHolderActionString.replaceFirst(placeHolderRhsString, rhsString)
+		val havocAction = variable.createAssignmentAction(rhsString.createOpaqueExpression)
+		val actionString = havocAction.serialize
 		
 		return actionString
 	}
@@ -260,7 +255,7 @@ class ActionSerializer {
 	}
 	
 	private def serializeAssignmentAction(Declaration lhs, Expression rhs) '''«
-			lhs.serializeName» = «rhs.serialize»;'''
+			lhs.serializeName» = «lhs.serializeWithCasting(rhs)»;'''
 	//
 	
 	private def String serializeArrayAssignmentAction(ArrayAccessExpression access, Expression value) {
@@ -278,7 +273,9 @@ class ActionSerializer {
 		val actualArray = '''(«FOR previousIndex : previousIndexes.reverseView»Map.get «previousIndex.serialize» «ENDFOR»«declaration.serializeAsRhs»)'''
 		previousIndexes += index
 		
-		val serializedOperand = (operand instanceof ArrayAccessExpression) ? operand.serializeArrayAssignmentAction(indexes, value, previousIndexes) : value.serialize
+		val serializedOperand = (operand instanceof ArrayAccessExpression) ?
+				operand.serializeArrayAssignmentAction(indexes, value, previousIndexes) :
+				declaration.elementTypeDefinition.serializeWithCasting(value)
 		
 		return '''(Map.add «index.serialize» «serializedOperand» «actualArray»)'''
 	}

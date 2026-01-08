@@ -44,6 +44,7 @@ import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.SubtractExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
+import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
@@ -68,6 +69,8 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	public static final ExpressionSerializer INSTANCE = new ExpressionSerializer
 	protected new() {}
 	//
+	public static final String LANGUAGE_IML = "language IML"
+	//
 	protected final extension MessageQueueUtil messageQueueUtil = MessageQueueUtil.INSTANCE
 	protected final extension MessageQueueHandler messageQueueHandler = MessageQueueHandler.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
@@ -81,6 +84,19 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 			return expression.serializeQueueExpression
 		}
 		return expression.superSerialize
+	}
+	
+	//
+	
+	def serializeWithCasting(Declaration lhs, Expression expression) {
+		val type = lhs.type
+		return type.serializeWithCasting(expression)
+	}
+	
+	def serializeWithCasting(Type lhs, Expression expression) {
+		val casting = lhs.serializeCasting(expression)
+		val rhs = expression.serialize
+		return (casting.nullOrEmpty) ? rhs : '''(«casting»(«rhs»))'''
 	}
 	
 	//
@@ -214,10 +230,12 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 		val isExpression = !(expression.eContainer instanceof FunctionCallAction) // As rhs - cannot support functions with both a side effect and return value
 		val hasSideEffect = expression.hasFunctionCallSideEffect
 		val function = expression.operand.declaration as FunctionDeclaration
+		val parameters = function.parameterDeclarations
 		val isLambda = function.lambdaDeclaration
 		
 		val functionCall = '''(«function.serializeName» «GLOBAL_RECORD_IDENTIFIER» «
-				FOR argument : expression.arguments SEPARATOR ' '»«argument.serialize»«ENDFOR»)'''
+				FOR argument : expression.arguments SEPARATOR ' '»«
+					parameters.get(argument.index).serializeWithCasting(argument)»«ENDFOR»)'''
 		
 		if (isLambda || /* (r) is not returned */
 				isExpression && hasSideEffect /* Special code handles this case at a higher (assignment) level */) {
@@ -236,9 +254,8 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	def getFunctionReturnValues() '''«GLOBAL_RECORD_IDENTIFIER», «LOCAL_RECORD_IDENTIFIER».«FUNCTION_RETURN_VALUE_NAME.customizeDeclarationName»'''
 	
 	def serializeOpaqueElement(String string) {
-		val IML = "language IML"
-		if (string.startsWith(IML)) {
-			val serialization = string.substring(IML.length).trim
+		if (string.startsWith(LANGUAGE_IML)) {
+			val serialization = string.substring(LANGUAGE_IML.length).trim
 			return serialization
 		}
 		return ""
@@ -294,6 +311,16 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	def serializeFieldName(HavocAction havoc) {
 		val customizedName = havoc.customizeHavocField
 		return customizedName
+	}
+	
+	//
+	
+	private def serializeCasting(Type lhs, Expression rhs) {
+		return lhs.serializeCasting(rhs.typeDefinition)
+	}
+	
+	private def serializeCasting(Type lhs, Type rhs) {
+		return lhs.decimal && rhs.integer ? "Real.of_int " : ""
 	}
 	
 	//
