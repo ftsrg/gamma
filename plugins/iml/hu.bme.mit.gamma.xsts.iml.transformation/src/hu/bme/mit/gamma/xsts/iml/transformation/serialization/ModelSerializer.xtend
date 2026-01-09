@@ -44,9 +44,11 @@ class ModelSerializer {
 	def String serializeIml(XSTS xSts, boolean optimizeNonDet) {
 		actionSerializer.clearActions
 		actionSerializer.setOptimizeNonDet = optimizeNonDet
-		//
+		
 		xSts.validate
-		//
+		
+		// Initialization (and potentially other in the future) optimization here - removing local variables later would mess up the 'unique naming'
+		xSts.optimizeInitalizationTransition // Probably not necessary
 		
 		val globalVariables = xSts.variableDeclarations
 		
@@ -134,7 +136,7 @@ class ModelSerializer {
 			let «INIT_FUNCTION_IDENTIFIER» =
 				«globalVariables.initVariables(choices, globalVariableName)»
 				«initLocalVariables.initVariablesIfNotEmpty(LOCAL_RECORD_IDENTIFIER)»
-				«xSts.initializingAction.optimizeAction.serializeActionGlobally»
+				«xSts.initializingAction.serializeActionGlobally»
 		'''
 		
 		actionSerializer.hoistBranches = true // Hoisting 'trans'

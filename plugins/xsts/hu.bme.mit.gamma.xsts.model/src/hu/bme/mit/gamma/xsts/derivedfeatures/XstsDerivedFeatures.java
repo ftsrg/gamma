@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -253,20 +253,19 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	public static SequentialAction getInitializingAction(XSTS xSts) {
 		SequentialAction sequentialAction = xStsFactory.createSequentialAction();
 		Action variableInitializingAction = xSts.getVariableInitializingTransition().getAction();
-		List<Action> actions = sequentialAction.getActions();
 		if (!(variableInitializingAction instanceof EmptyAction)) {
-			actions.add(
+			xStsActionUtil.mergeIntoAction(sequentialAction,
 					ecoreUtil.clone(variableInitializingAction));
 		}
 		Action configurationInitializingAction =
 				xSts.getConfigurationInitializingTransition().getAction();
 		if (!(configurationInitializingAction instanceof EmptyAction)) {
-			actions.add(
+			xStsActionUtil.mergeIntoAction(sequentialAction,
 					ecoreUtil.clone(configurationInitializingAction));
 		}
 		Action entryEventAction = xSts.getEntryEventTransition().getAction();
 		if (!(entryEventAction instanceof EmptyAction)) {
-			actions.add(
+			xStsActionUtil.mergeIntoAction(sequentialAction,
 					ecoreUtil.clone(entryEventAction));
 		}
 		return sequentialAction;
