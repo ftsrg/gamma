@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2025 Contributors to the Gamma project
+ * Copyright (c) 2025-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,11 +15,14 @@ import hu.bme.mit.gamma.action.model.ProcedureDeclaration
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration
+import hu.bme.mit.gamma.expression.model.TupleTypeDefinition
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 import static hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
+
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class FunctionTransformer {
@@ -67,6 +70,9 @@ class FunctionTransformer {
 		val parameters = function.parameterDeclarations
 		val lowlevelParameters = parameters.map[it.transformFunctionParameter].flatten.toList
 		
+		val lowlevelType = type.transformType
+		val lowlevelName = getName(function)
+		
 		val lowlevelFunction =
 		if (function instanceof ProcedureDeclaration) {
 			val lowlevelProcedure = createProcedureDeclaration
@@ -88,7 +94,7 @@ class FunctionTransformer {
 			
 			val lowlevelExpressions = function.expression.transformExpression
 			lowlevelLambda.expression = (lowlevelExpressions.size > 1) ?
-				lowlevelExpressions.createTupleLiteralExpression :
+				lowlevelExpressions.createTupleLiteralExpression(lowlevelType.typeDefinition as TupleTypeDefinition) :
 				lowlevelExpressions.head
 			
 			lowlevelLambda
@@ -96,9 +102,6 @@ class FunctionTransformer {
 		else {
 			throw new IllegalArgumentException("Not known function type: " + function)
 		}
-		
-		val lowlevelType = type.transformType
-		val lowlevelName = getName(function)
 		
 		lowlevelFunction.type = lowlevelType
 		lowlevelFunction.name = lowlevelName

@@ -17,7 +17,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -1213,6 +1215,32 @@ public class ExpressionUtil {
 		and.getOperands().add(xor);
 		
 		return and;
+	}
+	
+	public TupleLiteralExpression createTupleLiteralExpression(
+				Collection<? extends Expression> values, TupleTypeDefinition tupleType) {
+		Queue<Expression> expressions = new LinkedList<Expression>(values);
+		return createTupleLiteralExpression(expressions, tupleType);
+	}
+	
+	private TupleLiteralExpression createTupleLiteralExpression(
+				Queue<? extends Expression> expressions, TupleTypeDefinition tupleType) {
+		TupleLiteralExpression tuple = factory.createTupleLiteralExpression();
+		List<Expression> operands = tuple.getOperands();
+		
+		for (Type subtype : tupleType.getTypes()) {
+			TypeDefinition subtypeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(subtype);
+			if (subtypeDefinition instanceof TupleTypeDefinition subtupleType) {
+				operands.add(
+						createTupleLiteralExpression(expressions, subtupleType));
+			}
+			else {
+				operands.add(
+						expressions.remove());
+			}
+		}
+		
+		return tuple;
 	}
 	
 	public TupleLiteralExpression createTupleLiteralExpression(Collection<? extends Expression> values) {
