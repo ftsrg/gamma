@@ -1218,6 +1218,15 @@ public class ExpressionUtil {
 	}
 	
 	public TupleLiteralExpression createTupleLiteralExpression(
+				Collection<? extends Expression> values, Type type) {
+		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
+		if (typeDefinition instanceof TupleTypeDefinition tupleTypeDefinition) {
+			return createTupleLiteralExpression(values, tupleTypeDefinition);
+		}
+		return createTupleLiteralExpression(values);
+	}
+	
+	public TupleLiteralExpression createTupleLiteralExpression(
 				Collection<? extends Expression> values, TupleTypeDefinition tupleType) {
 		Queue<Expression> expressions = new LinkedList<Expression>(values);
 		return createTupleLiteralExpression(expressions, tupleType);

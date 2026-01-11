@@ -15,7 +15,6 @@ import hu.bme.mit.gamma.action.model.ProcedureDeclaration
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration
-import hu.bme.mit.gamma.expression.model.TupleTypeDefinition
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -78,6 +77,8 @@ class FunctionTransformer {
 			val lowlevelProcedure = createProcedureDeclaration
 			trace.put(function, lowlevelProcedure) // Here, to support recursion
 			
+			lowlevelProcedure.type = lowlevelType // Needed here for returning tuple literals
+			
 			val lowlevelBody = function.body.transformAction.wrap
 			lowlevelProcedure.body = lowlevelBody
 			
@@ -92,9 +93,11 @@ class FunctionTransformer {
 			val lowlevelLambda = createLambdaDeclaration
 			trace.put(function, lowlevelLambda) // Here, to support recursion
 			
+			lowlevelLambda.type = lowlevelType
+			
 			val lowlevelExpressions = function.expression.transformExpression
 			lowlevelLambda.expression = (lowlevelExpressions.size > 1) ?
-				lowlevelExpressions.createTupleLiteralExpression(lowlevelType.typeDefinition as TupleTypeDefinition) :
+				lowlevelExpressions.createTupleLiteralExpression(lowlevelType.typeDefinition) :
 				lowlevelExpressions.head
 			
 			lowlevelLambda
@@ -103,7 +106,6 @@ class FunctionTransformer {
 			throw new IllegalArgumentException("Not known function type: " + function)
 		}
 		
-		lowlevelFunction.type = lowlevelType
 		lowlevelFunction.name = lowlevelName
 		lowlevelFunction.parameterDeclarations += lowlevelParameters
 		
