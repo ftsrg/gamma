@@ -443,6 +443,15 @@ public class ExpressionTypeDeterminator2 {
 		}
 	}
 	
+	public boolean isArray(Expression expression) {
+		try {
+			return expression != null && ExpressionModelDerivedFeatures.isArray(
+					getTypeDefinition(expression));
+		} catch (IllegalArgumentException e) {
+			return false; // e.g., if getTypeDefinition(expression) throws an exception
+		}
+	}
+	
 	// Type pretty printer
 	
 	public String print(Expression expression) {
