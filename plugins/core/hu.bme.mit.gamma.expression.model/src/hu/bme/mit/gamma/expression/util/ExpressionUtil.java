@@ -1453,6 +1453,17 @@ public class ExpressionUtil {
 		return access;
 	}
 	
+	public ArrayAccessExpression createArrayAccessExpression(Expression operand,
+				Collection<? extends Expression> indexes) {
+		ArrayAccessExpression accessExpression = null;
+		for (Expression index : indexes) {
+			accessExpression = (accessExpression == null) ?
+					createArrayAccessExpression(operand, index) :
+					createArrayAccessExpression(accessExpression, index);
+		}
+		return accessExpression;
+	}
+	
 	public DirectReferenceExpression createReferenceExpression(Declaration declaration) {
 		if (declaration == null) {
 			throw new IllegalArgumentException("Declaration is null");
