@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024-2025 Contributors to the Gamma project
+ * Copyright (c) 2024-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -23,6 +23,7 @@ import hu.bme.mit.gamma.trace.model.Reset
 import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.verification.util.TraceBuilder
 import java.util.NoSuchElementException
 import java.util.Scanner
@@ -59,6 +60,7 @@ class TraceBackAnnotator {
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension TraceBuilder traceBuilder = TraceBuilder.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final JavaUtil javaUtil = JavaUtil.INSTANCE
 	
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//
@@ -318,17 +320,30 @@ class TraceBackAnnotator {
 		if (newLine.startsWith("{")) {
 			newLine = newLine.substring(1)
 		}
-		while (!(newLine.endsWith(";") || newLine.endsWith("}") || newLine.endsWith("}]"))) {
-			val nextLine = scanner.nextLine
+		var continue = false
+		while (!(newLine.endsWith(";") || newLine.endsWith("}") || newLine.endsWith("}]")) ||
+				continue) {
+			val nextLine = scanner.nextLine.trim
 			newLine = newLine + " " + nextLine
+			
+			continue = nextLine.contains("Map.of_list") && !nextLine.endsWith("]);") // Array literal end?
 		}
+//		_array__first =
+//		(Map.of_list ~default:(Map.const 0)
+//			[(0, (Map.of_list ~default:0 [(1, 30)]));
+//			(1, (Map.of_list ~default:0 [(0, 8)]))]);
+		val ARR_DELIM = "<-ARRAY-DELIM->"
+		newLine = javaUtil.replaceFromString(newLine, "Map.of_list", ";", ARR_DELIM) // Array literal
+		newLine = newLine.endsWith(ARR_DELIM) ? javaUtil.deleteLast(newLine, ARR_DELIM) : newLine // No ';' at the end (needed due to parsing rules)
+		
 		if (newLine.endsWith("}")) {
 			newLine = newLine.substring(0, newLine.length - 1)
 		}
 		if (newLine.endsWith("};") || newLine.endsWith("}]")) {
 			newLine = newLine.substring(0, newLine.length - 2)
 		}
-		newLine = newLine.replaceAll(";", System.lineSeparator).trim
+		newLine = newLine.replace(";", System.lineSeparator).trim
+		newLine = newLine.replace(ARR_DELIM, "; ") // Array literal
 		
 		return newLine
 	}

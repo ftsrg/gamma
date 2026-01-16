@@ -439,6 +439,22 @@ class JavaUtil {
 		return string.replaceFirst("(?s)(.*)" + regex, "$1" + replacement)
 	}
 	
+	def String replaceFromString(String string,
+			String start, String target, String replacement) {
+		val i = string.indexOf(start)
+		if (i < 0) {
+			return string
+		}
+		
+		val _1 = string.substring(0, i)
+		val _2 = string.substring(i)
+		val __2 = _2.replace(target, replacement)
+		
+		val final = _1 + __2
+		
+		return final
+	}
+	
 	def matchFirstCharacterCapitalization(String string, String example) {
 		if (example.nullOrEmpty) {
 			return string
