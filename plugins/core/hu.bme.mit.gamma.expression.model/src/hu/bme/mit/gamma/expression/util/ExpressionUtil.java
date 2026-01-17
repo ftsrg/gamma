@@ -263,12 +263,12 @@ public class ExpressionUtil {
 	
 	// Arithmetic: for now, integers only
 
-	public Expression add(Expression expression, int value) {
+	public Expression add(Expression expression, long value) {
 		return toIntegerLiteral(
 				evaluator.evaluate(expression) + value);
 	}
 
-	public Expression subtract(Expression expression, int value) {
+	public Expression subtract(Expression expression, long value) {
 		return toIntegerLiteral(
 				evaluator.evaluate(expression) - value);
 	}
@@ -284,15 +284,25 @@ public class ExpressionUtil {
 	}
 	
 	public Expression createIncrementExpression(Declaration variable) {
-		Expression _1 = createLiteralOne(variable.getType());
-		return wrapIntoAddExpression(
-				createReferenceExpression(variable), _1);
+		DirectReferenceExpression reference = createReferenceExpression(variable);
+		return createIncrementExpression(reference);
+	}
+	
+	public Expression createIncrementExpression(Expression expression) {
+		Type type = typeDeterminator.getType(expression);
+		Expression _1 = createLiteralOne(type);
+		return wrapIntoAddExpression(expression, _1);
 	}
 
 	public Expression createDecrementExpression(Declaration variable) {
-		Expression _1 = createLiteralOne(variable.getType());
-		return createSubtractExpression(
-				createReferenceExpression(variable), _1);
+		DirectReferenceExpression reference = createReferenceExpression(variable);
+		return createDecrementExpression(reference);
+	}
+	
+	public Expression createDecrementExpression(Expression expression) {
+		Type type = typeDeterminator.getType(expression);
+		Expression _1 = createLiteralOne(type);
+		return createSubtractExpression(expression, _1);
 	}
 	
 	public Expression wrapIntoAdd(Expression expression, long value) {
