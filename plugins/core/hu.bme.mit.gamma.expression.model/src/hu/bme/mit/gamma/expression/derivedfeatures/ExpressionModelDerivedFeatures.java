@@ -591,6 +591,44 @@ public class ExpressionModelDerivedFeatures {
 		}
 	}
 	
+	public static List<Integer> getDimensions(Type type) {
+		TypeDefinition typeDefinition = getTypeDefinition(type);
+		if (typeDefinition instanceof ArrayTypeDefinition arrayTypeDefinition) {
+			int size = evaluator.evaluate(
+					arrayTypeDefinition.getSize());
+			Type elementType = arrayTypeDefinition.getElementType();
+			List<Integer> dimensions = getDimensions(elementType);
+			dimensions.add(0, size);
+			return dimensions;
+		}
+		return new ArrayList<Integer>();
+	}
+	
+	public static List<List<Integer>> allIndexes(ArrayTypeDefinition type) {
+		List<List<Integer>> allIndexes = new ArrayList<>();
+		
+		List<Integer> dimensions = getDimensions(type);
+		for (Integer dimension : dimensions) {
+			List<List<Integer>> extendedAllIndexes = new ArrayList<>();
+			for (int i = 0; i < dimension; i++) {
+				if (dimensions.indexOf(dimension) < 1) {
+					extendedAllIndexes.add(
+							List.of(i));
+				}
+				else {
+					for (List<Integer> indexes : allIndexes) {
+						List<Integer> extendedIndexes = new ArrayList<Integer>(indexes);
+						extendedIndexes.add(i);
+						extendedAllIndexes.add(extendedIndexes);
+					}
+				}
+			}
+			allIndexes = extendedAllIndexes;
+		}
+		
+		return allIndexes;
+	}
+	
 	// Type references
 	
 	public static boolean refersToAnAlias(TypeReference typeReference) {

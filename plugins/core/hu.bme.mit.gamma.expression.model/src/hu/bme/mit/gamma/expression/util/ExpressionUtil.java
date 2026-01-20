@@ -1456,6 +1456,12 @@ public class ExpressionUtil {
 		return createArrayAccessExpression(operand, integerLiteralExpression);
 	}
 	
+	public ArrayAccessExpression createArrayAccessExpression(Expression operand, List<Integer> indexes) {
+		List<IntegerLiteralExpression> indexing = indexes.stream()
+				.map(it -> toIntegerLiteral(it)).collect(Collectors.toList());
+		return createArrayAccessExpression(operand, indexing);
+	}
+	
 	public ArrayAccessExpression createArrayAccessExpression(Expression operand, Expression index) {
 		ArrayAccessExpression access = factory.createArrayAccessExpression();
 		access.setOperand(operand);
