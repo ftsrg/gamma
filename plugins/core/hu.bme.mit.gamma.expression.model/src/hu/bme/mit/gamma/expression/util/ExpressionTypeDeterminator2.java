@@ -503,5 +503,36 @@ public class ExpressionTypeDeterminator2 {
 		
 		return "Unknown type: " + type; // During parsing, there can be null typeDefinitions
 	}
+	
+	//
+	
+	public String serialize(Type type) {
+		ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
+		
+		if (type instanceof ArrayTypeDefinition arrayType) {
+			Type elementType = arrayType.getElementType();
+			return "Array_" +  evaluator.evaluate(
+					arrayType.getSize()) + "_" + serialize(elementType);
+		}
+		if (type instanceof RecordTypeDefinition recordTypeDefinition) {
+			TypeDeclaration typeDeclaration = ecoreUtil.getContainerOfType(recordTypeDefinition, TypeDeclaration.class);
+			String fieldNames = recordTypeDefinition.getFieldDeclarations().stream()
+						.map(it -> it.getName()).reduce("", ((a, b) -> a + "_" + b));
+			return (typeDeclaration != null) ? typeDeclaration.getName() : fieldNames;
+		}
+		if (type instanceof EnumerationTypeDefinition enumerationTypeDefinition) {
+			TypeDeclaration typeDeclaration = ecoreUtil.getContainerOfType(enumerationTypeDefinition, TypeDeclaration.class);
+			String fieldNames = enumerationTypeDefinition.getLiterals().stream()
+						.map(it -> it.getName()).reduce("", ((a, b) -> a + "_" + b));
+			return (typeDeclaration != null) ? typeDeclaration.getName() : fieldNames;
+		}
+		if (type instanceof TypeReference typeReference) {
+			TypeDeclaration reference = typeReference.getReference();
+			Type referenceType = reference.getType();
+			return reference.getName() + "_" + serialize(referenceType);
+		}
+		
+		return print(type);
+	}
 		
 }
