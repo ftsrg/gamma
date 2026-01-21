@@ -608,10 +608,11 @@ public class ExpressionModelDerivedFeatures {
 		List<List<Integer>> allIndexes = new ArrayList<>();
 		
 		List<Integer> dimensions = getDimensions(type);
+		boolean first = true;
 		for (Integer dimension : dimensions) {
 			List<List<Integer>> extendedAllIndexes = new ArrayList<>();
 			for (int i = 0; i < dimension; i++) {
-				if (dimensions.indexOf(dimension) < 1) {
+				if (first) {
 					extendedAllIndexes.add(
 							List.of(i));
 				}
@@ -624,6 +625,7 @@ public class ExpressionModelDerivedFeatures {
 				}
 			}
 			allIndexes = extendedAllIndexes;
+			first = false;
 		}
 		
 		return allIndexes;
