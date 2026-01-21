@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -26,6 +26,8 @@ public class TypeSerializer {
 	//
 	public static final TypeSerializer INSTANCE = new TypeSerializer();
 	protected TypeSerializer() {}
+	//
+	protected final ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
 	//
 
 	public String serialize(Type type) {
@@ -102,6 +104,21 @@ public class TypeSerializer {
 	protected String _serialize(RecordTypeDefinition type) {
 		TypeDeclaration typeDeclaration = ExpressionModelDerivedFeatures.getTypeDeclaration(type);
 		return typeDeclaration.getName();
+	}
+	
+	//
+	
+	public String serializeId(Type type) {
+		if (type instanceof ArrayTypeDefinition _type) {
+			return _serializeId(_type);
+		}
+		return serialize(type);
+	}
+	
+	protected String _serializeId(ArrayTypeDefinition type) {
+		Type elementType = type.getElementType();
+		return evaluator.evaluate(
+				type.getSize()) + "_" + serializeId(elementType);
 	}
 
 }

@@ -506,37 +506,9 @@ public class ExpressionTypeDeterminator2 {
 	
 	//
 	
-	public String serializeId(Type type) {
-		ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
-		
-		if (type instanceof ArrayTypeDefinition arrayType) {
-			Type elementType = arrayType.getElementType();
-			return "Array_" +  evaluator.evaluate(
-					arrayType.getSize()) + "_" + serializeId(elementType);
-		}
-		if (type instanceof RecordTypeDefinition recordTypeDefinition) {
-			TypeDeclaration typeDeclaration = ecoreUtil.getContainerOfType(recordTypeDefinition, TypeDeclaration.class);
-			String fieldNames = recordTypeDefinition.getFieldDeclarations().stream()
-						.map(it -> it.getName()).reduce("", ((a, b) -> a + "_" + b));
-			return (typeDeclaration != null) ? typeDeclaration.getName() : fieldNames;
-		}
-		if (type instanceof EnumerationTypeDefinition enumerationTypeDefinition) {
-			TypeDeclaration typeDeclaration = ecoreUtil.getContainerOfType(enumerationTypeDefinition, TypeDeclaration.class);
-			String fieldNames = enumerationTypeDefinition.getLiterals().stream()
-						.map(it -> it.getName()).reduce("", ((a, b) -> a + "_" + b));
-			return (typeDeclaration != null) ? typeDeclaration.getName() : fieldNames;
-		}
-		if (type instanceof TypeReference typeReference) {
-			TypeDeclaration reference = typeReference.getReference();
-			Type referenceType = reference.getType();
-			return reference.getName() + "_" + serializeId(referenceType);
-		}
-		
-		return print(type);
-	}
-	
 	public String serializeTypeId(Expression expression) {
-		return serializeId(
+		TypeSerializer typeSerializer = TypeSerializer.INSTANCE;
+		return typeSerializer.serializeId(
 				getType(expression));
 	}
 	
@@ -546,11 +518,13 @@ public class ExpressionTypeDeterminator2 {
 		}
 		
 		StringBuilder builder = new StringBuilder();
+		
 		for (Expression expression : expressions) {
 			builder.append(
 					serializeTypeId(expression) + delimeter);
 		}
 		builder.setLength(builder.length() - delimeter.length());
+		
 		return builder.toString();
 	}
 	
