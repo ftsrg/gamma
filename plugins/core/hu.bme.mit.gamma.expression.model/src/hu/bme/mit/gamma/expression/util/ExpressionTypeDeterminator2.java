@@ -506,13 +506,13 @@ public class ExpressionTypeDeterminator2 {
 	
 	//
 	
-	public String serialize(Type type) {
+	public String serializeId(Type type) {
 		ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
 		
 		if (type instanceof ArrayTypeDefinition arrayType) {
 			Type elementType = arrayType.getElementType();
 			return "Array_" +  evaluator.evaluate(
-					arrayType.getSize()) + "_" + serialize(elementType);
+					arrayType.getSize()) + "_" + serializeId(elementType);
 		}
 		if (type instanceof RecordTypeDefinition recordTypeDefinition) {
 			TypeDeclaration typeDeclaration = ecoreUtil.getContainerOfType(recordTypeDefinition, TypeDeclaration.class);
@@ -529,10 +529,33 @@ public class ExpressionTypeDeterminator2 {
 		if (type instanceof TypeReference typeReference) {
 			TypeDeclaration reference = typeReference.getReference();
 			Type referenceType = reference.getType();
-			return reference.getName() + "_" + serialize(referenceType);
+			return reference.getName() + "_" + serializeId(referenceType);
 		}
 		
 		return print(type);
 	}
+	
+	public String serializeTypeId(Expression expression) {
+		return serializeId(
+				getType(expression));
+	}
+	
+	public String serializeTypeId(Collection<? extends Expression> expressions, String delimeter) {
+		if (expressions.isEmpty()) {
+			return "";
+		}
 		
+		StringBuilder builder = new StringBuilder();
+		for (Expression expression : expressions) {
+			builder.append(
+					serializeTypeId(expression) + delimeter);
+		}
+		builder.setLength(builder.length() - delimeter.length());
+		return builder.toString();
+	}
+	
+	public String serializeTypeId(Collection<? extends Expression> expressions) {
+		return serializeTypeId(expressions, "_");
+	}
+	
 }
