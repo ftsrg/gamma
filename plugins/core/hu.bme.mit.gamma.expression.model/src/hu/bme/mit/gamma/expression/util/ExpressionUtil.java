@@ -126,7 +126,7 @@ public class ExpressionUtil {
 			return reference.getFieldDeclaration();
 		}
 		if (expression instanceof ArrayAccessExpression access) {
-			if (evaluator.isArrayAccessEvaluable(access)) { // ArrayLiteral
+			if (ExpressionModelDerivedFeatures.isArrayAccessEvaluable(access)) { // ArrayLiteral
 				Expression evaluatedArrayAccess = evaluator.evaluateArrayAccess(access);
 				return getDeclaration(evaluatedArrayAccess);
 			}
@@ -145,7 +145,7 @@ public class ExpressionUtil {
 			return reference;
 		}
 		if (expression instanceof ArrayAccessExpression access) {
-			if (evaluator.isArrayAccessEvaluable(access)) { // ArrayLiteral
+			if (ExpressionModelDerivedFeatures.isArrayAccessEvaluable(access)) { // ArrayLiteral
 				Expression evaluatedArrayAccess = evaluator.evaluateArrayAccess(access);
 				return getAccessReference(evaluatedArrayAccess);
 			}

@@ -21,6 +21,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
 import hu.bme.mit.gamma.expression.model.BooleanLiteralExpression;
@@ -716,6 +717,15 @@ public class ExpressionModelDerivedFeatures {
 			}
 		}
 		return references.isEmpty();
+	}
+	
+	public static boolean isArrayAccessEvaluable(ArrayAccessExpression access) {
+		Expression operand = access.getOperand();
+		if (operand instanceof ArrayLiteralExpression) {
+			Expression index = access.getIndex();
+			return ExpressionModelDerivedFeatures.isEvaluable(index);
+		}
+		return false;
 	}
 	
 	public static boolean isNativeLiteral(Expression expression) {

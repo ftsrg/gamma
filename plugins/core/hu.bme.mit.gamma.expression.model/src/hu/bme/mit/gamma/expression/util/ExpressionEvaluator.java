@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -624,15 +624,6 @@ public class ExpressionEvaluator {
 	}
 	
 	//
-	
-	public boolean isArrayAccessEvaluable(ArrayAccessExpression access) {
-		Expression operand = access.getOperand();
-		if (operand instanceof ArrayLiteralExpression) {
-			Expression index = access.getIndex();
-			return ExpressionModelDerivedFeatures.isEvaluable(index);
-		}
-		return false;
-	}
 	
 	public Expression evaluateArrayAccess(ArrayAccessExpression access) {
 		ArrayLiteralExpression literal = (ArrayLiteralExpression) access.getOperand();

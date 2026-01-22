@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -268,7 +268,9 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch List<Expression> transformExpression(TimeSpecification timeSpecification) {
-		return #[ timeSpecification.timeInMilliseconds.transformSimpleExpression ]
+		return #[
+			timeSpecification.timeInMilliseconds.transformSimpleExpression
+		]
 	}
 	
 	// Key method: reference expression
@@ -277,7 +279,7 @@ class ExpressionTransformer {
 		// Potential lambda inlining
 		if (expression.containsTypeTransitively(FunctionAccessExpression)) {
 			checkState(!(expression instanceof FunctionAccessExpression))
-			val clone = expression.clone 
+			val clone = expression.clone
 			clone.getSelfAndAllContentsOfType(FunctionAccessExpression)
 					.forEach[it.createInlinedLambaExpression.replace(it)]
 			return clone.transformReferenceExpression
@@ -294,7 +296,7 @@ class ExpressionTransformer {
 		
 		val lowlevelVariables = <ValueDeclaration>newArrayList
 		
-		// If original is not a full access, other potential fields are explored, i.e., fieldAccess can be an extensible field access 
+		// If original is not a full access, other potential fields are explored, i.e., fieldAccess can be an extensible field access
 		if (reference instanceof DirectReferenceExpression) {
 			val declaration = reference.declaration as ValueDeclaration
 			if (trace.isForStatementParameterMapped(declaration)) {
@@ -379,27 +381,6 @@ class ExpressionTransformer {
 		}
 		return result
 	}
-	
-//	protected def inlineAndTransformExpression(FunctionAccessExpression expression) {
-//		var Expression returnExpression = null
-//		
-//		val inlinableExpressions = newLinkedList(expression)
-//		while (!inlinableExpressions.empty) {
-//			val inlinableExpression = inlinableExpressions.head
-//			var inlinedExpression = inlinableExpression.createInlinedLambaExpression
-//			
-//			if (returnExpression === null) {
-//				returnExpression = inlinedExpression
-//			}
-//			else {
-//				inlinedExpression.replace(inlinableExpression)
-//			}
-//			
-//			inlinableExpressions += inlinedExpression.getAllContentsOfType(FunctionAccessExpression)
-//		}
-//		
-//		return returnExpression
-//	}
 	
 	def dispatch List<Expression> transformExpression(EventReference expression) {
 		return #[
