@@ -277,11 +277,17 @@ class ExpressionTransformer {
 	
 	def List<Expression> transformReferenceExpression(ReferenceExpression expression) {
 		// Potential lambda inlining
-		if (expression.containsTypeTransitively(FunctionAccessExpression)) {
+		if (expression.isOrContainsTypesTransitively(
+					#[ FunctionAccessExpression, ArrayAccessExpression ])) {
 			checkState(!(expression instanceof FunctionAccessExpression))
 			val clone = expression.clone
+			
 			clone.getSelfAndAllContentsOfType(FunctionAccessExpression)
 					.forEach[it.createInlinedLambaExpression.replace(it)]
+			clone.getSelfAndAllContentsOfType(ArrayAccessExpression)
+					.filter[it.arrayAccessEvaluable]
+					.forEach[it.evaluateArrayAccess.replace(it)]
+					
 			return clone.transformReferenceExpression
 		}
 		
@@ -322,7 +328,8 @@ class ExpressionTransformer {
 		
 		// Simple references are returned if indexes are empty
 		val lowlevelReferences = <Expression>newArrayList
-		lowlevelReferences += lowlevelVariables.map[it.index(lowlevelIndexes)]
+		lowlevelReferences += lowlevelVariables.map[
+				it.index(lowlevelIndexes)]
 		
 		return lowlevelReferences
 	}
