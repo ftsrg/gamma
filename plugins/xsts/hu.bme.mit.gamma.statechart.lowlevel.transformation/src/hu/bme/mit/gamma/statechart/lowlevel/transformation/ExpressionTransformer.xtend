@@ -275,23 +275,9 @@ class ExpressionTransformer {
 	
 	// Key method: reference expression
 	
-	def List<Expression> transformReferenceExpression(ReferenceExpression expression) {
-		// Potential lambda inlining
-		if (expression.isOrContainsTypesTransitively(
-					#[ FunctionAccessExpression, ArrayAccessExpression ])) {
-			checkState(!(expression instanceof FunctionAccessExpression))
-			val clone = expression.clone
-			
-			clone.getSelfAndAllContentsOfType(FunctionAccessExpression)
-					.forEach[it.createInlinedLambaExpression.replace(it)]
-			clone.getSelfAndAllContentsOfType(ArrayAccessExpression)
-					.filter[it.arrayAccessEvaluable]
-					.forEach[it.evaluateArrayAccess.replace(it)]
-					
-			return clone.transformReferenceExpression
-		}
-		
-		// Pre-processing done
+	def List<Expression> transformReferenceExpression(ReferenceExpression _expression) {
+		val expression = _expression.needPreprocessForReferenceExpression ?
+				_expression.preprocessReferenceExpression : _expression
 		
 		val reference = expression.accessReference
 		// a[0].b.c[1].d
@@ -332,6 +318,25 @@ class ExpressionTransformer {
 				it.index(lowlevelIndexes)]
 		
 		return lowlevelReferences
+	}
+	
+	protected def needPreprocessForReferenceExpression(ReferenceExpression expression) {
+		return expression.isOrContainsTypesTransitively(
+					#[ FunctionAccessExpression, ArrayAccessExpression ])
+	}
+	
+	protected def preprocessReferenceExpression(ReferenceExpression expression) {
+		val _expression = expression.clone
+		
+		// Inline lambdas
+		_expression.getSelfAndAllContentsOfType(FunctionAccessExpression)
+				.forEach[it.createInlinedLambaExpression.replace(it)]
+		// Inline array literals
+		_expression.getSelfAndAllContentsOfType(ArrayAccessExpression)
+				.filter[it.arrayAccessEvaluable]
+				.forEach[it.evaluateArrayAccess.replace(it)]
+		
+		return _expression
 	}
 	
 	// Function access
