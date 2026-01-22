@@ -1406,6 +1406,24 @@ public class ExpressionUtil {
 		return first;
 	}
 	
+	public IfThenElseExpression weaveIntoIfThenElse(Collection<? extends Expression> conditions, Expression primaryReturnValue) {
+		Expression finalReturnValue = negator.negate(primaryReturnValue);
+		return weaveIntoIfThenElse(conditions, primaryReturnValue, finalReturnValue);
+	}
+	
+	public IfThenElseExpression weaveIntoIfThenElse(Collection<? extends Expression> conditions,
+				Expression primaryReturnValue, Expression finalReturnValue) {
+		List<IfThenElseExpression> ifThenElses = conditions.stream().map(it ->
+					createIfThenElseExpression(it, ecoreUtil.clone(primaryReturnValue), null))
+			.collect(Collectors.toList());
+		
+		IfThenElseExpression lastIfThenElse = javaUtil.getLastElement(ifThenElses);
+		lastIfThenElse.setElse(finalReturnValue);
+		
+		IfThenElseExpression weavedIfThenElse = weave(ifThenElses);
+		return weavedIfThenElse;
+	}
+	
 	public FunctionAccessExpression createFunctionAccessExpression(FunctionDeclaration function, List<? extends Expression> arguments) {
 		DirectReferenceExpression reference = createReferenceExpression(function);
 		FunctionAccessExpression callExpression = factory.createFunctionAccessExpression();
