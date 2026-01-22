@@ -33,6 +33,7 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.InitializableElement
 import hu.bme.mit.gamma.expression.model.OpaqueExpression
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
@@ -101,9 +102,7 @@ class ActionTransformer {
 	}
 	
 	protected def dispatch List<Action> transformAction(EmptyStatement action) {
-		return #[
-			createEmptyStatement
-		]
+		return #[ createEmptyStatement ]
 	}
 	
 	protected def dispatch List<Action> transformAction(Block action) {
@@ -270,7 +269,8 @@ class ActionTransformer {
 		val result = <Action>newLinkedList
 		
 		val actionLhs = action.lhs
-		val lowlevelLhs = actionLhs.transformReferenceExpression // Potentially more references are expected
+		val lowlevelLhs = actionLhs.transformReferenceExpression
+				.filter(ReferenceExpression).toList
 		// This addresses record1 := record2 like assignments
 		
 		val actionRhs = action.rhs
@@ -288,7 +288,7 @@ class ActionTransformer {
 		val result = <Action>newLinkedList
 		
 		val actionLhs = action.lhs
-		val lowlevelLhs = actionLhs.transformReferenceExpression // Potentially more references are expected
+		val lowlevelLhs = actionLhs.transformReferenceExpression
 		// This addresses record1 := record2 like assignments
 		
 		val assumption = action.constraint
@@ -306,7 +306,7 @@ class ActionTransformer {
 			val lowlevelHavoc = actionFactory.createHavocStatement
 			result += lowlevelHavoc
 			
-			lowlevelHavoc.lhs = lhs
+			lowlevelHavoc.lhs = lhs as ReferenceExpression
 			if (lhs === lowlevelLhs.lastOrNull) { // One constraint is enough at the end
 				lowlevelHavoc.constraint = lowlevelAssumption
 			}

@@ -125,8 +125,12 @@ public class ExpressionUtil {
 		if (expression instanceof FieldReferenceExpression reference) {
 			return reference.getFieldDeclaration();
 		}
-		if (expression instanceof ArrayAccessExpression) {
-			// Below branch
+		if (expression instanceof ArrayAccessExpression access) {
+			if (evaluator.isArrayAccessEvaluable(access)) { // ArrayLiteral
+				Expression evaluatedArrayAccess = evaluator.evaluateArrayAccess(access);
+				return getDeclaration(evaluatedArrayAccess);
+			}
+			// Also below branch
 		}
 		if (expression instanceof AccessExpression access) {
 			// Default access
@@ -139,6 +143,13 @@ public class ExpressionUtil {
 	public ReferenceExpression getAccessReference(Expression expression) {
 		if (expression instanceof DirectReferenceExpression reference) {
 			return reference;
+		}
+		if (expression instanceof ArrayAccessExpression access) {
+			if (evaluator.isArrayAccessEvaluable(access)) { // ArrayLiteral
+				Expression evaluatedArrayAccess = evaluator.evaluateArrayAccess(access);
+				return getAccessReference(evaluatedArrayAccess);
+			}
+			// Also below branch
 		}
 		if (expression instanceof AccessExpression access) {
 			return getAccessReference(

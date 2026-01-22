@@ -115,15 +115,11 @@ class ExpressionTransformer {
 	// Multiple expressions can be returned
 	
 	def dispatch List<Expression> transformExpression(NullaryExpression expression) {
-		return #[
-			expression.clone
-		]
+		return #[ expression.clone ]
 	}
 	
 	def dispatch List<Expression> transformExpression(DefaultExpression expression) {
-		return #[
-			createTrueExpression
-		]
+		return #[ createTrueExpression ]
 	}
 	
 	def dispatch List<Expression> transformExpression(UnaryExpression expression) {
@@ -175,9 +171,7 @@ class ExpressionTransformer {
 		for (containedExpression : expression.operands) {
 			multiaryExpression.operands += containedExpression.transformSimpleExpression
 		}
-		return #[
-			multiaryExpression
-		]
+		return #[ multiaryExpression ]
 	}
 	
 	def dispatch List<Expression> transformExpression(IntegerRangeLiteralExpression expression) {
@@ -258,41 +252,49 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch List<Expression> transformExpression(EventParameterReferenceExpression expression) {
-		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
+		return expression.transformReferenceExpression
 	}
 		
 	def dispatch List<Expression> transformExpression(RecordAccessExpression expression) {
-		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
+		return expression.transformReferenceExpression
 	}
 	
 	def dispatch List<Expression> transformExpression(ArrayAccessExpression expression) {
-		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
+		return expression.transformReferenceExpression
 	}
 
 	def dispatch List<Expression> transformExpression(DirectReferenceExpression expression) {
-		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
+		return expression.transformReferenceExpression
 	}
 	
 	def dispatch List<Expression> transformExpression(TimeSpecification timeSpecification) {
-		return #[
-			timeSpecification.timeInMilliseconds.transformSimpleExpression
-		]
+		return #[ timeSpecification.timeInMilliseconds.transformSimpleExpression ]
 	}
 	
 	// Key method: reference expression
 	
-	def List<ReferenceExpression> transformReferenceExpression(ReferenceExpression expression) {
+	def List<Expression> transformReferenceExpression(ReferenceExpression expression) {
+		// Potential lambda inlining
+		if (expression.containsTypeTransitively(FunctionAccessExpression)) {
+			checkState(!(expression instanceof FunctionAccessExpression))
+			val clone = expression.clone 
+			clone.getSelfAndAllContentsOfType(FunctionAccessExpression)
+					.forEach[it.createInlinedLambaExpression.replace(it)]
+			return clone.transformReferenceExpression
+		}
+		
+		// Pre-processing done
+		
+		val reference = expression.accessReference
 		// a[0].b.c[1].d
 		val fieldAccess = expression.fieldAccess // .b .c
 		val indexes = expression.indexAccess // [0] and [1]
 		// It is the callers responsibility to make sure the original expression contains all necessary indexes
 		val lowlevelIndexes = indexes.map[it.transformSimpleExpression].toList
 		
-		val reference = expression.accessReference
 		val lowlevelVariables = <ValueDeclaration>newArrayList
 		
-		// If original is not a full access, other potential fields are explored, that is,
-		// fieldAccess can be an extensible field access 
+		// If original is not a full access, other potential fields are explored, i.e., fieldAccess can be an extensible field access 
 		if (reference instanceof DirectReferenceExpression) {
 			val declaration = reference.declaration as ValueDeclaration
 			if (trace.isForStatementParameterMapped(declaration)) {
@@ -315,12 +317,9 @@ class ExpressionTransformer {
 			val parameter = reference.parameter
 			lowlevelVariables += trace.getAllInParameters(port, event, parameter -> fieldAccess)
 		}
-		else if (reference instanceof FunctionAccessExpression) {
-			// FunctionAccess?
-		}
 		
 		// Simple references are returned if indexes are empty
-		val lowlevelReferences = newArrayList
+		val lowlevelReferences = <Expression>newArrayList
 		lowlevelReferences += lowlevelVariables.map[it.index(lowlevelIndexes)]
 		
 		return lowlevelReferences
@@ -380,6 +379,27 @@ class ExpressionTransformer {
 		}
 		return result
 	}
+	
+//	protected def inlineAndTransformExpression(FunctionAccessExpression expression) {
+//		var Expression returnExpression = null
+//		
+//		val inlinableExpressions = newLinkedList(expression)
+//		while (!inlinableExpressions.empty) {
+//			val inlinableExpression = inlinableExpressions.head
+//			var inlinedExpression = inlinableExpression.createInlinedLambaExpression
+//			
+//			if (returnExpression === null) {
+//				returnExpression = inlinedExpression
+//			}
+//			else {
+//				inlinedExpression.replace(inlinableExpression)
+//			}
+//			
+//			inlinableExpressions += inlinedExpression.getAllContentsOfType(FunctionAccessExpression)
+//		}
+//		
+//		return returnExpression
+//	}
 	
 	def dispatch List<Expression> transformExpression(EventReference expression) {
 		return #[

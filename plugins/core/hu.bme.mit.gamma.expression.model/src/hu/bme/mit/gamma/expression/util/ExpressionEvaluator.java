@@ -623,6 +623,26 @@ public class ExpressionEvaluator {
 		}
 	}
 	
+	//
+	
+	public boolean isArrayAccessEvaluable(ArrayAccessExpression access) {
+		Expression operand = access.getOperand();
+		if (operand instanceof ArrayLiteralExpression) {
+			Expression index = access.getIndex();
+			return ExpressionModelDerivedFeatures.isEvaluable(index);
+		}
+		return false;
+	}
+	
+	public Expression evaluateArrayAccess(ArrayAccessExpression access) {
+		ArrayLiteralExpression literal = (ArrayLiteralExpression) access.getOperand();
+		Expression index = access.getIndex();
+		int i = evaluate(index);
+		List<Expression> operands = literal.getOperands();
+		Expression operand = operands.get(i);
+		return operand;
+	}
+	
 	// Auxiliary
 	
 	protected List<Expression> getNegativeExpressionPairs(List<Expression> expressions) {
