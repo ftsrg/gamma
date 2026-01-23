@@ -335,6 +335,10 @@ class ExpressionTransformer {
 		_expression.getSelfAndAllContentsOfType(ArrayAccessExpression)
 				.filter[it.arrayAccessEvaluable]
 				.forEach[it.evaluateArrayAccess.replace(it)]
+		// Inline record literals
+		_expression.getSelfAndAllContentsOfType(RecordAccessExpression)
+				.filter[it.recordAccessEvaluable]
+				.forEach[it.evaluateRecordAccess.replace(it)]
 		
 		return _expression
 	}

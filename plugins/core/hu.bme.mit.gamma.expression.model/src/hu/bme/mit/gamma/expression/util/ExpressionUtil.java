@@ -119,6 +119,11 @@ public class ExpressionUtil {
 			return reference.getDeclaration();
 		}
 		if (expression instanceof RecordAccessExpression access) {
+			if (ExpressionModelDerivedFeatures.isRecordAccessEvaluable(access)) { // RecordLiteral
+				Expression evaluatedRecordAccess = evaluator.evaluateRecordAccess(access);
+				return getDeclaration(evaluatedRecordAccess);
+			}
+			// Or this branch...
 			FieldReferenceExpression reference = access.getFieldReference();
 			return getDeclaration(reference);
 		}
@@ -130,7 +135,7 @@ public class ExpressionUtil {
 				Expression evaluatedArrayAccess = evaluator.evaluateArrayAccess(access);
 				return getDeclaration(evaluatedArrayAccess);
 			}
-			// Also below branch
+			// Also below branch...
 		}
 		if (expression instanceof AccessExpression access) {
 			// Default access
@@ -149,7 +154,14 @@ public class ExpressionUtil {
 				Expression evaluatedArrayAccess = evaluator.evaluateArrayAccess(access);
 				return getAccessReference(evaluatedArrayAccess);
 			}
-			// Also below branch
+			// Also below branch...
+		}
+		if (expression instanceof RecordAccessExpression access) {
+			if (ExpressionModelDerivedFeatures.isRecordAccessEvaluable(access)) { // RecordLiteral
+				Expression evaluatedRecordAccess = evaluator.evaluateRecordAccess(access);
+				return getAccessReference(evaluatedRecordAccess);
+			}
+			// Also below branch...
 		}
 		if (expression instanceof AccessExpression access) {
 			return getAccessReference(

@@ -614,7 +614,7 @@ public class ExpressionEvaluator {
 			return false;
 		}
 	}
-
+	
 	public boolean isDefinitelyFalseExpression(Expression expression) {
 		try {
 			return !evaluateBoolean(expression);
@@ -626,12 +626,24 @@ public class ExpressionEvaluator {
 	//
 	
 	public Expression evaluateArrayAccess(ArrayAccessExpression access) {
-		ArrayLiteralExpression literal = (ArrayLiteralExpression) access.getOperand();
+		ArrayLiteralExpression literal = ExpressionModelDerivedFeatures.getAsIsOrReferencedElement(
+				access.getOperand(), ArrayLiteralExpression.class);
 		Expression index = access.getIndex();
 		int i = evaluate(index);
 		List<Expression> operands = literal.getOperands();
 		Expression operand = operands.get(i);
 		return operand;
+	}
+	
+	public Expression evaluateRecordAccess(RecordAccessExpression access) {
+		RecordLiteralExpression literal = ExpressionModelDerivedFeatures.getAsIsOrReferencedElement(
+				access.getOperand(), RecordLiteralExpression.class);
+		FieldReferenceExpression fieldReference = access.getFieldReference();
+		FieldAssignment fieldAssignment = literal.getFieldAssignments().stream()
+				.filter(it -> it.getReference() == fieldReference)
+				.findFirst().get();
+		Expression value = fieldAssignment.getValue();
+		return value;
 	}
 	
 	// Auxiliary
@@ -726,7 +738,7 @@ public class ExpressionEvaluator {
 		}
 		return equalityExpressions;
 	}
-
+	
 	protected List<EqualityExpression> filterReferenceEqualityExpressions(
 			Collection<EqualityExpression> expressions) {
 		return expressions.stream().filter(it -> 

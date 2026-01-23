@@ -62,6 +62,7 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
+import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
@@ -414,6 +415,30 @@ public class ExpressionModelDerivedFeatures {
 		return calledFunctions;
 	}
 	
+	public static <T extends Expression> boolean isOrReferencedElement(Expression expression, Class<T> clazz) {
+		try {
+			return getAsIsOrReferencedElement(expression, clazz) != null;
+		} catch (IllegalArgumentException e) {
+			return false;
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T extends Expression> T getAsIsOrReferencedElement(Expression expression, Class<T> clazz) {
+		if (clazz.isInstance(expression)) {
+			return (T) expression;
+		}
+		if (expression instanceof DirectReferenceExpression reference) {
+			Declaration declaration = reference.getDeclaration();
+			if (declaration instanceof ConstantDeclaration constantDeclaration) {
+				Expression value = constantDeclaration.getExpression();
+				return getAsIsOrReferencedElement(value, clazz);
+			}
+		}
+		
+		throw new IllegalArgumentException("Expression is not of type " + clazz.getName());
+	}
+	
 	public static TypeDefinition getElementTypeDefinition(Declaration declaration) {
 		Type type = declaration.getType();
 		TypeDefinition typeDefinition = getTypeDefinition(type);
@@ -721,11 +746,16 @@ public class ExpressionModelDerivedFeatures {
 	
 	public static boolean isArrayAccessEvaluable(ArrayAccessExpression access) {
 		Expression operand = access.getOperand();
-		if (operand instanceof ArrayLiteralExpression) {
+		if (isOrReferencedElement(operand, ArrayLiteralExpression.class)) {
 			Expression index = access.getIndex();
 			return ExpressionModelDerivedFeatures.isEvaluable(index);
 		}
 		return false;
+	}
+	
+	public static boolean isRecordAccessEvaluable(RecordAccessExpression access) {
+		Expression operand = access.getOperand();
+		return isOrReferencedElement(operand, RecordLiteralExpression.class);
 	}
 	
 	public static boolean isNativeLiteral(Expression expression) {
