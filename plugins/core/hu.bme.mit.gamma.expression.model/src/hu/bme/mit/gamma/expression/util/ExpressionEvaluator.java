@@ -10,8 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.expression.util;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -87,24 +85,20 @@ public class ExpressionEvaluator {
 	//
 	
 	public Expression evaluateExpression(Expression expression) {
+		ExpressionUtil util = ExpressionUtil.INSTANCE;
+		
 		TypeDefinition type = typeDeterminator.getTypeDefinition(expression);
 		if (type instanceof BooleanTypeDefinition) {
 			boolean value = evaluateBoolean(expression);
-			return (value) ? factory.createTrueExpression() : factory.createFalseExpression();
+			return util.toBooleanLiteral(value);
 		}
 		if (type instanceof IntegerTypeDefinition) {
 			int value = evaluateInteger(expression);
-			IntegerLiteralExpression literal = factory.createIntegerLiteralExpression();
-			BigInteger bigIntegerValue = BigInteger.valueOf(value);
-			literal.setValue(bigIntegerValue);
-			return literal;
+			return util.toIntegerLiteral(value);
 		}
 		if (type instanceof RationalTypeDefinition || type instanceof DecimalTypeDefinition) {
 			double value = evaluateDecimal(expression);
-			DecimalLiteralExpression literal = factory.createDecimalLiteralExpression();
-			BigDecimal bigDecimalValue = BigDecimal.valueOf(value);
-			literal.setValue(bigDecimalValue);
-			return literal;
+			return util.toDecimalLiteral(value);
 		}
 		
 		// None of the above
