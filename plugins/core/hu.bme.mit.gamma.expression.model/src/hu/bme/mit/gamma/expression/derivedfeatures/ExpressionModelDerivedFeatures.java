@@ -630,6 +630,11 @@ public class ExpressionModelDerivedFeatures {
 		return new ArrayList<Integer>();
 	}
 	
+	public static Integer getFirstDimension(Type type) {
+		return getDimensions(type)
+					.get(0);
+	}
+	
 	public static List<List<Integer>> allIndexes(ArrayTypeDefinition type) {
 		List<List<Integer>> allIndexes = new ArrayList<>();
 		
