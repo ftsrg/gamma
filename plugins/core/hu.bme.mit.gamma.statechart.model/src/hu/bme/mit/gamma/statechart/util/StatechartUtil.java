@@ -98,6 +98,8 @@ import hu.bme.mit.gamma.statechart.statechart.StateNode;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory;
 import hu.bme.mit.gamma.statechart.statechart.SynchronousStatechartDefinition;
+import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration;
+import hu.bme.mit.gamma.statechart.statechart.TimeoutReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger;
@@ -436,6 +438,10 @@ public class StatechartUtil extends ActionUtil {
 		unaryTrigger.setType(type);
 		unaryTrigger.setOperand(trigger);
 		return unaryTrigger;
+	}
+	
+	public Trigger createOnCycleTrigger() {
+		return statechartFactory.createOnCycleTrigger();
 	}
 	
 	public void extendGuard(Transition transition, Expression guard) {
@@ -1250,5 +1256,14 @@ public class StatechartUtil extends ActionUtil {
 	
 	public void addCoordinationVariableAnnotation(VariableDeclaration variable) {
 		addAnnotation(variable, statechartFactory.createCoordinationVariableDeclarationAnnotation());
+	}
+	
+	// TimeoutReferenceExpression
+	
+	public TimeoutReferenceExpression createTimeoutReferenceExpression(TimeoutDeclaration timeout) {
+		TimeoutReferenceExpression expression = statechartFactory.createTimeoutReferenceExpression();
+		expression.setTimeout(timeout);
+		
+		return expression;
 	}
 }

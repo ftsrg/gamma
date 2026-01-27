@@ -115,7 +115,7 @@ class ModelElementMutator {
 	
 	def removeTransitionTrigger(Transition transition) {
 		val trigger = transition.trigger
-		val onCycleTrigger = createOnCycleTrigger
+		val onCycleTrigger = statechartFactory.createOnCycleTrigger
 		
 		onCycleTrigger.replace(trigger)
 
