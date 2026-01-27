@@ -113,13 +113,19 @@ public class ExpressionTypeDeterminator2 {
 			return typeReference;
 		}
 		if (expression instanceof ArrayLiteralExpression arrayLiteralExpression) {
+			ArrayTypeDefinition arrayTypeDefinition = factory.createArrayTypeDefinition();
+			
 			List<Expression> operands = arrayLiteralExpression.getOperands();
 			if (operands.isEmpty()) {
 				// Maybe this should be changed to VoidTypeDefinition, as empty array literals could be useful
-				throw new IllegalArgumentException();
+//				throw new IllegalArgumentException();
+				arrayTypeDefinition.setElementType(
+						factory.createVoidTypeDefinition());
+				arrayTypeDefinition.setSize(
+						ExpressionUtil.INSTANCE.createLiteralZero());
+				return arrayTypeDefinition;
 			}
 			Expression firstOperand = operands.get(0);
-			ArrayTypeDefinition arrayTypeDefinition = factory.createArrayTypeDefinition();
 			arrayTypeDefinition.setElementType(
 					getType(firstOperand));
 			IntegerLiteralExpression size = factory.createIntegerLiteralExpression();
@@ -508,8 +514,8 @@ public class ExpressionTypeDeterminator2 {
 	
 	public String serializeTypeId(Expression expression) {
 		TypeSerializer typeSerializer = TypeSerializer.INSTANCE;
-		return typeSerializer.serializeId(
-				getType(expression));
+		Type type = getType(expression);
+		return typeSerializer.serializeId(type);
 	}
 	
 	public String serializeTypeId(Collection<? extends Expression> expressions, String delimeter) {

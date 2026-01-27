@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeReference;
+import hu.bme.mit.gamma.expression.model.VoidTypeDefinition;
 
 public class TypeSerializer {
 	//
@@ -32,6 +33,9 @@ public class TypeSerializer {
 
 	public String serialize(Type type) {
 		if (type instanceof TypeReference _type) {
+			return _serialize(_type);
+		}
+		else if (type instanceof VoidTypeDefinition _type) {
 			return _serialize(_type);
 		}
 		else if (type instanceof BooleanTypeDefinition _type) {
@@ -73,6 +77,10 @@ public class TypeSerializer {
 		else {
 			return reference.getName();
 		}
+	}
+	
+	protected String _serialize(VoidTypeDefinition type) {
+		return "void";
 	}
 
 	protected String _serialize(BooleanTypeDefinition type) {

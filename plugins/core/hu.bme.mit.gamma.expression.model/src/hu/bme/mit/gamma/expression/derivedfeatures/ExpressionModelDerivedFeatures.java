@@ -332,6 +332,13 @@ public class ExpressionModelDerivedFeatures {
 		return false;
 	}
 	
+	public static boolean isEmptyArrayLiteral(Expression expression) {
+		if (expression instanceof ArrayLiteralExpression literal) {
+			return literal.getOperands().isEmpty();
+		}
+		return false;
+	}
+	
 	public static boolean isRecord(Declaration declaration) {
 		Type type = declaration.getType();
 		return isRecord(type);
