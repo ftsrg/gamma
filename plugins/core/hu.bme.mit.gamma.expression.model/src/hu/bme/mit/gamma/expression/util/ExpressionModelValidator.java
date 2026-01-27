@@ -558,8 +558,7 @@ public class ExpressionModelValidator {
 			}
 			// The declaration has an initial value
 			EObject container = elem.eContainer();
-			if (elem instanceof Declaration) {
-				Declaration declaration = (Declaration) elem;
+			if (elem instanceof Declaration declaration) {
 				for (VariableDeclaration variableDeclaration : expressionUtil.getReferredVariables(initialExpression)) {
 					if (container == variableDeclaration.eContainer() &&
 							container.eContainmentFeature() == variableDeclaration.eContainmentFeature()) {
@@ -576,21 +575,20 @@ public class ExpressionModelValidator {
 				}
 				// Initial value is correct
 				Type variableDeclarationType = declaration.getType();
-				Type initialExpressionType = typeDeterminator.getType(elem.getExpression());
+				Type initialExpressionType = typeDeterminator.getType(initialExpression);
 				if (!typeDeterminator.equals(variableDeclarationType, initialExpressionType)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 						"The types of the declaration and the right hand side expression are not the same: " +
 							typeDeterminator.print(variableDeclarationType) + " and " + typeDeterminator.print(initialExpressionType), 
 							new ReferenceInfo(ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION)));
 				}
-				// Additional checks for arrays
+				// Additional checks for arrays – is this really needed?
 				ArrayTypeDefinition arrayType = null;
 				if (ExpressionModelDerivedFeatures.getTypeDefinition(declaration) instanceof ArrayTypeDefinition) {
 					arrayType = (ArrayTypeDefinition) declaration.getType();
 				}
-				if (arrayType != null) {	
-					if (initialExpression instanceof ArrayLiteralExpression) {
-						ArrayLiteralExpression rhs = (ArrayLiteralExpression) initialExpression;
+				if (arrayType != null) {
+					if (initialExpression instanceof ArrayLiteralExpression rhs) {
 						Type elementType = arrayType.getElementType();
 						for (Expression element : rhs.getOperands()) {
 							if (!typeDeterminator.equals(elementType, typeDeterminator.getType(element))) {
@@ -606,11 +604,12 @@ public class ExpressionModelValidator {
 									new ReferenceInfo(ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION)));
 						}						
 					}
-					else {
-						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"The right hand side must be of type array literal", 
-								new ReferenceInfo(ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION)));
-					}
+					// The initial expression can be another expression, too, not only ArrayLiteralExpression!
+//					else {
+//						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+//							"The right hand side must be of type array literal", 
+//								new ReferenceInfo(ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION)));
+//					}
 				}
 			}
 		} catch (Exception exception) {
