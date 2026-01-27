@@ -327,20 +327,21 @@ class ExpressionTransformer {
 	
 	protected def preprocessReferenceExpression(ReferenceExpression expression) {
 		val _expression = expression.clone
+				.createNotExpression // Dummy container due to 'replace'
 		
 		// Inline lambdas
-		_expression.getSelfAndAllContentsOfType(FunctionAccessExpression)
+		_expression.getAllContentsOfType(FunctionAccessExpression)
 				.forEach[it.createInlinedLambaExpression.replace(it)]
 		// Inline array literals
-		_expression.getSelfAndAllContentsOfType(ArrayAccessExpression)
+		_expression.getAllContentsOfType(ArrayAccessExpression)
 				.filter[it.arrayAccessEvaluable]
 				.forEach[it.evaluateArrayAccess.replace(it)]
 		// Inline record literals
-		_expression.getSelfAndAllContentsOfType(RecordAccessExpression)
+		_expression.getAllContentsOfType(RecordAccessExpression)
 				.filter[it.recordAccessEvaluable]
 				.forEach[it.evaluateRecordAccess.replace(it)]
 		
-		return _expression
+		return _expression.operand // Dummy container
 	}
 	
 	// Function access
