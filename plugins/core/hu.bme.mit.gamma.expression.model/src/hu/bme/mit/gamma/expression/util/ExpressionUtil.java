@@ -1521,6 +1521,24 @@ public class ExpressionUtil {
 		return accessExpression;
 	}
 	
+	public ArrayLiteralExpression createArrayLiteralExpression(Declaration declaration) {
+		DirectReferenceExpression referenceExpression = createReferenceExpression(declaration);
+		return createArrayLiteralExpression(referenceExpression);
+	}
+	
+	public ArrayLiteralExpression createArrayLiteralExpression(Expression operand) {
+		ArrayLiteralExpression arrayLiteralExpression = factory.createArrayLiteralExpression();
+		
+		TypeDefinition typeDefinition = typeDeterminator.getTypeDefinition(operand);
+		for (int i = 0; i < ExpressionModelDerivedFeatures.getFirstDimension(typeDefinition); i++) {
+			ArrayAccessExpression arrayAccessExpression = createArrayAccessExpression(
+					ecoreUtil.clone(operand), i);
+			arrayLiteralExpression.getOperands().add(arrayAccessExpression);
+		}
+		
+		return arrayLiteralExpression;
+	}
+	
 	public DirectReferenceExpression createReferenceExpression(Declaration declaration) {
 		if (declaration == null) {
 			throw new IllegalArgumentException("Declaration is null");
