@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.FalseExpression;
 import hu.bme.mit.gamma.expression.model.GreaterEqualExpression;
 import hu.bme.mit.gamma.expression.model.GreaterExpression;
+import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.ImplyExpression;
 import hu.bme.mit.gamma.expression.model.InequalityExpression;
 import hu.bme.mit.gamma.expression.model.LessEqualExpression;
@@ -205,6 +206,15 @@ public class ExpressionNegator {
 		return predicateExpression;
 	}
 	
+	public Expression _negate(IfThenElseExpression expression) {
+		IfThenElseExpression ifThenElseExpression = ecoreUtil.clone(expression);
+		ifThenElseExpression.setThen(
+				negate(ifThenElseExpression.getThen()));
+		ifThenElseExpression.setElse(
+				negate(ifThenElseExpression.getElse()));
+		return ifThenElseExpression;
+	}
+	
 	public Expression negate(Expression expression) {
 		if (expression instanceof TrueExpression _expression) {
 			return _negate(_expression);
@@ -246,6 +256,9 @@ public class ExpressionNegator {
 			return _negate(_expression);
 		}
 		else if (expression instanceof LessEqualExpression _expression) {
+			return _negate(_expression);
+		}
+		else if (expression instanceof IfThenElseExpression _expression) {
 			return _negate(_expression);
 		}
 		else {

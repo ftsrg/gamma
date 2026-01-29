@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -41,6 +41,7 @@ import hu.bme.mit.gamma.expression.model.UnaryMinusExpression
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.model.XorExpression
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.ExpressionNegator
 import hu.bme.mit.gamma.uppaal.util.MultiaryExpressionCreator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -54,6 +55,8 @@ import uppaal.expressions.LogicalOperator
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+
 class ExpressionTransformer {
 	
 	protected final Traceability traceability
@@ -62,6 +65,7 @@ class ExpressionTransformer {
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionNegator expressionNegator = ExpressionNegator.INSTANCE
 	protected final extension ExpressionsFactory expressionsFactory = ExpressionsFactory.eINSTANCE
+	protected final extension ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE
 	
 	new(Traceability traceability) {
 		this.traceability = traceability
@@ -81,7 +85,9 @@ class ExpressionTransformer {
 	
 	def dispatch Expression transform(ArrayAccessExpression expression) {
 		val operand = expression.operand.transform
-		val index = expression.index.transform
+		val gammaIndex = expression.index
+		val index = (gammaIndex.evaluable ?
+				gammaIndex.evaluateExpression : gammaIndex).transform
 		if (operand instanceof IdentifierExpression) {
 			operand.index += index
 			return operand
