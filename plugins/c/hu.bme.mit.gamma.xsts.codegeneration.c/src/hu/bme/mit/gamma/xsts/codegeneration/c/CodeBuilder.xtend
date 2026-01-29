@@ -60,7 +60,7 @@ class CodeBuilder implements IStatechartCode {
 	/**
 	 * The supported platform for code generation.
 	 */
-	SupportedPlatforms platform = SupportedPlatforms.UNIX;
+//	SupportedPlatforms platform = SupportedPlatforms.UNIX;
 
 	/* Serializers used for code generation */
 	val ActionSerializer actionSerializer = ActionSerializer.INSTANCE;

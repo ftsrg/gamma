@@ -60,7 +60,7 @@ class HavocBuilder implements IStatechartCode {
 	/**
 	 * The supported platform for code generation.
 	 */
-	SupportedPlatforms platform = SupportedPlatforms.UNIX
+//	SupportedPlatforms platform = SupportedPlatforms.UNIX
 	
 	/**
      * Constructs a {@code HavocBuilder} object with the given {@code XSTS}.
