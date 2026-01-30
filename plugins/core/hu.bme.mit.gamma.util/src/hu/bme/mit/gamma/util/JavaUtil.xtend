@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.util
 
 import java.util.AbstractMap.SimpleEntry
+import java.util.ArrayList
 import java.util.Collection
 import java.util.List
 import java.util.Map
@@ -407,4 +408,28 @@ class JavaUtil {
 			causeMessage.startsWith("CreateProcess error=") // CreateProcess error=2, but not sure about the literal in other OS
 	}
 	
+	def <T> List<List<T>> getAllPermutations(List<T> original) {
+		val workingCopy = original.clone
+		val List<List<T>> result = new ArrayList<List<T>> 
+		
+		if (workingCopy.size == 1) {
+			val List<T> innerResult = newArrayList
+			innerResult.add(workingCopy.get(0))
+			result += innerResult
+			return result
+		}
+		
+		val firstElement = workingCopy.get(0)
+		val permutations = getAllPermutations(workingCopy.subList(1, workingCopy.size))
+		for (permutation : permutations) {
+			val permutationSize = permutation.size
+			for (var i = 0; i <= permutationSize; i++) {
+				val permutationCopy = newArrayList(permutation.clone)
+				permutationCopy.add(i, firstElement)
+				result += permutationCopy
+			}
+		}
+		
+		return result
+	}
 }
