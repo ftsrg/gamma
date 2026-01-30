@@ -52,6 +52,8 @@ import static hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
+import hu.bme.mit.gamma.xsts.model.DelayAction
+import hu.bme.mit.gamma.xsts.model.SequentialAction
 
 class GammaToXstsTransformer {
 	// This gammaToLowlevelTransformer must be the same during this transformation cycle due to tracing
@@ -239,6 +241,13 @@ class GammaToXstsTransformer {
 			// Denoting variable as scheduled clock variable
 			xStsClockVariable.addScheduledClockAnnotation
 		}
+		
+		if (xSts.inEventTransition.action instanceof SequentialAction) {
+			for (delayAction : (xSts.inEventTransition.action as SequentialAction).actions.filter[it instanceof DelayAction]) {
+				xStsClockSettingAction.clone.replace(delayAction)
+			}
+		}
+		
 		// Putting it in merged transition as it does not work in environment action
 		xStsClockSettingAction.actions += xSts.mergedAction
 		
