@@ -1554,9 +1554,12 @@ class ComponentTransformer {
 		bindingAssignments.removeNonDeterministicActionsReferencingAssignedVariables(oldInEventAction)
 		
 		val newInEventAction = createSequentialAction => [
-			// TODO Add delay
-
+			// Add delay -> new DelayAction -> transformed in GammaToXstsTransformer.setClockVariables
+			val delayAction = xStsModelFactory.createDelayAction
+			delayAction.lhs = xSts.clockVariables.get(0).createReferenceExpression
+			it.actions += delayAction
 			it.actions += newCoordinationInEventAction
+			it.actions += delayAction.clone
 			it.actions += oldInEventAction
 			// Bind together ports connected to the same system port
 			it.actions += bindingAssignments
