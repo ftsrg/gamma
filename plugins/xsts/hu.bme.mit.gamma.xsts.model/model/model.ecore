@@ -147,4 +147,5 @@
       eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclarationAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="StrictControlVariableDeclarationAnnotation"
       eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclarationAnnotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DelayAction" eSuperTypes="#//HavocAction"/>
 </ecore:EPackage>

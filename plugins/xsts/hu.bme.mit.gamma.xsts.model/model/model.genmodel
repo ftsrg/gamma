@@ -107,5 +107,6 @@
     <genClasses ecoreClass="model.ecore#//InternalInvariantAnnotation"/>
     <genClasses ecoreClass="model.ecore#//OnDemandControlVariableDeclarationAnnotation"/>
     <genClasses ecoreClass="model.ecore#//StrictControlVariableDeclarationAnnotation"/>
+    <genClasses ecoreClass="model.ecore#//DelayAction"/>
   </genPackages>
 </genmodel:GenModel>
