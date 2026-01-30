@@ -1499,10 +1499,17 @@ public class StatechartModelValidator extends ActionModelValidator {
 		}
 		Collection<Port> unusedPorts = StatechartModelDerivedFeatures.getUnusedPorts(instance);
 		if (!unusedPorts.isEmpty()) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
-				"The following ports are used neither in a system port binding nor a channel: " +
-					unusedPorts.stream().map(it -> it.getName()).collect(Collectors.toSet()),
-						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
+			for (Port port : unusedPorts) {
+				var msg = new ValidationResultMessage(ValidationResult.WARNING, 
+					"The following port are used neither in a system port binding nor a channel: " + instance.getName() + "." + port.getName(),
+						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME));
+				validationResultMessages.add(msg);
+			}
+			
+//			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
+//				"The following ports are used neither in a system port binding nor a channel: " +
+//					unusedPorts.stream().map(it -> it.getName()).collect(Collectors.toSet()),
+//						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
 		}
 		return validationResultMessages;
 	}
