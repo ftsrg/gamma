@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
 import hu.bme.mit.gamma.action.model.ActionModelFactory
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.TrueExpression
@@ -26,6 +27,9 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.lowlevel.util.LowlevelStatechartUtil
+import hu.bme.mit.gamma.statechart.statechart.AsynchronousCoordinationStatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.CoordinationStatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.CoordinationTransition
 import hu.bme.mit.gamma.statechart.statechart.DeepHistoryState
 import hu.bme.mit.gamma.statechart.statechart.GuardEvaluation
 import hu.bme.mit.gamma.statechart.statechart.InitialState
@@ -35,14 +39,19 @@ import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.RunUponExternalEventAnnotation
 import hu.bme.mit.gamma.statechart.statechart.RunUponExternalEventOrInternalTimeoutAnnotation
 import hu.bme.mit.gamma.statechart.statechart.SchedulingOrder
+import hu.bme.mit.gamma.statechart.statechart.SequentialCoordinationReferenceExpression
 import hu.bme.mit.gamma.statechart.statechart.ShallowHistoryState
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.SynchronousCoordinationStatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.TimeoutAction
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.statechart.Transition
+import hu.bme.mit.gamma.statechart.statechart.UnorderedCoordinationReferenceExpression
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.JavaUtil
 import java.util.List
 
 import static com.google.common.base.Preconditions.checkState
@@ -50,14 +59,6 @@ import static com.google.common.base.Preconditions.checkState
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
-import hu.bme.mit.gamma.statechart.statechart.CoordinationStatechartDefinition
-import hu.bme.mit.gamma.statechart.statechart.SynchronousCoordinationStatechartDefinition
-import hu.bme.mit.gamma.statechart.statechart.CoordinationTransition
-import hu.bme.mit.gamma.statechart.statechart.AsynchronousCoordinationStatechartDefinition
-import hu.bme.mit.gamma.statechart.statechart.SequentialCoordinationReferenceExpression
-import hu.bme.mit.gamma.statechart.statechart.UnorderedCoordinationReferenceExpression
-import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
-import hu.bme.mit.gamma.statechart.util.StatechartUtil
 
 class StatechartToLowlevelTransformer {
 	// Auxiliary objects
@@ -71,6 +72,7 @@ class StatechartToLowlevelTransformer {
 	protected final extension LowlevelStatechartUtil lowlevelUtil = LowlevelStatechartUtil.INSTANCE
 	protected final extension EventAttributeTransformer eventAttributeTransformer = EventAttributeTransformer.INSTANCE
 	protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE
+	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	// Low-level statechart model factory
 	protected final extension StatechartModelFactory factory = StatechartModelFactory.eINSTANCE
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
@@ -541,11 +543,15 @@ class StatechartToLowlevelTransformer {
 		statechartUtil.addCoordinationVariableAnnotation(scheduledCtrlVar)
 		statechart.variableDeclarations += scheduledCtrlVar
 		
-		// Transforming CoordinationTransitions to regular transitions, possibly creating VariableDeclarations and States
-		for (transition : statechart.coordinationTransitions) {
+		// Transforming UnorderedCoordinationTransitions to SequentialCoordinationTransitions,
+		// Generating all possible permutations
+		for (transition : statechart.coordinationTransitions.clone.filter[it.coordinatedComponent instanceof UnorderedCoordinationReferenceExpression ]) {
 			transition.transformCoordinationTransition(scheduledComponentEnum)
 		}
-		
+		// Transforming CoordinationTransitions to regular transitions, possibly creating VariableDeclarations and States
+		for (transition : statechart.coordinationTransitions.filter[!(it.coordinatedComponent instanceof UnorderedCoordinationReferenceExpression)]) {
+			transition.transformCoordinationTransition(scheduledComponentEnum)
+		}
 		
 		// Constants
 		val gammaPackage = statechart.containingPackage
@@ -567,7 +573,8 @@ class StatechartToLowlevelTransformer {
 			val lowlevelTimeoutDeclaration = timeoutDeclaration.transform
 			lowlevelStatechart.variableDeclarations += lowlevelTimeoutDeclaration
 			lowlevelStatechart.timeoutDeclarations += lowlevelTimeoutDeclaration
-		}
+		}	
+		
 		for (port : statechart.ports) {
 			// Both in and out events are transformed to a boolean VarDecl with additional parameters
 			for (eventDeclaration : port.allEventDeclarations) {
@@ -609,16 +616,16 @@ class StatechartToLowlevelTransformer {
 			lowlevelStatechart.invariants += statechartInvariants.map[it.transformSimpleExpression]
 		}
 		
-		// TODO remove
 		return lowlevelStatechart
 	}
 	
-	protected def transformCoordinationTransition(
-		CoordinationTransition coordinationTransition, EnumerationTypeDefinition scheduledComponentEnum
-	) {
+	protected def void transformCoordinationTransition(CoordinationTransition coordinationTransition,
+		EnumerationTypeDefinition scheduledComponentEnum) {
+			
 		var gammaSource = coordinationTransition.sourceState
 		val sourceName = gammaSource.name
 		val containingStatechart = gammaSource.containingStatechart
+		val containingCoordinationStatechart = gammaSource.containingStatechart as CoordinationStatechartDefinition
 		val region = gammaSource.getParentRegion
 		
 		val gammaTarget = coordinationTransition.targetState
@@ -641,7 +648,9 @@ class StatechartToLowlevelTransformer {
 
 						containingStatechart.transitions += internalTransition
 					} else {
-						val internalState = statechartUtil.createState(region, sourceName + "_" + i++)
+						val internalState = statechartUtil.createState(region, 
+							sourceName + "_" + i++ + "_" + containingCoordinationStatechart.coordinationTransitions.indexOf(coordinationTransition)
+						)
 						if (gammaTarget instanceof State) {
 							internalState.invariants += gammaTarget.invariants.clone
 							internalState.entryActions += gammaTarget.entryActions.clone
@@ -661,8 +670,19 @@ class StatechartToLowlevelTransformer {
 					}
 				}
 			}
-		} else if (coordinationTransition.coordinatedComponent instanceof UnorderedCoordinationReferenceExpression) {
-//			val unordComponentEnum = createEnumerationTypeDefinition
+		} else if (coordinationTransition.coordinatedComponent instanceof UnorderedCoordinationReferenceExpression && true) {
+			
+			val permutations = coordinationTransition.coordinatedComponent.instances.allPermutations
+			
+			for (permutation : permutations) {
+				val sequentialTransition = statechartUtil.createSequentialCoordinationTransition(gammaSource, gammaTarget, permutation);
+				sequentialTransition.trigger = coordinationTransition.trigger.clone
+				sequentialTransition.guard = coordinationTransition.guard.clone
+				sequentialTransition.effects += coordinationTransition.effects.clone
+			}
+			
+		} else if (coordinationTransition.coordinatedComponent instanceof UnorderedCoordinationReferenceExpression && false) {
+		
 			val unordName = "unord_" + gammaSource.name + gammaTarget.name
 			val unordBoolVariables = newHashMap
 		
@@ -676,24 +696,13 @@ class StatechartToLowlevelTransformer {
 			 */
 		
 			for (componentInstanceReference : coordinationTransition.coordinatedComponent.instances) {
-//				val componentLiteral = createEnumerationLiteralDefinition
-//				componentLiteral.name = componentInstanceReference.componentInstance.name
-//				unordComponentEnum.literals += componentLiteral
-
 				unordBoolVariables +=
 					componentInstanceReference.componentInstance ->
 						createVariableDeclarationWithDefaultInitialValue(createBooleanTypeDefinition,
 							unordName + "_" + componentInstanceReference.componentInstance.name)
 			}
 
-//			val unordComponentsTypeDeclaration = unordComponentEnum.createTypeDeclaration(unordName)
-//			containingStatechart.typeDeclarations += unordComponentsTypeDeclaration
-//
-//			val unordComponentsTypeReference = createTypeReference(unordComponentsTypeDeclaration)
-
 			// TODO add ctrl var annotation
-//			val unordComponentsVariableDecl = createVariableDeclaration(unordComponentsTypeReference, unordName)
-//			containingStatechart.variableDeclarations += unordComponentsVariableDecl
 			containingStatechart.variableDeclarations += unordBoolVariables.values
 			
 			/* XSTS:
@@ -722,26 +731,31 @@ class StatechartToLowlevelTransformer {
 			 *    }
 			 * }
 			 */
-			 
+
 			// creating new transition sourceState->sourceState for every componentInstance
-			 
-//			if (gammaSource instanceof State) {
-//				gammaSource.entryActions += createHavocStatement => [
-//					it.lhs = unordComponentsVariableDecl.createReferenceExpression
-//				]
-//			}
 			for (componentInstanceReference : coordinationTransition.coordinatedComponent.instances) {
 				val componentName = componentInstanceReference.componentInstance.name
 
 				val internalTransition = statechartUtil.createTransition(gammaSource, gammaSource)
-				internalTransition.trigger = coordinationTransition.trigger.clone
+				
+				// if the trigger is a timeout event, then create an invariant and on onCycleTrigger
+				if (coordinationTransition.trigger.containsType(TimeoutEventReference)) {
+					val timeout = coordinationTransition.trigger.getFirstOfAllContentsOfType(TimeoutEventReference).timeout
+					if (gammaSource instanceof State) {
+						gammaSource.invariants += createGreaterEqualExpression(
+							statechartUtil.createTimeoutReferenceExpression(timeout),
+							timeout.valueOfTimeout
+						)
+					}
+					internalTransition.trigger = statechartUtil.createOnCycleTrigger
+				} else {
+					internalTransition.trigger = coordinationTransition.trigger.clone
+				}				
+							
 				internalTransition.guard = createAndExpression => [
 					if (coordinationTransition.guard !== null) {
 						it.operands += coordinationTransition.guard.clone
 					}
-//					it.operands +=
-//						createEqualityExpression(unordComponentsVariableDecl,
-//							createEnumerationLiteralExpression(unordComponentEnum, componentName))
 					it.operands +=
 						createEqualityExpression(unordBoolVariables.get(componentInstanceReference.componentInstance),
 							createFalseExpression)
@@ -787,4 +801,5 @@ class StatechartToLowlevelTransformer {
 		}
 	}
 	
+
 }

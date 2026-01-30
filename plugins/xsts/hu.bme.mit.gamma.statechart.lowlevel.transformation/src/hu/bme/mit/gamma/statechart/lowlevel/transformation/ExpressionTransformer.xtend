@@ -410,7 +410,7 @@ class ExpressionTransformer {
 	
 	//
 	
-	private def Expression getValueOfTimeout(TimeoutDeclaration timeoutDeclaration) {
+	protected def Expression getValueOfTimeout(TimeoutDeclaration timeoutDeclaration) {
 		val gammaStatechart = timeoutDeclaration.containingStatechart
 		val timeoutSettings = gammaStatechart.getAllContentsOfType(SetTimeoutAction)
 		val correctTimeoutSetting = timeoutSettings.filter[it.timeoutDeclaration == timeoutDeclaration]
