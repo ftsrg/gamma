@@ -225,9 +225,8 @@ class VariableInliner {
 	protected def dispatch void inline(AssignmentAction action,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
+		action.rhs.inlineVariables(concreteValues)
 		val rhs = action.rhs
-		rhs.optimizeExpressions // Array and record literals can be very deep
-		rhs.inlineVariables(concreteValues)
 		val lhs = action.lhs
 		if (lhs instanceof DirectReferenceExpression) {
 			val declaration = lhs.declaration
@@ -244,6 +243,7 @@ class VariableInliner {
 		else if (lhs instanceof ArrayAccessExpression) {
 			val index = lhs.index
 			index.inlineExpression(concreteValues, symbolicValues)
+			// TODO operand?
 		}
 	}
 	
@@ -251,9 +251,8 @@ class VariableInliner {
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		val variable = action.variableDeclaration
+		variable.expression?.inlineVariables(concreteValues)
 		val rhs = variable.expression
-		rhs?.optimizeExpressions // Array and record literals can be very deep
-		rhs?.inlineVariables(concreteValues)
 		if (rhs !== null) {
 			variable.handleMaps(action, rhs, concreteValues, symbolicValues)
 		}
@@ -335,11 +334,11 @@ class VariableInliner {
 							if (rhsContent.helperEquals(firstLhs)) {
 								val firstRhs = first.rhs
 								val firstRhsClone = firstRhs.clone
-								firstRhsClone.replace(rhsContent)
+//								firstRhsClone.replace(rhsContent)
 							}
 						}
 						// Remove first
-						removableActions += first
+//						removableActions += first
 					}
 				}
 			}
@@ -459,6 +458,7 @@ class VariableInliner {
 				clonedValue.replace(reference)
 			}
 		}
+		expression.optimizeExpressions
 	}
 	
 	protected def deleteReferencedVariableKeys(Map<? super VariableDeclaration, InlineEntry> values,
