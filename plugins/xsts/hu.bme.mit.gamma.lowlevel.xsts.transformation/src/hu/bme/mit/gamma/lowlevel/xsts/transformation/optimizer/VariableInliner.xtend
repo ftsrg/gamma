@@ -297,7 +297,7 @@ class VariableInliner {
 	//
 	
 	protected def inlineLocalVariablesAndAssignmentsIntoSubsequentAssignments(List<? extends Action> actions) {
-		val removableActions = newArrayList
+		val removableActions = <Action>newArrayList
 		// The remaining local VariableDeclarationActions are not removed;
 		// it is done separately by RemovableVariableRemover.removeTransientVariables
 		for (var i = 0; i < actions.size - 1; i++) {
@@ -334,17 +334,19 @@ class VariableInliner {
 							if (rhsContent.helperEquals(firstLhs)) {
 								val firstRhs = first.rhs
 								val firstRhsClone = firstRhs.clone
-//								firstRhsClone.replace(rhsContent)
+								firstRhsClone.replace(rhsContent)
 							}
 						}
+						// TODO not sound: a[1] := 10; a[1] := a[1] + a[2 - 1]
 						// Remove first
-//						removableActions += first
+						removableActions += first
 					}
 				}
 			}
 		}
-		//
+		
 		removableActions.forEach[it.replaceWithEmptyAction]
+		actions -= removableActions
 	}
 	
 	// Auxiliary
