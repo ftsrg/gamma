@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023-2025 Contributors to the Gamma project
+ * Copyright (c) 2023-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -140,17 +140,19 @@ class MessageQueueUtil {
 			val right = expression.rightOperand
 			
 			if (left instanceof ReferenceExpression) {
-				val queueVariable = left.declaration
-				if (queueVariable.global && !queueVariable.array) {
-					val xSts = queueVariable.containingXsts
-					val queueVariables = xSts.messageQueueGroup.variables
-					
-					if (queueVariables.contains(queueVariable) &&
-							right instanceof EnumerationLiteralExpression) {
-						throw new IllegalArgumentException("A previous (n)empty/(n)full should have handled this already")
-//						return true
+				try {
+					val queueVariable = left.declaration
+					if (queueVariable.global && !queueVariable.array) {
+						val xSts = queueVariable.containingXsts
+						val queueVariables = xSts.messageQueueGroup.variables
+						
+						if (queueVariables.contains(queueVariable) &&
+								right instanceof EnumerationLiteralExpression) {
+							throw new IllegalArgumentException("A previous (n)empty/(n)full should have handled this already")
+							// return true
+						}
 					}
-				}
+				} catch (IllegalArgumentException e) {}
 			}
 		}
 		
@@ -220,15 +222,15 @@ class MessageQueueUtil {
 				val left = expression.leftOperand
 				if (left instanceof ArrayAccessExpression || // Original array
 						left instanceof DirectReferenceExpression) { // Unfolded array
-					val queueDeclaration = left.declaration
-					if (queueDeclaration.global) {
-						val xSts = queueDeclaration.containingXsts
-						val messageQueues = newArrayList
-						messageQueues += xSts.masterMessageQueueGroup.variables
-						messageQueues += xSts.systemMasterMessageQueueGroup.variables
-						
-						val right = expression.rightOperand
-						if (right instanceof EnumerationLiteralExpression) {
+					val right = expression.rightOperand
+					if (right instanceof EnumerationLiteralExpression) {
+						val queueDeclaration = left.declaration
+						if (queueDeclaration.global) {
+							val xSts = queueDeclaration.containingXsts
+							val messageQueues = newArrayList
+							messageQueues += xSts.masterMessageQueueGroup.variables
+							messageQueues += xSts.systemMasterMessageQueueGroup.variables
+							
 							val literal = right.reference
 							val index = literal.index
 							return messageQueues.contains(queueDeclaration) && index == 0

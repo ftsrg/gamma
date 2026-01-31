@@ -13,9 +13,12 @@ package hu.bme.mit.gamma.expression.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.TreeIterator;
+import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
@@ -23,6 +26,7 @@ import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeature
 import hu.bme.mit.gamma.expression.model.AddExpression;
 import hu.bme.mit.gamma.expression.model.AndExpression;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
+import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
@@ -55,6 +59,8 @@ import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.LessEqualExpression;
 import hu.bme.mit.gamma.expression.model.LessExpression;
+import hu.bme.mit.gamma.expression.model.LogicExpression;
+import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.MultiplyExpression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
@@ -71,6 +77,7 @@ import hu.bme.mit.gamma.expression.model.UnaryMinusExpression;
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression;
 import hu.bme.mit.gamma.expression.model.XorExpression;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
+import hu.bme.mit.gamma.util.JavaUtil;
 
 public class ExpressionEvaluator {
 	// Singleton
@@ -81,6 +88,7 @@ public class ExpressionEvaluator {
 	protected final ArgumentInliner argumentInliner = ArgumentInliner.INSTANCE;
 	protected final ExpressionTypeDeterminator2 typeDeterminator = ExpressionTypeDeterminator2.INSTANCE;
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 	//
 	
@@ -618,6 +626,115 @@ public class ExpressionEvaluator {
 	}
 	
 	//
+	
+	public void optimizeExpressions(EObject object) {
+		List<Expression> expressions = ecoreUtil.getSelfAndAllContentsOfType(object, Expression.class);
+		List<LogicExpression> booleanExpressions = javaUtil.filterIntoList(expressions, LogicExpression.class);
+		for (LogicExpression booleanExpression : booleanExpressions) {
+			if (isDefinitelyFalseExpression(booleanExpression)) {
+				FalseExpression falseExpression = factory.createFalseExpression();
+				ecoreUtil.replace(falseExpression, booleanExpression);
+			}
+			else if (isDefinitelyTrueExpression(booleanExpression)) {
+				TrueExpression trueExpression = factory.createTrueExpression();
+				ecoreUtil.replace(trueExpression, booleanExpression);
+			}
+			else if (booleanExpression instanceof OrExpression _expression) {
+				Predicate<Expression> _function = (Expression it) -> {
+					return isDefinitelyFalseExpression(it);
+				};
+				_expression.getOperands().removeIf(_function);
+			}
+			else if (booleanExpression instanceof AndExpression _expression) {
+				Predicate<Expression> _function_1 = (Expression it) -> {
+					return isDefinitelyTrueExpression(it);
+				};
+				_expression.getOperands().removeIf(_function_1);
+			}
+			else if (booleanExpression instanceof ImplyExpression _expression) {
+				Expression left = _expression.getLeftOperand();
+				Expression right = _expression.getRightOperand();
+				if (isDefinitelyTrueExpression(left)) {
+					ecoreUtil.replace(right, booleanExpression);
+				}
+			}
+		}
+		
+		List<IfThenElseExpression> ifThenElses = javaUtil.filterIntoList(expressions, IfThenElseExpression.class).stream()
+				.filter(it -> ExpressionModelDerivedFeatures.isIfThenElseEvaluable(it)).toList();
+		for (IfThenElseExpression ifThenElse : ifThenElses) {
+			Expression evaluatedIfThenElse = evaluateIfThenElse(ifThenElse);
+			ecoreUtil.replace(evaluatedIfThenElse, ifThenElse);
+		}
+		
+		List<ArrayAccessExpression> arrayAccesses = javaUtil.filterIntoList(expressions, ArrayAccessExpression.class).stream()
+				.filter(it -> ExpressionModelDerivedFeatures.isArrayAccessEvaluable(it)).toList();
+		for (ArrayAccessExpression arrayAccess : arrayAccesses) {
+			Expression evaluatedArrayAccess = evaluateArrayAccess(arrayAccess);
+			ecoreUtil.replace(evaluatedArrayAccess, arrayAccess);
+		}
+		
+		List<RecordAccessExpression> recordAccesses = javaUtil.filterIntoList(expressions, RecordAccessExpression.class).stream()
+				.filter(it -> ExpressionModelDerivedFeatures.isRecordAccessEvaluable(it)).toList();
+		for (RecordAccessExpression recordAccess : recordAccesses) {
+			Expression evaluatedRecordAccess = evaluateRecordAccess(recordAccess);
+			ecoreUtil.replace(evaluatedRecordAccess, recordAccess);
+		}
+		
+		List<MultiaryExpression> multiaryExpressions = new ArrayList<MultiaryExpression>();
+		List<ArithmeticExpression> arithmeticExpressions = javaUtil.filterIntoList(expressions, ArithmeticExpression.class);
+		List<MultiaryExpression> _filter = javaUtil.filterIntoList(arithmeticExpressions, MultiaryExpression.class);
+		multiaryExpressions.addAll(_filter);
+		List<MultiaryExpression> _filter_1 = javaUtil.filterIntoList(booleanExpressions, MultiaryExpression.class);
+		multiaryExpressions.addAll(_filter_1);
+		for (MultiaryExpression multiaryExpression : multiaryExpressions) {
+			List<Expression> operands = multiaryExpression.getOperands();
+			EObject container = multiaryExpression.eContainer();
+			if (container != null) {
+				EClass _eClass = container.eClass();
+				EClass _eClass_1 = multiaryExpression.eClass();
+				boolean _equals = Objects.equals(_eClass, _eClass_1);
+				if (_equals) {
+					MultiaryExpression _container = ((MultiaryExpression) container);
+					List<Expression> _operands = _container.getOperands();
+					_operands.addAll(operands);
+					ecoreUtil.remove(multiaryExpression);
+				}
+				else {
+					int operandSize = operands.size();
+					if (operandSize == 0) {
+						ecoreUtil.remove(multiaryExpression);
+					}
+					else if (operandSize == 1) {
+						Expression operand = operands.get(0);
+						ecoreUtil.replace(operand, multiaryExpression);
+					}
+				}
+			}
+		}
+	}
+	
+	//
+	
+	public Expression evaluateIfThenElse(IfThenElseExpression expression) {
+		Expression condition = expression.getCondition();
+		Expression then = expression.getThen();
+		Expression _else = expression.getElse();
+		if (isDefinitelyTrueExpression(condition)) {
+			return then;
+		}
+		if (isDefinitelyFalseExpression(condition)) {
+			return _else;
+		}
+		if (ecoreUtil.helperEquals(then, _else)) {
+			return then;
+		}
+		if (ExpressionModelDerivedFeatures.isEvaluable(then) && ExpressionModelDerivedFeatures.isEvaluable(_else) &&
+					evaluate(then) == evaluate(_else)) {
+			return then;
+		}
+		throw new IllegalArgumentException("Unevaluable if-then-else expression: " + expression);
+	}
 	
 	public Expression evaluateArrayAccess(ArrayAccessExpression access) {
 		ArrayLiteralExpression literal = ExpressionModelDerivedFeatures.getAsIsOrReferencedElement(

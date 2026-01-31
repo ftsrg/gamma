@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
@@ -49,6 +50,7 @@ class VariableInliner {
 	
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE
 	//
 
 	def inline(Iterable<? extends XTransition> transitions) {
@@ -224,6 +226,7 @@ class VariableInliner {
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		val rhs = action.rhs
+		rhs.optimizeExpressions // Array and record literals can be very deep
 		rhs.inlineVariables(concreteValues)
 		val lhs = action.lhs
 		if (lhs instanceof DirectReferenceExpression) {
@@ -249,6 +252,7 @@ class VariableInliner {
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		val variable = action.variableDeclaration
 		val rhs = variable.expression
+		rhs?.optimizeExpressions // Array and record literals can be very deep
 		rhs?.inlineVariables(concreteValues)
 		if (rhs !== null) {
 			variable.handleMaps(action, rhs, concreteValues, symbolicValues)
@@ -259,7 +263,7 @@ class VariableInliner {
 			Action action, Expression rhs,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
-		if (rhs.isEvaluable) { // So it is evaluable
+		if (rhs.evaluable) { // So it is evaluable
 			// If the oldAssignment is NOT removed, then concrete maps can fall through
 			// validly through different choices. So oldAssignment must NOT be removed.
 			
@@ -449,6 +453,7 @@ class VariableInliner {
 		for (variable : values.keySet) {
 			val entry = values.get(variable)
 			val value = entry.value
+			
 			for (reference : references.filter[it.declaration === variable]) {
 				val clonedValue = value.clone // Cloning is important
 				clonedValue.replace(reference)

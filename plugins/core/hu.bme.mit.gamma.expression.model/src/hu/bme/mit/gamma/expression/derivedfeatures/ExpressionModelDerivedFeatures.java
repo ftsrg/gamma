@@ -48,6 +48,7 @@ import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FinalVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
+import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.InjectedVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
@@ -754,6 +755,16 @@ public class ExpressionModelDerivedFeatures {
 			}
 		}
 		return references.isEmpty();
+	}
+	
+	public static boolean isIfThenElseEvaluable(IfThenElseExpression expression) {
+		Expression condition = expression.getCondition();
+		Expression then = expression.getThen();
+		Expression _else = expression.getElse();
+		return evaluator.isDefinitelyTrueExpression(condition) ||
+				evaluator.isDefinitelyFalseExpression(condition) ||
+				ecoreUtil.helperEquals(then, _else) ||
+				(isEvaluable(then) && isEvaluable(_else) && evaluator.evaluate(then) == evaluator.evaluate(_else));
 	}
 	
 	public static boolean isArrayAccessEvaluable(ArrayAccessExpression access) {
