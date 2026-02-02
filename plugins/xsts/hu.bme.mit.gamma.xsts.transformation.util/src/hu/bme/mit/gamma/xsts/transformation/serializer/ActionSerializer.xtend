@@ -39,7 +39,6 @@ class ActionSerializer {
 		return xSts.serializeXsts(false)
 	}
 	
-	// TODO how to handle the env in non timed case?
 	def String serializeXsts(XSTS xSts, boolean serializePrimedVariables) '''
 		«xSts.serializeDeclarations(serializePrimedVariables)»
 		
