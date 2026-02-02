@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -49,6 +49,7 @@ import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.InequalityExpression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
+import hu.bme.mit.gamma.expression.model.LambdaDeclaration;
 import hu.bme.mit.gamma.expression.model.LessEqualExpression;
 import hu.bme.mit.gamma.expression.model.LessExpression;
 import hu.bme.mit.gamma.expression.model.ModExpression;
@@ -96,6 +97,13 @@ public class ExpressionModelValidator {
 		}
 		
 		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkDeclarationAndExpressionConformance(
+			Declaration declaration, Expression rhs, ReferenceInfo referenceInfo) {
+		Type type = declaration.getType();
+
+		return checkTypeAndExpressionConformance(type, rhs, referenceInfo);
 	}
 	
 	public Collection<ValidationResultMessage> checkTypeAndExpressionConformance(
@@ -244,29 +252,62 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
+	public Collection<ValidationResultMessage> checkFieldAssignment(FieldAssignment fieldAssignment) {
+		FieldReferenceExpression reference = fieldAssignment.getReference();
+		FieldDeclaration fieldDeclaration = reference.getFieldDeclaration();
+		
+		Expression value = fieldAssignment.getValue();
+		
+		return checkDeclarationAndExpressionConformance(fieldDeclaration, value, new ReferenceInfo(fieldAssignment));
+	}
+	
+	public Collection<ValidationResultMessage> checkLambdaDeclaration(LambdaDeclaration lambdaDeclaration) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		Expression expression = lambdaDeclaration.getExpression();
+		for (FunctionAccessExpression functionCall :
+					ecoreUtil.getSelfAndAllContentsOfType(expression, FunctionAccessExpression.class)) {
+			Declaration declaration = expressionUtil.getAccessedDeclaration(functionCall);
+			if (!(declaration instanceof LambdaDeclaration)) {
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR,
+						"Calling non-lambda functions from lambda declarations is forbidden", 
+							new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND, functionCall)));
+			}
+		}
+		
+		return validationResultMessages;
+	}
+
+	
 	public Collection<ValidationResultMessage> checkFunctionAccessExpression(FunctionAccessExpression functionAccessExpression) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		List<Expression> arguments = functionAccessExpression.getArguments();
 		Expression operand = functionAccessExpression.getOperand();
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		// check if the referred object is a function
+		
 		if (!(operand instanceof DirectReferenceExpression)) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.ERROR,
 					"The referenced object is not a valid function declaration", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND)));
 			return validationResultMessages;
 		}
+		
 		DirectReferenceExpression operandAsReference = (DirectReferenceExpression) operand;
-		if (!(operandAsReference.getDeclaration() instanceof FunctionDeclaration)) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+		Declaration declaration = operandAsReference.getDeclaration();
+		if (!(declaration instanceof FunctionDeclaration)) {
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.ERROR,
 					"The referenced object is not a valid function declaration", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND)));
 			return validationResultMessages;
 		}
-		// check if the number of arguments equals the number of parameters
-		final FunctionDeclaration functionDeclaration = (FunctionDeclaration) operandAsReference.getDeclaration();
+		
+		FunctionDeclaration functionDeclaration = (FunctionDeclaration) declaration;
 		List<ParameterDeclaration> parameters = functionDeclaration.getParameterDeclarations();
 		if (arguments.size() != parameters.size()) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.ERROR,
 					"The number of arguments does not match the number of declared parameters for the function", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)));
 			return validationResultMessages;
@@ -276,7 +317,8 @@ public class ExpressionModelValidator {
 		for (Expression arg : arguments) {
 			Type argumentType = typeDeterminator.getType(arg);
 			if (!typeDeterminator.equals(parameters.get(i).getType(), argumentType)) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR,
 						"The types of the arguments and the types of the declared function parameters do not match", 
 						new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)));
 				return validationResultMessages;
@@ -309,7 +351,8 @@ public class ExpressionModelValidator {
 		Expression operand = expression.getOperand();
 		TypeDefinition typeDefinition = typeDeterminator.getTypeDefinition(operand);
 		if (!(typeDefinition instanceof ArrayTypeDefinition)) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.ERROR,
 					"The accessed operand is not of type array", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.ARRAY_ACCESS_EXPRESSION__INDEX)));
 			return validationResultMessages;
@@ -515,8 +558,7 @@ public class ExpressionModelValidator {
 			}
 			// The declaration has an initial value
 			EObject container = elem.eContainer();
-			if (elem instanceof Declaration) {
-				Declaration declaration = (Declaration) elem;
+			if (elem instanceof Declaration declaration) {
 				for (VariableDeclaration variableDeclaration : expressionUtil.getReferredVariables(initialExpression)) {
 					if (container == variableDeclaration.eContainer() &&
 							container.eContainmentFeature() == variableDeclaration.eContainmentFeature()) {
@@ -533,21 +575,20 @@ public class ExpressionModelValidator {
 				}
 				// Initial value is correct
 				Type variableDeclarationType = declaration.getType();
-				Type initialExpressionType = typeDeterminator.getType(elem.getExpression());
+				Type initialExpressionType = typeDeterminator.getType(initialExpression);
 				if (!typeDeterminator.equals(variableDeclarationType, initialExpressionType)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 						"The types of the declaration and the right hand side expression are not the same: " +
 							typeDeterminator.print(variableDeclarationType) + " and " + typeDeterminator.print(initialExpressionType), 
 							new ReferenceInfo(ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION)));
 				}
-				// Additional checks for arrays
+				// Additional checks for arrays – is this really needed?
 				ArrayTypeDefinition arrayType = null;
 				if (ExpressionModelDerivedFeatures.getTypeDefinition(declaration) instanceof ArrayTypeDefinition) {
 					arrayType = (ArrayTypeDefinition) declaration.getType();
 				}
-				if (arrayType != null) {	
-					if (initialExpression instanceof ArrayLiteralExpression) {
-						ArrayLiteralExpression rhs = (ArrayLiteralExpression) initialExpression;
+				if (arrayType != null) {
+					if (initialExpression instanceof ArrayLiteralExpression rhs) {
 						Type elementType = arrayType.getElementType();
 						for (Expression element : rhs.getOperands()) {
 							if (!typeDeterminator.equals(elementType, typeDeterminator.getType(element))) {
@@ -563,11 +604,12 @@ public class ExpressionModelValidator {
 									new ReferenceInfo(ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION)));
 						}						
 					}
-					else {
-						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"The right hand side must be of type array literal", 
-								new ReferenceInfo(ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION)));
-					}
+					// The initial expression can be another expression, too, not only ArrayLiteralExpression!
+//					else {
+//						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+//							"The right hand side must be of type array literal", 
+//								new ReferenceInfo(ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION)));
+//					}
 				}
 			}
 		} catch (Exception exception) {
@@ -722,15 +764,15 @@ public class ExpressionModelValidator {
 
 	public Collection<ValidationResultMessage> checkRecordLiteralExpression(RecordLiteralExpression expression) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		// Find RecordTypeDefinition
+		
 		TypeDeclaration typeDeclaration = expression.getTypeDeclaration();
 		Type type = typeDeclaration.getType();
 		RecordTypeDefinition recordTypeDefinition = (RecordTypeDefinition) type;
-		// Check all FieldDeclaration and all FieldAssignment
+		
 		for (FieldDeclaration rTypeField : recordTypeDefinition.getFieldDeclarations()) {
 			int counter = 0;
-			for (FieldAssignment rLiFieldAssignment : expression.getFieldAssignments()) {
-				FieldReferenceExpression fieldReferenceExpression = rLiFieldAssignment.getReference();
+			for (FieldAssignment fieldAssignment : expression.getFieldAssignments()) {
+				FieldReferenceExpression fieldReferenceExpression = fieldAssignment.getReference();
 				FieldDeclaration fieldDeclaration = fieldReferenceExpression.getFieldDeclaration();
 				// Same fields
 				if (fieldDeclaration == rTypeField) {
@@ -750,6 +792,7 @@ public class ExpressionModelValidator {
 						new ReferenceInfo(ExpressionModelPackage.Literals.RECORD_LITERAL_EXPRESSION__FIELD_ASSIGNMENTS)));
 			}
 		}
+		
 		return validationResultMessages;
 	}
 	
@@ -825,7 +868,7 @@ public class ExpressionModelValidator {
 	}
 	
 	static public class ReferenceInfo {
-		
+		//
 		private EStructuralFeature reference;
 		private EObject source;
 		private Integer index;
@@ -871,7 +914,7 @@ public class ExpressionModelValidator {
 			return source;
 		}
 		
-		public int getIndex() {
+		public Integer getIndex() {
 			return index;
 		}
 		

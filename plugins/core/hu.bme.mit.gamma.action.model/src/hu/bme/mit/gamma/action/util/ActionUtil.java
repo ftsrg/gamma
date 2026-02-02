@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -36,6 +36,7 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
+import hu.bme.mit.gamma.expression.model.OpaqueExpression;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
@@ -58,7 +59,9 @@ public class ActionUtil extends ExpressionUtil {
 			ReferenceExpression lhs = assignment.getLhs();
 			return getDeclaration(lhs);
 		}
-		return (Declaration) ecoreUtil.getSelfOrContainerOfType(context, InitializableElement.class);
+		InitializableElement initializableElement = ecoreUtil.getSelfOrContainerOfType(context, InitializableElement.class);
+		Declaration declaration = (Declaration) initializableElement;
+		return declaration;
 	}
 	
 	//
@@ -117,9 +120,7 @@ public class ActionUtil extends ExpressionUtil {
 	//
 	
 	public Block wrap(Collection<? extends Action> actions) {
-		Block block = actionFactory.createBlock();
-		block.getActions().addAll(actions);
-		return block;
+		return createBlock(actions);
 	}
 	
 	public Action prepend(Action action, Action pivot) {
@@ -129,8 +130,7 @@ public class ActionUtil extends ExpressionUtil {
 		else if (pivot == null) {
 			return action;
 		}
-		else if (pivot instanceof Block) {
-			Block block = (Block) pivot;
+		else if (pivot instanceof Block block) {
 			block.getActions().add(0, action);
 			return block;
 		}
@@ -151,8 +151,7 @@ public class ActionUtil extends ExpressionUtil {
 		else if (action == null) {
 			return pivot;
 		}
-		else if (pivot instanceof Block) {
-			Block block = (Block) pivot;
+		else if (pivot instanceof Block block) {
 			block.getActions().add(action);
 			return block;
 		}
@@ -176,7 +175,6 @@ public class ActionUtil extends ExpressionUtil {
 	
 	//
 	
-
 	public Block createBlock(Collection<? extends Action> actions) {
 		Block block = actionFactory.createBlock();
 		
@@ -264,6 +262,12 @@ public class ActionUtil extends ExpressionUtil {
 	
 	//
 	
+	public ExpressionStatement createOpaqueStatement(String string) {
+		OpaqueExpression opaqueExpression = factory.createOpaqueExpression();
+		opaqueExpression.setExpression(string);
+		return createExpressionStatement(opaqueExpression);
+	}
+	
 	public ExpressionStatement createExpressionStatement(Expression expression) {
 		ExpressionStatement statement = actionFactory.createExpressionStatement();
 		statement.setExpression(expression);
@@ -275,14 +279,22 @@ public class ActionUtil extends ExpressionUtil {
 				ExpressionModelDerivedFeatures.getDefaultExpression(type));
 	}
 	
+	public EmptyStatement createEmptyStatement_() {
+		return actionFactory.createEmptyStatement();
+	}
+	
 	public VariableDeclarationStatement createDeclarationStatement(Type type,
 			String name, Expression initialExpression) {
-		VariableDeclarationStatement statement = actionFactory.createVariableDeclarationStatement();
 		VariableDeclaration variable = factory.createVariableDeclaration();
-		statement.setVariableDeclaration(variable);
 		variable.setType(type);
 		variable.setName(name);
 		variable.setExpression(initialExpression);
+		return createDeclarationStatement(variable);
+	}
+	
+	public VariableDeclarationStatement createDeclarationStatement(VariableDeclaration variable) {
+		VariableDeclarationStatement statement = actionFactory.createVariableDeclarationStatement();
+		statement.setVariableDeclaration(variable);
 		return statement;
 	}
 	
@@ -293,8 +305,7 @@ public class ActionUtil extends ExpressionUtil {
 		List<AssignmentStatement> assignmentsOfVariable = new ArrayList<>();
 		for (AssignmentStatement assignment : assignments) {
 			ReferenceExpression lhs = assignment.getLhs();
-			if (lhs instanceof DirectReferenceExpression) {
-				DirectReferenceExpression reference = (DirectReferenceExpression) lhs;
+			if (lhs instanceof DirectReferenceExpression reference) {
 				Declaration declaration = reference.getDeclaration();
 				if (declaration == variable) {
 					assignmentsOfVariable.add(assignment);
@@ -307,26 +318,25 @@ public class ActionUtil extends ExpressionUtil {
 		return assignmentsOfVariable;
 	}
 	
-	public AssignmentStatement createAssignment(ReferenceExpression reference,
-			Expression expression) {
+	public AssignmentStatement createAssignment(ReferenceExpression reference, Expression expression) {
 		AssignmentStatement assignmentStatement = actionFactory.createAssignmentStatement();
 		assignmentStatement.setLhs(reference);
 		assignmentStatement.setRhs(expression);
 		return assignmentStatement;
 	}
 	
-	public AssignmentStatement createAssignment(VariableDeclaration variable,
-			Expression expression) {
-		return createAssignment(createReferenceExpression(variable), expression);
+	public AssignmentStatement createAssignment(VariableDeclaration variable, Expression expression) {
+		DirectReferenceExpression reference = createReferenceExpression(variable);
+		return createAssignment(reference, expression);
 	}
 	
-	public AssignmentStatement createAssignment(VariableDeclaration variable,
-			ValueDeclaration declaration) {
-		return createAssignment(variable, createReferenceExpression(declaration));
+	public AssignmentStatement createAssignment(VariableDeclaration variable, ValueDeclaration declaration) {
+		DirectReferenceExpression reference = createReferenceExpression(declaration);
+		return createAssignment(variable, reference);
 	}
 	
-	public List<AssignmentStatement> createAssignments(List<? extends ReferenceExpression> left,
-			List<Expression> right) {
+	public List<AssignmentStatement> createAssignments(
+				List<? extends ReferenceExpression> left, List<? extends Expression> right) {
 		List<AssignmentStatement> assignments = new ArrayList<AssignmentStatement>();
 		int size = left.size();
 		if (size != right.size()) {
@@ -335,7 +345,8 @@ public class ActionUtil extends ExpressionUtil {
 		for (int i = 0; i < size; i++) {
 			ReferenceExpression lhs = left.get(i);
 			Expression rhs = right.get(i);
-			assignments.add(createAssignment(lhs, rhs));
+			AssignmentStatement assignment = createAssignment(lhs, rhs);
+			assignments.add(assignment);
 		}
 		return assignments;
 	}
@@ -346,8 +357,8 @@ public class ActionUtil extends ExpressionUtil {
 	}
 	
 	public AssignmentStatement createIncrementation(VariableDeclaration variable) {
-		return createAssignment(variable,
-				createIncrementExpression(variable));
+		Expression increment = createIncrementExpression(variable);
+		return createAssignment(variable, increment);
 	}
 	
 }

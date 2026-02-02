@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.validation.Check;
 
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
@@ -23,10 +24,12 @@ import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.BooleanExpression;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
+import hu.bme.mit.gamma.expression.model.FieldAssignment;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
+import hu.bme.mit.gamma.expression.model.LambdaDeclaration;
 import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.PredicateExpression;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
@@ -49,46 +52,55 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 		for (ValidationResultMessage element : collection) {
 			ValidationResult result = element.getResult();
 			ReferenceInfo referenceInfo = element.getReferenceInfo();
+			
+			boolean hasInteger = referenceInfo.hasInteger();
+			boolean hasSource = referenceInfo.hasSource();
+			
+			String resultText = element.getResultText();
+			EStructuralFeature reference = referenceInfo.getReference();
+			EObject source = referenceInfo.getSource();
+			Integer index = referenceInfo.getIndex();
+			
 			if (result == ValidationResult.ERROR) {
-				if (referenceInfo.hasInteger() && referenceInfo.hasSource()) {
-					error(element.getResultText(), referenceInfo.getSource(), referenceInfo.getReference(), referenceInfo.getIndex());
+				if (hasInteger && hasSource) {
+					error(resultText, source, reference, index);
 				}
-				else if (referenceInfo.hasInteger() && !(referenceInfo.hasSource())) {
-					error(element.getResultText(), referenceInfo.getReference(), referenceInfo.getIndex());
+				else if (hasInteger && !hasSource) {
+					error(resultText, reference, index);
 				}
-				else if (referenceInfo.hasSource() && !(referenceInfo.hasInteger())) {
-					error(element.getResultText(), referenceInfo.getSource(), referenceInfo.getReference());
+				else if (hasSource && !hasInteger) {
+					error(resultText, source, reference);
 				}
 				else {
-					error(element.getResultText(), referenceInfo.getReference());
+					error(resultText, reference);
 				}
 			}
 			else if (result == ValidationResult.WARNING) {
-				if (referenceInfo.hasInteger() && referenceInfo.hasSource()) {
-					warning(element.getResultText(), referenceInfo.getSource(), referenceInfo.getReference(), referenceInfo.getIndex());
+				if (hasInteger && hasSource) {
+					warning(resultText, source, reference, index);
 				}
-				else if (referenceInfo.hasInteger() && !(referenceInfo.hasSource())) {
-					warning(element.getResultText(), referenceInfo.getReference(), referenceInfo.getIndex());
+				else if (hasInteger && !hasSource) {
+					warning(resultText, reference, index);
 				}
-				else if (referenceInfo.hasSource() && !(referenceInfo.hasInteger())) {
-					warning(element.getResultText(), referenceInfo.getSource(), referenceInfo.getReference());
+				else if (hasSource && !hasInteger) {
+					warning(resultText, source, reference);
 				}
 				else {
-					warning(element.getResultText(), referenceInfo.getReference());
+					warning(resultText, reference);
 				}
 			}
 			else if (result == ValidationResult.INFO) {
-				if (referenceInfo.hasInteger() && referenceInfo.hasSource()) {
-					info(element.getResultText(), referenceInfo.getSource(), referenceInfo.getReference(), referenceInfo.getIndex());
+				if (hasInteger && hasSource) {
+					info(resultText, source, reference, index);
 				}
-				else if (referenceInfo.hasInteger() && !(referenceInfo.hasSource())) {
-					info(element.getResultText(), referenceInfo.getReference(), referenceInfo.getIndex());
+				else if (hasInteger && !hasSource) {
+					info(resultText, reference, index);
 				}
-				else if (referenceInfo.hasSource() && !(referenceInfo.hasInteger())) {
-					info(element.getResultText(), referenceInfo.getSource(), referenceInfo.getReference());
+				else if (hasSource && !hasInteger) {
+					info(resultText, source, reference);
 				}
 				else {
-					info(element.getResultText(), referenceInfo.getReference());
+					info(resultText, reference);
 				}
 			}
 		}
@@ -120,6 +132,16 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	@Check
 	public void checkRecordAccessExpression(RecordAccessExpression recordAccessExpression) {
 		handleValidationResultMessage(expressionModelValidator.checkRecordAccessExpression(recordAccessExpression));
+	}
+	
+	@Check
+	public void checkFieldAssignment(FieldAssignment fieldAssignment) {
+		handleValidationResultMessage(expressionModelValidator.checkFieldAssignment(fieldAssignment));
+	}
+	
+	@Check
+	public void checkLambdaDeclaration(LambdaDeclaration lambdaDeclaration) {
+		handleValidationResultMessage(expressionModelValidator.checkLambdaDeclaration(lambdaDeclaration));
 	}
 	
 	@Check

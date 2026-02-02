@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -24,12 +24,16 @@ import hu.bme.mit.gamma.action.model.ExpressionStatement
 import hu.bme.mit.gamma.action.model.ForStatement
 import hu.bme.mit.gamma.action.model.HavocStatement
 import hu.bme.mit.gamma.action.model.IfStatement
+import hu.bme.mit.gamma.action.model.ProcedureDeclaration
 import hu.bme.mit.gamma.action.model.ReturnStatement
 import hu.bme.mit.gamma.action.model.SwitchStatement
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
 import hu.bme.mit.gamma.action.util.ActionUtil
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.InitializableElement
+import hu.bme.mit.gamma.expression.model.OpaqueExpression
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
@@ -41,6 +45,7 @@ import java.util.Collection
 import java.util.List
 
 import static extension com.google.common.collect.Iterables.getOnlyElement
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class ActionTransformer {
 	// Auxiliary objects
@@ -54,18 +59,24 @@ class ActionTransformer {
 	protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
 	// Trace
 	protected final Trace trace
+	protected final boolean FUNCTION_INLINING
 	
 	new(Trace trace) {
-		this(trace, true, 10, null)
+		this(trace, true, true, 7, null)
 	}
 	
-	new(Trace trace, boolean functionInlining, int maxRecursionDepth, TimeUnit baseTimeUnit) {
+	new(Trace trace, boolean functionInlining, boolean addReturnGuards, int maxRecursionDepth, TimeUnit baseTimeUnit) {
 		this.trace = trace
+		this.FUNCTION_INLINING = functionInlining
 		this.expressionTransformer = new ExpressionTransformer(this.trace,
-				functionInlining, maxRecursionDepth, baseTimeUnit)
+				functionInlining, addReturnGuards, maxRecursionDepth, baseTimeUnit)
 		this.preconditionTransformer = new ExpressionPreconditionTransformer(
-			this.trace, this, functionInlining, maxRecursionDepth)
+				this.trace, this, functionInlining, addReturnGuards, maxRecursionDepth)
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
+	}
+	
+	def getExpressionTransformer() {
+		return this.expressionTransformer
 	}
 	
 	protected def transformActions(Collection<? extends Action> actions) {
@@ -91,9 +102,7 @@ class ActionTransformer {
 	}
 	
 	protected def dispatch List<Action> transformAction(EmptyStatement action) {
-		return #[
-			createEmptyStatement
-		]
+		return #[ createEmptyStatement ]
 	}
 	
 	protected def dispatch List<Action> transformAction(Block action) {
@@ -118,8 +127,8 @@ class ActionTransformer {
 			T valueDeclaration) {
 		val result = newArrayList
 		val initalExpression = valueDeclaration.expression
-		var lowlevelPrecondition = initalExpression !== null ?
-			initalExpression.transformPrecondition : <Action>newLinkedList
+		var lowlevelPrecondition = (initalExpression !== null) ?
+				initalExpression.transformPrecondition : <Action>newLinkedList
 		result += lowlevelPrecondition
 		
 		val lowlevelVariableDeclarations = valueDeclaration.transform
@@ -127,14 +136,37 @@ class ActionTransformer {
 		for (lowlevelVariableDeclaration : lowlevelVariableDeclarations) {
 			result += createVariableDeclarationStatement => [
 				it.variableDeclaration = lowlevelVariableDeclaration
-			]	
+			]
 		}
 		return result
 	}
 	
 	protected def dispatch List<Action> transformAction(ExpressionStatement action) {
+		val actions = newArrayList
+		
 		val expression = action.expression
-		return expression.transformPrecondition
+		val preconditions = expression.transformPrecondition
+		
+		actions += preconditions
+		if (!FUNCTION_INLINING) {
+			if (expression instanceof FunctionAccessExpression) {
+				if (!trace.isMapped(expression)) {
+					val lowlevelExpressions = expression.transformExpression
+					val lowlevelExpression = lowlevelExpressions.onlyElement
+					actions += lowlevelExpression.createExpressionStatement // Function call
+				}
+			}
+			// Otherwise, everything is in 'preconditions'
+		}
+		
+		if (expression instanceof OpaqueExpression) {
+			val string = expression.expression
+			if (string.startsWith("language ")) {
+				actions += action.clone
+			}
+		}
+		
+		return actions
 	}
 	
 	protected def dispatch List<Action> transformAction(BreakStatement action) {
@@ -142,7 +174,20 @@ class ActionTransformer {
 	}
 	
 	protected def dispatch List<Action> transformAction(ReturnStatement action) {
-		throw new UnsupportedOperationException("Not supported action: " + action)
+		val expression = action.expression
+		val lowlevelExpressions = expression?.transformExpression
+		return #[
+			createReturnStatement => [
+				it.expression = (expression === null) ?
+					null :
+					(lowlevelExpressions.size == 1) ?
+						lowlevelExpressions.head :
+						lowlevelExpressions.createTupleLiteralExpression(
+							trace.get(action
+								.getContainerOfType(ProcedureDeclaration))
+									.typeDefinition)
+			]
+		]
 	}
 	
 	protected def dispatch List<Action> transformAction(IfStatement action) {
@@ -224,7 +269,8 @@ class ActionTransformer {
 		val result = <Action>newLinkedList
 		
 		val actionLhs = action.lhs
-		val lowlevelLhs = actionLhs.transformReferenceExpression // Potentially more references are expected
+		val lowlevelLhs = actionLhs.transformReferenceExpression
+				.filter(ReferenceExpression).toList
 		// This addresses record1 := record2 like assignments
 		
 		val actionRhs = action.rhs
@@ -242,7 +288,7 @@ class ActionTransformer {
 		val result = <Action>newLinkedList
 		
 		val actionLhs = action.lhs
-		val lowlevelLhs = actionLhs.transformReferenceExpression // Potentially more references are expected
+		val lowlevelLhs = actionLhs.transformReferenceExpression
 		// This addresses record1 := record2 like assignments
 		
 		val assumption = action.constraint
@@ -252,13 +298,15 @@ class ActionTransformer {
 		}
 		// Transform assumption and create actions
 		val lowlevelAssumptions = (assumption === null) ? #[ createTrueExpression ] : assumption.transformExpression
-		val lowlevelAssumption = (lowlevelAssumptions.size == 1) ? lowlevelAssumptions.head : lowlevelAssumptions.wrapIntoAndExpression
+		val lowlevelAssumption = (lowlevelAssumptions.size == 1) ?
+				lowlevelAssumptions.head :
+				lowlevelAssumptions.wrapIntoAndExpression
 		
 		for (lhs : lowlevelLhs) {
 			val lowlevelHavoc = actionFactory.createHavocStatement
 			result += lowlevelHavoc
 			
-			lowlevelHavoc.lhs = lhs
+			lowlevelHavoc.lhs = lhs as ReferenceExpression
 			if (lhs === lowlevelLhs.lastOrNull) { // One constraint is enough at the end
 				lowlevelHavoc.constraint = lowlevelAssumption
 			}

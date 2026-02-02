@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.codegeneration.java.util.TypeSerializer
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.XSTS
 
 abstract class ActionSerializer {
@@ -32,5 +33,7 @@ abstract class ActionSerializer {
 	abstract def CharSequence serializeInitializingAction(XSTS xSts)
 	abstract def CharSequence serializeChangeState(XSTS xSts)
 	//
+	
+	abstract def CharSequence serialize(Action action)
 	
 }

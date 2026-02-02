@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,11 +17,15 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.NullaryExpression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
+import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
@@ -83,12 +87,29 @@ class ExpressionTransformer {
 		return trace.getXStsVariable(variableDeclaration).createReferenceExpression
 	}
 	
+	def dispatch Expression transformExpression(TupleReferenceExpression expression) {
+		val references = expression.references
+		return createTupleReferenceExpression => [
+			it.references += references.map[it.transformExpression].filter(ReferenceExpression)
+		]
+	}
+	
 	def dispatch Expression transformExpression(ArrayAccessExpression expression) {
 		val operand = expression.operand
 		val index = expression.index
 		return createArrayAccessExpression => [
 			it.operand = operand.transformExpression
 			it.index = index.transformExpression
+		]
+	}
+	
+	def dispatch Expression transformExpression(FunctionAccessExpression expression) {
+		val function = expression.declaration as FunctionDeclaration
+		val arguments = expression.arguments
+		val xStsFunction = trace.getXStsFunctionDeclaration(function)
+		return createFunctionAccessExpression => [
+			it.operand = xStsFunction.createReferenceExpression
+			it.arguments += arguments.map[it.transformExpression]
 		]
 	}
 	

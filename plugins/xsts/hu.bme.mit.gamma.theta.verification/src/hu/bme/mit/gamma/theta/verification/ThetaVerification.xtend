@@ -10,8 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.theta.verification
 
-import hu.bme.mit.gamma.verification.util.AbstractVerification
 import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer
+import hu.bme.mit.gamma.verification.util.AbstractVerification
 
 class ThetaVerification extends AbstractVerification {
 	// Singleton
@@ -23,7 +23,7 @@ class ThetaVerification extends AbstractVerification {
 		return fileName.unfoldedPackageFileName
 	}
 	
-	protected override createVerifier() {
+	protected override createVerifier(Long timeout) {
 		return new ThetaVerifier
 	}
 	
@@ -31,11 +31,15 @@ class ThetaVerification extends AbstractVerification {
 		return #[
 				"CEGAR",
 				"CEGAR --domain EXPL --refinement SEQ_ITP --maxenum 250 --initprec CTRL",
-				"CEGAR --domain EXPL_PRED_COMBINED --autoexpl NEWOPERANDS --initprec CTRL"
+				"BOUNDED --variant KINDUCTION",
+				"MDD"
 			]
-		// --domain PRED_CART --refinement SEQ_ITP // default - cannot be used with loops
-		// --domain EXPL --refinement SEQ_ITP --maxenum 250 // --initprec CTRL should be used to support loops
-		// --domain EXPL_PRED_COMBINED --autoexpl NEWOPERANDS --initprec CTRL
+		// CEGAR --domain PRED_CART --refinement SEQ_ITP // default - cannot be used with loops
+		// CEGAR --domain EXPL --refinement SEQ_ITP --maxenum 250 // --initprec CTRL should be used to support loops
+		// CEGAR --domain EXPL_PRED_COMBINED --autoexpl NEWOPERANDS --initprec CTRL
+		// BOUNDED --variant KINDUCTION
+		// MDD
+		// BOUNDED --variant IMC
 	}
 	
 	protected override String getArgumentPattern() {

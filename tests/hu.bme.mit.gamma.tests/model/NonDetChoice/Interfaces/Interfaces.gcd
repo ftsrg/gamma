@@ -1,0 +1,6 @@
+package nondetchoice
+
+interface Execute {
+	out event ^execute
+}
+

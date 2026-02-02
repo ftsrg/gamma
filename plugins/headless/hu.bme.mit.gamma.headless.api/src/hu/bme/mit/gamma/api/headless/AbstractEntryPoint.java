@@ -61,7 +61,7 @@ public abstract class AbstractEntryPoint extends HeadlessApplicationCommandHandl
 	}
 
 	@Override
-	public void execute() throws Exception {
+	public void execute() throws Throwable {
 		// Necessary setup of Xtext parsers
 		setupXtext();
 		
@@ -76,7 +76,7 @@ public abstract class AbstractEntryPoint extends HeadlessApplicationCommandHandl
 			IWorkspaceRoot workspaceRoot = workspace.getRoot();
 			IPath workspaceLocation = workspaceRoot.getLocation();
 			File workspaceFolder = workspaceLocation.toFile();
-			//
+			
 			setup();
 			// The file and its containing project is not in the given workspace
 			// The project has to be copied into the workspace
@@ -88,11 +88,11 @@ public abstract class AbstractEntryPoint extends HeadlessApplicationCommandHandl
 			run(fileWorkspaceRelativePath);
 
 			beforeExitOperation(projectDescriptorPath);
-			logger.info("Exiting...");
+			logger.info("Returning...");
 		}
 	}
 
-	protected void copyProject(File projectFolder, String projectName) throws CoreException, Exception {
+	protected void copyProject(File projectFolder, String projectName) throws Exception {
 		IProject project = openProject(projectName);
 		IProjectDescription description = project.getDescription();
 		project.setDescription(description, new NullProgressMonitor());
@@ -128,9 +128,9 @@ public abstract class AbstractEntryPoint extends HeadlessApplicationCommandHandl
 		return project;
 	}
 
-	protected abstract void setup() throws Exception;
+	protected abstract void setup() throws Throwable;
 	
-	protected abstract void run(String fileWorkspaceRelativePath) throws Exception;
+	protected abstract void run(String fileWorkspaceRelativePath) throws Throwable;
 	
 	protected abstract void setupXtext();
 	

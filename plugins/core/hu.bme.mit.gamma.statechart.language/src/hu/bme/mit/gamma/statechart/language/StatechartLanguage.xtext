@@ -242,7 +242,8 @@ enum GuardEvaluation returns GuardEvaluation:
 ;
 
 ComponentAnnotation returns InterfaceModel::ComponentAnnotation: 
-	WrapperComponentAnnotation | RunUponExternalEventAnnotation | RunUponExternalEventOrInternalTimeoutAnnotation
+	WrapperComponentAnnotation | RunUponExternalEventAnnotation | 
+		RunUponExternalEventOrInternalTimeoutAnnotation | IncompleteStatechartAnnotation
 ;
 
 StatechartContractAnnotation returns StatechartAnnotation:
@@ -299,6 +300,10 @@ RunUponExternalEventAnnotation returns RunUponExternalEventAnnotation:
 RunUponExternalEventOrInternalTimeoutAnnotation returns RunUponExternalEventOrInternalTimeoutAnnotation:
 	{RunUponExternalEventOrInternalTimeoutAnnotation} ('@RunUponExternalEventOrInternalTimeoutAnnotation' |
 		'@RunUponExternalEventOrInternalTimeout' )
+;
+
+IncompleteStatechartAnnotation returns IncompleteStatechartAnnotation:
+	{IncompleteStatechartAnnotation} ('@IncompleteStatechart' | '@IncompleteStatechartAnnotation' )
 ;
 
 Region returns Region:
@@ -713,6 +718,7 @@ DeactivateTimeoutAction returns DeactivateTimeoutAction:
 
 ComponentInstanceStateExpression returns CompositeModel::ComponentInstanceElementReferenceExpression:
 	ComponentInstanceStateReferenceExpression | ComponentInstanceVariableReferenceExpression |
+		ComponentInstanceQueueSizeReferenceExpression |
 		ComponentInstanceEventReferenceExpression | ComponentInstanceEventParameterReferenceExpression
 ;
 
@@ -722,6 +728,10 @@ ComponentInstanceStateReferenceExpression returns CompositeModel::ComponentInsta
 
 ComponentInstanceVariableReferenceExpression returns CompositeModel::ComponentInstanceVariableReferenceExpression:
 	'variable' instance=ComponentInstanceReferenceExpression '.' variableDeclaration=[ExpressionModel::VariableDeclaration]
+;
+
+ComponentInstanceQueueSizeReferenceExpression returns CompositeModel::ComponentInstanceQueueSizeReferenceExpression:
+	'size' instance=ComponentInstanceReferenceExpression '.' queue=[CompositeModel::MessageQueue]
 ;
 
 ComponentInstanceEventReferenceExpression returns CompositeModel::ComponentInstanceEventReferenceExpression:

@@ -11,6 +11,7 @@
 		<nl>hu_HU</nl>
 	</environment>
 	<includeBundles>
+		<plugin id="aQute.libg"/>
 		<plugin id="bcpg"/>
 		<plugin id="bcpkix"/>
 		<plugin id="bcprov"/>
@@ -23,6 +24,7 @@
 		<plugin id="bndtools.jareditor"/>
 		<plugin id="ch.qos.logback.classic"/>
 		<plugin id="ch.qos.logback.core"/>
+		<plugin id="com.github.weisj.jsvg"/>
 		<plugin id="com.google.gson"/>
 		<plugin id="com.google.guava"/>
 		<plugin id="com.google.guava.failureaccess"/>
@@ -37,13 +39,13 @@
 		<plugin id="com.sun.xml.bind"/>
 		<plugin id="io.github.classgraph.classgraph"/>
 		<plugin id="jakarta.activation-api"/>
-		<plugin id="jakarta.annotation-api" version="2.1.1"/>
+		<plugin id="jakarta.annotation-api"/>
 		<plugin id="jakarta.inject.jakarta.inject-api" version="2.0.1"/>
 		<plugin id="jakarta.websocket-client-api"/>
 		<plugin id="jakarta.xml.bind"/>
 		<plugin id="jakarta.xml.bind-api"/>
 		<plugin id="javax.activation"/>
-		<plugin id="javax.xml"/>
+		<plugin id="javax.xml.jre"/>
 		<plugin id="jaxen"/>
 		<plugin id="junit-jupiter-api"/>
 		<plugin id="junit-jupiter-engine"/>
@@ -58,7 +60,6 @@
 		<plugin id="junit-platform-suite-engine"/>
 		<plugin id="junit-vintage-engine"/>
 		<plugin id="net.bytebuddy.byte-buddy-agent"/>
-		<plugin id="net.i2p.crypto.eddsa"/>
 		<plugin id="net.sourceforge.plantuml.eclipse"/>
 		<plugin id="net.sourceforge.plantuml.eclipse.imagecontrol"/>
 		<plugin id="net.sourceforge.plantuml.ecore"/>
@@ -78,8 +79,6 @@
 		<plugin id="org.apache.batik.i18n"/>
 		<plugin id="org.apache.batik.util"/>
 		<plugin id="org.apache.commons.cli"/>
-		<plugin id="org.apache.commons.collections"/>
-		<plugin id="org.apache.commons.commons-beanutils"/>
 		<plugin id="org.apache.commons.commons-codec"/>
 		<plugin id="org.apache.commons.commons-codec.source"/>
 		<plugin id="org.apache.commons.commons-collections4"/>
@@ -88,7 +87,6 @@
 		<plugin id="org.apache.commons.commons-logging"/>
 		<plugin id="org.apache.commons.commons-logging.source"/>
 		<plugin id="org.apache.commons.httpclient"/>
-		<plugin id="org.apache.commons.jxpath"/>
 		<plugin id="org.apache.commons.lang3"/>
 		<plugin id="org.apache.commons.logging"/>
 		<plugin id="org.apache.commons.text"/>
@@ -251,11 +249,7 @@
 		<plugin id="org.eclipse.ecf.provider.filetransfer.httpclientjava"/>
 		<plugin id="org.eclipse.ecf.provider.filetransfer.httpclientjava.source"/>
 		<plugin id="org.eclipse.ecf.provider.filetransfer.source"/>
-		<plugin id="org.eclipse.ecf.provider.filetransfer.ssl"/>
-		<plugin id="org.eclipse.ecf.provider.filetransfer.ssl.source"/>
 		<plugin id="org.eclipse.ecf.source"/>
-		<plugin id="org.eclipse.ecf.ssl"/>
-		<plugin id="org.eclipse.ecf.ssl.source"/>
 		<plugin id="org.eclipse.egit"/>
 		<plugin id="org.eclipse.egit.core"/>
 		<plugin id="org.eclipse.egit.doc"/>
@@ -646,7 +640,6 @@
 		<plugin id="org.eclipse.osgi.compatibility.state.source"/>
 		<plugin id="org.eclipse.osgi.source"/>
 		<plugin id="org.eclipse.osgi.util"/>
-		<plugin id="org.eclipse.osgi.util.source"/>
 		<plugin id="org.eclipse.pde"/>
 		<plugin id="org.eclipse.pde.api.tools"/>
 		<plugin id="org.eclipse.pde.api.tools.annotations"/>
@@ -707,6 +700,11 @@
 		<plugin id="org.eclipse.search.core"/>
 		<plugin id="org.eclipse.search.source"/>
 		<plugin id="org.eclipse.swt"/>
+		<plugin id="org.eclipse.swt.svg"/>
+		<plugin id="org.eclipse.swt.svg.source"/>
+		<plugin id="org.eclipse.swt.tools.base"/>
+		<plugin id="org.eclipse.swt.tools.spies"/>
+		<plugin id="org.eclipse.swt.tools.spies.source"/>
 		<plugin id="org.eclipse.swt.win32.win32.x86_64"/>
 		<plugin id="org.eclipse.swt.win32.win32.x86_64.source"/>
 		<plugin id="org.eclipse.team.core"/>
@@ -769,7 +767,6 @@
 		<plugin id="org.eclipse.ui.net.source"/>
 		<plugin id="org.eclipse.ui.source"/>
 		<plugin id="org.eclipse.ui.themes"/>
-		<plugin id="org.eclipse.ui.themes.source"/>
 		<plugin id="org.eclipse.ui.trace"/>
 		<plugin id="org.eclipse.ui.trace.source"/>
 		<plugin id="org.eclipse.ui.views"/>
@@ -788,9 +785,6 @@
 		<plugin id="org.eclipse.update.configurator.source"/>
 		<plugin id="org.eclipse.urischeme"/>
 		<plugin id="org.eclipse.urischeme.source"/>
-		<plugin id="org.eclipse.userstorage"/>
-		<plugin id="org.eclipse.userstorage.oauth"/>
-		<plugin id="org.eclipse.userstorage.ui"/>
 		<plugin id="org.eclipse.viatra.addon.databinding.runtime"/>
 		<plugin id="org.eclipse.viatra.addon.databinding.runtime.source"/>
 		<plugin id="org.eclipse.viatra.addon.databinding.runtime.validation"/>
@@ -1002,7 +996,6 @@
 		<plugin id="org.gradle.toolingapi"/>
 		<plugin id="org.hamcrest"/>
 		<plugin id="org.jcodings"/>
-		<plugin id="org.jdom"/>
 		<plugin id="org.jdom2"/>
 		<plugin id="org.joni"/>
 		<plugin id="org.jsoup"/>

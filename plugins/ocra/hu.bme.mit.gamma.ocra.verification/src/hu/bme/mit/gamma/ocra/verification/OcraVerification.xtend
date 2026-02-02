@@ -31,10 +31,12 @@ class OcraVerification extends AbstractVerification {
 		return "ocra" + File.separator + fileName.getOcraFileName
 	}
 
-	override protected createVerifier() {
+	override protected createVerifier(Long timeout) {
 		return new OcraVerifier
 	}
-
+	
+	//
+	
 	override getDefaultArguments() {
 		return #[OcraVerifier.SET_OCRA_TIMED]
 	}

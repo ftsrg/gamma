@@ -87,15 +87,15 @@ class StatechartToLowlevelTransformer {
 	}
 	
 	new(TimeUnit baseTimeUnit) {
-		this(true, 10, baseTimeUnit)
+		this(true, true, 7, baseTimeUnit)
 	}
 	
-	new(boolean functionInlining, int maxRecursionDepth, TimeUnit baseTimeUnit) {
+	new(boolean functionInlining, boolean addReturnGuards, int maxRecursionDepth, TimeUnit baseTimeUnit) {
 		this.trace = new Trace
 		this.typeTransformer = new TypeTransformer(this.trace)
-		this.expressionTransformer = new ExpressionTransformer(this.trace, functionInlining, maxRecursionDepth, baseTimeUnit)
+		this.expressionTransformer = new ExpressionTransformer(this.trace, functionInlining, addReturnGuards, maxRecursionDepth, baseTimeUnit)
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
-		this.actionTransformer = new ActionTransformer(this.trace, functionInlining, maxRecursionDepth, baseTimeUnit)
+		this.actionTransformer = new ActionTransformer(this.trace, functionInlining, addReturnGuards, maxRecursionDepth, baseTimeUnit)
 		this.triggerTransformer = new TriggerTransformer(this.trace, functionInlining, maxRecursionDepth, baseTimeUnit)
 		this.pseudoStateTransformer = new PseudoStateTransformer(this.trace)
 	}

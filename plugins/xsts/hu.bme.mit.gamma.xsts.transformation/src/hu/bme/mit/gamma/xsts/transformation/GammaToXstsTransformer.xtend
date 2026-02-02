@@ -103,17 +103,18 @@ class GammaToXstsTransformer {
 			boolean unfoldMessageQueues, boolean optimizeEnvironmentalMessageQueues,
 			TransitionMerging transitionMerging,
 			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
-		this(schedulingConstraint, schedulingConstraint,
+		this(schedulingConstraint, schedulingConstraint, true,
 			transformOrthogonalActions, optimize, optimizeOneCapacityArrays, unfoldMessageQueues,
 			optimizeEnvironmentalMessageQueues, transitionMerging, initialState, initialStateSetting)
 	}
 	
 	new(Integer minSchedulingConstraint, Integer maxSchedulingConstraint,
+			boolean inlineFunctions,
 			boolean transformOrthogonalActions,	boolean optimize, boolean optimizeOneCapacityArrays,
 			boolean unfoldMessageQueues, boolean optimizeEnvironmentalMessageQueues,
 			TransitionMerging transitionMerging,
 			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
-		this.gammaToLowlevelTransformer = new GammaToLowlevelTransformer
+		this.gammaToLowlevelTransformer = new GammaToLowlevelTransformer(inlineFunctions)
 		this.componentTransformer = new ComponentTransformer(this.gammaToLowlevelTransformer,
 			transformOrthogonalActions, optimize, optimizeEnvironmentalMessageQueues, transitionMerging)
 		this.minSchedulingConstraint = minSchedulingConstraint

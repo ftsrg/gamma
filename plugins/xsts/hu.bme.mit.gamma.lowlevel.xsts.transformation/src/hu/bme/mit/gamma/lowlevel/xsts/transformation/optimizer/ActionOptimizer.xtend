@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,15 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer
 
-import hu.bme.mit.gamma.expression.model.AndExpression
-import hu.bme.mit.gamma.expression.model.ArithmeticExpression
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.expression.model.FalseExpression
-import hu.bme.mit.gamma.expression.model.ImplyExpression
-import hu.bme.mit.gamma.expression.model.LogicExpression
-import hu.bme.mit.gamma.expression.model.MultiaryExpression
-import hu.bme.mit.gamma.expression.model.OrExpression
-import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
@@ -28,6 +21,7 @@ import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.AtomicAction
 import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.FunctionCallAction
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
@@ -41,10 +35,10 @@ import hu.bme.mit.gamma.xsts.model.XTransition
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.List
 import java.util.logging.Logger
-import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 class ActionOptimizer {
@@ -115,7 +109,7 @@ class ActionOptimizer {
 			newXStsAction.deleteUnnecessaryAssumeActions // Not correct in other transformation implementations
 			newXStsAction.deleteDefinitelyFalseBranches
 			newXStsAction.deleteDefinitelyFalseBranchesFromAssumptions
-			newXStsAction.optimizeExpressions // Could be extracted to the expression metamodel?
+			newXStsAction.optimizeExpressions
 		}
 		
 		return newXStsAction
@@ -125,6 +119,10 @@ class ActionOptimizer {
 	
 	// Deleting composite actions with less than two actions 
 	protected def dispatch Action simplifyCompositeActions(AtomicAction action) {
+		return action
+	}
+	
+	protected def dispatch Action simplifyCompositeActions(FunctionCallAction action) {
 		return action
 	}
 	
@@ -206,6 +204,10 @@ class ActionOptimizer {
 	}
 	
 	protected def dispatch List<Action> simplifySequentialActions(AtomicAction action, boolean isTop) {
+		return #[action]
+	}
+	
+	protected def dispatch List<Action> simplifySequentialActions(FunctionCallAction action, boolean isTop) {
 		return #[action]
 	}
 	
@@ -296,6 +298,10 @@ class ActionOptimizer {
 		return #[action]
 	}
 	
+	protected def dispatch List<Action> simplifyParallelActions(FunctionCallAction action, boolean isTop) {
+		return #[action]
+	}
+	
 	protected def dispatch List<Action> simplifyParallelActions(LoopAction action, boolean isTop) {
 		val xStsSubaction = action.action
 		val newXStsSubactions = xStsSubaction.simplifyParallelActions(true)
@@ -374,6 +380,10 @@ class ActionOptimizer {
 		return #[action]
 	}
 	
+	protected def dispatch List<Action> simplifyOrthogonalActions(FunctionCallAction action, boolean isTop) {
+		return #[action]
+	}
+	
 	protected def dispatch List<Action> simplifyOrthogonalActions(LoopAction action, boolean isTop) {
 		val xStsSubaction = action.action
 		val newXStsSubactions = xStsSubaction.simplifyOrthogonalActions(true)
@@ -449,6 +459,10 @@ class ActionOptimizer {
 	}
 	
 	protected def dispatch List<Action> simplifyNonDeterministicActions(AtomicAction action, boolean isTop) {
+		return #[action]
+	}
+	
+	protected def dispatch List<Action> simplifyNonDeterministicActions(FunctionCallAction action, boolean isTop) {
 		return #[action]
 	}
 	
@@ -620,25 +634,38 @@ class ActionOptimizer {
 			
 			if (xStsFirstAction instanceof AbstractAssignmentAction) {
 				val lhs = xStsFirstAction.lhs
-				val variable = lhs.accessedDeclaration
-				var foundAssignmentToTheSameVariable = false
-				for (var j = i + 1; j < xStsActions.size && !foundAssignmentToTheSameVariable; j++) {
-					val xStsSecondAction = xStsActions.get(j)
-					if (xStsSecondAction instanceof AbstractAssignmentAction) {
-						if (xStsSecondAction.lhs.helperEquals(lhs)) {
-							foundAssignmentToTheSameVariable = true
-							var isVariableRead = false
-							for (var k = i + 1; k <= j && !isVariableRead; k++) {
-								val xStsInBetweenAction = xStsActions.get(k)
-								// Not perfect for arrays: a[0] := 1; b := a[2]; a[0] := 2;
-								val readVariables = xStsInBetweenAction.readVariables
-								if (readVariables.contains(variable)) {
-									isVariableRead = true
+				if (lhs instanceof DirectReferenceExpression) { // Only simple lhs now
+					val variable = lhs.accessedDeclaration
+					var foundAssignmentToTheSameVariable = false
+					for (var j = i + 1; j < xStsActions.size && !foundAssignmentToTheSameVariable; j++) {
+						val xStsSecondAction = xStsActions.get(j)
+						if (xStsSecondAction instanceof AbstractAssignmentAction) {
+							if (xStsSecondAction.lhs.helperEquals(lhs)) {
+								foundAssignmentToTheSameVariable = true
+								var isVariableRead = false
+								for (var k = i + 1; k <= j && !isVariableRead; k++) {
+									val xStsInBetweenAction = xStsActions.get(k)
+									// Not perfect for arrays: a[0] := 1; b := a[2]; a[0] := 2;
+									val readVariables = xStsInBetweenAction.readVariables
+									if (readVariables.contains(variable)) {
+										isVariableRead = true
+									}
+								}
+								if (!isVariableRead) {
+									removeableXStsActions += xStsFirstAction
 								}
 							}
-							if (!isVariableRead) {
-								removeableXStsActions += xStsFirstAction
-							}
+						}
+					}
+				}
+				
+				// Rhs evaluation
+				if (!removeableXStsActions.contains(xStsFirstAction)) {
+					if (xStsFirstAction instanceof AssignmentAction) {
+						val rhs = xStsFirstAction.rhs
+						if (rhs.evaluable) {
+							val literal = rhs.evaluateExpression
+							xStsFirstAction.rhs = literal
 						}
 					}
 				}
@@ -876,63 +903,6 @@ class ActionOptimizer {
 			}
 			else {
 				// Both are null, so the whole transition must be removed: should not happen in practice
-			}
-		}
-	}
-	
-	//
-	
-	protected def void optimizeExpressions(Action action) {
-		val eObjects = action.getAllContentsOfType(EObject)
-		
-		val booleanExpressions = eObjects.filter(LogicExpression)
-		for (booleanExpression : booleanExpressions) {
-			if (booleanExpression.definitelyFalseExpression) {
-				expressionFactory.createFalseExpression.replace(booleanExpression)
-			}
-			else if (booleanExpression.definitelyTrueExpression) {
-				expressionFactory.createTrueExpression.replace(booleanExpression)
-			}
-			else {
-				if (booleanExpression instanceof OrExpression) {
-					booleanExpression.operands.removeIf[it instanceof FalseExpression]
-				}
-				else if (booleanExpression instanceof AndExpression) {
-					booleanExpression.operands.removeIf[it instanceof TrueExpression]
-				}
-				else if (booleanExpression instanceof ImplyExpression) {
-					val left = booleanExpression.leftOperand
-					val right = booleanExpression.rightOperand
-					if (left.definitelyTrueExpression) {
-						right.replace(booleanExpression)
-					}
-				}
-			}
-		}
-		
-		val multiaryExpressions = newArrayList
-		multiaryExpressions += eObjects.filter(ArithmeticExpression).filter(MultiaryExpression) // Add, Mul
-		multiaryExpressions += booleanExpressions.filter(MultiaryExpression) // And, Xor, Or
-		
-		for (multiaryExpression : multiaryExpressions) {
-			val operands = multiaryExpression.operands
-			val container = multiaryExpression.eContainer
-			if (container !== null) {
-				if (container.eClass == multiaryExpression.eClass) {
-					val _container = container as MultiaryExpression
-					_container.operands += operands
-					multiaryExpression.remove
-				}
-				else {
-					val operandSize = operands.size
-					if (operandSize == 0) {
-						multiaryExpression.remove
-					}
-					else if (operandSize == 1) {
-						val operand = operands.head
-						operand.replace(multiaryExpression)
-					}
-				}
 			}
 		}
 	}

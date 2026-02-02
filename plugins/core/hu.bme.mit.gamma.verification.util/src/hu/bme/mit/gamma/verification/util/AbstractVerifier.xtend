@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.verification.util
 
+import hu.bme.mit.gamma.property.model.StateFormula
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
@@ -32,10 +33,22 @@ abstract class AbstractVerifier {
 	
 	protected final GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
 	
-	protected extension FileUtil fileUtil = FileUtil.INSTANCE
-	protected extension PathEscaper pathEscaper = PathEscaper.INSTANCE
-	protected extension TraceUtil traceUtil = TraceUtil.INSTANCE
+	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
+	protected final extension PathEscaper pathEscaper = PathEscaper.INSTANCE
+	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
+	
+	protected final Long timeout
+	
+	//
+	
+	new() {
+		this(null)
+	}
+	
+	new(Long timeout) {
+		this.timeout = timeout
+	}
 	
 	//
 	
@@ -103,6 +116,14 @@ abstract class AbstractVerifier {
 	
 	protected def getTemporaryQueryFilename(File modelFile) {
 		return fileNamer.getHiddenSerializedPropertyFileName(modelFile.name)
+	}
+	
+	def isTimeoutSet() {
+		return timeout !== null && 0 < timeout
+	}
+	
+	def getTimeout() {
+		return timeout
 	}
 	
 	//
@@ -199,11 +220,23 @@ abstract class AbstractVerifier {
 	
 	@Data
 	static class Result {
+		StateFormula property
 		ThreeStateBoolean result
 		ExecutionTrace trace
 		//
 		protected extension TraceUtil traceUtil = TraceUtil.INSTANCE
 		//
+		
+		new(ThreeStateBoolean result, ExecutionTrace trace) {
+			this(null, result, trace)
+		}
+		
+		new(StateFormula property, ThreeStateBoolean result, ExecutionTrace trace) {
+			this.property = property
+			this.result = result
+			this.trace = trace
+		}
+		
 		def extend(Result result) {
 			if (result === null) {
 				return this // We cannot do anything with null parameters
@@ -219,7 +252,15 @@ abstract class AbstractVerifier {
 		}
 		
 		def invert() {
-			return new Result(result.opposite, trace)
+			return new Result(property, result.opposite, trace)
+		}
+		
+		def clone(ExecutionTrace trace) {
+			return new Result(property, result, trace)
+		}
+		
+		def clone(StateFormula property) {
+			return new Result(property, result, trace)
 		}
 		
 	}

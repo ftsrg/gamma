@@ -97,9 +97,13 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 			EnumerationLiteralExpression literal = ecoreUtil.getSelfOrContainerOfType(context, EnumerationLiteralExpression.class);
 			if (literal != null) {
 				TypeReference typeReference = literal.getTypeReference();
-				EnumerationTypeDefinition enumeration = (EnumerationTypeDefinition)
-						ExpressionModelDerivedFeatures.getTypeDefinition(typeReference);
-				return Scopes.scopeFor(enumeration.getLiterals());
+				try {
+					EnumerationTypeDefinition enumeration = (EnumerationTypeDefinition)
+							ExpressionModelDerivedFeatures.getTypeDefinition(typeReference);
+					return Scopes.scopeFor(enumeration.getLiterals());
+				} catch (IllegalArgumentException e) {
+					// LazyLinkingResource bug: 'type == null'
+				}
 			}
 		}
 		return super.getScope(context, reference);

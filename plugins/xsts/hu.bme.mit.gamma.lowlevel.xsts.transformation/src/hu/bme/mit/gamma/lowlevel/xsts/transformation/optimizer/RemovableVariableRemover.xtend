@@ -11,11 +11,14 @@
 package hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer
 
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
+import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.AssignmentActions
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.NotReadVariables
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
+import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.SlaveMessageQueueGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
@@ -60,6 +63,16 @@ class RemovableVariableRemover {
 			val xStsAssignments = xStsAssignmentMatcher.getAllValuesOfaction(
 					null, unreadXStsVariable)
 			for (xStsAssignment : xStsAssignments) {
+				// Handling function calls if needed
+				if (xStsAssignment instanceof AssignmentAction) {
+					val rhs = xStsAssignment.rhs
+					val functionCalls = rhs.getSelfAndAllContentsOfType(FunctionAccessExpression)
+					for (funcitonCall : functionCalls) {
+						val functionCallAction = funcitonCall.createFunctionCallAction
+						xStsAssignment.appendToAction(functionCallAction)
+					}
+				}
+				
 				xStsAssignment.replaceWithEmptyAction
 			}
 			// Deleting the potential containing VariableDeclarationAction too
@@ -72,11 +85,14 @@ class RemovableVariableRemover {
 	}
 	
 	def void removeReadOnlyVariables(XSTS xSts, boolean keepInternalVariables) {
+		val references = xSts.getAllContentsOfType(DirectReferenceExpression)
+		val tupleReferences = references.filter[it.isContainedBy(TupleReferenceExpression)]
 		val readOnlyVariables = xSts.readOnlyVariables
-				.filter[it.global && (!keepInternalVariables || !it.internal)].toSet
+				.filter[it.global && (!keepInternalVariables || !it.internal)]
+				.reject[variable | !tupleReferences.exists[it.declaration === variable]] // Do not handle tuple references
+				.toSet
 		// Local variables cannot be optimized like this: e.g., local a : integer = b; b := x; ... (a cannot be substituted by b anymore)
 		if (!readOnlyVariables.empty) {
-			val references = xSts.getAllContentsOfType(DirectReferenceExpression)
 			for (reference : references) {
 				val declaration = reference.declaration
 				if (readOnlyVariables.contains(declaration)) {

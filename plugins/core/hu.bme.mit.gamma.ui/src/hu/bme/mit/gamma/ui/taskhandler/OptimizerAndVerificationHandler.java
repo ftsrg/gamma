@@ -49,6 +49,7 @@ import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.transformation.util.PropertyUnfolder;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
+import hu.bme.mit.gamma.verification.util.VerificationPostprocessor;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.nuxmv.transformation.XstsToNuxmvTransformer;
 import hu.bme.mit.gamma.xsts.transformation.SystemReducer;
@@ -60,7 +61,8 @@ import uppaal.NTA;
 public class OptimizerAndVerificationHandler extends TaskHandler {
 	//
 	protected final boolean serializeTraces; // Denotes whether traces are serialized
-	
+
+	protected final VerificationPostprocessor verificationPostprocessor;
 	protected VerificationHandler verificationHandler = null;
 	//
 	protected final SystemReducer xStsReducer = SystemReducer.INSTANCE;
@@ -79,8 +81,18 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 	}
 	
 	public OptimizerAndVerificationHandler(IFile file, boolean serializeTraces) {
+		this(file, serializeTraces, null);
+	}
+	
+	public OptimizerAndVerificationHandler(IFile file, VerificationPostprocessor verificationPostprocessor) {
+		this(file, true, verificationPostprocessor);
+	}
+	
+	public OptimizerAndVerificationHandler(IFile file, boolean serializeTraces,
+			VerificationPostprocessor verificationPostprocessor) {
 		super(file);
 		this.serializeTraces = serializeTraces;
+		this.verificationPostprocessor = verificationPostprocessor;
 	}
 	
 	//
@@ -179,11 +191,12 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 		//
 		
 		// A single one to store the traces and support later optimization - false: no trace serialization
-		verificationHandler = new VerificationHandler(file, false);
+		verificationHandler = new VerificationHandler(file, false, verificationPostprocessor);
 		//
 		int i = 0; // Only for logging
 		while (!formulas.isEmpty()) {
 			CommentableStateFormula formula = formulas.poll();
+			boolean isFormulaInvariant = PropertyModelDerivedFeatures.isInvariant(formula);
 			checkableFormulas.clear();
 			checkableFormulas.add(formula);
 			
@@ -207,10 +220,10 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			
 //			xStsReducer.deleteUnnecessaryStates(xSts, formula, reachableStates); // Still experimental
 			if (optimizeOutEvents) {
-				xStsReducer.deleteUnusedAndWrittenOnlyVariables(xSts, keepableGammaVariables);
+				xStsReducer.deleteUnusedAndWrittenOnlyVariables2(xSts, keepableGammaVariables, keepableGammaStates);
 			}
 			else {
-				xStsReducer.deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(xSts, keepableGammaVariables);
+				xStsReducer.deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(xSts, keepableGammaVariables, keepableGammaStates);
 			}
 			xStsReducer.deleteUnusedInputEventVariables(xSts, keepableGammaVariables);
 			xStsReducer.deleteTrivialCodomainVariablesExceptOutEvents(xSts, keepableGammaVariables, keepableGammaStates);
@@ -271,7 +284,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 				fileUtil.saveString(xStsFile, xStsString);
 			}
 			if (analysisLanguages.contains(AnalysisLanguage.IML)) {
-				String imlString = imlSerializer.serializeIml(xSts);
+				String imlString = imlSerializer.serializeIml(xSts, isFormulaInvariant); // Optimized non-det mapping for invariant properties
 				fileUtil.saveString(analysisFile, imlString);
 				
 				String xStsString = xStsSerializer.serializeXsts(xSts);

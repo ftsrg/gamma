@@ -2,11 +2,11 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Expression Language Metamodel
 Bundle-SymbolicName: hu.bme.mit.gamma.expression.model;singleton:=true
-Bundle-Version: 2.11.0.qualifier
+Bundle-Version: 2.13.0.qualifier
 Bundle-ClassPath: .
 Bundle-Vendor: BME-FTSRG
 Bundle-Localization: plugin
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: hu.bme.mit.gamma.expression.derivedfeatures,
  hu.bme.mit.gamma.expression.model,
  hu.bme.mit.gamma.expression.model.impl,

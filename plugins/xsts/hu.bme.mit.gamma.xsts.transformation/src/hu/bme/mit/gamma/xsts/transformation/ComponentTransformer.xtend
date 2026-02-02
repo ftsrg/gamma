@@ -200,9 +200,9 @@ class ComponentTransformer {
 				
 				// Creating the event ID type with an EMPTY literal for master message queues
 				val eventIdType = createEnumerationTypeDefinition // To limit the possible values for message identifiers
-				eventIdType.literals += "EMPTY".createEnumerationLiteralDefinition
+				eventIdType.literals += emptyLiteralName.createEnumerationLiteralDefinition
 				val eventIdTypeDeclaration = eventIdType.createTypeDeclaration(
-						"EventIdTypeOf" + masterQueueName)
+						masterQueueName.queueTypeName)
 				//
 				
 				val evaluatedCapacity = queue.getCapacity(systemPorts)
@@ -1048,7 +1048,7 @@ class ComponentTransformer {
 		var instanceEndcodingVariable = xSts.getVariable(name)
 		if (instanceEndcodingVariable === null) {
 			instanceEndcodingVariable = createIntegerTypeDefinition
-					.createVariableDeclaration(name)
+					.createVariableDeclarationWithDefaultInitialValue(name)
 			
 			instanceEndcodingVariable.addUnremovableAnnotation
 			instanceEndcodingVariable.addResettableAnnotation
@@ -1148,7 +1148,7 @@ class ComponentTransformer {
 					.map[it.value.getInputEventVariables(it.key)].flatten.toList
 			
 			val randomActions = createChoiceActionForRandomValues(
-					messageQueue.name + "_" + messageQueue.hashCode.abs, min, max + 1 /* exclusive */)
+					messageQueue.name + "_" + messageQueue.hashCode.abs, min, max + 1 + 1 /* exclusive '1' + else branch '1' */)
 			val storageAction = randomActions.key
 			newInEventAction.actions += storageAction
 			val choiceAction = randomActions.value
@@ -1182,7 +1182,11 @@ class ComponentTransformer {
 					}
 				}
 			}
-			removableBranchActions.forEach[it.remove] // Removing now - it would break the indexes in the loop
+			// Else branch (no valid input to/from the queue)
+			branchActions.last.appendToAction(
+					allXStsInputEventVariables.createVariableResetActions)
+			// Removing branches now - it would break the indexes in the loop
+			removableBranchActions.forEach[it.remove]
 			
 			// Note that if the sync component has no port, the event transmission is not mapped
 			
@@ -1203,7 +1207,7 @@ class ComponentTransformer {
 	
 	def dispatch XSTS transform(AbstractSynchronousCompositeComponent component, Package lowlevelPackage) {
 		val name = component.name
-		logger.info( "Transforming abstract synchronous composite " + name)
+		logger.info("Transforming abstract synchronous composite " + name)
 		val xSts = name.createXsts
 		val componentMergedActions = <Component, Action>newHashMap // To handle multiple schedulings in CascadeCompositeComponents
 		val components = component.components
@@ -1319,14 +1323,14 @@ class ComponentTransformer {
 		}
 		xSts.changeTransitions(mergedAction.wrap)
 		
-		logger.info( "Deleting unused instance ports in " + name)
+		logger.info("Deleting unused instance ports in " + name)
 		xSts.deleteUnusedPorts(component) // Deleting variable assignments for unused ports
 		
 		// Connect only after "xSts.mergedTransition.action = mergedAction" / "xSts.changeTransitions"
-		logger.info( "Connecting events through channels in " + name)
+		logger.info("Connecting events through channels in " + name)
 		xSts.connectEventsThroughChannels(component) // Event (variable setting) connecting across channels
 		
-		logger.info( "Binding event to system port events in " + name)
+		logger.info("Binding event to system port events in " + name)
 		val oldInEventAction = xSts.inEventTransition.action
 		val bindingAssignments = xSts.createEventAndParameterAssignmentsBoundToTheSameSystemPort(component)
 		// Optimization: removing old NonDeterministicActions 
@@ -1342,7 +1346,7 @@ class ComponentTransformer {
 		
 		if (transformOrthogonalActions) {
 			// After connectEventsThroughChannels
-			logger.info( "Transforming orthogonal actions in XSTS " + name)
+			logger.info("Transforming orthogonal actions in XSTS " + name)
 			xSts.mergedAction.transform(xSts)
 			// Before optimize actions
 		}
@@ -1354,14 +1358,14 @@ class ComponentTransformer {
 		}
 		
 		// After in event optimization
-		logger.info( "Adding internal event handlings in " + name)
+		logger.info("Adding internal event handlings in " + name)
 		xSts.addInternalEventHandlingActions(component)
 		
 		return xSts
 	}
 	
 	def dispatch XSTS transform(StatechartDefinition statechart, Package lowlevelPackage) {
-		logger.info( "Transforming statechart " + statechart.name)
+		logger.info("Transforming statechart " + statechart.name)
 		/* Note that the package is already transformed and traced because of
 		   the "val lowlevelPackage = gammaToLowlevelTransformer.transform(_package)" call */
 		val lowlevelStatechart = gammaToLowlevelTransformer.transform(statechart)
@@ -1668,7 +1672,7 @@ class ComponentTransformer {
 			return true
 		}
 		checkState(systemPorts.containsNone(topPorts) || topPorts.forall[it.internal],
-			"All or none of the event references must be of system ports in " + queue.containingComponent.name + "' queue " + queue.name)
+			"All or none of the event references must be of system ports in " + queue.containingComponent.name + "'s queue " + queue.name)
 		return false
 	}
 	
@@ -1722,6 +1726,9 @@ class ComponentTransformer {
 			// Customizing every variable name
 			for (variable : xSts.variableDeclarations) {
 				variable.name = variable.getCustomizedName(instance)
+			}
+			for (function : xSts.functionDeclarations) {
+				function.name = function.getCustomizedName(instance)
 			}
 			// Customizing region type declaration name
 			for (regionType : xSts.variableGroups.filter[it.annotation instanceof RegionGroup]

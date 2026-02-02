@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -13,17 +13,22 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.FunctionCallAction
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
+import hu.bme.mit.gamma.xsts.model.OpaqueAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
+import hu.bme.mit.gamma.xsts.model.ReturnAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XTransition
@@ -45,6 +50,7 @@ class VariableInliner {
 	
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE
 	//
 
 	def inline(Iterable<? extends XTransition> transitions) {
@@ -73,7 +79,7 @@ class VariableInliner {
 		action.inline(concreteValues, symbolicValues)
 	}
 	
-	// The concreteValues and symbolicValues sets are disjunct!
+	// The concreteValues and symbolicValues sets are disjoint!
 	
 	protected def dispatch void inline(Action action,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
@@ -87,11 +93,31 @@ class VariableInliner {
 		// Nop
 	}
 	
+	protected def dispatch void inline(OpaqueAction action,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
+		// Nop
+	}
+	
 	protected def dispatch void inline(HavocAction action,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		val writtenVariables = action.writtenVariables
-				
+		
+		concreteValues.keySet -= writtenVariables
+		symbolicValues.keySet -= writtenVariables
+	}
+	
+	protected def dispatch void inline(FunctionCallAction action,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
+		val call = action.functionCallExpression
+		for (argument : call.arguments) {
+			argument.inlineExpression(concreteValues, symbolicValues)
+		}
+		
+		val writtenVariables = action.writtenVariables
+		// We do not consider function bodies (yet)
 		concreteValues.keySet -= writtenVariables
 		symbolicValues.keySet -= writtenVariables
 	}
@@ -189,11 +215,18 @@ class VariableInliner {
 		// TODO 'assume (a = 10)' like actions could be handled like assignments (see next dispatch)
 	}
 	
+	protected def dispatch void inline(ReturnAction action,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
+		val expression = action.expression
+		expression.inlineExpression(concreteValues, symbolicValues)
+	}
+	
 	protected def dispatch void inline(AssignmentAction action,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
+		action.rhs.inlineVariables(concreteValues)
 		val rhs = action.rhs
-		rhs.inlineVariables(concreteValues)
 		val lhs = action.lhs
 		if (lhs instanceof DirectReferenceExpression) {
 			val declaration = lhs.declaration
@@ -201,9 +234,16 @@ class VariableInliner {
 				declaration.handleMaps(action, rhs, concreteValues, symbolicValues)
 			}
 		}
+		else if (lhs instanceof TupleReferenceExpression) {
+			// Used for function calls: we do not consider function bodies (yet)
+			val writtenVariables = action.writtenVariables
+			concreteValues.keySet -= writtenVariables
+			symbolicValues.keySet -= writtenVariables
+		}
 		else if (lhs instanceof ArrayAccessExpression) {
 			val index = lhs.index
 			index.inlineExpression(concreteValues, symbolicValues)
+			// TODO operand?
 		}
 	}
 	
@@ -211,8 +251,8 @@ class VariableInliner {
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		val variable = action.variableDeclaration
+		variable.expression?.inlineVariables(concreteValues)
 		val rhs = variable.expression
-		rhs?.inlineVariables(concreteValues)
 		if (rhs !== null) {
 			variable.handleMaps(action, rhs, concreteValues, symbolicValues)
 		}
@@ -222,7 +262,7 @@ class VariableInliner {
 			Action action, Expression rhs,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
-		if (rhs.isEvaluable) { // So it is evaluable
+		if (rhs.evaluable) { // So it is evaluable
 			// If the oldAssignment is NOT removed, then concrete maps can fall through
 			// validly through different choices. So oldAssignment must NOT be removed.
 			
@@ -257,7 +297,7 @@ class VariableInliner {
 	//
 	
 	protected def inlineLocalVariablesAndAssignmentsIntoSubsequentAssignments(List<? extends Action> actions) {
-		val removableActions = newArrayList
+		val removableActions = <Action>newArrayList
 		// The remaining local VariableDeclarationActions are not removed;
 		// it is done separately by RemovableVariableRemover.removeTransientVariables
 		for (var i = 0; i < actions.size - 1; i++) {
@@ -297,14 +337,16 @@ class VariableInliner {
 								firstRhsClone.replace(rhsContent)
 							}
 						}
+						// TODO not sound: a[1] := 10; a[1] := a[1] + a[2 - 1]
 						// Remove first
 						removableActions += first
 					}
 				}
 			}
 		}
-		//
+		
 		removableActions.forEach[it.replaceWithEmptyAction]
+		actions -= removableActions
 	}
 	
 	// Auxiliary
@@ -412,11 +454,13 @@ class VariableInliner {
 		for (variable : values.keySet) {
 			val entry = values.get(variable)
 			val value = entry.value
+			
 			for (reference : references.filter[it.declaration === variable]) {
 				val clonedValue = value.clone // Cloning is important
 				clonedValue.replace(reference)
 			}
 		}
+		expression.optimizeExpressions
 	}
 	
 	protected def deleteReferencedVariableKeys(Map<? super VariableDeclaration, InlineEntry> values,

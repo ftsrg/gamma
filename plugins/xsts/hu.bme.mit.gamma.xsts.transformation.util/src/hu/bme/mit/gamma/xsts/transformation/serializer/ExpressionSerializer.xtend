@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -40,6 +40,8 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	
 	override String _serialize(IfThenElseExpression expression) '''(if «expression.condition.serialize» then «expression.then.serialize» else «expression.^else.serialize»)'''
 	
+	override String _serialize(ImplyExpression expression) '''(«expression.leftOperand.serialize» => «expression.rightOperand.serialize»)'''
+	
 	override String _serialize(EnumerationLiteralExpression expression) '''«expression.typeReference.reference.name».«expression.reference.name»'''
 	
 	override String _serialize(ModExpression expression) '''(«expression.leftOperand.serialize» % «expression.rightOperand.serialize»)'''
@@ -47,8 +49,6 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	override String _serialize(DivExpression expression) '''(«expression.leftOperand.serialize» / «expression.rightOperand.serialize»)'''
 	
 	override String _serialize(NotExpression expression) '''(«super._serialize(expression)»)'''
-	
-	override String _serialize(ImplyExpression expression) '''(«expression.leftOperand.serialize» => «expression.rightOperand.serialize»)'''
 	
 	override String _serialize(ArrayAccessExpression expression) '''«expression.operand.serialize»[«expression.index.serialize»]'''
 	// The default branch has to contain the default value of the type: crucial for back-annotation

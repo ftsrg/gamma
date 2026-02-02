@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -82,7 +82,7 @@ abstract class AbstractVerification {
 		val level = (isBackendAvailable) ? Level.INFO : Level.SEVERE
 		logger.log(level, "The selected verification back-end is " + ((!isBackendAvailable) ? "un" : "") + "available")
 		// Racer callable(s)
-		val callables = modelFile.loadModelAndCreateVerificationCallables(queryFile, arguments)
+		val callables = modelFile.loadModelAndCreateVerificationCallables(queryFile, arguments, timeout, unit)
 		// Racer, but for only one thread
 		val racer = new ThreadRacer<Result>(callables, timeout, unit)
 		//
@@ -101,24 +101,26 @@ abstract class AbstractVerification {
 	abstract protected def String getTraceabilityFileName(String fileName)
 	
 	def loadModelAndCreateVerificationCallables(File modelFile,
-			File queryFile, String[] arguments) {
+			File queryFile, String[] arguments, long timeout, TimeUnit unit) {
 		val fileName = modelFile.name
 		val traceabilityFileName = fileName.traceabilityFileName
 		val traceabilityObject = ecoreUtil.normalLoad(modelFile.parent, traceabilityFileName)
 		
 		arguments.sanitizeArguments
 		// Creating the racer callable(s)
-		val callables = traceabilityObject.createVerificationCallables(arguments, modelFile, queryFile)
+		val callables = traceabilityObject.createVerificationCallables(arguments, modelFile, queryFile, timeout, unit)
 		
 		return callables
 	}
 	
 	protected def createVerificationCallables(Object traceabilityObject, Iterable<String> arguments,
-			File modelFile, File queryFile) {
+			File modelFile, File queryFile, long timeout, TimeUnit unit) {
 		val callables = <InterruptableCallable<Result>>newArrayList
 		
+		val timeoutS = TimeUnit.SECONDS.convert(timeout, unit)
+		
 		for (argument : arguments) {
-			val verifier = createVerifier
+			val verifier = createVerifier(timeoutS)
 			val className = verifier.class.name
 			
 			callables += new InterruptableCallable<Result> {
@@ -137,7 +139,11 @@ abstract class AbstractVerification {
 		return callables
 	}
 	
-	abstract protected def AbstractVerifier createVerifier()
+	protected def AbstractVerifier createVerifier() {
+		this.createVerifier(null)
+	}
+	
+	abstract protected def AbstractVerifier createVerifier(Long timeout)
 	
 	abstract protected def PropertySerializer createPropertySerializer()
 	

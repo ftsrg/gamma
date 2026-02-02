@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,10 +10,15 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.java
 
+import hu.bme.mit.gamma.codegeneration.java.util.Namings
 import hu.bme.mit.gamma.codegeneration.java.util.TypeDeclarationSerializer
 import hu.bme.mit.gamma.codegeneration.java.util.TypeSerializer
+import hu.bme.mit.gamma.expression.model.LambdaDeclaration
+import hu.bme.mit.gamma.expression.model.TupleTypeDefinition
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.model.ProcedureDeclaration
 import hu.bme.mit.gamma.xsts.model.XSTS
 
 import static extension hu.bme.mit.gamma.codegeneration.java.util.Namings.*
@@ -34,6 +39,8 @@ class StatechartCodeGenerator {
 	final extension VariableDiagnoser variableDiagnoser = VariableDiagnoser.INSTANCE
 	final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
+	final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	
 	// Depending on the xSTS form
 	final extension ActionSerializer actionSerializer
 	
@@ -49,10 +56,15 @@ class StatechartCodeGenerator {
 	
 	protected def createStatechartClass() '''
 		package «STATECHART_PACKAGE_NAME»;
+		«val containsTuples = xSts.containsTypeTransitively(TupleTypeDefinition)»
 		
 		«FOR _package : gammaStatechart.containingPackage.importsWithComponentsOrInterfacesOrTypes.toSet»
 			import «_package.getPackageString(BASE_PACKAGE_NAME)».*;
 		«ENDFOR»
+		«IF containsTuples»
+			import java.util.List;
+			import java.util.ArrayList;
+		«ENDIF»
 		
 		public class «CLASS_NAME» {
 			
@@ -152,6 +164,36 @@ class StatechartCodeGenerator {
 				«ENDFOR»
 			}
 			
+			«FOR function : xSts.functionDeclarations»
+				private «function.type.serialize» «function.name»(«
+						FOR parameter : function.parameterDeclarations SEPARATOR ', '»«parameter.type.serialize» «parameter.name»«ENDFOR») {
+					«IF function instanceof LambdaDeclaration»
+						return «function.expression.serialize»;
+					«ELSEIF function instanceof ProcedureDeclaration»
+						«function.body.serialize»
+					«ENDIF»
+				}
+				
+			«ENDFOR»
+			«IF containsTuples»
+				«val listName = "flattenedList"»
+				List<Object> «Namings.FLATTEN_LIST_METHOD_NAME»(List<?> list) {
+					List<Object> «listName» = new ArrayList<Object>();
+					
+					for (Object object : list) {
+						if (object instanceof List<?> sublist) {
+							«listName».addAll(
+									«Namings.FLATTEN_LIST_METHOD_NAME»(sublist));
+						}
+						else {
+							«listName».add(object);
+						}
+					}
+					
+					return «listName»;
+				}
+				
+			«ENDIF»
 			@Override
 			public String toString() {
 				return

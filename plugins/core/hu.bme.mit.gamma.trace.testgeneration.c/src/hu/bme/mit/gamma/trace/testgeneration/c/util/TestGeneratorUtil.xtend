@@ -12,7 +12,6 @@ package hu.bme.mit.gamma.trace.testgeneration.c.util
 
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.Expression
-import hu.bme.mit.gamma.expression.model.InjectedVariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.impl.ArrayLiteralExpressionImpl
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Port
@@ -62,9 +61,10 @@ class TestGeneratorUtil {
 	}
 	
 	static def boolean isNecessary(Expression expression) {
-		val variables = EcoreUtil2.getAllContentsOfType(expression, ComponentInstanceVariableReferenceExpression).filter[it.variableDeclaration.annotations.stream.anyMatch[it instanceof InjectedVariableDeclarationAnnotation]]
-		if (EcoreUtil2.getAllContentsOfType(expression, ComponentInstanceVariableReferenceExpression).size > 0)
+		if (!EcoreUtil2.getAllContentsOfType(expression,
+				ComponentInstanceVariableReferenceExpression).empty) {
 			return false
+		}
 		return true
 	}
 	

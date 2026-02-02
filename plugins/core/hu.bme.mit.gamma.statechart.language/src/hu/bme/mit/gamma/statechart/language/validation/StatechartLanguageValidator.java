@@ -18,6 +18,7 @@ import org.eclipse.xtext.validation.Check;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.BroadcastChannel;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
@@ -525,13 +526,18 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	}
 	
 	@Check
-	public void checkExecutionLists(ScheduledAsynchronousCompositeComponent scheduledComponent) {
-		handleValidationResultMessage(statechartModelValidator.checkExecutionLists(scheduledComponent));
+	public void checkPortBindings(AbstractAsynchronousCompositeComponent component) {
+		handleValidationResultMessage(statechartModelValidator.checkPortBindings(component));
 	}
 	
 	@Check
-	public void checkComponents(ScheduledAsynchronousCompositeComponent scheduledComponent) {
-		handleValidationResultMessage(statechartModelValidator.checkComponents(scheduledComponent));
+	public void checkExecutionLists(ScheduledAsynchronousCompositeComponent component) {
+		handleValidationResultMessage(statechartModelValidator.checkExecutionLists(component));
+	}
+	
+	@Check
+	public void checkComponents(ScheduledAsynchronousCompositeComponent component) {
+		handleValidationResultMessage(statechartModelValidator.checkComponentTypes(component));
 	}
 	
 	@Check

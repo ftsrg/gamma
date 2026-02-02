@@ -41,6 +41,7 @@ class Gamma2XstsTransformerSerializer {
 	protected final Integer minSchedulingConstraint
 	protected final Integer maxSchedulingConstraint
 	// Configuration
+	protected final boolean inlineFunctions
 	protected final boolean optimize
 	protected final boolean optimizeArray
 	protected final boolean optimizeMessageQueues
@@ -75,7 +76,7 @@ class Gamma2XstsTransformerSerializer {
 		this(component, arguments, targetFolderUri, fileName, schedulingConstraint, schedulingConstraint,
 			true, false, false, true, TransitionMerging.HIERARCHICAL,
 			null,
-			new AnnotatablePreprocessableElements(null, null, null, null, null, null, null, null, null,
+			new AnnotatablePreprocessableElements(null, null, null, null, null, null, null, null, null, null, null,
 				InteractionCoverageCriterion.EVERY_INTERACTION, InteractionCoverageCriterion.EVERY_INTERACTION,
 				null, DataflowCoverageCriterion.ALL_USE,
 				null, DataflowCoverageCriterion.ALL_USE),
@@ -91,6 +92,22 @@ class Gamma2XstsTransformerSerializer {
 			PropertyPackage slicingProperties,
 			AnnotatablePreprocessableElements annotatableElements,
 			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
+		this(component, arguments, targetFolderUri, fileName, minSchedulingConstraint, maxSchedulingConstraint,
+			true,
+			optimize, optimizeArray, optimizeMessageQueues, optimizeEnvironmentalMessageQueues, transitionMerging,
+			slicingProperties, annotatableElements, initialState, initialStateSetting)
+	}
+	
+	new(Component component, List<? extends Expression> arguments,
+			String targetFolderUri, String fileName,
+			Integer minSchedulingConstraint, Integer maxSchedulingConstraint,
+			boolean inlineFunctions,
+			boolean optimize, boolean optimizeArray,
+			boolean optimizeMessageQueues, boolean optimizeEnvironmentalMessageQueues,
+			TransitionMerging transitionMerging,
+			PropertyPackage slicingProperties,
+			AnnotatablePreprocessableElements annotatableElements,
+			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
 		this.component = component
 		this.arguments = arguments
 		this.targetFolderUri = targetFolderUri
@@ -98,6 +115,7 @@ class Gamma2XstsTransformerSerializer {
 		this.minSchedulingConstraint = minSchedulingConstraint
 		this.maxSchedulingConstraint = maxSchedulingConstraint
 		//
+		this.inlineFunctions = inlineFunctions
 		this.optimize = optimize
 		this.optimizeArray = optimizeArray
 		this.optimizeMessageQueues = optimizeMessageQueues
@@ -127,6 +145,7 @@ class Gamma2XstsTransformerSerializer {
 		slicerAnnotatorAndPropertyGenerator.execute
 		val gammaToXSTSTransformer = new GammaToXstsTransformer(
 			minSchedulingConstraint, maxSchedulingConstraint,
+			inlineFunctions,
 			true, true, optimizeArray,
 			optimizeMessageQueues, optimizeEnvironmentalMessageQueues,
 			transitionMerging, initialState, initialStateSetting)

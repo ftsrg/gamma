@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
@@ -22,6 +23,7 @@ import hu.bme.mit.gamma.statechart.interface_.EventDeclaration
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
+import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.PseudoState
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
@@ -66,6 +68,9 @@ class Trace {
 	final Set<Transition> elseGuardedTransitions = newHashSet
 	// Function return variables
 	final Map<FunctionAccessExpression, List<VariableDeclaration>> returnVariableMappings = newHashMap
+	// Function - no inline
+	final Map<FunctionDeclaration, FunctionDeclaration> functionDeclMappings = newHashMap
+	final Map<Pair<ParameterDeclaration, FieldHierarchy>, ParameterDeclaration> parDeclMappings = newHashMap
 	
 	// Package
 	def put(Package gammaPackage, hu.bme.mit.gamma.statechart.lowlevel.model.Package lowlevelPackage) {
@@ -88,6 +93,11 @@ class Trace {
 		val packages = packageMappings.values
 		checkState(packages.size == 1)
 		return packages.head
+	}
+	
+	def hasLowlevelPackage() {
+		val packages = packageMappings.values
+		return !packages.empty
 	}
 	
 	// Type declarations
@@ -251,6 +261,10 @@ class Trace {
 		componentMappings.get(gammaComponent)
 	}
 	
+	def getLastStatechart() {
+		return componentMappings.values.filter(StatechartDefinition).lastOrNull
+	}
+	
 	// Value declarations with fields
 	
 	// Auxiliary
@@ -373,11 +387,14 @@ class Trace {
 		val value = recordField.value
 		checkNotNull(key)
 		checkNotNull(value)
+		
+		// Variables
 		for (record : valDeclMappings.keySet) {
 			if (record.key.equals(key) && record.value.equals(value)) {
 				return valDeclMappings.get(record)
 			}
 		}
+		
 		throw new IllegalArgumentException("Not found: " + recordField)
 	}
 	
@@ -527,6 +544,71 @@ class Trace {
 	def get(FunctionAccessExpression functionAccessExpression) {
 		checkNotNull(functionAccessExpression)
 		returnVariableMappings.get(functionAccessExpression)
+	}
+	
+	// Function declarations
+	def put(FunctionDeclaration gammaFunction, FunctionDeclaration lowlevelFunction) {
+		checkNotNull(gammaFunction)
+		checkNotNull(lowlevelFunction)
+		functionDeclMappings.put(gammaFunction, lowlevelFunction)
+	}
+
+	def isMapped(FunctionDeclaration gammaFunction) {
+		checkNotNull(gammaFunction)
+		functionDeclMappings.containsKey(gammaFunction)
+	}
+
+	def get(FunctionDeclaration gammaFunction) {
+		checkNotNull(gammaFunction)
+		functionDeclMappings.get(gammaFunction)
+	}
+	
+	// Function parameter values
+	def put(Pair<ParameterDeclaration, FieldHierarchy> recordField, ParameterDeclaration lowlevelParameter) {
+		checkNotNull(recordField)
+		checkNotNull(recordField.key)
+		checkNotNull(recordField.value)
+		checkNotNull(lowlevelParameter)
+		parDeclMappings.put(recordField, lowlevelParameter)
+	}
+	
+	def isParMapped(Pair<ValueDeclaration, FieldHierarchy> recordField) {
+		val key = recordField.key
+		val value = recordField.value
+		checkNotNull(key)
+		checkNotNull(value)
+		for (record : parDeclMappings.keySet) {
+			if (record.key.equals(key) && record.value.equals(value)) {
+				return true
+			}
+		}
+		return false
+	}
+
+	def getPar(Pair<ValueDeclaration, FieldHierarchy> recordField) {
+		// Returns only a single value, the field hierarchy must match concretely
+		val key = recordField.key
+		val value = recordField.value
+		checkNotNull(key)
+		checkNotNull(value)
+		for (record : parDeclMappings.keySet) {
+			if (record.key.equals(key) && record.value.equals(value)) {
+				return parDeclMappings.get(record)
+			}
+		}
+		throw new IllegalArgumentException("Not found: " + recordField)
+	}
+	
+	def getAllPar(Pair<ValueDeclaration, FieldHierarchy> recordField) {
+		// Returns potentially multiple values, that can be retrieved by extending the given field hierarchy
+		val lowlevelParameters = newArrayList
+		val value = recordField.key
+		val fieldHierarchy = recordField.value
+		val extensions = fieldHierarchy.getExtensions(value)
+		for (^extension : extensions) {
+			lowlevelParameters += getPar(value -> ^extension)
+		}
+		return lowlevelParameters
 	}
 	
 }

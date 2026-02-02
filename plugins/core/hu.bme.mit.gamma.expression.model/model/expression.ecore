@@ -88,6 +88,10 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="fieldDeclarations" upperBound="-1"
         eType="#//FieldDeclaration" containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TupleTypeDefinition" eSuperTypes="#//CompositeTypeDefinition">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="types" lowerBound="1" upperBound="-1"
+        eType="#//Type" containment="true"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ConstraintDefinition" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EReference" name="expression" lowerBound="1"
         eType="#//Expression" containment="true"/>
@@ -152,6 +156,7 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="rightInclusive" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
         defaultValueLiteral="false"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TupleLiteralExpression" eSuperTypes="#//LiteralExpression #//MultiaryExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="RecordLiteralExpression" eSuperTypes="#//LiteralExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="typeDeclaration" eType="#//TypeDeclaration"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="fieldAssignments" upperBound="-1"
@@ -174,6 +179,10 @@
       eSuperTypes="#//NullaryExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="DirectReferenceExpression" eSuperTypes="#//ReferenceExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="declaration" eType="#//Declaration"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TupleReferenceExpression" eSuperTypes="#//ReferenceExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="references" lowerBound="1"
+        upperBound="-1" eType="#//ReferenceExpression" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AccessExpression" abstract="true" eSuperTypes="#//ReferenceExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="operand" ordered="false"

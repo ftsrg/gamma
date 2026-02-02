@@ -55,13 +55,20 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	//
 	protected static final ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE;
 	//
+	
+	public static boolean isUnfolded(ExecutionTrace trace) {
+		Component component = trace.getComponent();
+		return StatechartModelDerivedFeatures.isUnfolded(component);
+	}
+	
 	public static List<ParameterDeclaration> getParameterDeclarations(ArgumentedElement element) {
 		if (element instanceof RaiseEventAction raiseEventAction) {
 			Event event = raiseEventAction.getEvent();
 			return event.getParameterDeclarations();
 		}
 		if (element instanceof ExecutionTrace trace) {
-			return trace.getComponent().getParameterDeclarations();
+			Component component = trace.getComponent();
+			return component.getParameterDeclarations();
 		}
 		throw new IllegalArgumentException("Not supported element: " + element);
 	}
@@ -69,6 +76,11 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	public static ExecutionTrace getContainingExecutionTrace(EObject object) {
 		ExecutionTrace trace = ecoreUtil.getContainerOfType(object, ExecutionTrace.class);
 		return trace;
+	}
+	
+	public static boolean isTopmostAssert(Expression expression) {
+		EObject container = expression.eContainer();
+		return !(container instanceof Expression);
 	}
 	
 	public static Step getContainingStep(EObject object) {
@@ -83,7 +95,9 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	// Annotations
 	
 	public static boolean hasAssertInFirstStep(ExecutionTrace trace) {
-		return !trace.getSteps().get(0).getAsserts().isEmpty();
+		List<Step> steps = trace.getSteps();
+		Step firstStep = steps.get(0);
+		return !firstStep.getAsserts().isEmpty();
 	}
 	
 	public static boolean hasAllowedWaitingAnnotation(ExecutionTrace trace) {
@@ -98,19 +112,25 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	public static <T extends ExecutionTraceAnnotation> T getAnnotation(
 			ExecutionTrace trace, Class<T> annotation) {
 		List<ExecutionTraceAnnotation> annotations = trace.getAnnotations();
-		return javaUtil.filterIntoList(annotations, annotation).get(0);
+		List<T> filteredAnnotations = javaUtil.filterIntoList(annotations, annotation);
+		T filteredAnnotation = filteredAnnotations.get(0);
+		return filteredAnnotation;
 	}
 	
 	public static ExecutionTraceAllowedWaitingAnnotation getAllowedWaitingAnnotation(
 				ExecutionTrace trace) {
 		List<ExecutionTraceAnnotation> annotations = trace.getAnnotations();
-		return javaUtil.filterIntoList(annotations,
-				ExecutionTraceAllowedWaitingAnnotation.class).get(0);
+		List<ExecutionTraceAllowedWaitingAnnotation> waitingAnnotations = javaUtil.filterIntoList(annotations,
+				ExecutionTraceAllowedWaitingAnnotation.class);
+		ExecutionTraceAllowedWaitingAnnotation annotation = waitingAnnotations.get(0);
+		return annotation;
 	}
 	
 	public static TimeUnitAnnotation getTimeUnitAnnotation(ExecutionTrace trace) {
 		List<ExecutionTraceAnnotation> annotations = trace.getAnnotations();
-		return javaUtil.filterIntoList(annotations, TimeUnitAnnotation.class).get(0);
+		List<TimeUnitAnnotation> timeUnitAnnotations = javaUtil.filterIntoList(annotations, TimeUnitAnnotation.class);
+		TimeUnitAnnotation timeUnitAnnotation = timeUnitAnnotations.get(0);
+		return timeUnitAnnotation;
 	}
 	
 	public static boolean isNegativeTest(ExecutionTrace trace) {
@@ -162,7 +182,8 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 			else {
 				Expression generalElapsedTime = schedulingTimeElapse.getElapsedTime();
 				Expression actualElapsedTime = timeElapse.getElapsedTime();
-				if (evaluator.evaluateInteger(generalElapsedTime) != evaluator.evaluateInteger(actualElapsedTime)) {
+				if (evaluator.evaluateInteger(generalElapsedTime) !=
+						evaluator.evaluateInteger(actualElapsedTime)) {
 					return null;
 				}
 			}
@@ -341,7 +362,8 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 			Step lhsStep = lhs.get(i);
 			Step rhsStep = rhs.get(i);
 			
-			if (!areAssertsEquivalent(lhsStep, rhsStep, considerInstanceNames, considerInjectedVariables)) {
+			if (!areAssertsEquivalent(lhsStep, rhsStep,
+					considerInstanceNames, considerInjectedVariables)) {
 				return false;
 			}
 		}

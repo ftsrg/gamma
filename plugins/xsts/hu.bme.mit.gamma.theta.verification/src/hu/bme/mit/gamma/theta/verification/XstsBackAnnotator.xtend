@@ -371,7 +371,7 @@ class XstsBackAnnotator {
 	
 	protected def handleFields(Declaration declaration, String id, String value,
 			Supplier<FieldHierarchy> fieldComputer) {
-		val field =  fieldComputer.get
+		val field = fieldComputer.get
 		val indexPairs = id.parseArray(value)
 		declaration.handleOneCapacityArrayValues(field, indexPairs)
 		

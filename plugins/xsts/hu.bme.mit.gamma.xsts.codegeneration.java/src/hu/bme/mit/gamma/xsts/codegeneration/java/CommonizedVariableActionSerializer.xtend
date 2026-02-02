@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,17 +10,21 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.java
 
+import hu.bme.mit.gamma.codegeneration.java.util.Namings
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.FunctionCallAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
+import hu.bme.mit.gamma.xsts.model.ReturnAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
@@ -61,6 +65,16 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 	
 	def dispatch CharSequence serialize(Action action) {
 		throw new IllegalArgumentException("Not supported action: " + action)
+	}
+	
+	def dispatch CharSequence serialize(FunctionCallAction action) {
+		val functionCall = action.functionCallExpression
+		return '''«functionCall.serialize»;'''
+	}
+	
+	def dispatch CharSequence serialize(ReturnAction action) {
+		val expression = action.expression
+		return '''return «expression.serialize»;'''
 	}
 	
 	def dispatch CharSequence serialize(LoopAction action) {
@@ -117,9 +131,24 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 		if (action.unnecessaryAction) {
 			return ''''''
 		}
-		return '''
-			«action.lhs.serialize» = «action.rhs.serialize»;
-		'''
+		
+		val lhs = action.lhs
+		val string = '''«lhs.serialize» = «action.rhs.serialize»;'''
+		
+		if (lhs instanceof TupleReferenceExpression) {
+			val name = Namings.getName(lhs)
+			val references = lhs.accessedDeclarations // Unfolding hierarchical tuples!
+			return '''
+				«string»
+				«name» = «Namings.FLATTEN_LIST_METHOD_NAME»(«name»);
+				«FOR declaration : references»
+					«val i = references.indexOf(declaration)»
+					«declaration.name» = («declaration.type.serialize») «name».get(«i»);
+				«ENDFOR»
+			'''
+		}
+		
+		return string
 	}
 	
 	def dispatch CharSequence serialize(VariableDeclarationAction action) {

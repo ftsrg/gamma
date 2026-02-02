@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -22,6 +22,8 @@ import hu.bme.mit.gamma.property.model.CommentableStateFormula
 import hu.bme.mit.gamma.property.model.PropertyModelFactory
 import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.property.util.PropertyUtil
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
@@ -32,13 +34,13 @@ import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeature
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.CoverageAvoidanceAnnotation
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
-import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
 import java.util.Collections
@@ -55,8 +57,7 @@ class PropertyGenerator {
 	protected boolean isSimpleComponentReference
 	protected final boolean optimizePropertyOrder = true
 	//
-	protected final PropertyUtil propertyUtil = PropertyUtil.INSTANCE
-	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
+	protected final extension PropertyUtil propertyUtil = PropertyUtil.INSTANCE
 	protected final ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	protected final CompositeModelFactory compositeFactory = CompositeModelFactory.eINSTANCE
@@ -85,6 +86,7 @@ class PropertyGenerator {
 			val type = instance.type
 			if (type instanceof StatechartDefinition) {
 				val states = type.allStates
+						.reject[it.hasAnnotation(CoverageAvoidanceAnnotation)]
 				formulas += states.createStateReachabilityFormulas
 			}
 		}
@@ -220,6 +222,32 @@ class PropertyGenerator {
 		return formulas
 	}
 	
+	def List<CommentableStateFormula> createQueueOverflowInvariance(Iterable<? extends AsynchronousComponentInstance> instances) {
+		var List<CommentableStateFormula> formulas = newArrayList
+		
+		for (AsynchronousComponentInstance instance : instances) {
+			val type = instance.type
+			val topType = type.topParentComponent
+			val topPorts = topType.allPorts
+			if (type instanceof AsynchronousAdapter) {
+				val queues = type.messageQueues
+						.reject[it.isEnvironmental(topPorts)] // Cannot handle these ports now
+				
+				for (queue : queues) {
+					val queueSizeReference = propertyUtil.createQueueSizeReference(
+							instance.createInstanceReference, queue)
+					val queueNotFull = queueSizeReference.createLessExpression(queue.capacity.clone)
+					val formula = queueNotFull.createAtomicFormula.createAG
+					val commentableStateFormula = propertyUtil.createCommentableStateFormula(
+							'''Can «instance.name».«queue.name» be full?''', formula)
+					formulas += commentableStateFormula
+				}
+			}
+		}
+		
+		return formulas
+	}
+	
 	def List<CommentableStateFormula> createOutEventReachability(Iterable<? extends Port> ports) {
 		val List<CommentableStateFormula> formulas = newArrayList
 		for (notNecessarilySimplePort : ports) {
@@ -229,7 +257,7 @@ class PropertyGenerator {
 					val parameters = outEvent.parameterDeclarations
 					if (parameters.empty) {
 						val eventReference = propertyUtil.createEventReference(
-								createInstanceReference(instance), port, outEvent)
+								instance.createInstanceReference, port, outEvent)
 						val stateFormula = propertyUtil.createEF(
 								propertyUtil.createAtomicFormula(eventReference))
 						val commentableStateFormula = propertyUtil.createCommentableStateFormula(
@@ -243,7 +271,7 @@ class PropertyGenerator {
 							if (parameterValues.empty) {
 								// E.g., integers - plain event
 								val eventReference = propertyUtil.createEventReference(
-										createInstanceReference(instance), port, outEvent)
+										instance.createInstanceReference, port, outEvent)
 								val stateFormula = propertyUtil.createEF(
 										propertyUtil.createAtomicFormula(eventReference))
 								val commentableStateFormula = propertyUtil.createCommentableStateFormula(
@@ -253,9 +281,9 @@ class PropertyGenerator {
 							else {
 								for (value : parameterValues) {
 									val eventReference = propertyUtil.createEventReference(
-											createInstanceReference(instance), port, outEvent)
+											instance.createInstanceReference, port, outEvent)
 									val parameterReference = propertyUtil.createParameterReference(
-											createInstanceReference(instance), port, outEvent, parameter)
+											instance.createInstanceReference, port, outEvent, parameter)
 									val equalityExpression = parameterReference.createEqualityExpression(value)
 									val and = expressionFactory.createAndExpression
 									and.operands += eventReference
@@ -328,7 +356,7 @@ class PropertyGenerator {
 		val statechart = StatechartModelDerivedFeatures.getContainingStatechart(variable)
 		val instance = StatechartModelDerivedFeatures.getReferencingComponentInstance(statechart)
 		val reference = propertyUtil.createVariableReference(
-				createInstanceReference(instance), variable)
+				instance.createInstanceReference, variable)
 		return reference
 	}
 
@@ -482,10 +510,10 @@ class PropertyGenerator {
 	
 	def protected ComponentInstanceReferenceExpression createInstanceReference(ComponentInstance instance) {
 		if (isSimpleComponentReference) {
-			return statechartUtil.createInstanceReference(instance)
+			return propertyUtil.createInstanceReference(instance)
 		}
 		else {
-			return statechartUtil.createInstanceReferenceChain(instance)
+			return propertyUtil.createInstanceReferenceChain(instance)
 		}
 	}
 

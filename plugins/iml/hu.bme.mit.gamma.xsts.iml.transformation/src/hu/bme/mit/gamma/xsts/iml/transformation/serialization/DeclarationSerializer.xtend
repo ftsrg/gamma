@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Gamma project
+ * Copyright (c) 2024-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,22 +11,39 @@
 package hu.bme.mit.gamma.xsts.iml.transformation.serialization
 
 import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration
+import hu.bme.mit.gamma.expression.model.LambdaDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
+import hu.bme.mit.gamma.expression.model.VoidTypeDefinition
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.iml.transformation.util.MessageQueueHandler
 import hu.bme.mit.gamma.xsts.model.HavocAction
+import hu.bme.mit.gamma.xsts.model.ProcedureDeclaration
 import hu.bme.mit.gamma.xsts.transformation.util.MessageQueueUtil
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
+
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.iml.transformation.util.Namings.*
 
 class DeclarationSerializer {
 	// Singleton
 	public static final DeclarationSerializer INSTANCE = new DeclarationSerializer
 	protected new() {}
 	//
+	
+	protected final String TYPE = "type nonrec"
+	
+	//
 	protected final extension MessageQueueHandler queueHandler = MessageQueueHandler.INSTANCE
 	protected final extension MessageQueueUtil queueUtil = MessageQueueUtil.INSTANCE
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	protected final extension ActionSerializer actionSerializer = new ActionSerializer
 	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE
 	//
 	
 	def serializeFieldDeclaration(Declaration declaration) {
@@ -49,8 +66,46 @@ class DeclarationSerializer {
 	// Type declaration: enumeration types are serialized using modules to ease 'literal -> type' linking
 	
 	def serializeTypeDeclaration(TypeDeclaration declaration) '''
-		module «declaration.serializeName» = struct type t = «declaration.type.serializeType» end
+		module «declaration.serializeName» = struct «TYPE» t = «declaration.type.serializeType» end
 	'''
 	// type nonrec «declaration.serializeName» = «declaration.type.serializeType»
+	
+	def serializeFunctionDeclaration(FunctionDeclaration function) '''
+		«IF function instanceof ProcedureDeclaration»
+			«TYPE» «function.customizeLocalVariablesTypeName» = {
+				«FOR localVariable : function.localVariables»
+					«localVariable.serializeFieldDeclaration»
+				«ENDFOR»
+				«function.createReturnVariable.serializeFieldDeclaration»
+			}
+		«ENDIF»
+		
+		let «IF function.recursive»rec «ENDIF»«function.serializeName» («GLOBAL_RECORD_IDENTIFIER» : «GLOBAL_RECORD_TYPE_NAME») «
+				FOR parameter : function.parameterDeclarations SEPARATOR ' '»(«parameter.serializeParameterDeclaration»)«ENDFOR» =
+			«function.serializeFunctionDeclarationBody»
+		«IF function.recursive»«
+			var parameters = function.referencedParameterDeclarationsInReturnedActions»«
+			IF !parameters.empty»[@@adm r«FOR parameter : parameters», «parameter.serializeName»«ENDFOR»]«ENDIF»«ENDIF»
+	'''
+	
+	protected def serializeParameterDeclaration(Declaration declaration)'''«declaration.serializeName» : «declaration.type.serializeType»'''
+ 	
+	protected def dispatch serializeFunctionDeclarationBody(LambdaDeclaration function) '''«function.expression.serialize»'''
+	
+	protected def dispatch serializeFunctionDeclarationBody(ProcedureDeclaration function) '''
+		«(function.localVariables + #[function.createReturnVariable])
+					.initVariablesIfNotEmpty(LOCAL_RECORD_IDENTIFIER)»
+		«function.body.serializeActionIntermediate»«functionReturnValues»
+	'''
+	
+	//
+	
+	private def createReturnVariable(FunctionDeclaration function) {
+		val functionType = function.type
+		val type = (functionType instanceof VoidTypeDefinition) ? 
+				createBooleanTypeDefinition :
+				functionType.clone
+		return type.createVariableDeclaration(FUNCTION_RETURN_VALUE_NAME)
+	}
 	
 }

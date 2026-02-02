@@ -87,21 +87,26 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		for (Annotation annotation : scenario.getAnnotation()) {
 			if (annotation instanceof StrictAnnotation) {
 				strictPresent = true;
-			} else if (annotation instanceof PermissiveAnnotation) {
+			}
+			else if (annotation instanceof PermissiveAnnotation) {
 				permissivePresent = true;
-			} else if (annotation instanceof NegStrictAnnotation) {
+			}
+			else if (annotation instanceof NegStrictAnnotation) {
 				negstrictPresent = true;
-			} else if (annotation instanceof NegPermissiveAnnotation) {
+			}
+			else if (annotation instanceof NegPermissiveAnnotation) {
 				negpermissivePresent = true;
 			}
 		}
 		if (permissivePresent && strictPresent) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.ERROR,
 					"A scenario should be annotated with either a permissive or strict annotation",
 					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
 		}
 		if (negpermissivePresent && negstrictPresent) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.ERROR,
 					"A scenario should be annotated with either a permissive or strict annotation " +
 							"with respect to negated sends blocks",
 					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
@@ -119,8 +124,8 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 				}
 			}
 			if (i > 1) {
-				validationResultMessages
-						.add(new ValidationResultMessage(ValidationResult.ERROR, "Scenario names should be unique",
+				validationResultMessages.add(
+							new ValidationResultMessage(ValidationResult.ERROR, "Scenario names should be unique",
 								new ReferenceInfo(ScenarioModelPackage.Literals.SCENARIO_PACKAGE__SCENARIOS)));
 				return validationResultMessages;
 			}
@@ -133,7 +138,8 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		boolean allCold = scenario.getFragment().getInteractions().stream()
 				.allMatch((i) -> interactionIsCold(i));
 		if (allCold) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.WARNING,
 					"There should be at least one hot interaction in the scenario",
 					new ReferenceInfo(ScenarioModelPackage.Literals.SCENARIO_PACKAGE__SCENARIOS, ecoreUtil.getIndex(scenario), scenario.eContainer())));
 		}
@@ -145,28 +151,32 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		ScenarioPackage scenario = ecoreUtil.getContainerOfType(deterministicOccurrenceSet, ScenarioPackage.class);
 		Component component = scenario.getComponent();
 		int idx = -1;
-		if (deterministicOccurrenceSet.eContainer() instanceof NegatedDeterministicOccurrence) {
-			idx = ecoreUtil.getIndex(deterministicOccurrenceSet.eContainer());
-		} else {
+		EObject container = deterministicOccurrenceSet.eContainer();
+		if (container instanceof NegatedDeterministicOccurrence) {
+			idx = ecoreUtil.getIndex(container);
+		}
+		else {
 			idx = ecoreUtil.getIndex(deterministicOccurrenceSet);
 		}
-		EObject eContainer = deterministicOccurrenceSet.eContainer();
 		if (component instanceof SynchronousComponent) {
 			List<DeterministicOccurrenceSet> sets = ecoreUtil.getAllContentsOfType(deterministicOccurrenceSet,
 					DeterministicOccurrenceSet.class);
 			if (!sets.isEmpty()) {
 				// Just to make sure, in the current grammar this is impossible
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR,
 						"Modal interaction sets cannot contain modal interaction sets",
-						new ReferenceInfo(deterministicOccurrenceSet.eContainingFeature(), idx, eContainer)));
+						new ReferenceInfo(deterministicOccurrenceSet.eContainingFeature(), idx, container)));
 			}
-		} else {
+		}
+		else {
 			List<Interaction> interactions = ecoreUtil.getAllContentsOfType(deterministicOccurrenceSet,
 					Interaction.class);
 			if (interactions.size() > 1) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR,
 						"Scenarios with respect to asynchronous components cannot contain modal interaction sets with more than one interaction",
-						new ReferenceInfo(deterministicOccurrenceSet.eContainingFeature(), idx, eContainer)));
+						new ReferenceInfo(deterministicOccurrenceSet.eContainingFeature(), idx, container)));
 			}
 		}
 		
@@ -175,9 +185,10 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 			boolean allHot = interactions.stream().allMatch((it) -> (it.getModality().equals(ModalityType.HOT)));
 			boolean allCold = interactions.stream().allMatch((it) -> (it.getModality().equals(ModalityType.COLD)));
 			if (!allCold && !allHot) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR,
 						"Interactions should have the same modality within the same set",
-						new ReferenceInfo(deterministicOccurrenceSet.eContainingFeature(), idx, eContainer)));
+						new ReferenceInfo(deterministicOccurrenceSet.eContainingFeature(), idx, container)));
 			}
 		}
 		
@@ -193,7 +204,8 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 			for (Fragment fragment : combinedFragment.getFragments()) {
 				ModalityType tmpModality = getFirstInteractionsModality(fragment.getInteractions());
 				if (!tmpModality.equals(firstModality)) {
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					validationResultMessages.add(
+						new ValidationResultMessage(ValidationResult.ERROR,
 							"First interaction's modality should be the same in each fragment " +
 									"belonging to the same combined fragment",
 							new ReferenceInfo(ScenarioModelPackage.Literals.COMBINED_FRAGMENT__FRAGMENTS)));
@@ -229,12 +241,12 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 	public Collection<ValidationResultMessage> negatedReceives(NegatedDeterministicOccurrence negatedInteraction) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		DeterministicOccurrence interaction = negatedInteraction.getDeterministicOccurrence();
-		if (interaction instanceof Interaction) {
-			Interaction signal = (Interaction) interaction;
+		if (interaction instanceof Interaction signal) {
 			if (signal.getDirection().equals(InteractionDirection.RECEIVE)) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO,
-					"Currently negated interactions received by the component are not processed",
-						new ReferenceInfo(ScenarioModelPackage.Literals.NEGATED_DETERMINISTIC_OCCURRENCE__DETERMINISTIC_OCCURRENCE)));
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.INFO,
+						"Currently negated interactions received by the component are not processed",
+							new ReferenceInfo(ScenarioModelPackage.Literals.NEGATED_DETERMINISTIC_OCCURRENCE__DETERMINISTIC_OCCURRENCE)));
 			}
 		}
 		return validationResultMessages;
@@ -243,7 +255,8 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkParallelCombinedFragmentExists(ParallelCombinedFragment fragment) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		int idx = ecoreUtil.getIndex(fragment);
-		validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO,
+		validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.INFO,
 				"Beware that a parallel combined fragment will introduce every possible partial orderings of its fragments;"
 						+ " it may have a significant impact on the performance",
 				new ReferenceInfo(fragment.eContainingFeature(), idx, fragment.eContainer())));
@@ -268,31 +281,35 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		try {
 			int min = expressionEvaluator.evaluateInteger(minimum);
 			if (min < 0) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR,
 						"The minimum value must be greater than or equals to 0", new ReferenceInfo(minimumFeature)));
 			}
 			if (maximum != null) {
 				int max = expressionEvaluator.evaluateInteger(maximum);
 				if (min > max) {
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					validationResultMessages.add(
+						new ValidationResultMessage(ValidationResult.ERROR,
 							"The minimum value must not be greater than the maximum value",
-							new ReferenceInfo(minimumFeature)));
+								new ReferenceInfo(minimumFeature)));
 				}
 			}
 		} catch (IllegalArgumentException e) {
-			// empty on purpouse
+			// Empty on purpose
 		}
 
 		Type minType = typeDeterminator.getType(minimum);
 		if (!(minType instanceof IntegerTypeDefinition)) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.ERROR,
 					"The minimum value must be of type integer", new ReferenceInfo(minimumFeature)));
 		}
 		if (maximum != null) {
 			Type maxType = typeDeterminator.getType(maximum);
 			if (!(maxType instanceof IntegerTypeDefinition)) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The maximum value must be of type integer", new ReferenceInfo(maximumFeature)));
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR,
+						"The maximum value must be of type integer", new ReferenceInfo(maximumFeature)));
 			}
 		}
 		return validationResultMessages;
@@ -309,8 +326,9 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		Event signalEvent = signal.getEvent();
 		
 		if (StatechartModelDerivedFeatures.isInternal(signalEvent)) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
-				"Internal events are currently supported only for component-linked behavior equivalence checking",
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.WARNING,
+					"Internal events are currently supported only for component-linked behavior equivalence checking",
 					new ReferenceInfo(ScenarioModelPackage.Literals.INTERACTION__EVENT)));
 			
 			ScenarioDeclaration scenario = ecoreUtil.getContainerOfType(signal, ScenarioDeclaration.class);
@@ -319,8 +337,9 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 				Port otherPort = otherSignal.getPort();
 				InteractionDirection otherDirection = otherSignal.getDirection();
 				if (otherPort == port && direction != otherDirection) {
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"A certain internal port must be used in a single direction in every interaction",
+					validationResultMessages.add(
+						new ValidationResultMessage(ValidationResult.ERROR,
+							"A certain internal port must be used in a single direction in every interaction",
 							new ReferenceInfo(ScenarioModelPackage.Literals.INTERACTION__EVENT)));
 				}
 			}
@@ -345,8 +364,7 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		if (!isDirectionWrong) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, prefix
 					+ " this event, because of incompatible port mode; should the port be Provided, set the event to be "
-					+ directionByMode.get(RealizationMode.PROVIDED)
-					+ "; should the port be Required, set the event to be "
+					+ directionByMode.get(RealizationMode.PROVIDED)+  "; should the port be Required, set the event to be "
 					+ directionByMode.get(RealizationMode.REQUIRED),
 					new ReferenceInfo(ScenarioModelPackage.Literals.INTERACTION__EVENT)));
 		}
@@ -356,25 +374,22 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 
 	private ModalityType getFirstInteractionsModality(List<Occurrence> interactions) {
 		Occurrence first = interactions.get(0);
-		if (first instanceof Interaction) {
-			Interaction modalInteraction = (Interaction) first;
+		if (first instanceof Interaction modalInteraction) {
 			return modalInteraction.getModality();
-		} else if (first instanceof CombinedFragment) {
-			CombinedFragment combinedFragment = (CombinedFragment) first;
+		}
+		else if (first instanceof CombinedFragment combinedFragment) {
 			List<Occurrence> interactionsOfFirstFragment = combinedFragment.getFragments().get(0).getInteractions();
 			return getFirstInteractionsModality(interactionsOfFirstFragment);
-		} else if (first instanceof DeterministicOccurrenceSet) {
-			DeterministicOccurrenceSet deterministicOccurrenceSet = (DeterministicOccurrenceSet) first;
+		}
+		else if (first instanceof DeterministicOccurrenceSet deterministicOccurrenceSet) {
 			if (deterministicOccurrenceSet.getDeterministicOccurrences().size() > 0) {
 				DeterministicOccurrence def = deterministicOccurrenceSet.getDeterministicOccurrences().get(0);
-				if (def instanceof Interaction) {
-					Interaction interaction = (Interaction) def;
+				if (def instanceof Interaction interaction) {
 					return interaction.getModality();
-				} else if (def instanceof NegatedDeterministicOccurrence) {
-					NegatedDeterministicOccurrence negatedDeterministicOccurrence = (NegatedDeterministicOccurrence) def;
+				}
+				else if (def instanceof NegatedDeterministicOccurrence negatedDeterministicOccurrence) {
 					DeterministicOccurrence deterministicOccurrence = negatedDeterministicOccurrence.getDeterministicOccurrence();
-					if (deterministicOccurrence instanceof Interaction) {
-						Interaction modalInteraction = (Interaction) deterministicOccurrence;
+					if (deterministicOccurrence instanceof Interaction modalInteraction) {
 						return modalInteraction.getModality();
 					}
 				}
@@ -386,14 +401,14 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 	private boolean interactionIsCold(Occurrence interaction) {
 		if (interaction instanceof Delay) {
 			return true;
-		} else if (interaction instanceof DeterministicOccurrenceSet) {
-			DeterministicOccurrenceSet deterministicOccurrenceSet = (DeterministicOccurrenceSet) interaction;
+		}
+		else if (interaction instanceof DeterministicOccurrenceSet deterministicOccurrenceSet) {
 			return deterministicOccurrenceSet.getDeterministicOccurrences().stream().allMatch((i) -> interactionIsCold(i));
-		} else if (interaction instanceof Interaction) {
-			Interaction modalInteraction = (Interaction) interaction;
+		}
+		else if (interaction instanceof Interaction modalInteraction) {
 			return modalInteraction.getModality().equals(ModalityType.COLD);
-		} else if (interaction instanceof CombinedFragment) {
-			CombinedFragment combinedFragment = (CombinedFragment) interaction;
+		}
+		else if (interaction instanceof CombinedFragment combinedFragment) {
 			return combinedFragment.getFragments().stream()
 					.allMatch((fragment) -> fragment.getInteractions().stream().allMatch((i) -> interactionIsCold(i)));
 		}
@@ -402,16 +417,18 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 
 	public Collection<ValidationResultMessage> checkScenarioReferenceParamCount(ScenarioDefinitionReference reference) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (reference.getArguments().size() != reference.getScenarioDefinition().getParameterDeclarations().size()) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"Scenario " + reference.getScenarioDefinition().getName() + " takes "
-							+ reference.getScenarioDefinition().getParameterDeclarations().size() + " parameters, but "
+		ScenarioDeclaration scenario = reference.getScenarioDefinition();
+		if (reference.getArguments().size() != scenario.getParameterDeclarations().size()) {
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.ERROR,
+					"Scenario " + scenario.getName() + " takes "
+							+ scenario.getParameterDeclarations().size() + " parameters, but "
 							+ reference.getArguments().size() + " arguments are provided",
 					new ReferenceInfo(
 							ScenarioModelPackage.Literals.SCENARIO_DEFINITION_REFERENCE__SCENARIO_DEFINITION)));
 		}
-		validationResultMessages
-				.addAll(checkArgumentTypes(reference, reference.getScenarioDefinition().getParameterDeclarations()));
+		validationResultMessages.addAll(
+				checkArgumentTypes(reference, scenario.getParameterDeclarations()));
 		return validationResultMessages;
 	}
 
@@ -421,8 +438,7 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 				EventParameterReferenceExpression.class);
 		if (!parameterReferences.isEmpty()) {
 			EObject container = check.eContainer();
-			if (container instanceof DeterministicOccurrenceSet) {
-				DeterministicOccurrenceSet set = (DeterministicOccurrenceSet) container;
+			if (container instanceof DeterministicOccurrenceSet set) {
 				List<Interaction> signals = set.getDeterministicOccurrences().stream().filter(it -> it instanceof Interaction)
 						.map(it -> (Interaction) it).collect(Collectors.toList());
 				for (EventParameterReferenceExpression parameterReference : parameterReferences) {
@@ -437,31 +453,35 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 							}
 						}
 						if (!isPresentInBlock) {
-							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-								"This synchronous block does not contain any signal for the port and event of "
+							validationResultMessages.add(
+								new ValidationResultMessage(ValidationResult.ERROR,
+									"This synchronous block does not contain any signal for the port and event of "
 										+ parameterReference.getParameter().getName(),
 									new ReferenceInfo(parameterReference.eContainingFeature(), parameterReference.eContainer())));
 						}
 					}
 				}
-			} else if (container instanceof Fragment) {
-				Fragment fragment = (Fragment) container;
+			}
+			else if (container instanceof Fragment fragment) {
 				int indexOfCheck = fragment.getInteractions().indexOf(check);
 				Occurrence previousInteraction = findPreviousNonScenarioCheck(fragment, indexOfCheck);
 				if (!(previousInteraction instanceof Interaction)) {
 					for (EventParameterReferenceExpression parameterReference : parameterReferences) {
-						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"The previous interaction is not a signal",
-								new ReferenceInfo(parameterReference.eContainingFeature(), parameterReference.eContainer())));
+						validationResultMessages.add(
+							new ValidationResultMessage(ValidationResult.ERROR,
+								"The previous interaction is not a signal",
+									new ReferenceInfo(parameterReference.eContainingFeature(), parameterReference.eContainer())));
 					}
-				} else {
+				}
+				else {
 					Interaction signal = (Interaction) previousInteraction;
 					for (EventParameterReferenceExpression paramReference : parameterReferences) {
 						Event event = paramReference.getEvent();
 						Port port = paramReference.getPort();
 						if (!signal.getPort().equals(port) || !signal.getEvent().equals(event)) {
-							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-								"The previous interaction is not a signal for the port and event of "
+							validationResultMessages.add(
+								new ValidationResultMessage(ValidationResult.ERROR,
+									"The previous interaction is not a signal for the port and event of "
 										+ paramReference.getParameter().getName(),
 									new ReferenceInfo(paramReference.eContainingFeature(), paramReference.eContainer())));
 						}
@@ -469,8 +489,8 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 				}
 			}
 		}
-		validationResultMessages.addAll(checkTypeAndExpressionConformance(
-				expressionFactory.createBooleanTypeDefinition(), check.getExpression(),
+		validationResultMessages.addAll(
+				checkTypeAndExpressionConformance(expressionFactory.createBooleanTypeDefinition(), check.getExpression(),
 				new ReferenceInfo(ScenarioModelPackage.Literals.SCENARIO_CHECK_EXPRESSION__EXPRESSION)));
 		return validationResultMessages;
 	}
@@ -488,9 +508,11 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 
 	public Collection<ValidationResultMessage> checkRecursiveScenraioReference(ScenarioDefinitionReference reference) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (isScenarioReferenceRecursive(reference, reference.getScenarioDefinition())) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"Scenario " + reference.getScenarioDefinition().getName() + " is called recursively",
+		ScenarioDeclaration scenario = reference.getScenarioDefinition();
+		if (isScenarioReferenceRecursive(reference, scenario)) {
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.ERROR,
+					"Scenario " + scenario.getName() + " is called recursively",
 					new ReferenceInfo(
 							ScenarioModelPackage.Literals.SCENARIO_DEFINITION_REFERENCE__SCENARIO_DEFINITION)));
 		}
@@ -501,7 +523,8 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 			ScenarioDefinitionReference reference) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (reference.getScenarioDefinition().getInitialBlock() != null) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.WARNING,
 					"The initial block of scenario " + reference.getScenarioDefinition().getName()
 							+ " will not be included in this scenario",
 					new ReferenceInfo(
@@ -512,19 +535,21 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 
 	public Collection<ValidationResultMessage> checkScenraioBlockOrder(DeterministicOccurrenceSet set) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		List<ScenarioCheckExpression> checks = javaUtil.filterIntoList(set.getDeterministicOccurrences(),
+		List<DeterministicOccurrence> deterministicOccurrences = set.getDeterministicOccurrences();
+		List<ScenarioCheckExpression> checks = javaUtil.filterIntoList(deterministicOccurrences,
 				ScenarioCheckExpression.class);
-		List<ScenarioAssignmentStatement> assignments = javaUtil.filterIntoList(set.getDeterministicOccurrences(),
+		List<ScenarioAssignmentStatement> assignments = javaUtil.filterIntoList(deterministicOccurrences,
 				ScenarioAssignmentStatement.class);
 
 		for (ScenarioCheckExpression check : checks) {
 			for (ScenarioAssignmentStatement assignment : assignments) {
-				int assingmentIdx = set.getDeterministicOccurrences().indexOf(assignment);
-				int checkIdx = set.getDeterministicOccurrences().indexOf(check);
+				int assingmentIdx = deterministicOccurrences.indexOf(assignment);
+				int checkIdx = deterministicOccurrences.indexOf(check);
 				if (checkIdx > assingmentIdx) {
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+					validationResultMessages.add(
+						new ValidationResultMessage(ValidationResult.WARNING,
 							"The assignment will only be evaluated after the check",
-							new ReferenceInfo(assignment.eContainingFeature(), assingmentIdx, set)));
+								new ReferenceInfo(assignment.eContainingFeature(), assingmentIdx, set)));
 				}
 			}
 		}
@@ -554,23 +579,24 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		List<Fragment> fragments = new ArrayList<>();
 		for (Fragment fragment : alternative.getFragments()) {
 			Occurrence head = fragment.getInteractions().get(0);
-			if (head instanceof DeterministicOccurrenceSet) {
-				DeterministicOccurrenceSet set = (DeterministicOccurrenceSet) head;
+			if (head instanceof DeterministicOccurrenceSet set) {
 				List<ScenarioCheckExpression> checks = javaUtil.filterIntoList(set.getDeterministicOccurrences(),
 						ScenarioCheckExpression.class);
 				if (checks.size() > 0) {
 					fragments.add(fragment);
 				}
-			} else if (head instanceof ScenarioCheckExpression) {
+			}
+			else if (head instanceof ScenarioCheckExpression) {
 				fragments.add(fragment);
 			}
 		}
 
 		if (fragments.size() > 1) {
 			for (Fragment fragment : fragments) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
-						"Please ensure, that the checks of these interactions do not overlap",
-						new ReferenceInfo(fragment.eContainingFeature(), alternative.getFragments().indexOf(fragment),
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.WARNING,
+						"Ensure that the checks of these interactions do not overlap",
+							new ReferenceInfo(fragment.eContainingFeature(), alternative.getFragments().indexOf(fragment),
 								fragment.eContainer())));
 			}
 		}
@@ -586,10 +612,11 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 		if (signals.size() > 0 || delays.size() == 0 || negateds.size() == 0) {
 			return validationResultMessages;
 		}
-		validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+		validationResultMessages.add(
+			new ValidationResultMessage(ValidationResult.WARNING,
 				"The use of a negated signal and a delay without a signal may lead to the desynchronization of the monitor system",
-				new ReferenceInfo(set.eContainingFeature(), ecoreUtil.getIndex(set),
-					set.eContainer())));
+				new ReferenceInfo(set.eContainingFeature(), ecoreUtil.getIndex(set), set.eContainer())));
 		return validationResultMessages;
 	}
+	
 }

@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Property Serializer
 Bundle-SymbolicName: hu.bme.mit.gamma.querygenerator;singleton:=true
-Bundle-Version: 2.11.0.qualifier
+Bundle-Version: 2.13.0.qualifier
 Bundle-Vendor: BME-FTSRG
 Export-Package: hu.bme.mit.gamma.querygenerator,
  hu.bme.mit.gamma.querygenerator.operators,
@@ -23,6 +23,6 @@ Require-Bundle: org.eclipse.emf.ecore,
  hu.bme.mit.gamma.xsts.nuxmv.transformation,
  hu.bme.mit.gamma.xsts.iml.transformation,
  hu.bme.mit.gamma.xsts.ocra.transformation
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: hu.bme.mit.gamma.querygenerator
 Import-Package: org.apache.log4j

@@ -3,7 +3,7 @@
     xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/hu.bme.mit.gamma.expression.model/src-gen" editDirectory="/hu.bme.mit.gamma.expression.model.edit/src-gen"
     editorDirectory="/hu.bme.mit.gamma.expression.model.editor/src-gen" modelPluginID="hu.bme.mit.gamma.expression.model"
     modelName="Expression" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
-    importerID="org.eclipse.emf.importer.ecore" complianceLevel="17.0" copyrightFields="false"
+    importerID="org.eclipse.emf.importer.ecore" complianceLevel="21.0" copyrightFields="false"
     editPluginID="hu.bme.mit.gamma.expression.model.edit" editorPluginID="hu.bme.mit.gamma.expression.model.editor"
     operationReflection="true" importOrganizing="true">
   <foreignModel>expression.ecore</foreignModel>
@@ -77,6 +77,9 @@
     <genClasses ecoreClass="expression.ecore#//RecordTypeDefinition">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//RecordTypeDefinition/fieldDeclarations"/>
     </genClasses>
+    <genClasses ecoreClass="expression.ecore#//TupleTypeDefinition">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//TupleTypeDefinition/types"/>
+    </genClasses>
     <genClasses image="false" ecoreClass="expression.ecore#//ConstraintDefinition">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//ConstraintDefinition/expression"/>
     </genClasses>
@@ -124,6 +127,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute expression.ecore#//IntegerRangeLiteralExpression/leftInclusive"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute expression.ecore#//IntegerRangeLiteralExpression/rightInclusive"/>
     </genClasses>
+    <genClasses ecoreClass="expression.ecore#//TupleLiteralExpression"/>
     <genClasses ecoreClass="expression.ecore#//RecordLiteralExpression">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference expression.ecore#//RecordLiteralExpression/typeDeclaration"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//RecordLiteralExpression/fieldAssignments"/>
@@ -140,6 +144,9 @@
     <genClasses ecoreClass="expression.ecore#//ReferenceExpression"/>
     <genClasses ecoreClass="expression.ecore#//DirectReferenceExpression">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference expression.ecore#//DirectReferenceExpression/declaration"/>
+    </genClasses>
+    <genClasses ecoreClass="expression.ecore#//TupleReferenceExpression">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//TupleReferenceExpression/references"/>
     </genClasses>
     <genClasses image="false" ecoreClass="expression.ecore#//AccessExpression">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//AccessExpression/operand"/>

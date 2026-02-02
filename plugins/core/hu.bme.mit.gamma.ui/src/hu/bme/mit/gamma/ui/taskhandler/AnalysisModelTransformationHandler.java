@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -29,9 +29,11 @@ import com.google.common.collect.Maps;
 
 import hu.bme.mit.gamma.composition.xsts.uppaal.transformation.Gamma2XstsUppaalTransformerSerializer;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.OpaqueExpression;
 import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
+import hu.bme.mit.gamma.genmodel.model.CompletenessCoverage;
 import hu.bme.mit.gamma.genmodel.model.ComponentReference;
 import hu.bme.mit.gamma.genmodel.model.Coverage;
 import hu.bme.mit.gamma.genmodel.model.DataflowCoverage;
@@ -42,6 +44,7 @@ import hu.bme.mit.gamma.genmodel.model.InteractionDataflowCoverage;
 import hu.bme.mit.gamma.genmodel.model.ModelReference;
 import hu.bme.mit.gamma.genmodel.model.NonDeterministicTransitionCoverage;
 import hu.bme.mit.gamma.genmodel.model.OutEventCoverage;
+import hu.bme.mit.gamma.genmodel.model.QueueOverflowCoverage;
 import hu.bme.mit.gamma.genmodel.model.StateCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionPairCoverage;
@@ -58,6 +61,7 @@ import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.UppaalPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.XstsUppaalPropertySerializer;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
@@ -309,7 +313,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				return null;
 			}
 			InteractionDataflowCoverage notNullCoverage = (InteractionDataflowCoverage) coverage.get();
-			return transformCoverageCriterion(notNullCoverage.getInteractionDataflowCoverageCriterion());
+			return transformCoverageCriterion(
+					notNullCoverage.getInteractionDataflowCoverageCriterion());
 		}
 				
 		protected Entry<Integer, Integer> evaluateConstraint(hu.bme.mit.gamma.genmodel.model.Constraint constraint) {
@@ -396,6 +401,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			// Unfolding the given system
 			ComponentReference reference = (ComponentReference) transformation.getModel();
 			Component component = reference.getComponent();
+			preprocessModel(component);
 			// Coverages
 			List<Coverage> coverages = transformation.getCoverages();
 			
@@ -407,8 +413,12 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					coverages, TrapStateCoverage.class);
 			ComponentInstanceReferences testedComponentsForDeadlock = getCoverageInstances(
 					coverages, DeadlockCoverage.class);
+			ComponentInstanceReferences testedComponentsForCompleteness = getCoverageInstances(
+					coverages, CompletenessCoverage.class);
 			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
 					coverages, NonDeterministicTransitionCoverage.class);
+			ComponentInstanceReferences testedComponentsForQueueOverflow = getCoverageInstances(
+					coverages, QueueOverflowCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
 					coverages, TransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitionPairs = getCoverageInstances(
@@ -439,7 +449,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 						testedComponentsForUnstableStates,
 						testedComponentsForTrapStates,
 						testedComponentsForDeadlock,
+						testedComponentsForCompleteness,
 						testedComponentsForNondeterministicTransitions,
+						testedComponentsForQueueOverflow,
 						testedComponentsForTransitions,
 						testedComponentsForTransitionPairs,
 						testedComponentsForOutEvents,
@@ -510,6 +522,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			logger.info("Starting XSTS transformation");
 			ComponentReference reference = (ComponentReference) transformation.getModel();
 			Component component = reference.getComponent();
+			preprocessModel(component);
 			Entry<Integer, Integer> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
 			Integer minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
 			Integer maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
@@ -526,8 +539,12 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					coverages, TrapStateCoverage.class);
 			ComponentInstanceReferences testedComponentsForDeadlock = getCoverageInstances(
 					coverages, DeadlockCoverage.class);
+			ComponentInstanceReferences testedComponentsForCompleteness = getCoverageInstances(
+					coverages, CompletenessCoverage.class);
 			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
 					coverages, NonDeterministicTransitionCoverage.class);
+			ComponentInstanceReferences testedComponentsForQueueOverflow = getCoverageInstances(
+					coverages, QueueOverflowCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
 					coverages, TransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitionPairs = getCoverageInstances(
@@ -567,7 +584,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 						testedComponentsForUnstableStates,
 						testedComponentsForTrapStates,
 						testedComponentsForDeadlock,
+						testedComponentsForCompleteness,
 						testedComponentsForNondeterministicTransitions,
+						testedComponentsForQueueOverflow,
 						testedComponentsForTransitions,
 						testedComponentsForTransitionPairs,
 						testedComponentsForOutEvents,
@@ -629,6 +648,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			logger.info("Starting Gamma -> XSTS-UPPAAL transformation");
 			ComponentReference reference = (ComponentReference) transformation.getModel();
 			Component component = reference.getComponent();
+			preprocessModel(component);
 			Entry<Integer, Integer> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
 			Integer minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
 			Integer maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
@@ -644,8 +664,12 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					coverages, TrapStateCoverage.class);
 			ComponentInstanceReferences testedComponentsForDeadlock = getCoverageInstances(
 					coverages, DeadlockCoverage.class);
+			ComponentInstanceReferences testedComponentsForCompleteness = getCoverageInstances(
+					coverages, CompletenessCoverage.class);
 			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
 					coverages, NonDeterministicTransitionCoverage.class);
+			ComponentInstanceReferences testedComponentsForQueueOverflow = getCoverageInstances(
+					coverages, QueueOverflowCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
 					coverages, TransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitionPairs = getCoverageInstances(
@@ -680,7 +704,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 						testedComponentsForUnstableStates,
 						testedComponentsForTrapStates,
 						testedComponentsForDeadlock,
+						testedComponentsForCompleteness,
 						testedComponentsForNondeterministicTransitions,
+						testedComponentsForQueueOverflow,
 						testedComponentsForTransitions,
 						testedComponentsForTransitionPairs,
 						testedComponentsForOutEvents,
@@ -713,6 +739,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		public void execute(AnalysisModelTransformation transformation) throws IOException {
 			ComponentReference reference = (ComponentReference) transformation.getModel();
 			Component component = reference.getComponent();
+			preprocessModel(component);
 			Entry<Integer, Integer> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
 			Integer minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
 			Integer maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
@@ -728,8 +755,12 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					coverages, TrapStateCoverage.class);
 			ComponentInstanceReferences testedComponentsForDeadlock = getCoverageInstances(
 					coverages, DeadlockCoverage.class);
+			ComponentInstanceReferences testedComponentsForCompleteness = getCoverageInstances(
+					coverages, CompletenessCoverage.class);
 			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
 					coverages, NonDeterministicTransitionCoverage.class);
+			ComponentInstanceReferences testedComponentsForQueueOverflow = getCoverageInstances(
+					coverages, QueueOverflowCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
 					coverages, TransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitionPairs = getCoverageInstances(
@@ -764,7 +795,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 						testedComponentsForUnstableStates,
 						testedComponentsForTrapStates,
 						testedComponentsForDeadlock,
+						testedComponentsForCompleteness,
 						testedComponentsForNondeterministicTransitions,
+						testedComponentsForQueueOverflow,
 						testedComponentsForTransitions,
 						testedComponentsForTransitionPairs,
 						testedComponentsForOutEvents,
@@ -796,6 +829,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		public void execute(AnalysisModelTransformation transformation) throws IOException {
 			ComponentReference reference = (ComponentReference) transformation.getModel();
 			Component component = reference.getComponent();
+			preprocessModel(component);
 			Entry<Integer, Integer> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
 			Integer minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
 			Integer maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
@@ -811,8 +845,12 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					coverages, TrapStateCoverage.class);
 			ComponentInstanceReferences testedComponentsForDeadlock = getCoverageInstances(
 					coverages, DeadlockCoverage.class);
+			ComponentInstanceReferences testedComponentsForCompleteness = getCoverageInstances(
+					coverages, CompletenessCoverage.class);
 			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
 					coverages, NonDeterministicTransitionCoverage.class);
+			ComponentInstanceReferences testedComponentsForQueueOverflow = getCoverageInstances(
+					coverages, QueueOverflowCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
 					coverages, TransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitionPairs = getCoverageInstances(
@@ -847,7 +885,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 						testedComponentsForUnstableStates,
 						testedComponentsForTrapStates,
 						testedComponentsForDeadlock,
+						testedComponentsForCompleteness,
 						testedComponentsForNondeterministicTransitions,
+						testedComponentsForQueueOverflow,
 						testedComponentsForTransitions,
 						testedComponentsForTransitionPairs,
 						testedComponentsForOutEvents,
@@ -860,7 +900,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			transformer.execute();
 			// Property serialization
 			serializeProperties(fileName);
-			logger.info("The Gamma -> XSTS-NuXMV transformation has been finished");
+			logger.info("The Gamma -> XSTS-nuXmv transformation has been finished");
 		}
 		
 		@Override
@@ -927,6 +967,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		public void execute(AnalysisModelTransformation transformation) throws IOException {
 			ComponentReference reference = (ComponentReference) transformation.getModel();
 			Component component = reference.getComponent();
+			preprocessModel(component);
 			Entry<Integer, Integer> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
 			Integer minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
 			Integer maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
@@ -942,8 +983,12 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					coverages, TrapStateCoverage.class);
 			ComponentInstanceReferences testedComponentsForDeadlock = getCoverageInstances(
 					coverages, DeadlockCoverage.class);
+			ComponentInstanceReferences testedComponentsForCompleteness = getCoverageInstances(
+					coverages, CompletenessCoverage.class);
 			ComponentInstanceReferences testedComponentsForNondeterministicTransitions = getCoverageInstances(
 					coverages, NonDeterministicTransitionCoverage.class);
+			ComponentInstanceReferences testedComponentsForQueueOverflow = getCoverageInstances(
+					coverages, QueueOverflowCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitions = getCoverageInstances(
 					coverages, TransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitionPairs = getCoverageInstances(
@@ -966,11 +1011,17 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			InitialStateSetting initialStateSetting = transformInitialStateSetting(
 					transformation.getInitialStateSetting());
 			
+			boolean inlineFunctions = !StatechartModelDerivedFeatures.getSelfOrAllContainedStatecharts(component).stream().anyMatch(
+					it -> StatechartModelDerivedFeatures.callsRecursiveFunctions(it) ||
+						it.getFunctionDeclarations().stream().anyMatch(fun -> !ecoreUtil.getSelfAndAllContentsOfType(fun, OpaqueExpression.class).isEmpty()));
+			
 			Gamma2XstsImlTransformerSerializer transformer = new Gamma2XstsImlTransformerSerializer(
 					component, reference.getArguments(),
 					targetFolderUri, fileName,
 					minSchedulingConstraint, maxSchedulingConstraint,
+					inlineFunctions,
 					transformation.isOptimize(),
+					transformation.isOptimizeNondeterministicChoices(),
 					TransitionMerging.HIERARCHICAL,
 					transformation.getPropertyPackage(),
 					new AnnotatablePreprocessableElements(
@@ -978,7 +1029,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 						testedComponentsForUnstableStates,
 						testedComponentsForTrapStates,
 						testedComponentsForDeadlock,
+						testedComponentsForCompleteness,
 						testedComponentsForNondeterministicTransitions,
+						testedComponentsForQueueOverflow,
 						testedComponentsForTransitions,
 						testedComponentsForTransitionPairs,
 						testedComponentsForOutEvents,

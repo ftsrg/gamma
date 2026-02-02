@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Graphical User Interface
 Bundle-SymbolicName: hu.bme.mit.gamma.gui;singleton:=true
-Bundle-Version: 2.11.0.qualifier
+Bundle-Version: 2.13.0.qualifier
 Export-Package: hu.bme.mit.gamma.gui.perspectives,
  hu.bme.mit.gamma.gui.wizards
 Require-Bundle: org.eclipse.jface,
@@ -12,4 +12,4 @@ Require-Bundle: org.eclipse.jface,
  org.eclipse.ui.ide,
  org.eclipse.ui.console
 Automatic-Module-Name: hu.bme.mit.gamma.gui
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21

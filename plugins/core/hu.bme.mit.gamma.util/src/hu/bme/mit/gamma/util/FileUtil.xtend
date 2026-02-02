@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,12 +12,11 @@ package hu.bme.mit.gamma.util
 
 import java.io.File
 import java.io.FileWriter
-import java.util.AbstractMap
-import java.util.ArrayList
 import java.util.Collections
 import java.util.List
 import java.util.Map
 import java.util.Scanner
+import java.util.regex.Pattern
 import javax.xml.XMLConstants
 import javax.xml.parsers.DocumentBuilderFactory
 import org.eclipse.core.resources.IFile
@@ -28,8 +27,10 @@ class FileUtil {
 	public static final FileUtil INSTANCE = new FileUtil
 	protected new() {}
 	//
+	
 	def saveString(String uri, String string) {
-		new File(uri).saveString(string)
+		val file = new File(uri)
+		file.saveString(string)
 	}
 	
 	def saveString(File file, String string) {
@@ -299,25 +300,44 @@ class FileUtil {
 	 * Returns the next valid name for the file that is suffixed by indices.
 	 */
 	def Map.Entry<String, Integer> getFileName(File folder, String fileName, String fileExtension) {
-		val usedIds = new ArrayList<Integer>();
-		folder.mkdirs();
+		val usedIds = newArrayList
+		folder.mkdirs
 		// Searching the trace folder for highest id
-		for (File file: folder.listFiles()) {
-			val name = file.getName();
+		for (File file: folder.listFiles) {
+			val name = file.name
 			if (name.matches(fileName + "[0-9]+\\." + fileExtension)) {
 				// File extension needed to distinguish .get and .json
-				val id = name.substring(fileName.length(),
-						name.length() - ("." + fileExtension).length());
-				usedIds.add(Integer.parseInt(id));
+				val id = name.substring(fileName.length,
+						name.length - ("." + fileExtension).length)
+				usedIds += Integer.parseInt(id)
 			}
 		}
-		if (usedIds.isEmpty()) {
-			return new AbstractMap.SimpleEntry<String, Integer>(fileName + "0." + fileExtension, 0);
+		if (usedIds.empty) {
+			return Map.entry(fileName + "0." + fileExtension, 0)
 		}
-		Collections.sort(usedIds);
-		val biggestId = usedIds.get(usedIds.size() - 1);
-		return new AbstractMap.SimpleEntry<String, Integer>(
-				fileName + (biggestId + 1) + "." + fileExtension, (biggestId + 1));
+		Collections.sort(usedIds)
+		val biggestId = usedIds.get(usedIds.size - 1)
+		return Map.entry(
+				fileName + (biggestId + 1) + "." + fileExtension, (biggestId + 1))
+	}
+	
+	def List<File> sortIndexedFiles(Iterable<File> files) {
+		val list = files.toList
+		return list.sortBy[it.index]
+	}
+	
+	def getIndex(File file) {
+		val name = file.name
+		
+		val pattern = Pattern.compile("([0-9]+)\\..*") // Eager digit matching
+		val matcher = pattern.matcher(name)
+		
+		if (matcher.find) {
+			val id = matcher.group(1)
+			return Integer.parseInt(id)
+		}
+		
+		return Integer.valueOf(0)
 	}
 	
 }

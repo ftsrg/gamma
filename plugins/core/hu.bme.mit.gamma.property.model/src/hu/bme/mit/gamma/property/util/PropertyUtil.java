@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,10 +15,13 @@ import static hu.bme.mit.gamma.property.derivedfeatures.PropertyModelDerivedFeat
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.emf.ecore.EObject;
+
 import hu.bme.mit.gamma.expression.model.Comment;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.property.model.AtomicFormula;
 import hu.bme.mit.gamma.property.model.BinaryLogicalOperator;
@@ -38,12 +41,20 @@ import hu.bme.mit.gamma.property.model.UnaryOperandPathFormula;
 import hu.bme.mit.gamma.property.model.UnaryPathOperator;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.Event;
+import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.statechart.interface_.Port;
+import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.State;
+import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 
 public class PropertyUtil extends StatechartUtil {
@@ -127,11 +138,9 @@ public class PropertyUtil extends StatechartUtil {
 	
 	//
 	
-	public ComponentInstanceElementReferenceExpression chainReferences(
-			List<? extends Expression> operands) {
+	public ComponentInstanceElementReferenceExpression chainReferences(List<? extends Expression> operands) {
 		List<Expression> expressions = new ArrayList<Expression>(operands);
-		// If it is a variable reference, we expect the first "n" elements
-		// to be ComponentInstanceReference
+		// If it is a variable reference, we expect the first 'n' elements to be ComponentInstanceReference
 		List<ComponentInstanceReferenceExpression> instanceReferences =
 				javaUtil.filterIntoList(expressions, ComponentInstanceReferenceExpression.class);
 		ComponentInstanceReferenceExpression rootInstance =
@@ -141,8 +150,7 @@ public class PropertyUtil extends StatechartUtil {
 		Expression lastExpression = javaUtil.getLastElement(expressions);
 		if (lastExpression instanceof DirectReferenceExpression) {
 			Declaration declaration = getDeclaration(lastExpression);
-			if (declaration instanceof VariableDeclaration) {
-				VariableDeclaration variableDeclaration = (VariableDeclaration) declaration;
+			if (declaration instanceof VariableDeclaration variableDeclaration) {
 				ComponentInstanceVariableReferenceExpression variableReference =
 						createVariableReference(rootInstance, variableDeclaration);
 				return variableReference;
@@ -150,6 +158,27 @@ public class PropertyUtil extends StatechartUtil {
 			else {
 				throw new IllegalArgumentException("Not known type: " + declaration);
 			}
+		}
+		else if (lastExpression instanceof PortEventReference reference) {
+			Port port = reference.getPort();
+			Event event = reference.getEvent();
+			ComponentInstanceEventReferenceExpression eventReference =
+					createEventReference(rootInstance, port, event);
+			return eventReference;
+		}
+		if (lastExpression instanceof EventParameterReferenceExpression reference) {
+			Port port = reference.getPort();
+			Event event = reference.getEvent();
+			ParameterDeclaration parameter = reference.getParameter();
+			ComponentInstanceEventParameterReferenceExpression parameterReference =
+					createParameterReference(rootInstance, port, event, parameter);
+			return parameterReference;
+		}
+		else if (lastExpression instanceof StateReferenceExpression reference) {
+			State state = reference.getState();
+			ComponentInstanceStateReferenceExpression stateReference =
+					createStateReference(rootInstance, state);
+			return stateReference;
 		}
 		else {
 			throw new IllegalArgumentException("Not known type: " + lastExpression);
@@ -165,7 +194,8 @@ public class PropertyUtil extends StatechartUtil {
 		}
 		
 		UnaryOperandLogicalPathFormula notFormula = createNotFormula();
-		if (formula.eContainer() != null) {
+		EObject container = formula.eContainer();
+		if (container != null) {
 			ecoreUtil.replace(notFormula, formula);
 		}
 		notFormula.setOperand(formula);
@@ -213,7 +243,8 @@ public class PropertyUtil extends StatechartUtil {
 			return createBinaryOperandLogicalFormula(negatedLeftOperand, newOperator, negatedRightOperand);
 		}
 		else if (formula instanceof UnaryOperandLogicalPathFormula _formula) {
-			assert _formula.getOperator() == UnaryLogicalOperator.NOT;
+			UnaryLogicalOperator operator = _formula.getOperator();
+			assert operator == UnaryLogicalOperator.NOT;
 			PathFormula operand = _formula.getOperand();
 			
 			return ecoreUtil.clone(operand);
@@ -342,6 +373,21 @@ public class PropertyUtil extends StatechartUtil {
 		return AG;
 	}
 	
+	public QuantifiedFormula createQuantifiedFormula(PathFormula formula, PathQuantifier quantifier) {
+		QuantifiedFormula quantifiedFormula = propertyFactory.createQuantifiedFormula();
+		quantifiedFormula.setFormula(formula);
+		quantifiedFormula.setQuantifier(quantifier);
+		return quantifiedFormula;
+	}
+	
+	public QuantifiedFormula createA(PathFormula formula) {
+		return createQuantifiedFormula(formula, PathQuantifier.FORALL);
+	}
+	
+	public QuantifiedFormula createE(PathFormula formula) {
+		return createQuantifiedFormula(formula, PathQuantifier.EXISTS);
+	}
+	
 	// Comments
 	
 	public CommentableStateFormula createCommentableStateFormula(
@@ -372,13 +418,11 @@ public class PropertyUtil extends StatechartUtil {
 	// Getter
 	
 	public PathFormula getEgLessFormula(StateFormula formula) {
-		if (formula instanceof QuantifiedFormula) {
-			QuantifiedFormula quantifiedFormula = (QuantifiedFormula) formula;
+		if (formula instanceof QuantifiedFormula quantifiedFormula) {
 			PathQuantifier quantifier = quantifiedFormula.getQuantifier();
 			if (quantifier == PathQuantifier.EXISTS) {
 				PathFormula pathFormula = quantifiedFormula.getFormula();
-				if (pathFormula instanceof UnaryOperandPathFormula) {
-					UnaryOperandPathFormula unaryOperandPathFormula = (UnaryOperandPathFormula) pathFormula;
+				if (pathFormula instanceof UnaryOperandPathFormula unaryOperandPathFormula) {
 					UnaryPathOperator operator = unaryOperandPathFormula.getOperator();
 					if (operator == UnaryPathOperator.FUTURE) {
 						PathFormula egLessFormula = unaryOperandPathFormula.getOperand();

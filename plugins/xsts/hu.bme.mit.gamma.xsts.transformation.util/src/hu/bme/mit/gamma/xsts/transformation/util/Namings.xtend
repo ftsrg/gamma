@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation.util
 
+import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
@@ -28,7 +29,6 @@ import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.List
-import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -45,6 +45,8 @@ class Namings {
 	protected final static extension ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE
 	//
 	
+	public static val INACTIVE_ENUM_LITERAL = "__Inactive__"
+	
 	// To Low-level: in LowlevelNamings
 	
 	// To XSTS: in XstsNamings
@@ -58,6 +60,18 @@ class Namings {
 	static def String customizeEnumLiteralName(EnumerationLiteralDefinition literal) '''«getName(literal).enumLiteralName»'''
 	
 	// Asynchronous message queue - XSTS customization
+	
+	static def String customizeSizeVariableName(MessageQueue queue, ComponentInstanceReferenceExpression instance) {
+		val lastInstance = instance.lastInstance.clone // Hacking
+		lastInstance.name = instance.FQN
+		return queue.getMasterSizeVariableName(lastInstance)
+	}
+	
+	static def String customizeMasterQueueName(MessageQueue queue, ComponentInstanceReferenceExpression instance) {
+		val lastInstance = instance.lastInstance.clone // Hacking
+		lastInstance.name = instance.FQN
+		return customizeMasterQueueName(queue, lastInstance)
+	}
 	
 	static def String customizeMasterQueueName(MessageQueue queue, ComponentInstance instance) {
 		val type = createIntegerTypeDefinition
@@ -105,7 +119,7 @@ class Namings {
 	
 	static def List<String> customizeNames(VariableDeclaration variable) { variable.names.map[it.variableName].toList }
 	static def List<String> customizeNames(VariableDeclaration variable, ComponentInstance instance) { customizeNames(variable, instance.name) }
-	static def List<String> customizeNames(VariableDeclaration variable, ComponentInstanceReferenceExpression instance) { customizeNames(variable, instance.FQN ) }
+	static def List<String> customizeNames(VariableDeclaration variable, ComponentInstanceReferenceExpression instance) { customizeNames(variable, instance.FQN) }
 	static def List<String> customizeNames(VariableDeclaration variable, String instance) { getNames(variable).map[it.variableName + "_" + instance] }
 	
 	// Region customization
@@ -123,21 +137,6 @@ class Namings {
 	// Orthogonal variable renames
 	static def String getOrthogonalName(VariableDeclaration variable) '''_«variable.name»_''' // Caller must make sure there is no name collision
 	// XSTS instantiation
-	static def String getCustomizedName(VariableDeclaration variable, ComponentInstance instance) '''«variable.name»_«instance.name»''' // Caller must make sure there is no name collision
-	
-	//
-	
-	def static randomizeName(EObject object) {
-		return object.hashCode.toString.replaceAll("-", "0")
-	}
-	
-	def static uniqueIndex(EObject object) {
-		if (object.eContainer === null) {
-			return object.randomizeName
-		}
-		val containers = object.getAllContainersOfType(EObject)
-		val index = containers.map[it.indexOrZero].join
-		return index
-	}
+	static def String getCustomizedName(Declaration declaration, ComponentInstance instance) '''«declaration.name»_«instance.name»''' // Caller must make sure there is no name collision
 	
 }

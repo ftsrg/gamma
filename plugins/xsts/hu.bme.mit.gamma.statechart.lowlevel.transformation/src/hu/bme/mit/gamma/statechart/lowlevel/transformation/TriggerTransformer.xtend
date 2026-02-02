@@ -34,7 +34,7 @@ class TriggerTransformer {
 	new(Trace trace, boolean functionInlining, int maxRecursionDepth, TimeUnit baseTimeUnit) {
 		this.trace = trace
 		this.eventReferenceTransformer = new ExpressionTransformer(
-				this.trace, functionInlining, maxRecursionDepth, baseTimeUnit)
+				this.trace, functionInlining, true, maxRecursionDepth, baseTimeUnit)
 	}
 	
 	protected def dispatch Expression transformTrigger(BinaryTrigger trigger) {

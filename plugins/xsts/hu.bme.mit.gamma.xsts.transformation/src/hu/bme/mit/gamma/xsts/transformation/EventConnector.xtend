@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Component
@@ -141,7 +142,8 @@ class EventConnector {
 		// Deletion
 		for (xStsDeletableVariable : xStsDeletableVariables) {
 			for (xStsDeletableAssignmentAction : xStsAssignmentActions
-					.filter[it.lhs.accessedDeclaration === xStsDeletableVariable]) {
+					.filter[it.lhs.accessedDeclarations.contains(xStsDeletableVariable)]) {
+				checkState(!(xStsDeletableAssignmentAction.lhs instanceof TupleReferenceExpression)) // No tuples here
 				xStsDeletableAssignmentAction.replaceWithEmptyAction
 			}
 			// Assignment removal before variable deletion!
@@ -158,12 +160,16 @@ class EventConnector {
 	protected def void connectEvents(VariableDeclaration xStsOutVariable,
 			VariableDeclaration xStsInVariable, List<AssignmentAction> xStsAssignmentActions) {
 		for (xStsAssignmentAction : xStsAssignmentActions) {
-			val xStsDeclaration = xStsAssignmentAction.lhs.declaration // TODO Works for arrays?
-			if (xStsDeclaration === xStsOutVariable) {
-				val xStsNewAssignmentAction = xStsAssignmentAction.clone => [
-					(it.lhs as DirectReferenceExpression).declaration = xStsInVariable
-				]
-				xStsAssignmentAction.appendToAction(xStsNewAssignmentAction)
+			val xStsLhs = xStsAssignmentAction.lhs
+			val xStsDeclarations = xStsLhs.accessedDeclarations // TODO Works for arrays?
+			for (xStsDeclaration : xStsDeclarations) {
+				if (xStsDeclaration === xStsOutVariable) {
+					checkState(xStsDeclarations.size == 1) // I.e., not a tuple
+					val xStsNewAssignmentAction = xStsAssignmentAction.clone => [
+						(it.lhs as DirectReferenceExpression).declaration = xStsInVariable
+					]
+					xStsAssignmentAction.appendToAction(xStsNewAssignmentAction)
+				}
 			}
 		}
 	}

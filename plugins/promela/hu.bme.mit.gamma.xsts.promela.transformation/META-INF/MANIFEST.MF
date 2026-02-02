@@ -2,9 +2,9 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: XSTS To Promela Transformation
 Bundle-SymbolicName: hu.bme.mit.gamma.xsts.promela.transformation
-Bundle-Version: 2.11.0.qualifier
+Bundle-Version: 2.13.0.qualifier
 Automatic-Module-Name: hu.bme.mit.gamma.xsts.promela.transformation
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: BME-FTSRG
 Require-Bundle: com.google.guava,
  org.eclipse.xtext.xbase.lib,

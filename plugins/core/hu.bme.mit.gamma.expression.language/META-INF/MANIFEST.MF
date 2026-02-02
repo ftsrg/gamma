@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Expression Language
 Bundle-Vendor: BME-FTSRG
-Bundle-Version: 2.11.0.qualifier
+Bundle-Version: 2.13.0.qualifier
 Bundle-SymbolicName: hu.bme.mit.gamma.expression.language;singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: hu.bme.mit.gamma.expression.model,
@@ -12,7 +12,7 @@ Require-Bundle: hu.bme.mit.gamma.expression.model,
  org.eclipse.xtext.xbase.lib;bundle-version="2.14.0",
  org.antlr.runtime;bundle-version="[3.2.0,3.2.1)",
  org.eclipse.xtext.util
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: hu.bme.mit.gamma.expression.language,
  hu.bme.mit.gamma.expression.language.formatting,
  hu.bme.mit.gamma.expression.language.generator,

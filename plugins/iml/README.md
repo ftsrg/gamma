@@ -6,8 +6,9 @@ This folder contains plugins for the mapping of high-level Gamma (composite) mod
 
 1. Set up an Eclipse with the [core Gamma plugins](../README.md).
 2. Set up [Imandra](https://imandra.ai/). For this, you will need Python 3:
-	- Open a command line and use *pip3* to install *Imandra*: `pip install imandra`.
-	- *May be optional now:* Install the [imandra-cli](https://docs.imandra.ai/imandra-docs/notebooks/installation-simple/) client according to your operating system (i.e., `sh <(curl -s "https://storage.googleapis.com/imandra-do/install.sh")` or `(Invoke-WebRequest https://storage.googleapis.com/imandra-do/install.ps1).Content | powershell -`).
+	- Open a command line and use *pip3* to install *Imandra*: `pip install imandra imandra[core] imandrax-api`.
+	- *May be optional now:* use *pip3* to upgrade some libraries: `pip install imandra[http_api_client] --upgrade`.
+	- *May be optional now:* install the [imandra-cli](https://docs.imandra.ai/imandra-docs/notebooks/installation-simple/) client according to your operating system (i.e., `sh <(curl -s "https://storage.googleapis.com/imandra-do/install.sh")` or `(Invoke-WebRequest https://storage.googleapis.com/imandra-do/install.ps1).Content | powershell -`).
 	- Create an account using the *imandra-cli* and agree to the community guidelines, i.e., use the following command in a command line after navigating into the home folder of the installed *imandra-cli* executable: `imandra-cli auth login`.
 	- Add the folder containing the *imandra-cli* executable to your systems's `PATH` environment variable or default search path (depending on your OS) - this is needed for the manual stopping (killing) of Imandra instances in the cloud environment.
 3. Set up the plugins in this folder.

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -13,12 +13,16 @@ package hu.bme.mit.gamma.xsts.transformation.serializer
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
+import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
+import hu.bme.mit.gamma.expression.model.LambdaDeclaration
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition
 import hu.bme.mit.gamma.expression.model.ScheduledClockVariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.SubrangeTypeDefinition
+import hu.bme.mit.gamma.expression.model.TupleTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
@@ -27,6 +31,7 @@ import hu.bme.mit.gamma.expression.model.VariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.VoidTypeDefinition
 import hu.bme.mit.gamma.xsts.model.OnDemandControlVariableDeclarationAnnotation
 import hu.bme.mit.gamma.xsts.model.PrimedVariable
+import hu.bme.mit.gamma.xsts.model.ProcedureDeclaration
 import hu.bme.mit.gamma.xsts.model.StrictControlVariableDeclarationAnnotation
 import hu.bme.mit.gamma.xsts.model.XSTS
 
@@ -50,13 +55,38 @@ class DeclarationSerializer {
 					.filter[serializePrimedVariables || !(it instanceof PrimedVariable)]»
 			«variableDeclaration.serializeVariableDeclaration»
 		«ENDFOR»
-	''' 
+		«FOR functionDeclaration : xSts.functionDeclarations»
+			«functionDeclaration.serializeFunctionDeclaration»
+		«ENDFOR»
+	'''
 	
 	// Type declaration
 	
 	def String serializeTypeDeclaration(TypeDeclaration typeDeclaration) '''
 		type «typeDeclaration.name» : «typeDeclaration.type.serializeType»
 	'''
+	
+	// Function declaration
+	
+	def String serializeFunctionDeclaration(FunctionDeclaration functionDeclaration) '''
+		fun «functionDeclaration.name»(«
+			FOR parameter : functionDeclaration.parameterDeclarations SEPARATOR ", "»«
+				parameter.serializeDeclaration»«ENDFOR») : «functionDeclaration.type.serializeType» «functionDeclaration.serializeBody»
+	'''
+	
+	def String serializeDeclaration(Declaration declaration) '''«declaration.name» : «declaration.type.serializeType»'''
+	
+	protected def dispatch String serializeBody(ProcedureDeclaration functionDeclaration) {
+		val extension actionSerializer = ActionSerializer.INSTANCE
+		return '''
+		{
+			«functionDeclaration.body.serialize»
+		}'''
+	}
+	
+	protected def dispatch String serializeBody(LambdaDeclaration functionDeclaration) {
+		return ":= " + functionDeclaration.expression.serialize
+	}
 	
 	// Type
 	
@@ -72,7 +102,8 @@ class DeclarationSerializer {
 	
 	def dispatch String serializeType(DecimalTypeDefinition type) '''decimal'''
 	
-	def dispatch String serializeType(IntegerTypeDefinition type) '''«IF type.containingVariable.clock»clock«ELSE»integer«ENDIF»'''
+	def dispatch String serializeType(IntegerTypeDefinition type) '''«IF
+			type.eContainer instanceof VariableDeclaration && type.containingVariable.clock»clock«ELSE»integer«ENDIF»'''
 	
 	def dispatch String serializeType(RationalTypeDefinition type) '''rational'''
 	
@@ -81,6 +112,8 @@ class DeclarationSerializer {
 	def dispatch String serializeType(EnumerationTypeDefinition type) '''{ «FOR literal : type.literals SEPARATOR ', '»«literal.serializeLiteral»«ENDFOR» }'''
 
 	def dispatch String serializeType(ArrayTypeDefinition type) '''[integer] -> «type.elementType.serializeType»'''
+
+	def dispatch String serializeType(TupleTypeDefinition type) '''(«FOR subtype : type.types SEPARATOR ', '»«subtype.serializeType»«ENDFOR»)'''
 
 	protected def String serializeLiteral(EnumerationLiteralDefinition literal) {
 		literal.validateIdentifier // As these are the only element identifiers that come unchanged from the source model

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -19,6 +19,7 @@ import org.eclipse.core.commands.Command;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
@@ -40,6 +41,7 @@ import hu.bme.mit.gamma.plantuml.transformation.TraceToPlantUmlTransformer;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.statechart.CoordinationStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
@@ -50,22 +52,19 @@ import net.sourceforge.plantuml.util.DiagramIntent;
 
 public class TextProvider extends AbstractDiagramIntentProvider {
 
-	private List<String> supportedExtensions = Arrays.asList("gcd", "get");
+	private List<String> supportedExtensions = Arrays.asList("gcd", "gsm", "get");
 
 	@Override
 	public Boolean supportsSelection(ISelection sel) {
-		if (sel instanceof IStructuredSelection) {
-			IStructuredSelection selection = (IStructuredSelection) sel;
+		if (sel instanceof IStructuredSelection selection) {
 			if (selection.size() == 1) {
-				if (selection.getFirstElement() instanceof IFile) {
-					IFile firstElement = (IFile) selection.getFirstElement();
-					String fileExtension = firstElement.getFileExtension();
+				Object firstElement = selection.getFirstElement();
+				if (firstElement instanceof IFile file) {
+					String fileExtension = file.getFileExtension();
 					if (fileExtension == null) {
 						return false;
 					}
-					if (supportedExtensions.contains(fileExtension)) {
-						return true;
-					}
+					return supportedExtensions.contains(fileExtension);
 				}
 			}
 		}
@@ -74,7 +73,8 @@ public class TextProvider extends AbstractDiagramIntentProvider {
 
 	@Override
 	public Boolean supportsPath(IPath arg) {
-		return supportedExtensions.contains(arg.getFileExtension()); // Not called
+		String fileExtension = arg.getFileExtension();
+		return supportedExtensions.contains(fileExtension); // Not called
 	}
 
 	@Override
@@ -85,21 +85,24 @@ public class TextProvider extends AbstractDiagramIntentProvider {
 	}
 
 	private Collection<? extends DiagramIntent> getDiagramInfo(ISelection selection) {
-		if (selection instanceof IStructuredSelection) {
-			IStructuredSelection structuredSelection = (IStructuredSelection) selection;
+		if (selection instanceof IStructuredSelection structuredSelection) {
 			if (structuredSelection.size() == 1) {
-				if (structuredSelection.getFirstElement() instanceof IFile) {
-					IFile file = (IFile) structuredSelection.getFirstElement();
+				Object firstElement = structuredSelection.getFirstElement();
+				if (firstElement instanceof IFile file) {
 					String fileExtension = file.getFileExtension();
-					if (fileExtension.equals("gcd")) {
-						IPath path = file.getFullPath();
-						String plantUmlModel = getComponentPlantUmlCode(getResource(path));
-						GammaPlantUmlDiagramIntent gammaIntent = new GammaPlantUmlDiagramIntent(plantUmlModel);
-						return List.of(gammaIntent);
+					IPath path = file.getFullPath();
+					
+					String plantUmlModel = null;
+					if (fileExtension.equals("gcd") || fileExtension.equals("gsm")) {
+						plantUmlModel = getComponentPlantUmlCode(
+								getResource(path));
 					}
 					if (fileExtension.equals("get")) {
-						IPath path = file.getFullPath();
-						String plantUmlModel = getTracePlantUmlCode(getResource(path));
+						plantUmlModel = getTracePlantUmlCode(
+								getResource(path));
+					}
+					
+					if (plantUmlModel != null) {
 						GammaPlantUmlDiagramIntent gammaIntent = new GammaPlantUmlDiagramIntent(plantUmlModel);
 						return List.of(gammaIntent);
 					}
@@ -117,9 +120,11 @@ public class TextProvider extends AbstractDiagramIntentProvider {
 	}
 
 	private String getComponentPlantUmlCode(Resource resource) {
-		if (!resource.getContents().isEmpty()) {
-			Package _package = (Package) resource.getContents().get(0);
+		List<EObject> contents = resource.getContents();
+		if (!contents.isEmpty()) {
+			Package _package = (Package) contents.get(0);
 			List<Component> components = _package.getComponents();
+			List<Interface> interfaces = _package.getInterfaces();
 			if (!components.isEmpty()) {
 				Component component = components.get(0);
 				if (component instanceof CoordinationStatechartDefinition) {
@@ -136,16 +141,17 @@ public class TextProvider extends AbstractDiagramIntentProvider {
 					StatechartToPlantUmlTransformer transformer = new StatechartToPlantUmlTransformer(
 							statechartDefinition);
 					return transformer.execute();
-				} else if (component instanceof CompositeComponent) {
-					CompositeComponent composite = (CompositeComponent) component;
+				}
+				else if (component instanceof CompositeComponent composite) {
 					CompositeToPlantUmlTransformer transformer = new CompositeToPlantUmlTransformer(composite);
 					return transformer.execute();
-				} else if (component instanceof AsynchronousAdapter) {
-					AsynchronousAdapter adapter = (AsynchronousAdapter) component;
+				}
+				else if (component instanceof AsynchronousAdapter adapter) {
 					AdapterToPlantUmlTransformer transformer = new AdapterToPlantUmlTransformer(adapter);
 					return transformer.execute();
 				}
-			} else if (!_package.getInterfaces().isEmpty()) {
+			}
+			else if (!interfaces.isEmpty()) {
 				List<EnumerationTypeDefinition> enums = _package.getTypeDeclarations().stream()
 						.filter(typeDecalration -> typeDecalration.getType() instanceof EnumerationTypeDefinition)
 						.map(typeDecalration -> (EnumerationTypeDefinition) typeDecalration.getType())
@@ -154,9 +160,10 @@ public class TextProvider extends AbstractDiagramIntentProvider {
 						.filter(typeDecalration -> typeDecalration.getType() instanceof RecordTypeDefinition)
 						.map(typeDecalration -> (RecordTypeDefinition) typeDecalration.getType())
 						.collect(Collectors.toList());
-				List<FunctionDeclaration> funcs = _package.getFunctionDeclarations();
+				List<FunctionDeclaration> functions = _package.getFunctionDeclarations();
+				
 				InterfaceToPlantUmlTransformer transformer = new InterfaceToPlantUmlTransformer(
-						_package.getInterfaces(), enums, structs, funcs);
+						interfaces, enums, structs, functions);
 				return transformer.execute();
 			}
 		}
@@ -164,8 +171,9 @@ public class TextProvider extends AbstractDiagramIntentProvider {
 	}
 
 	private String getTracePlantUmlCode(Resource resource) {
-		if (!resource.getContents().isEmpty()) {
-			ExecutionTrace trace = (ExecutionTrace) resource.getContents().get(0);
+		List<EObject> contents = resource.getContents();
+		if (!contents.isEmpty()) {
+			ExecutionTrace trace = (ExecutionTrace) contents.get(0);
 			TraceToPlantUmlTransformer transformer = new TraceToPlantUmlTransformer(trace);
 			return transformer.execute();
 		}

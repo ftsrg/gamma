@@ -15,8 +15,8 @@ import java.util.List;
 
 public class ScenarioReductionUtil {
 
-	public static void createSequences(List<List<FragmentInteractionPair>> sequenceList, List<List<Integer>> used,
-			List<Integer> maximum) {
+	public static void createSequences(List<List<FragmentInteractionPair>> sequenceList,
+			List<List<Integer>> used, List<Integer> maximum) {
 		boolean ok = false;
 		while (!ok) {
 			boolean wasAdded = false;
@@ -26,12 +26,16 @@ public class ScenarioReductionUtil {
 					List<FragmentInteractionPair> tmplist = new ArrayList<FragmentInteractionPair>();
 					List<Integer> tmpused = new ArrayList<Integer>();
 					for (int j = 0; j < used.get(0).size(); j++) {
-						tmpused.add(used.get(0).get(j));
+						Integer e = used.get(0).get(j);
+						tmpused.add(e);
 					}
 					for (int j = 0; j < sequenceList.get(0).size(); j++) {
-						tmplist.add(sequenceList.get(0).get(j));
+						FragmentInteractionPair fragmentInteractionPair = sequenceList.get(0).get(j);
+						tmplist.add(fragmentInteractionPair);
 					}
-					tmplist.add(new FragmentInteractionPair(i, tmpused.get(i)));
+					FragmentInteractionPair fragmentInteractionPair =
+							new FragmentInteractionPair(i, tmpused.get(i));
+					tmplist.add(fragmentInteractionPair);
 					tmpused.set(i, tmpused.get(i) + 1);
 
 					used.add(tmpused);
@@ -39,8 +43,10 @@ public class ScenarioReductionUtil {
 				}
 			}
 			if (!wasAdded) {
-				used.add(used.get(0));
-				sequenceList.add(sequenceList.get(0));
+				used.add(
+						used.get(0));
+				sequenceList.add(
+						sequenceList.get(0));
 			}
 			used.remove(0);
 			sequenceList.remove(0);
@@ -51,8 +57,9 @@ public class ScenarioReductionUtil {
 	private static boolean done(List<List<Integer>> used, List<Integer> maximum) {
 		for (List<Integer> l : used) {
 			for (int i = 0; i < l.size(); i++) {
-				if (l.get(i) != maximum.get(i))
+				if (l.get(i) != maximum.get(i)) {
 					return false;
+				}
 			}
 		}
 		return true;
@@ -61,8 +68,10 @@ public class ScenarioReductionUtil {
 	// Heap's Algorithm
 	public static void generatePermutation(int k, List<Integer> a, List<List<Integer>> l) {
 		if (k == 1) {
-			l.add(new ArrayList<Integer>(a));
-		} else {
+			ArrayList<Integer> e = new ArrayList<Integer>(a);
+			l.add(e);
+		}
+		else {
 			for (int i = 0; i < (k - 1); i++) {
 				int tmp;
 				generatePermutation(k - 1, a, l);
@@ -70,7 +79,8 @@ public class ScenarioReductionUtil {
 					tmp = a.get(i);
 					a.set(i, a.get(k - 1));
 					a.set(k - 1, tmp);
-				} else {
+				}
+				else {
 					tmp = a.get(0);
 					a.set(0, a.get(k - 1));
 					a.set(k - 1, tmp);

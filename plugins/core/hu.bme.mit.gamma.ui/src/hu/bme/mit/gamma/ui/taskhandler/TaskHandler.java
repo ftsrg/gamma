@@ -14,7 +14,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import org.eclipse.core.resources.IFile;
@@ -22,6 +24,7 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 
+import hu.bme.mit.gamma.eventpriority.transformation.CompletenessTrapStateInjector;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.genmodel.model.AbstractCodeGeneration;
@@ -35,8 +38,11 @@ import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.property.language.ui.serializer.PropertyLanguageSerializer;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.util.PropertyUtil;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.language.ui.serializer.StatechartLanguageSerializer;
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.trace.language.ui.serializer.TraceLanguageSerializer;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
@@ -180,6 +186,35 @@ public abstract class TaskHandler {
 		// Setting the file paths
 		return fileUtil.exploreRelativeFile(file, relativePath);
 	}
+	
+	//
+	
+	protected void preprocessModel(Package _package) {
+		preprocessStatecharts(_package);
+	}
+	
+	protected void preprocessStatecharts(Package _package) {
+		Set<StatechartDefinition> statecharts =
+				StatechartModelDerivedFeatures.getAllStatechartComponents(_package);
+		for (StatechartDefinition statechart : statecharts) {
+			preprocessStatechart(statechart);
+		}
+	}
+	
+	protected void preprocessModel(Component component) {
+		Collection<StatechartDefinition> statecharts =
+				StatechartModelDerivedFeatures.getSelfOrAllContainedStatecharts(component);
+		for (StatechartDefinition statechart : statecharts) {
+			preprocessStatechart(statechart);
+		}
+	}
+	
+	protected void preprocessStatechart(StatechartDefinition statechart) {
+		CompletenessTrapStateInjector trapStateInjector = new CompletenessTrapStateInjector(statechart);
+		trapStateInjector.execute();
+	}
+	
+	//
 	
 	public static class ModelSerializer {
 		//

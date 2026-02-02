@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,9 +15,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 
+import hu.bme.mit.gamma.action.model.AbstractAssignmentStatement;
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
@@ -32,10 +32,10 @@ import hu.bme.mit.gamma.action.model.SwitchStatement;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.action.util.ActionUtil;
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
+import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
-import hu.bme.mit.gamma.expression.model.LambdaDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 
@@ -50,16 +50,37 @@ public class ActionModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return container instanceof VariableDeclarationStatement;
 	}
 	
+
+	public static boolean isPure(FunctionDeclaration function) {
+		if (isLambda(function)) {
+			return true;
+		}
+		
+		List<AbstractAssignmentStatement> assignments = ecoreUtil.getAllContentsOfType(
+				function, AbstractAssignmentStatement.class);
+		for (AbstractAssignmentStatement assignment : assignments) {
+			ReferenceExpression lhs = assignment.getLhs();
+			List<Declaration> declarations = actionUtil.getAccessedDeclarations(lhs);
+			for (Declaration declaration : declarations) {
+				if (!ecoreUtil.containsTransitively(function, declaration)) {
+					return false;
+				}
+			}
+		}
+		
+		return true;
+	}
+	
 	public static boolean isLambda(FunctionDeclaration function) {
 		return isLambda(function, new HashSet<FunctionDeclaration>());
 	}
 	
 	public static boolean isLambda(FunctionDeclaration function,
 			Set<FunctionDeclaration> visitedFunctions) {
-		if (function instanceof LambdaDeclaration) {
+		if (isLambdaDeclaration(function)) {
 			return true;
 		}
-		//
+		
 		ProcedureDeclaration procedure = (ProcedureDeclaration) function;
 		Block block = procedure.getBody();
 		List<Action> actions = block.getActions();
@@ -104,13 +125,11 @@ public class ActionModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static List<VariableDeclarationStatement> getVariableDeclarationStatements(
 			Block block) {
-		EList<Action> subactions = block.getActions();
+		List<Action> subactions = block.getActions();
 		List<VariableDeclarationStatement> variableDeclarationStatements =
 				new ArrayList<VariableDeclarationStatement>();
 		for (Action subaction : subactions) {
-			if (subaction instanceof VariableDeclarationStatement) {
-				VariableDeclarationStatement statement =
-						(VariableDeclarationStatement) subaction;
+			if (subaction instanceof VariableDeclarationStatement statement) {
 				variableDeclarationStatements.add(statement);
 			}
 		}
@@ -121,24 +140,22 @@ public class ActionModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		List<VariableDeclarationStatement> variableDeclarationStatements =
 				getVariableDeclarationStatements(block);
 		List<VariableDeclaration> variableDeclarations = new ArrayList<VariableDeclaration>();
-		for (VariableDeclarationStatement variableDeclarationStatement :
-				variableDeclarationStatements) {
-			variableDeclarations.add(variableDeclarationStatement.getVariableDeclaration());
+		for (VariableDeclarationStatement variableDeclarationStatement : variableDeclarationStatements) {
+			VariableDeclaration variableDeclaration = variableDeclarationStatement.getVariableDeclaration();
+			variableDeclarations.add(variableDeclaration);
 		}
 		return variableDeclarations;
 	}
 	
 	public static List<VariableDeclarationStatement> getPrecedingVariableDeclarationStatements(
 			Block block, Action action) {
-		EList<Action> subactions = block.getActions();
+		List<Action> subactions = block.getActions();
 		int index = subactions.indexOf(action);
 		List<VariableDeclarationStatement> localVariableDeclarations =
 				new ArrayList<VariableDeclarationStatement>();
 		for (int i = 0; i < index; ++i) {
 			EObject subaction = subactions.get(i);
-			if (subaction instanceof VariableDeclarationStatement) {
-				VariableDeclarationStatement statement =
-						(VariableDeclarationStatement) subaction;
+			if (subaction instanceof VariableDeclarationStatement statement) {
 				localVariableDeclarations.add(statement);
 			}
 		}
@@ -152,17 +169,17 @@ public class ActionModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		List<VariableDeclaration> localVariableDeclarations =
 				new ArrayList<VariableDeclaration>();
 		for (VariableDeclarationStatement precedingVariableDeclarationStatement :
-				precedingVariableDeclarationStatements) {
-			localVariableDeclarations.add(
-					precedingVariableDeclarationStatement.getVariableDeclaration());
+					precedingVariableDeclarationStatements) {
+			VariableDeclaration variableDeclaration =
+					precedingVariableDeclarationStatement.getVariableDeclaration();
+			localVariableDeclarations.add(variableDeclaration);
 		}
 		return localVariableDeclarations;
 	}
 	
 	public static boolean isFinalAction(Action action) {
 		EObject container = action.eContainer();
-		if (container instanceof Block) {
-			Block block = (Block) container;
+		if (container instanceof Block block) {
 			int size = block.getActions().size();
 			int actionIndex = ecoreUtil.getIndex(action);
 			return actionIndex == size - 1;
@@ -176,8 +193,7 @@ public class ActionModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 			return false;
 		}
 		if (container != null) {
-			if (container instanceof Action) {
-				Action block = (Action) container;
+			if (container instanceof Action block) {
 				return isRecursivelyFinalAction(block);
 			}
 			else if (container instanceof Branch) {
@@ -201,32 +217,30 @@ public class ActionModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		if (isNullOrEmptyStatement(action)) {
 			return true;
 		}
-		if (action instanceof AssignmentStatement) {
-			AssignmentStatement assignmentStatement = (AssignmentStatement) action;
+		if (action instanceof AssignmentStatement assignmentStatement) {
 			ReferenceExpression lhs = assignmentStatement.getLhs();
 			Expression rhs = assignmentStatement.getRhs();
 			return ecoreUtil.helperEquals(lhs, rhs);
 		}
-		if (action instanceof ForStatement) {
-			ForStatement forStatement = (ForStatement) action;
+		if (action instanceof ForStatement forStatement) {
 			Action body = forStatement.getBody();
 			return isEffectlessAction(body);
 		}
-		if (action instanceof Block) {
-			Block block = (Block) action;
-			return block.getActions().stream().allMatch(it -> isEffectlessAction(it));
+		if (action instanceof Block block) {
+			List<Action> actions = block.getActions();
+			return actions.stream().allMatch(it -> isEffectlessAction(it));
 		}
-		if (action instanceof IfStatement) {
-			IfStatement ifStatement = (IfStatement) action;
-			return ifStatement.getConditionals().stream().allMatch(it -> isEffectlessBranch(it));
+		if (action instanceof IfStatement ifStatement) {
+			List<Branch> conditionals = ifStatement.getConditionals();
+			return conditionals.stream().allMatch(it -> isEffectlessBranch(it));
 		}
-		if (action instanceof ChoiceStatement) {
-			ChoiceStatement choiceStatement = (ChoiceStatement) action;
-			return choiceStatement.getBranches().stream().allMatch(it -> isEffectlessBranch(it));
+		if (action instanceof ChoiceStatement choiceStatement) {
+			List<Branch> branches = choiceStatement.getBranches();
+			return branches.stream().allMatch(it -> isEffectlessBranch(it));
 		}
-		if (action instanceof SwitchStatement) {
-			SwitchStatement switchStatement = (SwitchStatement) action;
-			return switchStatement.getCases().stream().allMatch(it -> isEffectlessBranch(it));
+		if (action instanceof SwitchStatement switchStatement) {
+			List<Branch> cases = switchStatement.getCases();
+			return cases.stream().allMatch(it -> isEffectlessBranch(it));
 		}
 		return false;
 	}

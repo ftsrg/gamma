@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Gamma project
+ * Copyright (c) 2024-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,35 +15,46 @@ import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.BinaryExpression
+import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.DivExpression
 import hu.bme.mit.gamma.expression.model.DivideExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.FalseExpression
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.GreaterEqualExpression
 import hu.bme.mit.gamma.expression.model.GreaterExpression
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.ImplyExpression
 import hu.bme.mit.gamma.expression.model.InequalityExpression
-import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
+import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 import hu.bme.mit.gamma.expression.model.LessEqualExpression
 import hu.bme.mit.gamma.expression.model.LessExpression
-import hu.bme.mit.gamma.expression.model.LiteralExpression
+import hu.bme.mit.gamma.expression.model.ModExpression
 import hu.bme.mit.gamma.expression.model.MultiplyExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
-import hu.bme.mit.gamma.expression.model.NullaryExpression
+import hu.bme.mit.gamma.expression.model.OpaqueExpression
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.SubtractExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
+import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
+import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
+import hu.bme.mit.gamma.expression.model.UnaryMinusExpression
+import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
 import hu.bme.mit.gamma.expression.model.XorExpression
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.iml.transformation.util.MessageQueueHandler
 import hu.bme.mit.gamma.xsts.iml.transformation.util.Namings
+import hu.bme.mit.gamma.xsts.model.FunctionCallAction
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.transformation.util.MessageQueueUtil
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
@@ -58,6 +69,9 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	public static final ExpressionSerializer INSTANCE = new ExpressionSerializer
 	protected new() {}
 	//
+	public static final String LANGUAGE_IML = "language IML"
+	public static final String I_R_CAST = "Real.of_int"
+	//
 	protected final extension MessageQueueUtil messageQueueUtil = MessageQueueUtil.INSTANCE
 	protected final extension MessageQueueHandler messageQueueHandler = MessageQueueHandler.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
@@ -70,7 +84,20 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 		if (expression.queueExpression) {
 			return expression.serializeQueueExpression
 		}
-		return super.serialize(expression)
+		return expression.superSerialize
+	}
+	
+	//
+	
+	def serializeWithCasting(Declaration lhs, Expression expression) {
+		val type = lhs.type
+		return type.serializeWithCasting(expression)
+	}
+	
+	def serializeWithCasting(Type lhs, Expression expression) {
+		val casting = lhs.serializeCasting(expression)
+		val rhs = expression.serialize
+		return (casting.nullOrEmpty) ? rhs : '''(«casting»(«rhs»))'''
 	}
 	
 	//
@@ -89,6 +116,10 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	
 	override String _serialize(DivideExpression expression) { expression.adjustArithmeticExpression("/") }
 	
+	override String _serialize(DivExpression expression) { expression.adjustArithmeticExpression("/") } // Actually, no adjustment would be needed
+	
+	override String _serialize(ModExpression expression) { expression.adjustArithmeticExpression("mod") } // Actually, no adjustment would be needed
+	
 	override String _serialize(LessExpression expression) { expression.adjustArithmeticExpression("<") }
 	
 	override String _serialize(LessEqualExpression expression) { expression.adjustArithmeticExpression("<=") }
@@ -102,22 +133,47 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	}
 	
 	protected def adjustArithmeticExpression(List<? extends Expression> operands, String operator) {
-		val isEachOperandInteger = operands.map[it.typeDefinition].forall[it instanceof IntegerTypeDefinition]
+		val allInteger = operands.forall[it.integer]
 		
-		if (isEachOperandInteger) {
+		if (allInteger) {
 			return '''(«FOR operand : operands SEPARATOR ''' «operator» '''»«operand.serialize»«ENDFOR»)'''
 		}
-		// There is a decimal operand
-		val OPERAND_PREFIX = "Real.of_int "
+		
+		// There is a rational/decimal operand
 		val OPERATOR_POSTFIX = "."
 		
-		return '''(«FOR operand : operands SEPARATOR ''' «operator»«OPERATOR_POSTFIX» '''»«IF
-				operand.typeDefinition instanceof IntegerTypeDefinition &&
-					operand instanceof NullaryExpression && operand instanceof LiteralExpression»«
-				OPERAND_PREFIX»«ENDIF»«operand.serialize»«ENDFOR»)'''
+		return '''(«FOR operand : operands SEPARATOR ''' «operator»«OPERATOR_POSTFIX» '''»(«
+					IF operand.integer»«I_R_CAST» «ENDIF»«operand.serialize»)«ENDFOR»)'''
 	}
 	
 	//
+	
+	override String _serialize(UnaryPlusExpression expression) '''(«super._serialize(expression)»)'''
+	
+	override String _serialize(UnaryMinusExpression expression) '''(«super._serialize(expression)»)'''
+	
+	override String _serialize(IntegerLiteralExpression expression) {
+		val string = super._serialize(expression)
+		val value = expression.value
+		if (value.signum < 0) {
+			return '''(«string»)''' // For some reason, IML needs this
+		}
+		return string
+	}
+	
+	override String _serialize(DecimalLiteralExpression expression) {
+		val string = super._serialize(expression)
+		val value = expression.value
+		if (value.signum < 0) {
+			return '''(«string»)''' // For some reason, IML needs this
+		}
+		return string
+	}
+	
+	override String _serialize(OpaqueExpression expression) {
+		val string = expression.expression
+		return string.serializeOpaqueElement
+	}
 	
 	override String _serialize(TrueExpression expression) '''true'''
 
@@ -139,7 +195,9 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	
 	override String _serialize(DirectReferenceExpression expression) {
 		val declaration = expression.declaration
-		return '''«declaration.id».«declaration.serializeName»'''
+		val id = (declaration instanceof ParameterDeclaration) ? '' : // Function declaration's parameter
+				declaration.id + "." // Default: 'r' or 'l'
+		return '''«id»«declaration.serializeName»'''
 	}
 	
 	override String _serialize(ArrayAccessExpression arrayAccessExpression) '''(Map.get «arrayAccessExpression.index.serialize» «arrayAccessExpression.operand.serialize»)'''
@@ -168,6 +226,41 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 		return imlArrayLiteral
 	}
 	
+	override String _serialize(FunctionAccessExpression expression) {
+		val isExpression = !(expression.eContainer instanceof FunctionCallAction) // As rhs - cannot support functions with both a side effect and return value
+		val hasSideEffect = expression.hasFunctionCallSideEffect
+		val function = expression.operand.declaration as FunctionDeclaration
+		val parameters = function.parameterDeclarations
+		val isLambda = function.lambdaDeclaration
+		
+		val functionCall = '''(«function.serializeName» «GLOBAL_RECORD_IDENTIFIER» «
+				FOR argument : expression.arguments SEPARATOR ' '»«
+					parameters.get(argument.index).serializeWithCasting(argument)»«ENDFOR»)'''
+		
+		if (isLambda || /* (r) is not returned */
+				isExpression && hasSideEffect /* Special code handles this case at a higher (assignment) level */) {
+			// See ActionSerializer.serializeAction: 'needR'
+			return functionCall
+		}
+		
+		val string = '''let «GLOBAL_RECORD_IDENTIFIER», «FUNCTION_RETURN_VALUE_NAME» = «
+				functionCall» in«IF isExpression» «FUNCTION_RETURN_VALUE_NAME»«ENDIF»'''
+		
+		return (isExpression) ?
+			'''(«string»)''' :
+			string
+	}
+	
+	def getFunctionReturnValues() '''«GLOBAL_RECORD_IDENTIFIER», «LOCAL_RECORD_IDENTIFIER».«FUNCTION_RETURN_VALUE_NAME.customizeDeclarationName»'''
+	
+	def serializeOpaqueElement(String string) {
+		if (string.startsWith(LANGUAGE_IML)) {
+			val serialization = string.substring(LANGUAGE_IML.length).trim
+			return serialization
+		}
+		return ""
+	}
+	
 	//
 
 	def String serializeAsLhs(Declaration declaration) {
@@ -176,6 +269,16 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	
 	def String serializeAsRhs(Declaration declaration) {
 		return declaration.createReferenceExpression.serialize
+	}
+	
+	def String serializeTemporaryDeclarationNames(ReferenceExpression reference) {
+		if (reference instanceof TupleReferenceExpression) {
+			return '''(«FOR subreference : reference.references SEPARATOR ', '»«subreference.serializeTemporaryDeclarationNames»«ENDFOR»)'''
+		}
+		if (reference instanceof DirectReferenceExpression) {
+			val declaration = reference.declaration
+			return declaration.temporaryDeclarationName
+		}
 	}
 
 	/**
@@ -208,6 +311,20 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	def serializeFieldName(HavocAction havoc) {
 		val customizedName = havoc.customizeHavocField
 		return customizedName
+	}
+	
+	//
+	
+	protected def serializeCasting(Declaration lhs, Type rhs) {
+		return lhs.type.serializeCasting(rhs)
+	}
+	
+	protected def serializeCasting(Type lhs, Expression rhs) {
+		return lhs.serializeCasting(rhs.typeDefinition)
+	}
+	
+	protected def serializeCasting(Type lhs, Type rhs) {
+		return lhs.decimal && rhs.integer ?  I_R_CAST + " " : ""
 	}
 	
 	//

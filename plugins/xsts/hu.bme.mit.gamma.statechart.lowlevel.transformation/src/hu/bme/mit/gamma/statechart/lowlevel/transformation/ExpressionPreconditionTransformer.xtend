@@ -1,35 +1,46 @@
+/********************************************************************************
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
 import hu.bme.mit.gamma.action.model.Action
 import hu.bme.mit.gamma.action.model.ActionModelFactory
 import hu.bme.mit.gamma.action.model.Block
 import hu.bme.mit.gamma.action.model.ConstantDeclarationStatement
-import hu.bme.mit.gamma.action.model.ForStatement
+import hu.bme.mit.gamma.action.model.ExpressionStatement
 import hu.bme.mit.gamma.action.model.ProcedureDeclaration
 import hu.bme.mit.gamma.action.model.ReturnStatement
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
 import hu.bme.mit.gamma.expression.model.AccessExpression
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.SelectExpression
+import hu.bme.mit.gamma.expression.model.TupleTypeDefinition
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.model.VoidTypeDefinition
 import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.List
-import java.util.Set
-import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
-import static extension java.lang.Math.abs
 
 class ExpressionPreconditionTransformer {
 	// 
@@ -37,6 +48,7 @@ class ExpressionPreconditionTransformer {
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension ActionTransformer actionTransformer
 	protected final extension ValueDeclarationTransformer valueDeclarationTransformer
+	protected final extension TypeTransformer typeTransformer
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
@@ -45,21 +57,24 @@ class ExpressionPreconditionTransformer {
 	protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
 	// Transformation parameters
 	protected final boolean FUNCTION_INLINING
+	protected final boolean ADD_RETURN_GUARDS
 	protected final int MAX_RECURSION_DEPTH
 	
 	protected int currentRecursionDepth // For procedures
 	
 	new(Trace trace, ActionTransformer actionTransformer) {
-		this(trace, actionTransformer, true, 10)
+		this(trace, actionTransformer, true, true, 7)
 	}
 	
 	new(Trace trace, ActionTransformer actionTransformer,
-			boolean functionInlining, int maxRecursionDepth) {
+			boolean functionInlining, boolean addReturnGuards, int maxRecursionDepth) {
 		this.trace = trace
 		this.actionTransformer = actionTransformer
-		this.expressionTransformer = new ExpressionTransformer(this.trace)
+		this.expressionTransformer = actionTransformer.expressionTransformer
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
+		this.typeTransformer = new TypeTransformer(this.trace)
 		this.FUNCTION_INLINING = functionInlining
+		this.ADD_RETURN_GUARDS = addReturnGuards
 		this.MAX_RECURSION_DEPTH = maxRecursionDepth
 		this.currentRecursionDepth = MAX_RECURSION_DEPTH
 	}
@@ -70,6 +85,12 @@ class ExpressionPreconditionTransformer {
 	
 	def dispatch List<Action> transformPrecondition(AccessExpression expression) {
 		return expression.operand.transformPrecondition
+	}
+	
+	def dispatch List<Action> transformPrecondition(ArrayAccessExpression expression) {
+		return (
+			expression.operand.transformPrecondition + expression.index.transformPrecondition
+		).toList
 	}
 	
 	def dispatch List<Action> transformPrecondition(BinaryExpression expression) {
@@ -93,13 +114,17 @@ class ExpressionPreconditionTransformer {
 	
 	def dispatch List<Action> transformPrecondition(FunctionAccessExpression expression) {
 		val actions = newArrayList
-		val function = expression.accessedDeclaration
+		
+		val arguments = expression.arguments
+		actions += arguments.map[it.transformPrecondition].flatten
+		
+		val function = expression.accessedDeclaration as FunctionDeclaration
 		if (FUNCTION_INLINING) {
 			if (currentRecursionDepth <= 0) {
 				// Reached max recursion
 				val functionType = function.type.clone
 				val localStatement = functionType.createDeclarationStatement(
-					'''_defaultValueOf_«function.name»_«expression.hashCode.abs»_''')
+					'''_defaultValue_«function.name»_«expression.uniqueIndex»_''')
 				val localDefaultDeclaration = localStatement.variableDeclaration
 				
 				val lowlevelStatement = localStatement.transformAction
@@ -124,8 +149,45 @@ class ExpressionPreconditionTransformer {
 			}
 		}
 		else {
-			throw new UnsupportedOperationException("Only inlining is supported: " + expression)
+			// Mapping the function
+			if (!trace.isMapped(function)) {
+				val extension functionTransformer = new FunctionTransformer(this.trace, ADD_RETURN_GUARDS)
+				function.transformAndStoreFunction
+			}
+			
+			val lowlevelFunction = trace.get(function)
+			val lowlevelType = lowlevelFunction.typeDefinition
+			
+			val isTuple = lowlevelType instanceof TupleTypeDefinition
+			val hasSideEffect = !lowlevelFunction.pure
+			val isProcedureCall = lowlevelType instanceof VoidTypeDefinition || expression.isContainedBy(ExpressionStatement)
+			val extractFunction = isTuple || hasSideEffect && !isProcedureCall
+			if (extractFunction) {
+				val nativeTypes = (lowlevelType instanceof TupleTypeDefinition) ?
+						lowlevelType.nativeTypes.clone :
+						#[ lowlevelType.clone ]
+				
+				val lowlevelDeclarations = <VariableDeclarationStatement>newArrayList
+				for (type : nativeTypes) {
+					val name = '''_«nativeTypes.indexOf(type)»_«lowlevelFunction.name»_«expression.uniqueIndex»'''
+					lowlevelDeclarations += type.createDeclarationStatement(name)
+				}
+				actions += lowlevelDeclarations
+				val lowlevelVariables = lowlevelDeclarations.map[it.variableDeclaration].toList
+				
+				val access = (lowlevelType instanceof TupleTypeDefinition) ?
+						lowlevelType.createTupleAccessExpression(lowlevelVariables) :
+						lowlevelVariables.head.createReferenceExpression
+				
+				val lowlevelFunctionCall = expression.transformSimpleExpression
+				trace.put(expression, lowlevelVariables) // After the function call transformation (this tracing determines if the function is extracted or a basic call is made)
+				
+				val lowlevelAssignment = access.createAssignment(lowlevelFunctionCall)
+				actions += lowlevelAssignment
+			}
+			// No added precondition actions otherwise
 		}
+		
 		return actions
 	}
 	
@@ -144,13 +206,15 @@ class ExpressionPreconditionTransformer {
 		val inlinedActions = <Action>newArrayList
 		val clonedBlock = procedure.body.clone
 		
+		val namePostfix = expression.uniqueIndex + "_" + procedure.uniqueIndex + "_" + currentRecursionDepth
+		
 		// Rename local declarations
 		val declarations = clonedBlock.getAllContentsOfType(VariableDeclarationStatement)
 				.map[it.variableDeclaration] + 
 			clonedBlock.getAllContentsOfType(ConstantDeclarationStatement).map[it.constantDeclaration]
 		for (declaration : declarations) {
 			val name = declaration.name
-			declaration.name = '''«name»_«declaration.hashCode.abs»_'''
+			declaration.name = '''«name»_«namePostfix»'''
 			// A default expression is needed, otherwise some uninitialized parts of record can be havoced
 			if (declaration.expression === null) {
 				declaration.expression = declaration.type.defaultExpression
@@ -163,8 +227,8 @@ class ExpressionPreconditionTransformer {
 			val parameterDeclaration = parameterDeclarations.get(i)
 			
 			val parameterType = parameterDeclaration.type.clone
-			val localStatement = parameterType.createDeclarationStatement(
-				'''_«parameterDeclaration.name»_«expression.hashCode.abs»_''', argument.clone)
+			val name = '''_«parameterDeclaration.name»_«namePostfix»'''
+			val localStatement = parameterType.createDeclarationStatement(name, argument.clone)
 			val localParameterDeclaration = localStatement.variableDeclaration
 			
 			inlinedActions += localStatement
@@ -176,12 +240,12 @@ class ExpressionPreconditionTransformer {
 		val returnStatements = clonedBlock.getSelfAndAllContentsOfType(ReturnStatement)
 		if (!returnStatements.empty) {
 			val procedureType = procedure.type.clone // typeDefinition is not correct due to record literals
-			val localDeclarationPostfix = '''_«procedure.name»_«expression.hashCode.abs»_'''
+			val localDeclarationPostfix = '''_«procedure.name»_«namePostfix»'''
 			// This declaration will store the return value
 			val isVoid = procedureType.typeDefinition instanceof VoidTypeDefinition 
 			if (!isVoid) {
 				val localStatement = procedureType.createDeclarationStatement(
-					'''_returnValueOf«localDeclarationPostfix»''')
+					'''_returnValue«localDeclarationPostfix»''')
 				localReturnDeclaration = localStatement.variableDeclaration
 				inlinedActions += localStatement
 			}
@@ -196,18 +260,13 @@ class ExpressionPreconditionTransformer {
 			
 			for (returnStatement : returnStatements) {
 				// Setting the boolean flag: a return is executed
-				val isReturnedReference = localIsReturnedDeclaration.createReferenceExpression
-				val setIsReturned = isReturnedReference.createAssignment(createTrueExpression)
-				returnStatement.append(setIsReturned)
-				
-				setIsReturned.addReturnGuard
+				returnStatement.setReturnedDeclarationAndAddReturnGuard
 				
 				// Storing the return value
 				val returnExpression = returnStatement.expression
 				if (returnExpression !== null) {
 					val clonedReturnExpression = returnExpression.clone
-					val reference = localReturnDeclaration.createReferenceExpression
-					val returnAssignment = reference.createAssignment(clonedReturnExpression)
+					val returnAssignment = localReturnDeclaration.createAssignment(clonedReturnExpression)
 					returnAssignment.replace(returnStatement)
 				}
 				else {
@@ -236,74 +295,6 @@ class ExpressionPreconditionTransformer {
 			FunctionAccessExpression arguments) {
 		// Lambdas must be side effect-free, so no pre-transformation is necessary 
 		return #[]
-	}
-	
-	// Auxiliary class for procedure return handling
-	
-	private static class ProcedureReturnGuardHandler {
-		
-		final VariableDeclaration isReturnedDeclaration
-		final Set<Action> guardedActions = newHashSet // A block or for statement is guarded only once
-		// Auxiliary objects
-		protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
-		protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
-		protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
-		protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
-		
-		new(VariableDeclaration isReturnedDeclaration) {
-			this.isReturnedDeclaration = isReturnedDeclaration
-		}
-		
-		// EObject is expected to handle branches too
-		def void addReturnGuard(EObject action) {
-			val container = action.eContainer
-			
-			if (container === null) {
-				return
-			}
-			if (container instanceof Block) {
-				if (!guardedActions.contains(container)) {
-					val actions = container.actions
-					val size = actions.size
-					val firstGuardableActionIndex = action.index + 1
-					
-					if (firstGuardableActionIndex < size) {
-						val guard = createNotExpression => [
-							it.operand = isReturnedDeclaration.createReferenceExpression
-						]
-						val guardedBlock = createBlock => [
-							it.actions += actions.subList(firstGuardableActionIndex, size)
-						]
-						val branch = guard.createBranch(guardedBlock)
-						val ifStatement = createIfStatement => [
-							it.conditionals += branch
-						]
-						// Putting the guarded block to the end (guardable actions are inside)
-						actions += ifStatement
-					}
-					
-					guardedActions += container
-				}
-			}
-			if (container instanceof ForStatement) {
-				if (!guardedActions.contains(container)) {
-					val guard = createNotExpression => [
-						it.operand = isReturnedDeclaration.createReferenceExpression
-					]
-					val branch = guard.createBranch(container.body)
-					val ifStatement = createIfStatement => [
-						it.conditionals += branch
-					]
-					container.body = ifStatement
-					
-					guardedActions += container
-				}
-			}
-			
-			// Recursion to the top
-			container.addReturnGuard
-		} 
-		
 	}
 	
 }

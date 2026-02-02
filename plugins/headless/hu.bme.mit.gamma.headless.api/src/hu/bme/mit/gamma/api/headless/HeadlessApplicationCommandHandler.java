@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.api.headless;
 
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,9 +37,10 @@ public abstract class HeadlessApplicationCommandHandler {
 		this.appArgs = appArgs;
 		this.level = level;
 		setupLogger();
+		logger.info("Running Gamma with the following arguments: " + Arrays.toString(appArgs));
 	}
 
-	public abstract void execute() throws Exception;
+	public abstract void execute() throws Throwable;
 	
 	protected void setupLogger() {
 		logger.setLevel(level);

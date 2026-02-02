@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.querygenerator.serializer
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
@@ -42,6 +43,14 @@ class ThetaReferenceSerializer implements AbstractReferenceSerializer {
 	
 	override getId(VariableDeclaration variable, ComponentInstanceReferenceExpression instance) {
 		return variable.customizeNames(instance)
+	}
+	
+	override getId(MessageQueue queue, ComponentInstanceReferenceExpression instance) {
+		return queue.customizeMasterQueueName(instance)
+	}
+	
+	override getSizeId(MessageQueue queue, ComponentInstanceReferenceExpression instance) {
+		return queue.customizeSizeVariableName(instance)
 	}
 	
 	override getId(Event event, Port port, ComponentInstanceReferenceExpression instance) {

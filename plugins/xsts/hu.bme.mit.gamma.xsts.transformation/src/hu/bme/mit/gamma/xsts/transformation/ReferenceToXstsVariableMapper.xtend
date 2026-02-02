@@ -56,7 +56,7 @@ class ReferenceToXstsVariableMapper {
 	}
 	
 	dispatch def getVariables(AnyPortEventReference eventReference) {
-		val xStsVariables = newHashSet
+		val xStsVariables = newLinkedHashSet
 		val port = eventReference.port
 		for (inEvent : port.inputEvents) {
 			xStsVariables += inEvent.getInputEventVariables(port)

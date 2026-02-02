@@ -21,7 +21,7 @@ public class ExpressionLanguageFormatter extends AbstractDeclarativeFormatter {
 	
 	@Override
 	protected void configureFormatting(FormattingConfig c) {
-		hu.bme.mit.gamma.expression.language.services.ExpressionLanguageGrammarAccess f = (ExpressionLanguageGrammarAccess) getGrammarAccess();
+		var f = (ExpressionLanguageGrammarAccess) getGrammarAccess();
 		expressionLanguageFormatterUtil.format(c, f);
 		expressionLanguageFormatterUtil.format(c, f);
 		c.setLinewrap(0, 1, 2).before(f.getSL_COMMENTRule());

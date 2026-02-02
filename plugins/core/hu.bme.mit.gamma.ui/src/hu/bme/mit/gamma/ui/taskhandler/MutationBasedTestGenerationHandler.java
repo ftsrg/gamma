@@ -369,7 +369,7 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 		// Serializing and concretizing the generated traces
 		for (ExecutionTrace trace : generatedTraces) {
 			traceSerializer.serialize(traceFolderUri, traceFileName, null, testFolderUri,
-					testFileName, packageName, trace, file, programmingLanguage);
+					testFileName, null, packageName, trace, file, programmingLanguage);
 		}
 	}
 	
@@ -443,7 +443,7 @@ public class MutationBasedTestGenerationHandler extends TaskHandler {
 				mutatedComponent.setName(mutatedComponentName);
 				mutatedModel.getImports().clear();
 				mutatedModel.getImports().addAll(mutantImports);
-				if (mutatedComponent instanceof CompositeComponent mutatedCompositeComponent) {
+				if (mutatedComponent instanceof CompositeComponent) {
 					traceUtil.setInstanceTypes(mutatedInstances, clonedMutatedInstances);
 				}
 				ecoreUtil.save(mutatedModel); //

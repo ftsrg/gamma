@@ -14,8 +14,8 @@
     label="Gamma Oomph Project">
   <setupTask
       xsi:type="jdt:JRETask"
-      version="JavaSE-17"
-      location="${jre.location-17}">
+      version="JavaSE-21"
+      location="${jre.location-21}">
     <description>Define the JRE needed to compile and run the Java projects of ${scope.project.label}</description>
   </setupTask>
     <setupTask
@@ -55,7 +55,7 @@
   <setupTask
       xsi:type="setup:VariableTask"
       name="eclipse.target.platform"
-      defaultValue="2024-12"
+      defaultValue="2025-06"
       storageURI="scope://Workspace"/>
   <setupTask
       xsi:type="setup.p2:P2Task">
@@ -69,9 +69,9 @@
         name="org.eclipse.viatra.query.sdk.feature.source.feature.group"
         versionRange="2.9.1"/>
     <repository
-        url="https://download.eclipse.org/technology/epp/packages/2024-12/202411281200/"/>
+        url="https://download.eclipse.org/technology/epp/packages/2025-06/202506041200/"/>
     <repository
-        url="https://download.eclipse.org/releases/2024-12/202412041000/">
+        url="https://download.eclipse.org/releases/2025-06/202506111000/">
       <annotation
           source="http://www.eclipse.org/oomph/setup/ReleaseTrain"/>
     </repository>
@@ -93,6 +93,13 @@
       <sourceLocator
           rootFolder="${git.clone.hu.bme.mit.gamma.oomph.location}"
           locateNestedProjects="true"/>
+      <repositoryList
+          name="2025-06">
+        <repository
+            url="https://download.eclipse.org/releases/2025-06"/>
+        <repository
+            url="https://download.eclipse.org/cbi/updates/license"/>
+      </repositoryList>
       <repositoryList
           name="2024-12">
         <repository
@@ -132,20 +139,6 @@
           name="2023-09">
         <repository
             url="https://download.eclipse.org/releases/2023-09"/>
-        <repository
-            url="https://download.eclipse.org/cbi/updates/license"/>
-      </repositoryList>
-      <repositoryList
-          name="2023-06">
-        <repository
-            url="https://download.eclipse.org/releases/2023-06"/>
-        <repository
-            url="https://download.eclipse.org/cbi/updates/license"/>
-      </repositoryList>
-      <repositoryList
-          name="2023-03">
-        <repository
-            url="https://download.eclipse.org/releases/2023-03"/>
         <repository
             url="https://download.eclipse.org/cbi/updates/license"/>
       </repositoryList>

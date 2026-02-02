@@ -108,7 +108,8 @@ public class ActionSerializer {
 	protected String _serialize(final ForStatement statement) {
 		StringBuilder builder = new StringBuilder("for (" + statement.getParameter().getName() + " : "
 				+ expressionSerializer.serialize(statement.getRange()) + ") ");
-		builder.append(serialize(statement.getBody()));
+		Action body = statement.getBody();
+		builder.append(serialize(body));
 		return builder.toString();
 	}
 
