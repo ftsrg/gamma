@@ -108,6 +108,7 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AssertAction/assertion"/>
     </genClasses>
     <genClasses ecoreClass="model.ecore#//HavocAction"/>
+    <genClasses ecoreClass="model.ecore#//AbstractUpdateAction"/>
     <genClasses ecoreClass="model.ecore#//AbstractAssignmentAction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AbstractAssignmentAction/lhs"/>
     </genClasses>

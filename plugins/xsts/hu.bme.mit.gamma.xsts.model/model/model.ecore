@@ -151,8 +151,10 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="HavocAction" eSuperTypes="#//AbstractAssignmentAction"/>
+  <eClassifiers xsi:type="ecore:EClass" name="AbstractUpdateAction" abstract="true"
+      eSuperTypes="#//AtomicAction"/>
   <eClassifiers xsi:type="ecore:EClass" name="AbstractAssignmentAction" abstract="true"
-      eSuperTypes="#//AtomicAction">
+      eSuperTypes="#//AbstractUpdateAction">
     <eStructuralFeatures xsi:type="ecore:EReference" name="lhs" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression"
         containment="true"/>
   </eClassifiers>
