@@ -234,16 +234,14 @@ class VariableInliner {
 				declaration.handleMaps(action, rhs, concreteValues, symbolicValues)
 			}
 		}
-		else if (lhs instanceof TupleReferenceExpression) {
-			// Used for function calls: we do not consider function bodies (yet)
+		else if (lhs instanceof TupleReferenceExpression ||
+					lhs instanceof ArrayAccessExpression) {
+			lhs.getSelfAndAllContentsOfType(ArrayAccessExpression).map[it.index]
+					.forEach[it.inlineExpression(concreteValues, symbolicValues)]
+			// Used for i) function calls and ii) array indexing: we do not consider function bodies (yet)
 			val writtenVariables = action.writtenVariables
 			concreteValues.keySet -= writtenVariables
 			symbolicValues.keySet -= writtenVariables
-		}
-		else if (lhs instanceof ArrayAccessExpression) {
-			val index = lhs.index
-			index.inlineExpression(concreteValues, symbolicValues)
-			// TODO operand?
 		}
 	}
 	
@@ -463,8 +461,7 @@ class VariableInliner {
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		expression.inlineVariables(concreteValues) // Only concrete values
-		// Removing read variables - if a variable is read, then the
-		// oldAssignment (see AssignmentAction inline) must not be removed
+		// Removing read variables - if a variable is read, then the 'oldAssignment' (see AssignmentAction inline) must not be removed
 		symbolicValues.deleteReferencedVariableKeys(expression)
 	}
 	
