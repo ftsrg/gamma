@@ -170,7 +170,7 @@ class JavaUtil {
 	
 	def <T> T getOnlyElement(Iterable<T> collection) {
 		if (collection.size !== 1) {
-			throw new IllegalArgumentException("Not one elment: " + collection)
+			throw new IllegalArgumentException("Not one element: " + collection)
 		}
 		return collection.lastElement
 	}

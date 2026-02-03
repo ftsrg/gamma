@@ -323,23 +323,28 @@ class VariableInliner {
 					}
 				}
 			}
-			
 			else if (first instanceof AssignmentAction) {
 				val firstLhs = first.lhs
 				if (second instanceof AssignmentAction) {
 					val secondLhs = second.lhs
-					if (firstLhs.helperEquals(secondLhs)) {
+					if (firstLhs.isInlinable(secondLhs)) {
 						val secondRhs = second.rhs
-						for (rhsContent : secondRhs.getSelfAndAllContentsOfType(firstLhs.class)) {
-							if (rhsContent.helperEquals(firstLhs)) {
+						val secondRhsContents = secondRhs.getSelfAndAllContentsOfType(firstLhs.class)
+						// Consider: a[i + 1] := 10; a[i + 1] := a[1] + a[i + 2 - 1]
+						val inlineable = (firstLhs instanceof ArrayAccessExpression) ?
+							secondRhsContents.filter(ArrayAccessExpression).forall[
+									firstLhs.declaration !== it.declaration || it.isInlinable(firstLhs)] :
+							!firstLhs.containsTypeTransitively(ArrayAccessExpression) // If not an array access (e.g., inside tuples), then it is easy
+						if (inlineable) {
+							for (secondRhsContent : secondRhsContents.filter[it.isInlinable(firstLhs)]) {
 								val firstRhs = first.rhs
 								val firstRhsClone = firstRhs.clone
-								firstRhsClone.replace(rhsContent)
+								firstRhsClone.replace(secondRhsContent)
 							}
+							second.rhs.optimizeExpressions
+							// Remove first action
+							removableActions += first
 						}
-						// TODO not sound: a[1] := 10; a[1] := a[1] + a[2 - 1]
-						// Remove first
-						removableActions += first
 					}
 				}
 			}
@@ -347,6 +352,20 @@ class VariableInliner {
 		
 		removableActions.forEach[it.replaceWithEmptyAction]
 		actions -= removableActions
+	}
+	
+	private def boolean isInlinable(Expression lhs, Expression rhs) {
+		if (lhs instanceof ArrayAccessExpression) {
+			if (rhs instanceof ArrayAccessExpression) {
+				val lhsIndex = lhs.index
+				val rhsIndex = rhs.index
+				return lhs.helperEquals(rhs) ||
+					(lhs.operand.isInlinable(rhs.operand) &&
+						lhsIndex.evaluable && rhsIndex.evaluable && lhsIndex.evaluate == rhsIndex.evaluate)
+			}
+		}
+		
+		return lhs.helperEquals(rhs)
 	}
 	
 	// Auxiliary

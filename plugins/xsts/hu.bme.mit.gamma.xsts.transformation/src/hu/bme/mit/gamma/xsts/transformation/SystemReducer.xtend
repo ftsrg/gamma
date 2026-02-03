@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -452,7 +452,7 @@ class SystemReducer {
 			val xStsTrivialCodomain = oneValueXStsVariableCodomains.get(xStsVariable)
 			
 			for (reference : xSts.getAllContentsOfType(DirectReferenceExpression)
-					.filter[!it.isLhs && it.declaration === xStsVariable]) {
+						.filter[!it.writtenLhs && it.declaration === xStsVariable]) {
 				// No lhs references, so assignment actions can be deleted later 
 				val xStsLiteral = xStsTrivialCodomain.clone
 				xStsLiteral.replace(reference)
