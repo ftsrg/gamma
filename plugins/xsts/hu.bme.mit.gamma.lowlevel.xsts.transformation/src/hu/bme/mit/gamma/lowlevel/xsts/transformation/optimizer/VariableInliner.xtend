@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
@@ -31,6 +32,7 @@ import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.OpaqueAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
+import hu.bme.mit.gamma.xsts.model.ProcedureDeclaration
 import hu.bme.mit.gamma.xsts.model.ReturnAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
@@ -178,18 +180,14 @@ class VariableInliner {
 	protected def dispatch void inline(ParallelAction action,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
-		val writtenVariables = action.writtenVariables
-		
 		action.deleteWrittenVariables(concreteValues, symbolicValues)
 		
 		val subactions = newArrayList
 		subactions += action.actions
 		for (subaction : subactions) {
 			subaction.inline(concreteValues, symbolicValues)
+			action.deleteWrittenVariables(concreteValues, symbolicValues)
 		}
-		
-		concreteValues.keySet -= writtenVariables
-		symbolicValues.keySet -= writtenVariables
 	}
 	
 	protected def dispatch void inline(NonDeterministicAction action,
@@ -532,6 +530,18 @@ class VariableInliner {
 		val writtenVariables = action.writtenVariables
 		concreteValues.keySet -= writtenVariables
 		symbolicValues.keySet -= writtenVariables
+	}
+	
+	protected def deleteSideAffectedVariables(Expression expression,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
+		val functionCalls = expression.getSelfAndAllContentsOfType(FunctionAccessExpression)
+				.filter[it.functionDeclaration.hasSideEffect]
+		for (functionCall : functionCalls) {
+			val function = functionCall.functionDeclaration as ProcedureDeclaration
+			val body = function.body
+			body.deleteWrittenVariables(concreteValues, symbolicValues)
+		}
 	}
 	
 	@Data

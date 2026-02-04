@@ -198,6 +198,11 @@ public class ExpressionUtil {
 				getAccessedDeclaration(expression));
 	}
 	
+	public FunctionDeclaration getFunctionDeclaration(Expression expression) {
+		Declaration declaration = getDeclaration(expression);
+		return (FunctionDeclaration) declaration;
+	}
+	
 	public Collection<TypeDeclaration> getTypeDeclarations(EObject context) {
 		ExpressionPackage _package = ecoreUtil.getSelfOrContainerOfType(context, ExpressionPackage.class);
 		if (_package == null) {
