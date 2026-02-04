@@ -79,6 +79,7 @@ class VariableInliner {
 		action.inline(concreteValues, symbolicValues)
 	}
 	
+	//  TODO if rhs has side effect, the assignment cannot be removed
 	// The concreteValues and symbolicValues sets are disjoint!
 	
 	protected def dispatch void inline(Action action,

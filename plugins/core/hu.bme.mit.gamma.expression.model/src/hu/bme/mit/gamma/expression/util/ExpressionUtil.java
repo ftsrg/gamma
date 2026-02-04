@@ -1539,6 +1539,16 @@ public class ExpressionUtil {
 		return arrayLiteralExpression;
 	}
 	
+	public ArrayLiteralExpression createArrayLiteralExpression(Collection<? extends Expression> values) {
+		ArrayLiteralExpression array = factory.createArrayLiteralExpression();
+		
+		for (Expression value : values) {
+			array.getOperands().add(value);
+		}
+		
+		return array;
+	}
+	
 	public DirectReferenceExpression createReferenceExpression(Declaration declaration) {
 		if (declaration == null) {
 			throw new IllegalArgumentException("Declaration is null");
