@@ -106,10 +106,7 @@ class VariableInliner {
 	protected def dispatch void inline(HavocAction action,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
-		val writtenVariables = action.writtenVariables
-		
-		concreteValues.keySet -= writtenVariables
-		symbolicValues.keySet -= writtenVariables
+		action.deleteWrittenVariables(concreteValues, symbolicValues)
 	}
 	
 	protected def dispatch void inline(FunctionCallAction action,
@@ -120,19 +117,15 @@ class VariableInliner {
 			argument.inlineExpression(concreteValues, symbolicValues)
 		}
 		
-		val writtenVariables = action.writtenVariables
 		// We do not consider function bodies (yet)
-		concreteValues.keySet -= writtenVariables
-		symbolicValues.keySet -= writtenVariables
+		action.deleteWrittenVariables(concreteValues, symbolicValues)
 	}
 	
 	protected def dispatch void inline(LoopAction action,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		val subaction = action.action
-		val writtenVariables = subaction.writtenVariables // 
-		concreteValues.keySet -= writtenVariables
-		symbolicValues.keySet -= writtenVariables
+		subaction.deleteWrittenVariables(concreteValues, symbolicValues)
 		// Due to the iterations, we do not know the values for variables written inside the loop
 		
 		val newConcreteValues = newHashMap
@@ -187,8 +180,7 @@ class VariableInliner {
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		val writtenVariables = action.writtenVariables
 		
-		concreteValues.keySet -= writtenVariables
-		symbolicValues.keySet -= writtenVariables
+		action.deleteWrittenVariables(concreteValues, symbolicValues)
 		
 		val subactions = newArrayList
 		subactions += action.actions
@@ -289,10 +281,8 @@ class VariableInliner {
 			lhs.getSelfAndAllContentsOfType(ArrayAccessExpression)
 					.map[it.index]
 					.forEach[it.inlineExpression(concreteValues, symbolicValues)]
-			// Used for i) function calls and ii) array indexing: we do not consider function bodies (yet)
-			val writtenVariables = action.writtenVariables
-			concreteValues.keySet -= writtenVariables
-			symbolicValues.keySet -= writtenVariables
+			// Used for 1) function calls and 2) array indexing: we do not consider function bodies (yet)
+			action.deleteWrittenVariables(concreteValues, symbolicValues)
 		}
 	}
 	
@@ -534,6 +524,14 @@ class VariableInliner {
 		val references = expression.getSelfAndAllContentsOfType(DirectReferenceExpression)
 		val variables = references.map[it.declaration]
 		values.keySet -= variables
+	}
+	
+	protected def deleteWrittenVariables(Action action,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
+		val writtenVariables = action.writtenVariables
+		concreteValues.keySet -= writtenVariables
+		symbolicValues.keySet -= writtenVariables
 	}
 	
 	@Data
