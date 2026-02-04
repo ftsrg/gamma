@@ -84,8 +84,7 @@ class VariableInliner {
 		action.inline(concreteValues, symbolicValues)
 	}
 	
-	//  TODO if rhs has side effect, the assignment cannot be removed
-	// The concreteValues and symbolicValues sets are disjoint!
+	// Note: the 'concreteValues' and 'symbolicValues' sets are disjoint!
 	
 	protected def dispatch void inline(Action action,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
@@ -108,7 +107,7 @@ class VariableInliner {
 	protected def dispatch void inline(HavocAction action,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
-		action.deleteWrittenVariables(concreteValues, symbolicValues)
+		action.removeWrittenVariables(concreteValues, symbolicValues)
 	}
 	
 	protected def dispatch void inline(FunctionCallAction action,
@@ -120,14 +119,14 @@ class VariableInliner {
 		}
 		
 		// We do not consider function bodies (yet)
-		action.deleteWrittenVariables(concreteValues, symbolicValues)
+		action.removeWrittenVariables(concreteValues, symbolicValues)
 	}
 	
 	protected def dispatch void inline(LoopAction action,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		val subaction = action.action
-		subaction.deleteWrittenVariables(concreteValues, symbolicValues)
+		subaction.removeWrittenVariables(concreteValues, symbolicValues)
 		// Due to the iterations, we do not know the values for variables written inside the loop
 		
 		val newConcreteValues = newHashMap
@@ -180,14 +179,15 @@ class VariableInliner {
 	protected def dispatch void inline(ParallelAction action,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
-		action.deleteWrittenVariables(concreteValues, symbolicValues)
+		action.removeWrittenVariables(concreteValues, symbolicValues) // As subactions interleave
 		
 		val subactions = newArrayList
 		subactions += action.actions
 		for (subaction : subactions) {
 			subaction.inline(concreteValues, symbolicValues)
-			action.deleteWrittenVariables(concreteValues, symbolicValues)
+			subaction.removeWrittenVariables(concreteValues, symbolicValues)
 		}
+		// Note: depending on what we want to 'verify' inlining should be turned off for parallel behavior
 	}
 	
 	protected def dispatch void inline(NonDeterministicAction action,
@@ -265,6 +265,7 @@ class VariableInliner {
 	protected def dispatch void inline(AssignmentAction action,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
+		action.rhs.removeSideAffectedVariables(concreteValues, symbolicValues)
 		action.rhs.inlineVariables(concreteValues)
 		val rhs = action.rhs
 		val lhs = action.lhs
@@ -280,7 +281,7 @@ class VariableInliner {
 					.map[it.index]
 					.forEach[it.inlineExpression(concreteValues, symbolicValues)]
 			// Used for 1) function calls and 2) array indexing: we do not consider function bodies (yet)
-			action.deleteWrittenVariables(concreteValues, symbolicValues)
+			action.removeWrittenVariables(concreteValues, symbolicValues)
 		}
 	}
 	
@@ -288,6 +289,7 @@ class VariableInliner {
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		val variable = action.variableDeclaration
+		variable.expression?.removeSideAffectedVariables(concreteValues, symbolicValues)
 		variable.expression?.inlineVariables(concreteValues)
 		val rhs = variable.expression
 		if (rhs !== null) {
@@ -323,7 +325,7 @@ class VariableInliner {
 				}
 			}
 			// Removing read variables; if a variable is read, then the oldAssignment (see previous if) must NOT be removed
-			symbolicValues.deleteReferencedVariableKeys(rhs)
+			rhs.removeReferencedVariableKeys(symbolicValues)
 			
 			symbolicValues += declaration -> new InlineEntry(rhs, action)
 			concreteValues -= declaration
@@ -483,8 +485,7 @@ class VariableInliner {
 			branchSymbolicValueList += branchSymbolicValues
 		}
 		
-		// "Commonizing" the values into a new map, that is,
-		// deleting the values that we are not aware of anymore
+		// "Commonizing" the values into a new map, i.e., removing the values we are not aware of anymore
 		val commonizedConcreteValues = branchConcreteValueList.commonizeMaps
 		val commonizedSymbolicValues = branchSymbolicValueList.commonizeMaps
 		
@@ -498,9 +499,10 @@ class VariableInliner {
 	protected def void inlineExpression(Expression expression,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
+		expression.removeSideAffectedVariables(concreteValues, symbolicValues)
 		expression.inlineVariables(concreteValues) // Only concrete values
 		// Removing read variables - if a variable is read, then the 'oldAssignment' (see AssignmentAction inline) must not be removed
-		symbolicValues.deleteReferencedVariableKeys(expression)
+		expression.removeReferencedVariableKeys(symbolicValues)
 	}
 	
 	protected def inlineVariables(Expression expression, Map<VariableDeclaration, InlineEntry> values) {
@@ -517,14 +519,14 @@ class VariableInliner {
 		expression.optimizeExpressions
 	}
 	
-	protected def deleteReferencedVariableKeys(Map<? super VariableDeclaration, InlineEntry> values,
-			Expression expression) {
+	protected def removeReferencedVariableKeys(Expression expression,
+			Map<? super VariableDeclaration, InlineEntry> values) {
 		val references = expression.getSelfAndAllContentsOfType(DirectReferenceExpression)
 		val variables = references.map[it.declaration]
 		values.keySet -= variables
 	}
 	
-	protected def deleteWrittenVariables(Action action,
+	protected def removeWrittenVariables(Action action,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		val writtenVariables = action.writtenVariables
@@ -532,7 +534,7 @@ class VariableInliner {
 		symbolicValues.keySet -= writtenVariables
 	}
 	
-	protected def deleteSideAffectedVariables(Expression expression,
+	protected def removeSideAffectedVariables(Expression expression,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		val functionCalls = expression.getSelfAndAllContentsOfType(FunctionAccessExpression)
@@ -540,7 +542,7 @@ class VariableInliner {
 		for (functionCall : functionCalls) {
 			val function = functionCall.functionDeclaration as ProcedureDeclaration
 			val body = function.body
-			body.deleteWrittenVariables(concreteValues, symbolicValues)
+			body.removeWrittenVariables(concreteValues, symbolicValues)
 		}
 	}
 	
