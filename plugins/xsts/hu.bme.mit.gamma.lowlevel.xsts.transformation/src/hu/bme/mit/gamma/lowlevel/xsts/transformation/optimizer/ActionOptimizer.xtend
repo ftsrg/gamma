@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer
 
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
@@ -634,13 +635,16 @@ class ActionOptimizer {
 			
 			if (xStsFirstAction instanceof AbstractAssignmentAction) {
 				val lhs = xStsFirstAction.lhs
-				if (lhs instanceof DirectReferenceExpression) { // Only simple lhs now
+				if (lhs instanceof DirectReferenceExpression || // 'a'
+						lhs instanceof ArrayAccessExpression) { // 'b[i]'
 					val variable = lhs.accessedDeclaration
 					var foundAssignmentToTheSameVariable = false
 					for (var j = i + 1; j < xStsActions.size && !foundAssignmentToTheSameVariable; j++) {
 						val xStsSecondAction = xStsActions.get(j)
 						if (xStsSecondAction instanceof AbstractAssignmentAction) {
-							if (xStsSecondAction.lhs.helperEquals(lhs)) {
+							val secondLhs = xStsSecondAction.lhs
+							if (secondLhs.helperEquals(lhs) || // 'a' or 'b[i]'
+									(secondLhs instanceof DirectReferenceExpression && secondLhs.declaration == lhs.declaration)) { // 'b'
 								foundAssignmentToTheSameVariable = true
 								var isVariableRead = false
 								for (var k = i + 1; k <= j && !isVariableRead; k++) {
