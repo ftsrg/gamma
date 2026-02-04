@@ -10,8 +10,11 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer
 
+import hu.bme.mit.gamma.expression.model.AndExpression
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
+import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
@@ -213,7 +216,53 @@ class VariableInliner {
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		val assumption = action.assumption
 		assumption.inlineExpression(concreteValues, symbolicValues)
-		// TODO 'assume (a = 10)' like actions could be handled like assignments (see next dispatch)
+		// 'assume (a = 10 && b = 1 + 2)' like actions are handled like assignments for concrete values
+		action.handleAssumptions(concreteValues)
+	}
+	
+	protected def handleAssumptions(AssumeAction action,
+			Map<VariableDeclaration, InlineEntry> concreteValues) {
+		val equalities = newArrayList
+		val references = newArrayList
+		
+		val assumption = action.assumption
+		if (assumption instanceof AndExpression) {
+			equalities += assumption.operands.filter(EqualityExpression)
+			references += assumption.operands.filter(DirectReferenceExpression)
+		}
+		else if (assumption instanceof EqualityExpression) {
+			equalities += assumption
+		}
+		else if (assumption instanceof DirectReferenceExpression) {
+			references += assumption
+		}
+		
+		equalities += references.map[it.clone
+				.createEqualityExpression(true.toBooleanLiteral)]
+		
+		for (equality : equalities) {
+			val lhs = equality.leftOperand
+			val rhs = equality.rightOperand
+			
+			var Declaration declaration = null
+			var Expression value = null
+			
+			if (lhs instanceof DirectReferenceExpression) {
+				declaration = lhs.declaration
+				value = rhs
+			}
+			else if (rhs instanceof DirectReferenceExpression) {
+				declaration = rhs.declaration
+				value = lhs
+			}
+			
+			if (declaration instanceof VariableDeclaration) {
+				if (value.evaluable) { // Only for "concrete" values
+					concreteValues += declaration -> new InlineEntry(rhs, action)
+				}
+				// "Symbolic" values may be more cumbersome to handle?
+			}
+		}
 	}
 	
 	protected def dispatch void inline(ReturnAction action,
@@ -237,7 +286,8 @@ class VariableInliner {
 		}
 		else if (lhs instanceof TupleReferenceExpression ||
 					lhs instanceof ArrayAccessExpression) {
-			lhs.getSelfAndAllContentsOfType(ArrayAccessExpression).map[it.index]
+			lhs.getSelfAndAllContentsOfType(ArrayAccessExpression)
+					.map[it.index]
 					.forEach[it.inlineExpression(concreteValues, symbolicValues)]
 			// Used for i) function calls and ii) array indexing: we do not consider function bodies (yet)
 			val writtenVariables = action.writtenVariables
@@ -263,7 +313,7 @@ class VariableInliner {
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		if (rhs.evaluable) { // So it is evaluable
 			// If the oldAssignment is NOT removed, then concrete maps can fall through
-			// validly through different choices. So oldAssignment must NOT be removed.
+			// validly through different choices; so oldAssignment must NOT be removed
 			
 			// Adding this new value
 			concreteValues += declaration -> new InlineEntry(rhs, action)
@@ -280,12 +330,11 @@ class VariableInliner {
 				
 				val oldAssignment = oldSymbolicEntry.getLastValueGivingAction
 				if (oldAssignment instanceof AssignmentAction) {
-					// Local variable declarations actions cannot be deleted 
+					// Local variable declaration actions cannot be deleted
 					oldAssignment.replaceWithEmptyAction
 				}
 			}
-			// Removing read variables - if a variable is read, then the
-			// oldAssignment (see previous if) must not be removed
+			// Removing read variables; if a variable is read, then the oldAssignment (see previous if) must NOT be removed
 			symbolicValues.deleteReferencedVariableKeys(rhs)
 			
 			symbolicValues += declaration -> new InlineEntry(rhs, action)
