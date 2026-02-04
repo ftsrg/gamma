@@ -649,7 +649,7 @@ class StatechartToLowlevelTransformer {
 						containingStatechart.transitions += internalTransition
 					} else {
 						val internalState = statechartUtil.createState(region, 
-							sourceName + "_" + i++ + "_" + containingCoordinationStatechart.coordinationTransitions.indexOf(coordinationTransition)
+							sourceName + "_" + i + "_" + containingCoordinationStatechart.coordinationTransitions.indexOf(coordinationTransition)
 						)
 						if (gammaTarget instanceof State) {
 							internalState.invariants += gammaTarget.invariants.clone
