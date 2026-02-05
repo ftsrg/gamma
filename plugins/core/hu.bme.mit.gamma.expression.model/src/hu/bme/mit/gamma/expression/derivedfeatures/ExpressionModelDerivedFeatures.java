@@ -390,7 +390,7 @@ public class ExpressionModelDerivedFeatures {
 		List<FunctionAccessExpression> functionCalls = ecoreUtil.getAllContentsOfType(root, FunctionAccessExpression.class);
 		for (FunctionAccessExpression functionCall : functionCalls) {
 			Expression operand = functionCall.getOperand();
-			FunctionDeclaration function = (FunctionDeclaration) expressionUtil.getDeclaration(operand);
+			FunctionDeclaration function = expressionUtil.getFunctionDeclaration(operand);
 			if (isRecursive(function)) {
 				return true;
 			}
@@ -418,8 +418,23 @@ public class ExpressionModelDerivedFeatures {
 	public static List<FunctionDeclaration> getCalledFunctions(FunctionDeclaration function) {
 		List<FunctionAccessExpression> functionCalls = ecoreUtil.getAllContentsOfType(function, FunctionAccessExpression.class);
 		List<FunctionDeclaration> calledFunctions = functionCalls.stream()
-				.map(it -> (FunctionDeclaration) expressionUtil.getDeclaration(it.getOperand()))
-				.collect(Collectors.toList());
+				.map(it -> expressionUtil.getFunctionDeclaration(it.getOperand()))
+				.toList();
+		return calledFunctions;
+	}
+	
+	public static Set<FunctionDeclaration> getAllCalledFunctions(FunctionDeclaration function) {
+		Set<FunctionDeclaration> calledFunctions = new LinkedHashSet<FunctionDeclaration>();
+		
+		int size = -1;
+		while (calledFunctions.size() != size) {
+			size = calledFunctions.size();
+			for (FunctionDeclaration functionDeclaration : javaUtil.union(function, calledFunctions)) {
+				calledFunctions.addAll(
+						getCalledFunctions(functionDeclaration));
+			}
+		}
+		
 		return calledFunctions;
 	}
 	

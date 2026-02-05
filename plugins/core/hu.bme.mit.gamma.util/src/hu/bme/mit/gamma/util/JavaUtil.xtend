@@ -150,6 +150,10 @@ class JavaUtil {
 		return !lhs.containsAny(rhs)
 	}
 	
+	def <T> Set<T> union(T lhs, Iterable<? extends T> rhs) {
+		return #[lhs].union(rhs)
+	}
+	
 	def <T> Set<T> union(Iterable<T> lhs, Iterable<? extends T> rhs) {
 		val set = newLinkedHashSet
 		
