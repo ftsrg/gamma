@@ -330,16 +330,25 @@ class ExpressionTransformer {
 				.createNotExpression // Dummy container due to 'replace'
 		
 		// Inline lambdas
-		_expression.getAllContentsOfType(FunctionAccessExpression)
-				.forEach[it.createInlinedLambaExpression.replace(it)]
+		while (_expression.containsTypeTransitively(FunctionAccessExpression)) {
+			val functionAccesses = _expression.getAllContentsOfType(FunctionAccessExpression)
+			checkState(functionAccesses.map[it.functionDeclaration].forall[it.pure])
+			functionAccesses.forEach[it.createInlinedLambaExpression.replace(it)]
+		}
 		// Inline array literals
-		_expression.getAllContentsOfType(ArrayAccessExpression)
-				.filter[it.arrayAccessEvaluable]
-				.forEach[it.evaluateArrayAccess.replace(it)]
+		var arrayLiterals = _expression.getAllContentsOfType(ArrayAccessExpression)
+		while (arrayLiterals.exists[it.arrayAccessEvaluable]) {
+			arrayLiterals.filter[it.arrayAccessEvaluable]
+					.forEach[it.evaluateArrayAccess.replace(it)]
+			arrayLiterals = _expression.getAllContentsOfType(ArrayAccessExpression)
+		}
 		// Inline record literals
-		_expression.getAllContentsOfType(RecordAccessExpression)
-				.filter[it.recordAccessEvaluable]
-				.forEach[it.evaluateRecordAccess.replace(it)]
+		var recordAccesses = _expression.getAllContentsOfType(RecordAccessExpression)
+		while (recordAccesses.exists[it.recordAccessEvaluable]) {
+			recordAccesses.filter[it.recordAccessEvaluable]
+					.forEach[it.evaluateRecordAccess.replace(it)]
+			recordAccesses = _expression.getAllContentsOfType(RecordAccessExpression)
+		}
 		
 		return _expression.operand // Dummy container
 	}
@@ -382,7 +391,7 @@ class ExpressionTransformer {
 			}
 			else {
 				// Basic method call
-				val gammaFunction = expression.declaration as FunctionDeclaration
+				val gammaFunction = expression.functionDeclaration
 				val arguments = expression.arguments
 				// By now, the procedure must be transformed by ExpressionPreconditionTransformer
 				if (!trace.isMapped(gammaFunction)) { // On-the-fly transformation added here

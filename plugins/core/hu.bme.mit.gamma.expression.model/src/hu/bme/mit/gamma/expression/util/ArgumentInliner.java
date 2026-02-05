@@ -76,8 +76,8 @@ public class ArgumentInliner {
 	}
 	
 	public Expression createInlinedLambaExpression(FunctionAccessExpression expression) {
-		FunctionDeclaration function = (FunctionDeclaration)
-				ExpressionUtil.INSTANCE.getDeclaration(expression);
+		FunctionDeclaration function = ExpressionUtil.INSTANCE
+					.getFunctionDeclaration(expression);
 		
 		List<Expression> arguments = expression.getArguments();
 		List<ParameterDeclaration> parameters = function.getParameterDeclarations();
