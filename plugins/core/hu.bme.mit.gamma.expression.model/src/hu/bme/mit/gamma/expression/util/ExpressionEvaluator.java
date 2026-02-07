@@ -60,6 +60,7 @@ import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.LessEqualExpression;
 import hu.bme.mit.gamma.expression.model.LessExpression;
 import hu.bme.mit.gamma.expression.model.LogicExpression;
+import hu.bme.mit.gamma.expression.model.ModExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.MultiplyExpression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
@@ -243,6 +244,16 @@ public class ExpressionEvaluator {
 			}
 			
 			return evaluateInteger(leftOperand) - evaluateInteger(rightOperand);
+		}
+		if (expression instanceof ModExpression modExpression) {
+			Expression leftOperand = modExpression.getLeftOperand();
+			Expression rightOperand = modExpression.getRightOperand();
+			
+			if (ecoreUtil.helperEquals(leftOperand, rightOperand)) {
+				return 0;
+			}
+			
+			return evaluateInteger(leftOperand) % evaluateInteger(rightOperand);
 		}
 		if (expression instanceof FunctionAccessExpression functionAccessExpression) {
 			Expression inlinedLambaExpression = argumentInliner.createInlinedLambaExpression(functionAccessExpression);

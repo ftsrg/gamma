@@ -26,6 +26,7 @@ import hu.bme.mit.gamma.action.model.Branch;
 import hu.bme.mit.gamma.action.model.EmptyStatement;
 import hu.bme.mit.gamma.action.model.ExpressionStatement;
 import hu.bme.mit.gamma.action.model.IfStatement;
+import hu.bme.mit.gamma.action.model.ReturnStatement;
 import hu.bme.mit.gamma.action.model.SwitchStatement;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
@@ -270,6 +271,12 @@ public class ActionUtil extends ExpressionUtil {
 	
 	public ExpressionStatement createExpressionStatement(Expression expression) {
 		ExpressionStatement statement = actionFactory.createExpressionStatement();
+		statement.setExpression(expression);
+		return statement;
+	}
+	
+	public ReturnStatement createReturnStatement(Expression expression) {
+		ReturnStatement statement = actionFactory.createReturnStatement();
 		statement.setExpression(expression);
 		return statement;
 	}
