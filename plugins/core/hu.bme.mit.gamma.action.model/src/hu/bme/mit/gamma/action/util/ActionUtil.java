@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -25,6 +25,7 @@ import hu.bme.mit.gamma.action.model.Block;
 import hu.bme.mit.gamma.action.model.Branch;
 import hu.bme.mit.gamma.action.model.EmptyStatement;
 import hu.bme.mit.gamma.action.model.ExpressionStatement;
+import hu.bme.mit.gamma.action.model.ForStatement;
 import hu.bme.mit.gamma.action.model.IfStatement;
 import hu.bme.mit.gamma.action.model.ReturnStatement;
 import hu.bme.mit.gamma.action.model.SwitchStatement;
@@ -37,7 +38,9 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
+import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.OpaqueExpression;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
@@ -176,6 +179,12 @@ public class ActionUtil extends ExpressionUtil {
 	
 	//
 	
+	public Block createFilteredBlock(Collection<? extends Action> actions) {
+		List<Action> filteredActions = new ArrayList<Action>(actions);
+		filteredActions.removeIf(it -> ActionModelDerivedFeatures.isEffectlessAction(it));
+		return createBlock(filteredActions);
+	}
+	
 	public Block createBlock(Collection<? extends Action> actions) {
 		Block block = actionFactory.createBlock();
 		
@@ -192,6 +201,10 @@ public class ActionUtil extends ExpressionUtil {
 			}
 		}
 		return createBlock(actions);
+	}
+	
+	public IfStatement createIfStatement(Expression condition, Action then) {
+		return createIfStatement(condition, then, null);
 	}
 	
 	public IfStatement createIfStatement(Expression condition, Action then, Action _else) {
@@ -259,6 +272,23 @@ public class ActionUtil extends ExpressionUtil {
 				prepend(clonedAction, branchAction); // Does not matter if prepend or extend
 			}
 		}
+	}
+	
+	public ForStatement createForStatement(Expression start, Expression end) {
+		return createForStatement("i", start, end);
+	}
+	
+	public ForStatement createForStatement(String parameterName, Expression start, Expression end) {
+		ForStatement forStatement = actionFactory.createForStatement();
+		
+		ParameterDeclaration i = createParameterDeclaration(
+				factory.createIntegerTypeDefinition(), parameterName);
+		forStatement.setParameter(i);
+		
+		IntegerRangeLiteralExpression range = createIntegerRangeLiteralExpression(start, end);
+		forStatement.setRange(range);
+		
+		return forStatement;
 	}
 	
 	//

@@ -1342,6 +1342,11 @@ public class ExpressionUtil {
 	}
 	
 	public IntegerRangeLiteralExpression createIntegerRangeLiteralExpression(
+			Expression start, Expression end) {
+		return createIntegerRangeLiteralExpression(start, true, end, false);
+	}
+	
+	public IntegerRangeLiteralExpression createIntegerRangeLiteralExpression(
 			Expression start, boolean leftInclusive, Expression end, boolean rightIclusive) {
 		IntegerRangeLiteralExpression range = factory.createIntegerRangeLiteralExpression();
 		range.setLeftOperand(start);

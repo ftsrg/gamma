@@ -57,7 +57,7 @@ class ValueDeclarationTransformer {
 	def transformForParameter(ParameterDeclaration gammaParameter) {
 		// This must be an integer parameter
 		val typeDefinition = gammaParameter.typeDefinition
-		checkState(typeDefinition instanceof IntegerTypeDefinition)
+		checkState(typeDefinition instanceof IntegerTypeDefinition, typeDefinition)
 		val lowlevelParameter = gammaParameter.clone
 		trace.put(gammaParameter, lowlevelParameter)
 		return lowlevelParameter
