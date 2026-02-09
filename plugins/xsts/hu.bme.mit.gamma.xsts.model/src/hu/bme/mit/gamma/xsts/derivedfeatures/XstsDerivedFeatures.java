@@ -1404,9 +1404,8 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		for (VariableDeclarationAction variableDeclarationAction : variableDeclarationActions) {
 			VariableDeclaration localVariable = variableDeclarationAction.getVariableDeclaration();
 			Expression initialValue = xStsActionUtil.getInitialValue(localVariable);
-			if (isEvaluable(initialValue) && !isArray(localVariable)) { // Currently, arrays are unsupported
-				double value = evaluator.evaluateDouble(initialValue);
-				LiteralExpression literalExpression = literalCreator.of(localVariable, value);
+			if (isEvaluable(initialValue)) {
+				LiteralExpression literalExpression = (LiteralExpression) evaluator.evaluateExpression(initialValue);
 				List<LiteralExpression> literals =
 						javaUtil.getOrCreateList(literalVariableAssignments, localVariable);
 				literals.add(literalExpression);
