@@ -468,20 +468,22 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return false;
 	}
 	
-	public static boolean isLhs(Expression expression) {
+	public static boolean isWrittenLhs(Expression expression) {
 		AbstractAssignmentAction assignmentAction = ecoreUtil.getContainerOfType(expression, AbstractAssignmentAction.class);
 		if (assignmentAction != null) {
 			ReferenceExpression lhs = assignmentAction.getLhs();
-			return ecoreUtil.selfOrContainsTransitively(lhs, expression);
+			List<Declaration> accessedDeclarations = xStsActionUtil.getAccessedDeclarations(lhs);
+			List<Declaration> accessedDeclaration = xStsActionUtil.getAccessedDeclarations(expression);
+			return accessedDeclarations.containsAll(accessedDeclaration);
 		}
 		return false;
 	}
-
+	
 	public static boolean isDefinitelyTrueAssumeAction(AssumeAction action) {
 		Expression expression = action.getAssumption();
 		return evaluator.isDefinitelyTrueExpression(expression);
 	}
-
+	
 	public static boolean isDefinitelyFalseAssumeAction(AssumeAction action) {
 		Expression expression = action.getAssumption();
 		return evaluator.isDefinitelyFalseExpression(expression);
@@ -1404,8 +1406,7 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 			VariableDeclaration localVariable = variableDeclarationAction.getVariableDeclaration();
 			Expression initialValue = xStsActionUtil.getInitialValue(localVariable);
 			if (isEvaluable(initialValue)) {
-				double value = evaluator.evaluateDouble(initialValue);
-				LiteralExpression literalExpression = literalCreator.of(localVariable, value);
+				LiteralExpression literalExpression = (LiteralExpression) evaluator.evaluateExpression(initialValue);
 				List<LiteralExpression> literals =
 						javaUtil.getOrCreateList(literalVariableAssignments, localVariable);
 				literals.add(literalExpression);
@@ -1421,7 +1422,7 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 				Set<VariableDeclaration>>(
 			literalVariableAssignments, variableVariableAssignments, notLiteralVariables);
 	}
-	
+
 	// Coordination
 	
 	public static List<VariableDeclaration> getCoordinationVariables(XSTS xSts) {
@@ -1430,3 +1431,4 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 	
 }
+

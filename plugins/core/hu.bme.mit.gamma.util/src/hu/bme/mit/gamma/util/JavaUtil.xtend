@@ -151,6 +151,10 @@ class JavaUtil {
 		return !lhs.containsAny(rhs)
 	}
 	
+	def <T> Set<T> union(T lhs, Iterable<? extends T> rhs) {
+		return #[lhs].union(rhs)
+	}
+	
 	def <T> Set<T> union(Iterable<T> lhs, Iterable<? extends T> rhs) {
 		val set = newLinkedHashSet
 		
@@ -171,7 +175,7 @@ class JavaUtil {
 	
 	def <T> T getOnlyElement(Iterable<T> collection) {
 		if (collection.size !== 1) {
-			throw new IllegalArgumentException("Not one elment: " + collection)
+			throw new IllegalArgumentException("Not one element: " + collection)
 		}
 		return collection.lastElement
 	}

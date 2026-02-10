@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
@@ -60,6 +61,7 @@ import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.LessEqualExpression;
 import hu.bme.mit.gamma.expression.model.LessExpression;
 import hu.bme.mit.gamma.expression.model.LogicExpression;
+import hu.bme.mit.gamma.expression.model.ModExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.MultiplyExpression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
@@ -108,9 +110,35 @@ public class ExpressionEvaluator {
 			double value = evaluateDecimal(expression);
 			return util.toDecimalLiteral(value);
 		}
+		if (type instanceof ArrayTypeDefinition) {
+			return evaluateArrayExpression(expression);
+		}
 		
 		// None of the above
 		return expression;
+	}
+	
+	public Expression evaluateArrayExpression(Expression expression) {
+		if (expression instanceof ArrayLiteralExpression arrayLiteral) {
+			ArrayLiteralExpression evaluatedArrayLiteral = factory.createArrayLiteralExpression();
+			
+			for (Expression operand : arrayLiteral.getOperands()) {
+				Expression evaluatedOperand = evaluateExpression(operand);
+				evaluatedArrayLiteral.getOperands()
+						.add(evaluatedOperand);
+			}
+			
+			return evaluatedArrayLiteral;
+		}
+		if (expression instanceof ArrayAccessExpression arrayAccess) {
+			if (ExpressionModelDerivedFeatures.isArrayAccessEvaluable(arrayAccess)) {
+				Expression evaluatedArrayAccess = evaluateArrayAccess(arrayAccess);
+				return evaluateArrayExpression(evaluatedArrayAccess);
+			}
+			throw new IllegalArgumentException("Unevaluable array access: " + arrayAccess);
+		}
+		
+		return evaluateExpression(expression);
 	}
 	
 	//
@@ -136,7 +164,8 @@ public class ExpressionEvaluator {
 		if (expression instanceof DirectReferenceExpression referenceExpression) {
 			Declaration declaration = referenceExpression.getDeclaration();
 			if (declaration instanceof ConstantDeclaration constantDeclaration) {
-				return evaluateInteger(constantDeclaration.getExpression());
+				Expression constant = constantDeclaration.getExpression();
+				return evaluateInteger(constant);
 			}
 			if (declaration instanceof ParameterDeclaration parameterDeclaration) {
 				Expression argument = evaluateParameter(parameterDeclaration);
@@ -244,6 +273,16 @@ public class ExpressionEvaluator {
 			
 			return evaluateInteger(leftOperand) - evaluateInteger(rightOperand);
 		}
+		if (expression instanceof ModExpression modExpression) {
+			Expression leftOperand = modExpression.getLeftOperand();
+			Expression rightOperand = modExpression.getRightOperand();
+			
+			if (ecoreUtil.helperEquals(leftOperand, rightOperand)) {
+				return 0;
+			}
+			
+			return evaluateInteger(leftOperand) % evaluateInteger(rightOperand);
+		}
 		if (expression instanceof FunctionAccessExpression functionAccessExpression) {
 			Expression inlinedLambaExpression = argumentInliner.createInlinedLambaExpression(functionAccessExpression);
 			return evaluateInteger(inlinedLambaExpression);
@@ -301,7 +340,8 @@ public class ExpressionEvaluator {
 		if (expression instanceof DirectReferenceExpression referenceExpression) {
 			Declaration declaration = referenceExpression.getDeclaration();
 			if (declaration instanceof ConstantDeclaration constantDeclaration) {
-				return evaluateDecimal(constantDeclaration.getExpression());
+				Expression constant = constantDeclaration.getExpression();
+				return evaluateDecimal(constant);
 			}
 			if (declaration instanceof ParameterDeclaration parameterDeclaration) {
 				final Expression argument = evaluateParameter(parameterDeclaration);
@@ -583,7 +623,8 @@ public class ExpressionEvaluator {
 		if (expression instanceof DirectReferenceExpression referenceExpression) {
 			Declaration declaration = referenceExpression.getDeclaration();
 			if (declaration instanceof ConstantDeclaration constantDeclaration) {
-				return evaluateBoolean(constantDeclaration.getExpression());
+				Expression constant = constantDeclaration.getExpression();
+				return evaluateBoolean(constant);
 			}
 			if (declaration instanceof ParameterDeclaration parameterDeclaration) {
 				Expression argument = evaluateParameter(parameterDeclaration);

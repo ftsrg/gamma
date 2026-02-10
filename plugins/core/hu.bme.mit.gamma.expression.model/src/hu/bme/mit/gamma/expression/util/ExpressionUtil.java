@@ -198,6 +198,11 @@ public class ExpressionUtil {
 				getAccessedDeclaration(expression));
 	}
 	
+	public FunctionDeclaration getFunctionDeclaration(Expression expression) {
+		Declaration declaration = getDeclaration(expression);
+		return (FunctionDeclaration) declaration;
+	}
+	
 	public Collection<TypeDeclaration> getTypeDeclarations(EObject context) {
 		ExpressionPackage _package = ecoreUtil.getSelfOrContainerOfType(context, ExpressionPackage.class);
 		if (_package == null) {
@@ -1347,6 +1352,11 @@ public class ExpressionUtil {
 	}
 	
 	public IntegerRangeLiteralExpression createIntegerRangeLiteralExpression(
+			Expression start, Expression end) {
+		return createIntegerRangeLiteralExpression(start, true, end, false);
+	}
+	
+	public IntegerRangeLiteralExpression createIntegerRangeLiteralExpression(
 			Expression start, boolean leftInclusive, Expression end, boolean rightIclusive) {
 		IntegerRangeLiteralExpression range = factory.createIntegerRangeLiteralExpression();
 		range.setLeftOperand(start);
@@ -1547,6 +1557,16 @@ public class ExpressionUtil {
 		}
 		
 		return arrayLiteralExpression;
+	}
+	
+	public ArrayLiteralExpression createArrayLiteralExpression(Collection<? extends Expression> values) {
+		ArrayLiteralExpression array = factory.createArrayLiteralExpression();
+		
+		for (Expression value : values) {
+			array.getOperands().add(value);
+		}
+		
+		return array;
 	}
 	
 	public DirectReferenceExpression createReferenceExpression(Declaration declaration) {
