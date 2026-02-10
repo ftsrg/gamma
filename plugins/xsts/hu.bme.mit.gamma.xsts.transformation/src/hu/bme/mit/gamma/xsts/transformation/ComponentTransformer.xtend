@@ -1560,7 +1560,6 @@ class ComponentTransformer {
 		val newInEventAction = createSequentialAction => [
 			// Add delay -> new DelayAction -> transformed in GammaToXstsTransformer.setClockVariables
 			val delayAction = xStsModelFactory.createDelayAction
-			delayAction.lhs = xSts.clockVariables.get(0).createReferenceExpression
 			it.actions += delayAction
 			it.actions += newCoordinationInEventAction
 			it.actions += delayAction.clone
