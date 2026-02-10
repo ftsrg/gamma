@@ -1960,7 +1960,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static List<Port> getAllBoundSimplePorts(Port port) {
 		List<Port> simplePorts = new ArrayList<Port>();
 		Component component = getContainingComponent(port);
-		if (component instanceof CompositeComponent composite) {
+		if (component instanceof StatechartDefinition) {
+			simplePorts.add(port);
+		}
+		else if (component instanceof CompositeComponent composite) {
 			for (PortBinding portBinding : composite.getPortBindings()) {
 				if (portBinding.getCompositeSystemPort() == port) {
 					// Makes sense only if the containment hierarchy is a tree structure
@@ -1970,9 +1973,6 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 							instancePortReference.getPort()));
 				}
 			}
-		}
-		else if (component instanceof StatechartDefinition) {
-			simplePorts.add(port);
 		}
 		// Note that one port can be in the list multiple times iff the component is NOT unfolded
 		return simplePorts;
@@ -2473,10 +2473,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<Transition> getOutgoingTransitions(StateNode node) {
 		StatechartDefinition statechart = getContainingStatechart(node);
-		if (statechart instanceof CoordinationStatechartDefinition) {
+		if (statechart instanceof CoordinationStatechartDefinition coordinationStatechart) {
 			// TODO CoordinationStatechart Validation
-			return ((CoordinationStatechartDefinition) statechart).getCoordinationTransitions().stream().filter(it -> it.getSourceState() == node)
-					.collect(Collectors.toList());
+			return coordinationStatechart.getCoordinationTransitions().stream()
+					.filter(it -> it.getSourceState() == node).collect(Collectors.toList());
 		}
 		return statechart.getTransitions().stream().filter(it -> it.getSourceState() == node)
 				.collect(Collectors.toList());
@@ -2525,10 +2525,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<Transition> getIncomingTransitions(StateNode node) {
 		StatechartDefinition statechart = getContainingStatechart(node);
-		if (statechart instanceof CoordinationStatechartDefinition) {
+		if (statechart instanceof CoordinationStatechartDefinition coordinationStatechart) {
 			// TODO CoordinationStatechart Validation
-			return ((CoordinationStatechartDefinition) statechart).getCoordinationTransitions().stream().filter(it -> it.getTargetState() == node)
-					.collect(Collectors.toList());
+			return coordinationStatechart.getCoordinationTransitions().stream()
+					.filter(it -> it.getTargetState() == node).collect(Collectors.toList());
 		}
 		
 		return statechart.getTransitions().stream().filter(it -> it.getTargetState() == node)
@@ -2539,9 +2539,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		List<StateNode> allStateNodes = ecoreUtil
 				.getSelfAndAllContentsOfType(node, StateNode.class);
 		StatechartDefinition statechart = getContainingStatechart(node);
-		if (statechart instanceof CoordinationStatechartDefinition) {
+		if (statechart instanceof CoordinationStatechartDefinition coordinationStatechart) {
 			// TODO CoordinationStatechart Validation
-			return ((CoordinationStatechartDefinition) statechart).getCoordinationTransitions().stream()
+			return coordinationStatechart.getCoordinationTransitions().stream()
 					.filter(it -> allStateNodes.contains(it.getTargetState()))
 					.collect(Collectors.toList());
 		}
@@ -4046,6 +4046,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static List<VariableDeclaration> getCoordinationVariables(StatechartDefinition statechart) {
 		return filterVariablesByAnnotation(statechart.getVariableDeclarations(),
 				CoordinationVariableDeclarationAnnotation.class);
+	}
+	
+	public static boolean isCoordinationStatechart(StatechartDefinition statechart) {
+		return statechart instanceof CoordinationStatechartDefinition;
 	}
 	
 }

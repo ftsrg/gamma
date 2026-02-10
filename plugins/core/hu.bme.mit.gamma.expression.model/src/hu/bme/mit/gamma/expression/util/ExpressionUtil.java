@@ -689,7 +689,8 @@ public class ExpressionUtil {
 	
 	public EnumerationLiteralDefinition getEnumerationLiteralDefinitionByName(EnumerationTypeDefinition typeDefinition, String name) {
 		for (EnumerationLiteralDefinition literal : typeDefinition.getLiterals()) {
-			if (literal.getName().equals(name)) {
+			String enumLiteralName = literal.getName();
+			if (enumLiteralName.equals(name)) {
 				return literal;
 			}
 		}
@@ -1710,7 +1711,8 @@ public class ExpressionUtil {
 	
 	public EnumerationLiteralExpression createEnumerationLiteralExpression(
 			EnumerationTypeDefinition typeDefinition, String name) {
-		return createEnumerationLiteralExpression(getEnumerationLiteralDefinitionByName(typeDefinition, name));
+		EnumerationLiteralDefinition enumLiteralDefinition = getEnumerationLiteralDefinitionByName(typeDefinition, name);
+		return createEnumerationLiteralExpression(enumLiteralDefinition);
 	}
 		
 	public SubtractExpression createSubtractExpression(Expression lhs, Expression rhs) {

@@ -826,7 +826,8 @@ AbstractCoordinationReferenceExpression returns AbstractCoordinationReferenceExp
 ;
 
 SequentialCoordinationReferenceExpression returns SequentialCoordinationReferenceExpression:
-	'seq' '{' instances+=ComponentInstanceReferenceExpression((',') instances+=ComponentInstanceReferenceExpression)* '}' | instances+=ComponentInstanceReferenceExpression
+	'seq' '{' instances+=ComponentInstanceReferenceExpression ((',') instances+=ComponentInstanceReferenceExpression)* '}'
+	| instances+=ComponentInstanceReferenceExpression
 ;
 
 UnorderedCoordinationReferenceExpression returns UnorderedCoordinationReferenceExpression:

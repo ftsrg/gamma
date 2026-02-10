@@ -79,7 +79,7 @@ class StatechartToLowlevelTransformer {
 	protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
 	// Trace object for storing the mappings
 	protected final Trace trace
-	//Coordination Automata
+	// Coordination automata
 	protected VariableDeclaration scheduledCtrlVar
 	
 	new() {
@@ -495,11 +495,10 @@ class StatechartToLowlevelTransformer {
 			it.guardEvaluation = statechart.guardEvaluation.transform
 			it.orthogonalRegionSchedulingOrder = statechart.orthogonalRegionSchedulingOrder.transform
 		]
-				if (!statechart.hasOrthogonalRegions) {
+		if (!statechart.hasOrthogonalRegions) {
 			// If there are no orthogonal regions, then the guard evaluation policy is irrelevant;
 			// on the fly is the faster option, though
-			lowlevelStatechart.guardEvaluation =
-				hu.bme.mit.gamma.statechart.lowlevel.model.GuardEvaluation.ON_THE_FLY
+			lowlevelStatechart.guardEvaluation = hu.bme.mit.gamma.statechart.lowlevel.model.GuardEvaluation.ON_THE_FLY
 		}
 		if (statechart.hasAnnotation(RunUponExternalEventAnnotation)) {
 			lowlevelStatechart.addRunUponExternalEventAnnotation
@@ -508,15 +507,14 @@ class StatechartToLowlevelTransformer {
 			lowlevelStatechart.addRunUponExternalEventOrInternalTimeoutAnnotation
 		}
 		trace.put(statechart, lowlevelStatechart) // Saving in trace
-		
 		// create scheduled control variable for each subcomponent
 		val scheduledComponentEnum = createEnumerationTypeDefinition
-		
+
 		// create default value, when no component is scheduled
 		val noComponentLiteral = createEnumerationLiteralDefinition
 		noComponentLiteral.name = "__nothing__"
 		scheduledComponentEnum.literals += noComponentLiteral
-		
+
 		// TODO is differentiation between SynchronousCoordinationStatechartDefinition and AsynchronousCoordinationStatechartDefinition necessary?
 		if (statechart.synchronous) {
 			for (subcomponent : (statechart as SynchronousCoordinationStatechartDefinition).components) {
@@ -531,32 +529,37 @@ class StatechartToLowlevelTransformer {
 				scheduledComponentEnum.literals += componentLiteral
 			}
 		} else {
-			throw new IllegalArgumentException("CoordinationStateChart: " + statechart.name + " is neither synchronous nor asynchronous!")
+			throw new IllegalArgumentException("CoordinationStateChart: " + statechart.name +
+				" is neither synchronous nor asynchronous!")
 		}
 		val schedulableComponentsTypeDeclaration = scheduledComponentEnum.createTypeDeclaration("schedulableComponents")
 		statechart.typeDeclarations += schedulableComponentsTypeDeclaration
-		
+
 		val schedulableComponentsTypeReference = createTypeReference(schedulableComponentsTypeDeclaration)
-		
+
 		// TODO add ctrl var annotation
 		scheduledCtrlVar = createVariableDeclaration(schedulableComponentsTypeReference, "scheduledComponent")
 		statechartUtil.addCoordinationVariableAnnotation(scheduledCtrlVar)
 		statechart.variableDeclarations += scheduledCtrlVar
-		
+
 		// Transforming UnorderedCoordinationTransitions to SequentialCoordinationTransitions,
 		// Generating all possible permutations
-		for (transition : statechart.coordinationTransitions.clone.filter[it.coordinatedComponent instanceof UnorderedCoordinationReferenceExpression ]) {
+		for (transition : statechart.coordinationTransitions.clone.filter [
+			it.coordinatedComponent instanceof UnorderedCoordinationReferenceExpression
+		]) {
 			transition.transformCoordinationTransition(scheduledComponentEnum)
 		}
 		// Transforming CoordinationTransitions to regular transitions, possibly creating VariableDeclarations and States
-		for (transition : statechart.coordinationTransitions.filter[!(it.coordinatedComponent instanceof UnorderedCoordinationReferenceExpression)]) {
+		for (transition : statechart.coordinationTransitions.filter [
+			!(it.coordinatedComponent instanceof UnorderedCoordinationReferenceExpression)
+		]) {
 			transition.transformCoordinationTransition(scheduledComponentEnum)
 		}
-		
+
 		// Constants
 		val gammaPackage = statechart.containingPackage
 		for (constantDeclaration : gammaPackage.selfAndImports // During code generation, imported constants can be referenced
-				.map[it.constantDeclarations].flatten) {
+		.map[it.constantDeclarations].flatten) {
 			lowlevelStatechart.variableDeclarations += constantDeclaration.transform
 		}
 		// No parameter declarations mapping
@@ -573,8 +576,8 @@ class StatechartToLowlevelTransformer {
 			val lowlevelTimeoutDeclaration = timeoutDeclaration.transform
 			lowlevelStatechart.variableDeclarations += lowlevelTimeoutDeclaration
 			lowlevelStatechart.timeoutDeclarations += lowlevelTimeoutDeclaration
-		}	
-		
+		}
+
 		for (port : statechart.ports) {
 			// Both in and out events are transformed to a boolean VarDecl with additional parameters
 			for (eventDeclaration : port.allEventDeclarations) {
@@ -589,14 +592,13 @@ class StatechartToLowlevelTransformer {
 		for (region : statechart.regions) {
 			lowlevelStatechart.regions += region.transform
 		}
-		
+
 		for (transition : statechart.transitions) {
 			// Prioritizing transitions is done here
 			val lowlevelTransition = transition.transform
 			lowlevelStatechart.transitions += lowlevelTransition
 		}
-		
-		
+
 		// Mapping port and interface invariants (now, not before, because we want to refer to e.g., state nodes and variables)
 		// First the interface invariants must be mapped to the ports realizing the interface
 		for (port : statechart.ports) {
@@ -609,13 +611,13 @@ class StatechartToLowlevelTransformer {
 				lowlevelStatechart.environmentalInvariants += invariants.map[it.transformSimpleExpression]
 			}
 		}
-		
+
 		// Mapping statechart invariants
 		val statechartInvariants = statechart.invariants
 		if (!statechartInvariants.empty) {
 			lowlevelStatechart.invariants += statechartInvariants.map[it.transformSimpleExpression]
 		}
-		
+
 		return lowlevelStatechart
 	}
 	
@@ -682,7 +684,7 @@ class StatechartToLowlevelTransformer {
 			}
 			
 		} else if (coordinationTransition.coordinatedComponent instanceof UnorderedCoordinationReferenceExpression && false) {
-		
+			// TODO need some measurements which case is better
 			val unordName = "unord_" + gammaSource.name + gammaTarget.name
 			val unordBoolVariables = newHashMap
 		

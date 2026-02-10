@@ -1,16 +1,15 @@
 package hu.bme.mit.gamma.plantuml.transformation
 
+import hu.bme.mit.gamma.statechart.statechart.AbstractCoordinationReferenceExpression
 import hu.bme.mit.gamma.statechart.statechart.CoordinationStatechartDefinition
-import hu.bme.mit.gamma.statechart.statechart.PseudoState
-import hu.bme.mit.gamma.statechart.statechart.State
-import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.statechart.CoordinationTransition
 import hu.bme.mit.gamma.statechart.statechart.EntryState
+import hu.bme.mit.gamma.statechart.statechart.PseudoState
+import hu.bme.mit.gamma.statechart.statechart.SequentialCoordinationReferenceExpression
+import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.UnorderedCoordinationReferenceExpression
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.statechart.statechart.AbstractCoordinationReferenceExpression
-import hu.bme.mit.gamma.statechart.statechart.SequentialCoordinationReferenceExpression
-import hu.bme.mit.gamma.statechart.statechart.UnorderedCoordinationReferenceExpression
 
 class CoordinationToPlantUmlTransformer extends StatechartToPlantUmlTransformer {
 	protected final CoordinationStatechartDefinition statechart
@@ -28,14 +27,14 @@ class CoordinationToPlantUmlTransformer extends StatechartToPlantUmlTransformer 
 	new(CoordinationStatechartDefinition statechart) {
 		super(statechart)
 		this.statechart = statechart
-		this.compositeTransformer = new CompositeToPlantUmlTransformer(statechart as CompositeComponent)
+		this.compositeTransformer = new CompositeToPlantUmlTransformer(statechart)
 		this.layoutType = CoordinationLayoutType.COORDINATION
 	}
 	
 	new(CoordinationStatechartDefinition statechart, String layoutType) {
 		super(statechart)
 		this.statechart = statechart
-		this.compositeTransformer = new CompositeToPlantUmlTransformer(statechart as CompositeComponent)
+		this.compositeTransformer = new CompositeToPlantUmlTransformer(statechart)
 		this.layoutType = CoordinationLayoutType.valueOf(layoutType)
 	}
 

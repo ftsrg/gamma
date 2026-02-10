@@ -14,7 +14,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -96,6 +95,7 @@ import hu.bme.mit.gamma.statechart.statechart.CoordinationStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.CoordinationTransition;
 import hu.bme.mit.gamma.statechart.statechart.EntryState;
 import hu.bme.mit.gamma.statechart.statechart.InitialState;
+import hu.bme.mit.gamma.statechart.statechart.OnCycleTrigger;
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.Region;
@@ -448,7 +448,7 @@ public class StatechartUtil extends ActionUtil {
 		return unaryTrigger;
 	}
 	
-	public Trigger createOnCycleTrigger() {
+	public OnCycleTrigger createOnCycleTrigger() {
 		return statechartFactory.createOnCycleTrigger();
 	}
 	
@@ -1349,33 +1349,37 @@ public class StatechartUtil extends ActionUtil {
 		addAnnotation(variable, statechartFactory.createCoordinationVariableDeclarationAnnotation());
 	}
 	
-	public CoordinationTransition createSequentialCoordinationTransition(StateNode source, StateNode target, List<ComponentInstanceReferenceExpression> coordinatedComponents) {
+	public CoordinationTransition createSequentialCoordinationTransition(StateNode source, StateNode target,
+			List<ComponentInstanceReferenceExpression> coordinatedComponents) {
 		CoordinationTransition transition = statechartFactory.createCoordinationTransition();
 		transition.setSourceState(source);
 		transition.setTargetState(target);
-		SequentialCoordinationReferenceExpression expression = statechartFactory.createSequentialCoordinationReferenceExpression();
+		SequentialCoordinationReferenceExpression expression = statechartFactory
+				.createSequentialCoordinationReferenceExpression();
 		expression.getInstances().addAll(ecoreUtil.clone(coordinatedComponents));
-		
+
 		transition.setCoordinatedComponent(expression);
-		
-		CoordinationStatechartDefinition statechart =
-				(CoordinationStatechartDefinition) StatechartModelDerivedFeatures.getContainingStatechart(source);
+
+		CoordinationStatechartDefinition statechart = (CoordinationStatechartDefinition) StatechartModelDerivedFeatures
+				.getContainingStatechart(source);
 		if (statechart != null) {
 			statechart.getCoordinationTransitions().add(transition);
 		}
 		return transition;
 	}
-	
-	public CoordinationTransition createUnorderedCoordinationTransition(StateNode source, StateNode target, List<ComponentInstanceReferenceExpression> coordinatedComponents) {
+
+	public CoordinationTransition createUnorderedCoordinationTransition(StateNode source, StateNode target,
+			List<ComponentInstanceReferenceExpression> coordinatedComponents) {
 		CoordinationTransition transition = statechartFactory.createCoordinationTransition();
 		transition.setSourceState(source);
 		transition.setTargetState(target);
-		UnorderedCoordinationReferenceExpression expression = statechartFactory.createUnorderedCoordinationReferenceExpression();
+		UnorderedCoordinationReferenceExpression expression = statechartFactory
+				.createUnorderedCoordinationReferenceExpression();
 		expression.getInstances().addAll(coordinatedComponents);
 		transition.setCoordinatedComponent(expression);
-		
-		CoordinationStatechartDefinition statechart =
-				(CoordinationStatechartDefinition) StatechartModelDerivedFeatures.getContainingStatechart(source);
+
+		CoordinationStatechartDefinition statechart = (CoordinationStatechartDefinition) StatechartModelDerivedFeatures
+				.getContainingStatechart(source);
 		if (statechart != null) {
 			statechart.getCoordinationTransitions().add(transition);
 		}

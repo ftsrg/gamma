@@ -74,7 +74,6 @@ import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation;
 import hu.bme.mit.gamma.statechart.phase.PhaseModelPackage;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
-import hu.bme.mit.gamma.statechart.statechart.CoordinationStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.Region;
@@ -372,18 +371,6 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				}
 				return scope;
 			}
-//			if (ecoreUtil.hasContainerOfType(context, CoordinationStatechartDefinition.class)) {
-//				CoordinationStatechartDefinition parent = ecoreUtil.getSelfOrContainerOfType(context, CoordinationStatechartDefinition.class);
-//				ComponentInstance component = parent.getCoordinatedComponent();
-//				if (component instanceof AsynchronousComponentInstance) {
-//					return handleTypeDeclarationAndComponentInstanceElementReferences(context, reference, null, ((AsynchronousComponentInstance)component).getType());
-//				}
-//				if (component instanceof SynchronousComponentInstance) {
-//					return handleTypeDeclarationAndComponentInstanceElementReferences(context, reference, null, ((SynchronousComponentInstance)component).getType());
-//				}
-//				return null;
-//			}
-			// 
 		} catch (NullPointerException e) {
 			// Nullptr exception is thrown if the scope turns out to be empty
 			// This can be due to modeling error of the user, e.g., there are no in events on the specified ports

@@ -127,17 +127,15 @@ public class TextProvider extends AbstractDiagramIntentProvider {
 			List<Interface> interfaces = _package.getInterfaces();
 			if (!components.isEmpty()) {
 				Component component = components.get(0);
-				if (component instanceof CoordinationStatechartDefinition) {
+				if (component instanceof CoordinationStatechartDefinition statechartDefinition) {
 					ICommandService commandService =
 						    PlatformUI.getWorkbench().getService(ICommandService.class);
 					Command command = commandService.getCommand("hu.bme.mit.gamma.plantuml.coordinationLayoutCommand");
 					String state = (String)command.getState(RadioState.STATE_ID).getValue();
-					CoordinationStatechartDefinition statechartDefinition = (CoordinationStatechartDefinition) component;
 					CoordinationToPlantUmlTransformer transformer = new CoordinationToPlantUmlTransformer(
 							statechartDefinition, state);
 					return transformer.execute();
-				} else if (component instanceof StatechartDefinition) {
-					StatechartDefinition statechartDefinition = (StatechartDefinition) component;
+				} else if (component instanceof StatechartDefinition statechartDefinition) {
 					StatechartToPlantUmlTransformer transformer = new StatechartToPlantUmlTransformer(
 							statechartDefinition);
 					return transformer.execute();

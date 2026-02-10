@@ -20,6 +20,7 @@ import hu.bme.mit.gamma.statechart.composite.SimpleChannel
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.SynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.statechart.CoordinationStatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.EntryState
 import hu.bme.mit.gamma.statechart.statechart.GuardEvaluation
 import hu.bme.mit.gamma.statechart.statechart.OrthogonalRegionSchedulingOrder
@@ -48,7 +49,6 @@ import org.eclipse.viatra.query.runtime.emf.EMFScope
 
 import static extension hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.statechart.statechart.CoordinationStatechartDefinition
 
 class SystemReducer implements Reducer {
 	
@@ -103,7 +103,7 @@ class SystemReducer implements Reducer {
 		// Statechart optimizing
 		for (statechart : statecharts) {
 			// TODO note: a coordination automaton is not a simple instance we have to handle this somewhere!
-			if ((statechart.regions.empty || !simpleInstancesMatcher.hasMatch(null, statechart)) && !(statechart instanceof CoordinationStatechartDefinition)) {
+			if ((statechart.regions.empty || !simpleInstancesMatcher.hasMatch(null, statechart)) && !(statechart.isCoordinationStatechart)) {
 				statechart.regions.clear
 				statechart.variableDeclarations.clear
 				statechart.timeoutDeclarations.clear

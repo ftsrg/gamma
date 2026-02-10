@@ -25,6 +25,7 @@ import hu.bme.mit.gamma.statechart.interface_.EventTrigger
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
+import hu.bme.mit.gamma.statechart.statechart.AsynchronousCoordinationStatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.AsynchronousStatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
@@ -32,6 +33,7 @@ import hu.bme.mit.gamma.statechart.statechart.RunUponExternalEventAnnotation
 import hu.bme.mit.gamma.statechart.statechart.RunUponExternalEventOrInternalTimeoutAnnotation
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
+import hu.bme.mit.gamma.statechart.statechart.SynchronousCoordinationStatechartDefinition
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
@@ -44,8 +46,6 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.transformation.util.Namings.*
-import hu.bme.mit.gamma.statechart.statechart.SynchronousCoordinationStatechartDefinition
-import hu.bme.mit.gamma.statechart.statechart.AsynchronousCoordinationStatechartDefinition
 
 class ModelUnfolder {
 	

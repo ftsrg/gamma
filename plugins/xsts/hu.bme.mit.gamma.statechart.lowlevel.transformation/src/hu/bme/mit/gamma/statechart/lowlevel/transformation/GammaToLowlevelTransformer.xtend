@@ -13,12 +13,11 @@ package hu.bme.mit.gamma.statechart.lowlevel.transformation
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit
 import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.SynchronousCoordinationStatechartDefinition
 
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.statechart.statechart.SynchronousCoordinationStatechartDefinition
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
 
 class GammaToLowlevelTransformer {
 	
