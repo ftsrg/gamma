@@ -111,6 +111,9 @@ class ImlVerifier extends AbstractVerifier {
 			traceResult = new Result(result, trace)
 			
 			logger.info("Quitting Imandra session")
+		} catch (Exception e) {
+			logger.warning("Exception thrown: " + e)
+			throw e
 		} finally {
 			resultReader?.close
 			errorReader?.cancel
