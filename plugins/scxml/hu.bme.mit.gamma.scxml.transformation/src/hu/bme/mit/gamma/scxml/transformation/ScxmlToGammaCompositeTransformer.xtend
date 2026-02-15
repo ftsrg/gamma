@@ -44,7 +44,7 @@ class ScxmlToGammaCompositeTransformer extends CompositeElementTransformer {
 		val queueCapacityDeclaration = createConstantDeclaration
 		queueCapacityDeclaration.name = "QUEUE_CAPACITY"
 
-		val capacity = expressionUtil.toIntegerLiteral(4)
+		val capacity = toIntegerLiteral(4)
 		queueCapacityDeclaration.expression = capacity
 		queueCapacityDeclaration.type = createIntegerTypeDefinition
 

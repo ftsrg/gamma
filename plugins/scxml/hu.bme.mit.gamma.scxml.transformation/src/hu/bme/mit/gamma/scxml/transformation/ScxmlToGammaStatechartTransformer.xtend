@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Gamma project
+ * Copyright (c) 2023-2025 Contributors to the Gamma project
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -21,6 +21,7 @@ import ac.soton.scxml.ScxmlScxmlType
 import ac.soton.scxml.ScxmlStateType
 import ac.soton.scxml.ScxmlTransitionType
 import ac.soton.scxml.TransitionTypeDatatype
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent
 import hu.bme.mit.gamma.statechart.composite.ControlFunction
@@ -38,6 +39,7 @@ import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
 import java.math.BigInteger
 import java.util.List
+import java.util.function.Function
 import java.util.logging.Level
 import org.eclipse.emf.common.util.URI
 
@@ -144,7 +146,7 @@ class ScxmlToGammaStatechartTransformer extends AtomicElementTransformer {
 		for (invoke : invokes) {
 			val statechartTraceability = compositeTraceability.getTraceability(invoke.src)
 
-			// TODO Extend to deeper composition hierarchy levels later
+			// TODO Extend to deeper composition hierarchy levels, not just one-level adapter children
 			val gammaSubcomponentType = statechartTraceability.adapter as AsynchronousComponent
 
 			val gammaSubcomponent = gammaSubcomponentType.instantiateAsynchronousComponent
@@ -188,13 +190,13 @@ class ScxmlToGammaStatechartTransformer extends AtomicElementTransformer {
 				}
 			}
 		}
-		
+
 		// TODO Merge methods logically
 		transformStatechartInnerElements
 
 		return gammaComposite
 	}
-	
+
 	// TODO Merge this statechart transformation with 'composite' transformation method
 	// Transformation of the SCXML root element and its contents recursively.
 	// Invoked types are assumed to be already transformed by this point.
@@ -207,7 +209,7 @@ class ScxmlToGammaStatechartTransformer extends AtomicElementTransformer {
 		// TODO Check settings!
 		gammaStatechart.schedulingOrder = SchedulingOrder.BOTTOM_UP
 		gammaStatechart.orthogonalRegionSchedulingOrder = OrthogonalRegionSchedulingOrder.SEQUENTIAL
-		gammaStatechart.transitionPriority = TransitionPriority.ORDER_BASED;
+		gammaStatechart.transitionPriority = TransitionPriority.ORDER_BASED
 		gammaStatechart.guardEvaluation = GuardEvaluation.BEGINNING_OF_STEP
 
 		val datamodels = scxmlRoot.datamodel
@@ -217,18 +219,30 @@ class ScxmlToGammaStatechartTransformer extends AtomicElementTransformer {
 				val dataElements = getDataElements(datamodel)
 
 				// TODO Move string literal parts of names to Namings
-				val portDataElements = dataElements.filter [ it |
-					it.eContainer.eContainer instanceof ScxmlScxmlType && it.id.startsWith("pro_port_") ||
-						it.id.startsWith("req_port_")
+				val portDataElements = dataElements.filter[
+					it.eContainer.eContainer instanceof ScxmlScxmlType &&
+						(it.id.startsWith("pro_port_") || it.id.startsWith("req_port_"))
 				]
 				for (portData : portDataElements) {
 					val gammaPort = portData.getOrCreatePort
 					gammaStatechart.ports += gammaPort
 				}
 
-				val variableDataElements = dataElements.filter[it|!portDataElements.contains(it)]
+				// TODO Transform constants, prefix: "const_"
+				// TODO Extract to method
+				val parameterDataElements = dataElements.filter[
+					it.eContainer.eContainer instanceof ScxmlScxmlType && it.id.startsWith("param_")
+				]
+				for (parameterData : parameterDataElements) {
+					val gammaParameterDeclaration = dataTransformer.transformParameter(parameterData)
+					gammaStatechart.parameterDeclarations += gammaParameterDeclaration
+				}
+
+				val variableDataElements = dataElements.filter[
+					!portDataElements.contains(it) && !parameterDataElements.contains(it)
+				]
 				for (variableData : variableDataElements) {
-					val gammaVariableDeclaration = dataTransformer.transform(variableData)
+					val gammaVariableDeclaration = dataTransformer.transformVariable(variableData)
 					gammaStatechart.variableDeclarations += gammaVariableDeclaration
 				}
 			}
@@ -435,7 +449,9 @@ class ScxmlToGammaStatechartTransformer extends AtomicElementTransformer {
 			}
 		}
 
-		adapter.messageQueues += internalEventQueue
+		if (!internalEventQueue.eventPassings.empty) {
+			adapter.messageQueues += internalEventQueue
+		}
 
 		// Create external event queue
 		val externalEventQueue = createMessageQueue
@@ -458,8 +474,10 @@ class ScxmlToGammaStatechartTransformer extends AtomicElementTransformer {
 				externalEventQueue.eventPassings += eventPassing
 			}
 		}
-
-		adapter.messageQueues.add(externalEventQueue)
+		
+		if (!externalEventQueue.eventPassings.empty) {
+			adapter.messageQueues += externalEventQueue
+		}
 
 		return adapter
 	}
@@ -525,6 +543,8 @@ class ScxmlToGammaStatechartTransformer extends AtomicElementTransformer {
 		val gammaState = createState => [
 			it.name = getStateName(scxmlState)
 		]
+		
+		traceability.put(scxmlState, gammaState)
 
 		if (isCompoundState(scxmlState)) {
 			val region = createRegion => [
@@ -584,9 +604,9 @@ class ScxmlToGammaStatechartTransformer extends AtomicElementTransformer {
 		val onentryActions = scxmlState.onentry
 		for (onentryAction : onentryActions) {
 			if (onentryAction !== null) {
-				val gammaOnEntryActions = onentryAction.transformOnentry
-				if (gammaOnEntryActions !== null) {
-					gammaState.entryActions += gammaOnEntryActions
+				val gammaOnEntryAction = onentryAction.transformOnentry
+				if (gammaOnEntryAction !== null) {
+					gammaState.entryActions += gammaOnEntryAction
 				}
 			}
 		}
@@ -594,14 +614,18 @@ class ScxmlToGammaStatechartTransformer extends AtomicElementTransformer {
 		val onexitActions = scxmlState.onexit
 		for (onexitAction : onexitActions) {
 			if (onexitAction !== null) {
-				val gammaOnExitActions = onexitAction.transformOnexit
-				if (gammaOnExitActions !== null) {
-					gammaState.exitActions += gammaOnExitActions
+				val gammaOnExitAction = onexitAction.transformOnexit
+				if (gammaOnExitAction !== null) {
+					gammaState.exitActions += gammaOnExitAction
 				}
 			}
 		}
-
-		traceability.put(scxmlState, gammaState)
+		
+		// Transform invoke actions
+		val invokeActions = scxmlState.invoke
+		for (invokeAction : invokeActions) {
+			invokeAction?.transformAction
+		}
 
 		return gammaState
 	}
@@ -692,7 +716,10 @@ class ScxmlToGammaStatechartTransformer extends AtomicElementTransformer {
 		// Transform guard if present
 		val guardStr = transition.cond
 		if (!guardStr.nullOrEmpty) {
-			val gammaGuardExpression = expressionLanguageParser.parse(guardStr, traceability.variables)
+			val gammaGuardExpression = expressionLanguageParser.preprocessAndParse(
+				guardStr,
+				expressionLanguageLinker.getLinker(traceability)
+			)
 			gammaTransition.guard = gammaGuardExpression
 		}
 

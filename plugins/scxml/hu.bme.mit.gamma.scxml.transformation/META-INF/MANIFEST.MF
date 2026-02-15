@@ -13,9 +13,11 @@ Require-Bundle: ac.soton.scxml,
  org.eclipse.xtend.lib.macro,
  hu.bme.mit.gamma.expression.language,
  com.google.inject;bundle-version="3.0.0",
- hu.bme.mit.gamma.expression.model
+ hu.bme.mit.gamma.expression.model,
+ org.eclipse.xtext
 Export-Package: hu.bme.mit.gamma.scxml.transformation
-Import-Package: org.antlr.runtime,
+Import-Package: hu.bme.mit.gamma.statechart.language.parser,
+ org.antlr.runtime,
  org.eclipse.xtext,
  org.eclipse.xtext.nodemodel,
  org.eclipse.xtext.parser,

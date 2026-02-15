@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.scxml.transformation
 
 import ac.soton.scxml.ScxmlDataType
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import java.util.logging.Level
 
@@ -19,8 +20,9 @@ class DataTransformer extends AtomicElementTransformer {
 	new(StatechartTraceability traceability) {
 		super(traceability)
 	}
-	
-	def VariableDeclaration transform(ScxmlDataType scxmlData) {
+
+	// Note: the type of the parameter declaration is inferred from the provided expr of the <data> element.
+	def ParameterDeclaration transformParameter(ScxmlDataType scxmlData) {
 		logger.log(Level.INFO, "Transforming <data> element (" + scxmlData + ")")
 		
 		val id = scxmlData.id
@@ -28,7 +30,22 @@ class DataTransformer extends AtomicElementTransformer {
 		val expression = expressionLanguageParser.parse(expr, traceability.variables)
 		val type = expressionTypeDeterminator.getType(expression)
 		
-		val gammaDeclaration = expressionUtil.createVariableDeclaration(type, id, expression);
+		val gammaDeclaration = createParameterDeclaration(type, id);
+		
+		traceability.put(scxmlData, gammaDeclaration)
+		
+		return gammaDeclaration
+	}
+	
+	def VariableDeclaration transformVariable(ScxmlDataType scxmlData) {
+		logger.log(Level.INFO, "Transforming <data> element (" + scxmlData + ")")
+		
+		val id = scxmlData.id
+		val expr = scxmlData.expr
+		val expression = expressionLanguageParser.parse(expr, traceability.variables)
+		val type = expressionTypeDeterminator.getType(expression)
+		
+		val gammaDeclaration = createVariableDeclaration(type, id, expression);
 		
 		traceability.put(scxmlData, gammaDeclaration)
 		

@@ -1,11 +1,11 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Gamma project
- * 
+ * Copyright (c) 2023-2025 Contributors to the Gamma project
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
 package hu.bme.mit.gamma.scxml.transformation
@@ -20,6 +20,7 @@ import ac.soton.scxml.ScxmlStateType
 import ac.soton.scxml.ScxmlTransitionType
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration
 import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.interface_.Event
@@ -61,8 +62,8 @@ class StatechartTraceability {
 	protected final Set<Transition> initialTransitions = newHashSet
 
 	protected final Map<ScxmlDataType, Declaration> dataElements = newHashMap
-
-	// Works only if variables are globally unique and have a global scope
+	protected final Map<String, ParameterDeclaration> parameters = newHashMap
+	// The variables map works only if variables are globally unique and have a global scope
 	protected final Map<String, VariableDeclaration> variables = newHashMap
 
 	// Internal mappings (internal to the statechart)
@@ -76,6 +77,8 @@ class StatechartTraceability {
 	protected final Map<Pair<Interface, String>, Event> internalEvents
 	protected final Map<Pair<Interface, String>, Event> inEvents
 	protected final Map<Pair<Interface, String>, Event> outEvents
+	protected final Map<String, Event> allEvents
+	protected final Map<String, ParameterDeclaration> allEventParameters
 
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 
@@ -87,7 +90,9 @@ class StatechartTraceability {
 		ConstantDeclaration queueCapacity,
 		Map<Pair<Interface, String>, Event> internalEvents,
 		Map<Pair<Interface, String>, Event> inEvents,
-		Map<Pair<Interface, String>, Event> outEvents
+		Map<Pair<Interface, String>, Event> outEvents,
+		Map<String, Event> allEvents,
+		Map<String, ParameterDeclaration> allEventParameters
 	) {
 		this.compositeTraceability = compositeTraceability
 		this.fileURI = rootFileURI
@@ -96,6 +101,8 @@ class StatechartTraceability {
 		this.internalEvents = internalEvents
 		this.inEvents = inEvents
 		this.outEvents = outEvents
+		this.allEvents = allEvents
+		this.allEventParameters = allEventParameters
 	}
 
 	def getScxmlRoot() {
@@ -295,6 +302,22 @@ class StatechartTraceability {
 		return initialTransitions
 	}
 
+	// <data> - ParameterDeclaration
+	def put(ScxmlDataType scxmlData, ParameterDeclaration gammaDeclaration) {
+		checkNotNull(scxmlData)
+		checkNotNull(gammaDeclaration)
+		dataElements += scxmlData -> gammaDeclaration
+
+		put(scxmlData.id, gammaDeclaration)
+	}
+
+	def getParameter(ScxmlDataType scxmlData) {
+		checkNotNull(scxmlData)
+		val gammaDeclaration = dataElements.get(scxmlData)
+		checkNotNull(gammaDeclaration)
+		return gammaDeclaration
+	}
+
 	// <data> - VariableDeclaration
 	def put(ScxmlDataType scxmlData, VariableDeclaration gammaDeclaration) {
 		checkNotNull(scxmlData)
@@ -311,11 +334,35 @@ class StatechartTraceability {
 		return gammaDeclaration
 	}
 
+	// Parameter Declarations by String identifier
+	private def put(String scxmlParameterName, ParameterDeclaration gammaDeclaration) {
+		checkNotNull(scxmlParameterName)
+		checkNotNull(gammaDeclaration)
+		parameters += scxmlParameterName -> gammaDeclaration
+	}
+
+	def containsParameter(String scxmlParameterName) {
+		checkNotNull(scxmlParameterName)
+		return parameters.containsKey(scxmlParameterName)
+	}
+
+	def getParameter(String scxmlParameterName) {
+		checkNotNull(scxmlParameterName)
+		val gammaDeclaration = parameters.get(scxmlParameterName)
+		checkNotNull(gammaDeclaration)
+		return gammaDeclaration
+	}
+
 	// Variable Declarations by String identifier
 	private def put(String scxmlVariableName, VariableDeclaration gammaDeclaration) {
 		checkNotNull(scxmlVariableName)
 		checkNotNull(gammaDeclaration)
 		variables += scxmlVariableName -> gammaDeclaration
+	}
+
+	def containsVariable(String scxmlVariableName) {
+		checkNotNull(scxmlVariableName)
+		return variables.containsKey(scxmlVariableName)
 	}
 
 	def getVariable(String scxmlVariableName) {
@@ -422,6 +469,8 @@ class StatechartTraceability {
 		val interface = interfaceEvent.key
 		val eventName = interfaceEvent.value
 		internalEvents += (interface -> eventName) -> gammaEvent
+
+		putEvent(eventName, gammaEvent)
 	}
 
 	def getInternalEvent(Pair<Interface, String> interfaceEvent) {
@@ -457,6 +506,8 @@ class StatechartTraceability {
 		val interface = interfaceEvent.key
 		val eventName = interfaceEvent.value
 		inEvents += (interface -> eventName) -> gammaEvent
+
+		putEvent(eventName, gammaEvent)
 	}
 
 	def getInEvent(Pair<Interface, String> interfaceEvent) {
@@ -492,6 +543,8 @@ class StatechartTraceability {
 		val interface = interfaceEvent.key
 		val eventName = interfaceEvent.value
 		outEvents += (interface -> eventName) -> gammaEvent
+
+		putEvent(eventName, gammaEvent)
 	}
 
 	def getOutEvent(Pair<Interface, String> interfaceEvent) {
@@ -515,6 +568,44 @@ class StatechartTraceability {
 		val interface = interfaceEvent.key
 		val eventName = interfaceEvent.value
 		return outEvents.containsKey(interface -> eventName)
+	}
+
+	// Events by string identifier
+	def putEvent(String scxmlEventName, Event gammaEvent) {
+		checkNotNull(scxmlEventName)
+		checkNotNull(gammaEvent)
+		allEvents += scxmlEventName -> gammaEvent
+	}
+
+	def getEvent(String scxmlEventName) {
+		checkNotNull(scxmlEventName)
+		val gammaEvent = allEvents.get(scxmlEventName)
+		checkNotNull(gammaEvent)
+		return gammaEvent
+	}
+
+	def containsEvent(String scxmlEventName) {
+		checkNotNull(scxmlEventName)
+		return allEvents.containsKey(scxmlEventName)
+	}
+
+	// Event parameters by string identifier
+	def putEventParameter(String scxmlEventParameterName, ParameterDeclaration gammaEventParameter) {
+		checkNotNull(scxmlEventParameterName)
+		checkNotNull(gammaEventParameter)
+		allEventParameters += scxmlEventParameterName -> gammaEventParameter
+	}
+
+	def getEventParameter(String scxmlEventParameterName) {
+		checkNotNull(scxmlEventParameterName)
+		val gammaEventParameter = allEventParameters.get(scxmlEventParameterName)
+		checkNotNull(gammaEventParameter)
+		return gammaEventParameter
+	}
+
+	def containsEventParameter(String scxmlEventParameterName) {
+		checkNotNull(scxmlEventParameterName)
+		return allEventParameters.containsKey(scxmlEventParameterName)
 	}
 
 }

@@ -1,11 +1,11 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Gamma project
- * 
+ * Copyright (c) 2023-2025 Contributors to the Gamma project
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
 package hu.bme.mit.gamma.scxml.transformation
@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.scxml.transformation
 import ac.soton.scxml.ScxmlInvokeType
 import ac.soton.scxml.ScxmlScxmlType
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
@@ -45,6 +46,8 @@ class CompositeTraceability {
 	protected final Map<Pair<Interface, String>, Event> internalEvents = newHashMap
 	protected final Map<Pair<Interface, String>, Event> inEvents = newHashMap
 	protected final Map<Pair<Interface, String>, Event> outEvents = newHashMap
+	protected final Map<String, Event> allEvents = newHashMap
+	protected final Map<String, ParameterDeclaration> allEventParameters = newHashMap
 
 	// <scxml> - Asynchronous Component
 	new(String rootFileURI) {
@@ -61,7 +64,9 @@ class CompositeTraceability {
 			queueCapacity,
 			internalEvents,
 			inEvents,
-			outEvents
+			outEvents,
+			allEvents,
+			allEventParameters
 		)
 	}
 
@@ -171,6 +176,7 @@ class CompositeTraceability {
 	}
 
 	//
+
 	def getInEvents() {
 		return inEvents
 	}
@@ -188,23 +194,28 @@ class CompositeTraceability {
 	}
 
 	//
+
 	def getConstantDeclarations() {
 		return List.of(queueCapacity)
 	}
 
 	def getInterfaces() {
 		val statechartTraceabilities = statecharts.values
-		return (interfaces.values + statechartTraceabilities.map[it.defaultInterface] + statechartTraceabilities.map [
-			it.defaultInterfacePorts.keySet
-		].flatten
+		return (
+			interfaces.values +
+			statechartTraceabilities.map[it.defaultInterface] +
+			statechartTraceabilities.map[it.defaultInterfacePorts.keySet].flatten
 		).toSet
 	}
 
 	def getComponents() {
 		val statechartTraceabilities = statecharts.values
-		return (instances.values.map[it.getType] + /* TODO Serialize async adapters */
-		/* statechartTraceabilities.map[it.getAdapter] + */
-		statechartTraceabilities.map[it.getStatechart]
+		return (
+			instances.values.map[it.getType] +
+			/* TODO Serialize async adapters */
+			/* statechartTraceabilities.map[it.getAdapter] + */
+			statechartTraceabilities.map[it.getStatechart]
 		).toSet
 	}
+
 }

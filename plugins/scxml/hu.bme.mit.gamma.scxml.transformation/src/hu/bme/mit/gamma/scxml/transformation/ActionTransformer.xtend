@@ -15,18 +15,23 @@ import ac.soton.scxml.ScxmlIfType
 import ac.soton.scxml.ScxmlInvokeType
 import ac.soton.scxml.ScxmlOnentryType
 import ac.soton.scxml.ScxmlOnexitType
+import ac.soton.scxml.ScxmlParamType
 import ac.soton.scxml.ScxmlRaiseType
+import ac.soton.scxml.ScxmlSendType
+import ac.soton.scxml.ScxmlStateType
 import hu.bme.mit.gamma.action.model.Action
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Interface
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode
+import hu.bme.mit.gamma.statechart.phase.History
+import java.util.function.Function
 import java.util.logging.Level
 import org.eclipse.emf.ecore.EObject
 
 import static ac.soton.scxml.ScxmlModelDerivedFeatures.*
-import ac.soton.scxml.ScxmlSendType
 
 class ActionTransformer extends AtomicElementTransformer {
 
@@ -74,12 +79,15 @@ class ActionTransformer extends AtomicElementTransformer {
 
 		val expr = scxmlAssign.expr
 		if (expr !== null) {
-			val expression = expressionLanguageParser.parse(expr, traceability.variables)
-			val gammaAssign = actionUtil.createAssignment(variable as VariableDeclaration, expression)
+			val expression = expressionLanguageParser.preprocessAndParse(
+				expr,
+				expressionLanguageLinker.getLinker(traceability)
+			)
+			val gammaAssign = createAssignment(variable as VariableDeclaration, expression)
 			return gammaAssign
 		}
 
-		// TODO Assignment by child content if expr is not present
+		// TODO Assignment by <assign> element's child content if expr is not present.
 		val gammaAssign = createEmptyStatement
 
 		return gammaAssign
@@ -117,7 +125,7 @@ class ActionTransformer extends AtomicElementTransformer {
 			}
 		}
 
-		val eventName = tokens.last
+		val eventName = tokens.lastOrNull
 
 		// If a port is specified, the event will be an out event on an interface
 		// realized in provided mode by the port receiving the event.
@@ -129,8 +137,6 @@ class ActionTransformer extends AtomicElementTransformer {
 				getOrTransformOutEvent(gammaInterface, eventName)
 			}
 
-		// Event parameters are currently not supported.
-		// TODO Support payload
 		val gammaRaise = createRaiseEventAction(gammaPort, gammaEvent, newArrayList)
 		return gammaRaise
 	}
@@ -138,7 +144,7 @@ class ActionTransformer extends AtomicElementTransformer {
 	// TODO <send> actions
 	// TODO Is traceability entry needed?
 	def dispatch Action transformAction(ScxmlSendType scxmlSend) {
-		logger.log(Level.INFO, "Transforming <send> element (" + scxmlSend + ")")
+		logger.info("Transforming <send> element (" + scxmlSend + ")")
 
 		// TODO Check nulls / empty substrings
 		val eventString = scxmlSend.event
@@ -165,12 +171,62 @@ class ActionTransformer extends AtomicElementTransformer {
 			gammaPort = getOrTransformDefaultInterfacePort(gammaInterface)
 		}
 
-		val eventName = tokens.last
+		val eventName = tokens.lastOrNull
 		val gammaEvent = getOrTransformOutEvent(gammaInterface, eventName)
 
-		// Event parameters are currently not supported.
-		// TODO Support payload
-		val gammaRaise = createRaiseEventAction(gammaPort, gammaEvent, newArrayList)
+		// Event <param> elements
+		// TODO Refactor, extract param and argument transformer method
+		// TODO Named parameter support
+		// In the Gamma event, the order of the parameters and arguments matters, they are not named.
+		// Currently, every event parameter of the same event has to be specified, in exact order.
+		val gammaArgumentNames = newArrayList
+		val gammaArgumentExpressions = newArrayList
+		val arguments = scxmlSend.getContentsOfType(ScxmlParamType)
+		for (argument : arguments) {
+			val argName = argument.name
+			val argExpr = argument.expr
+
+			if (argExpr !== null) {
+				val argExpression = expressionLanguageParser.preprocessAndParse(
+					argExpr,
+					expressionLanguageLinker.getLinker(traceability)
+				)
+				gammaArgumentNames += argName
+				gammaArgumentExpressions += argExpression
+
+				val argType = expressionTypeDeterminator.getType(argExpression)
+
+				// TODO Traceability; event+param -> event+param
+				// existsParameter(event, param)
+				// getOrCreateParameter(event, param): creates if not exists, then returns
+				if (!gammaEvent.parameterDeclarations.exists[it.name == argName]) {
+					val gammaEventParameterDeclaration = argType.createParameterDeclaration(argName)
+					gammaEvent.parameterDeclarations += gammaEventParameterDeclaration
+					
+					// TODO Refactor into getOrCreate event parameter method
+					if (!traceability.containsEventParameter(argName)) {
+						traceability.putEventParameter(argName, gammaEventParameterDeclaration)
+					}
+				}
+			}
+		}
+		
+		// TODO Reorder event arguments according to parameter names in event
+		// TODO Mix named and indexed parameter passing
+		// TODO Name -> Find argument by name
+			// No name -> get index of element in parent's children list
+			// Parametric(parameterized)Element-ekre meg lehet csinálni
+		val orderedGammaArguments = newArrayList
+		for (eventParameter : gammaEvent.parameterDeclarations) {
+			val index = gammaArgumentNames.indexOf(eventParameter.name)
+			/*if (index < 0) {
+				val index = ecoreUtil.getIndex(0)
+			}*/
+			val argumentExpression = gammaArgumentExpressions.get(index)
+			orderedGammaArguments += argumentExpression
+		} 
+
+		val gammaRaise = createRaiseEventAction(gammaPort, gammaEvent, orderedGammaArguments)
 		return gammaRaise
 	}
 
@@ -180,7 +236,10 @@ class ActionTransformer extends AtomicElementTransformer {
 		val gammaIf = createIfStatement
 		val cond = scxmlIf.cond
 		if (!cond.nullOrEmpty) {
-			val condExpression = expressionLanguageParser.parse(cond, traceability.variables)
+			val condExpression = expressionLanguageParser.preprocessAndParse(
+				cond,
+				expressionLanguageLinker.getLinker(traceability)
+			)
 
 			val thenStatements = getIfThenActions(scxmlIf);
 			val gammaThenStatements = thenStatements.transformBlock
@@ -198,29 +257,68 @@ class ActionTransformer extends AtomicElementTransformer {
 	def dispatch Action transformAction(ScxmlInvokeType scxmlInvoke) {
 		logger.log(Level.INFO, "Transforming <invoke> element (" + scxmlInvoke + ")")
 
-		// TODO invoked statechart type transformation should be ready at this point,
-		// or be done lazily by the get call. Anyway, ActionTransformer is
+		// TODO invoked statechart type transformation should already be done at this point,
+		// or be done lazily by the get call. Either way, ActionTransformer is
 		// not responsible for invoking contained statechart type transformation.
-		val invokedTypeURI = scxmlInvoke.type
+		val invokedTypeSourceURI = scxmlInvoke.src
 
 		// TODO get invoked type traceability
 		// TODO check component type
-		val invokedTypeTraceability = traceability.compositeTraceability.getTraceability(invokedTypeURI)
-		val gammaSubcomponentType = invokedTypeTraceability.adapter as AsynchronousComponent
+		val invokedTypeTraceability = traceability.compositeTraceability.getTraceability(invokedTypeSourceURI)
+		val gammaSubcomponentType = invokedTypeTraceability.statechart /*adapter as AsynchronousComponent*/
 
-		val gammaSubcomponent = gammaSubcomponentType.instantiateAsynchronousComponent
+		val gammaSubcomponent = gammaSubcomponentType.instantiateComponent
 		gammaSubcomponent.name = scxmlInvoke.id
 
-		val missionPhaseAnnotation = createMissionPhaseStateAnnotation
-		missionPhaseAnnotation.component = gammaSubcomponent
+		val missionPhaseStateAnnotation = createMissionPhaseStateAnnotation
 
-		// TODO Side effect: find state to put the phase annotation onto 
-		// return missionPhaseAnnotation
+		val invokeParameters = scxmlInvoke.param
+
+		// TODO Pass <invoke> arguments by subcomponent parameter names
+		val arguments = invokeParameters.filter[it.name == "_argument"]
+		/* arguments.forEach [ it |
+		 *	val gammaArgument = it.expr.transformArgument
+		 *	gammaSubcomponent.arguments += gammaArgument
+		 * ] */
+		val parameters = gammaSubcomponentType.parameterDeclarations
+		for (parameter : parameters) {
+			val argument = arguments.findFirst[it.name == parameter.name]
+			val gammaArgument = argument.expr.transformArgument
+			gammaSubcomponent.arguments += gammaArgument
+		}
+
+		missionPhaseStateAnnotation.component = gammaSubcomponent
+
+		val portBindings = invokeParameters.filter[it.name == "_port_binding"]
+		portBindings.forEach [ it |
+			val gammaPortBinding = transformPortBinding(gammaSubcomponent, it.expr)
+			missionPhaseStateAnnotation.portBindings += gammaPortBinding
+		]
+
+		val variableBindings = invokeParameters.filter[it.name == "_variable_binding"]
+		variableBindings.forEach [ it |
+			val gammaVariableBinding = transformVariableBinding(gammaSubcomponent, it.expr)
+			missionPhaseStateAnnotation.variableBindings += gammaVariableBinding
+		]
+
+		val history = invokeParameters.findFirst[it.name == "_history"]
+		if (history !== null) {
+			val gammaHistory = switch history.expr {
+				case "shallow": History.SHALLOW_HISTORY
+				case "deep": History.DEEP_HISTORY
+				case "no",
+				default: History.NO_HISTORY
+			}
+			missionPhaseStateAnnotation.history = gammaHistory
+		}
+
 		// TODO State, transition
 		// Put transformed invoke to stable target state
-		// val rootState = ecoreUtil.getContainerOfType(scxmlInvoke, ScxmlScxmlType);
-		// val gammaRootState = traceability.getTraceability(rootState)
 		// TODO Assignment by child content if expr is not present
+		val parentState = scxmlInvoke.getContainerOfType(ScxmlStateType)
+		val gammaState = traceability.getState(parentState)
+		gammaState.annotations += missionPhaseStateAnnotation
+
 		val gammaEmptyAction = createEmptyStatement
 		return gammaEmptyAction
 	}
@@ -231,9 +329,104 @@ class ActionTransformer extends AtomicElementTransformer {
 		}
 
 		val gammaActions = actions.map[it.transformAction].toList
-		val gammaBlock = actionUtil.wrap(gammaActions)
+		val gammaBlock = gammaActions.wrap
 
 		return gammaBlock
+	}
+
+	// TODO Connect statechart arguments with statechart parameters by name
+	private def Expression transformArgument(String argumentSpec) {
+		val argumentString = argumentSpec.trim
+		val tokens = argumentString.split("\\.|\\s*\\=\\s*")
+		if (tokens.size != 2) {
+			throw new IllegalArgumentException(
+				"Argument descriptor " + argumentString + " does not contain exactly 2 dot separated tokens."
+			)
+		}
+		// TODO Trim tokens
+		// TODO Use parameter name to determine the order of statechart arguments
+		val targetParameterName = tokens.get(0)
+		val scxmlArgumentExpression = tokens.get(1)
+
+		// TODO Expression parsing
+		val gammaArgumentExpression = expressionLanguageParser.preprocessAndParse(
+			scxmlArgumentExpression,
+			expressionLanguageLinker.getLinker(traceability)
+		)
+
+		return gammaArgumentExpression
+	}
+
+	// TODO Reuse code - port/variable bindings
+	// TODO? Pattern, Matcher, regexes etc.
+	private def transformPortBinding(ComponentInstance instance, String portBindingSpec) {
+		val bindingString = portBindingSpec.trim
+		val tokens = bindingString.split("\\.|\\s*\\-\\s*")
+		if (tokens.size != 3) {
+			throw new IllegalArgumentException(
+				"Binding descriptor " + bindingString + " does not contain exactly 3 dot separated tokens."
+			)
+		}
+		// TODO Trim tokens
+		val sourcePortName = tokens.get(0)
+		val targetInstanceName = tokens.get(1)
+		val targetPortName = tokens.get(2)
+
+		// TODO Throw exception if port does not exist or ambiguous
+		val gammaSourcePort = traceability.getPort(sourcePortName)
+		val gammaInstancePortReference = createInstancePortReference(instance, targetInstanceName, targetPortName)
+
+		val gammaPortBinding = createPortBinding(gammaSourcePort, gammaInstancePortReference)
+		return gammaPortBinding
+	}
+
+	private def createInstancePortReference(ComponentInstance instance, String instanceName, String scxmlPortName) {
+		// val instance = traceability.compositeTraceability.getComponentInstance(instanceName)
+		// TODO Make it more performant to get statechart traceability
+		// by instance invokeId or source URI.
+		val statechartTraceability = traceability.compositeTraceability.getTraceabilityById(instanceName)
+		val port = statechartTraceability.getPort(scxmlPortName)
+
+		val instancePortReference = createInstancePortReference(instance, port)
+		return instancePortReference
+	}
+
+	private def transformVariableBinding(ComponentInstance instance, String variableBindingSpec) {
+		val bindingString = variableBindingSpec.trim
+		val tokens = bindingString.split("\\.|\\s*\\-\\s*")
+		if (tokens.size != 3) {
+			throw new IllegalArgumentException(
+				"Binding descriptor " + bindingString + " does not contain exactly 3 dot separated tokens."
+			)
+		}
+
+		val sourceVariableName = tokens.get(0)
+		val targetInstanceName = tokens.get(1)
+		val targetVariableName = tokens.get(2)
+
+		// TODO Throw exception if port does not exist or ambiguous
+		val gammaSourceVariable = traceability.getVariable(sourceVariableName)
+		val gammaInstanceVariableReference = createInstanceVariableReference(instance, targetInstanceName,
+			targetVariableName)
+
+		val gammaVariableBinding = createVariableBinding
+		gammaVariableBinding.instanceVariableReference = gammaInstanceVariableReference
+		gammaVariableBinding.statechartVariable = gammaSourceVariable
+		return gammaVariableBinding
+	}
+
+	private def createInstanceVariableReference(ComponentInstance instance, String instanceName,
+		String scxmlVariableName) {
+		// val instance = traceability.compositeTraceability.getComponentInstance(instanceName)
+		// TODO Make it more performant to get statechart traceability
+		// by instance invokeId or source URI.
+		val statechartTraceability = traceability.compositeTraceability.getTraceabilityById(instanceName)
+		val variable = statechartTraceability.getVariable(scxmlVariableName)
+
+		val instanceVariableReference = createInstanceVariableReference
+		instanceVariableReference.instance = instance
+		instanceVariableReference.variable = variable
+		return instanceVariableReference
 	}
 
 }

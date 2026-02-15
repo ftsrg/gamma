@@ -26,6 +26,7 @@ public class StatechartExpressionLanguageParserAndLinker extends ExpressionLangu
 		return new StatechartLanguageStandaloneSetup().createInjectorAndDoEMFRegistration();
 	}
 	
+	@Override
 	protected Class<? extends AbstractAntlrParser> getParserClass() {
 		return CustomStatechartExpressionLanguageParser.class;
 	}

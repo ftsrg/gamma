@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Gamma project
+ * Copyright (c) 2023-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -64,12 +64,10 @@ public class CommandHandler extends AbstractHandler {
 						String path = file.getFullPath().toString();
 
 						// Model processing
-						ScxmlToGammaCompositeTransformer compositeTransformer = new ScxmlToGammaCompositeTransformer(
-								path);
+						ScxmlToGammaCompositeTransformer compositeTransformer = new ScxmlToGammaCompositeTransformer(path);
 						CompositeTraceability compositeTraceability = compositeTransformer.execute();
 
-						// Interfaces and type declarations have to be explicitly serialized in another
-						// package
+						// Interfaces and type declarations have to be explicitly serialized in another package
 						List<Interface> gammaInterfaces = new ArrayList<Interface>(
 								compositeTraceability.getInterfaces());
 						gammaInterfaces.removeIf(i -> i == null);
@@ -94,8 +92,7 @@ public class CommandHandler extends AbstractHandler {
 						StatechartLanguageSerializer packageSerializer = new StatechartLanguageSerializer();
 						logger.log(Level.INFO, "Start serializing Gamma packages...");
 
-						// String declarationsPackageFileName = extensionlessFileName +
-						// "Declarations.gsm";
+						// String declarationsPackageFileName = extensionlessFileName + "Declarations.gsm";
 						// ecoreUtil.normalSave(gammaInterfacePackage, parentPath,
 						// declarationsPackageFileName);
 						String declarationsPackageFileName = extensionlessFileName + "Declarations.gcd";
@@ -108,7 +105,6 @@ public class CommandHandler extends AbstractHandler {
 						packageSerializer.serialize(gammaCompositePackage, parentPath, compositePackageFileName);
 
 						logger.log(Level.INFO, "The SCXML - Gamma statechart transformation has finished.");
-
 					}
 				}
 			}
