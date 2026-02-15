@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -115,15 +115,11 @@ class ExpressionTransformer {
 	// Multiple expressions can be returned
 	
 	def dispatch List<Expression> transformExpression(NullaryExpression expression) {
-		return #[
-			expression.clone
-		]
+		return #[ expression.clone ]
 	}
 	
 	def dispatch List<Expression> transformExpression(DefaultExpression expression) {
-		return #[
-			createTrueExpression
-		]
+		return #[ createTrueExpression ]
 	}
 	
 	def dispatch List<Expression> transformExpression(UnaryExpression expression) {
@@ -175,9 +171,7 @@ class ExpressionTransformer {
 		for (containedExpression : expression.operands) {
 			multiaryExpression.operands += containedExpression.transformSimpleExpression
 		}
-		return #[
-			multiaryExpression
-		]
+		return #[ multiaryExpression ]
 	}
 	
 	def dispatch List<Expression> transformExpression(IntegerRangeLiteralExpression expression) {
@@ -258,19 +252,19 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch List<Expression> transformExpression(EventParameterReferenceExpression expression) {
-		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
+		return expression.transformReferenceExpression
 	}
 		
 	def dispatch List<Expression> transformExpression(RecordAccessExpression expression) {
-		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
+		return expression.transformReferenceExpression
 	}
 	
 	def dispatch List<Expression> transformExpression(ArrayAccessExpression expression) {
-		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
+		return expression.transformReferenceExpression
 	}
 
 	def dispatch List<Expression> transformExpression(DirectReferenceExpression expression) {
-		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
+		return expression.transformReferenceExpression
 	}
 	
 	def dispatch List<Expression> transformExpression(TimeSpecification timeSpecification) {
@@ -281,18 +275,20 @@ class ExpressionTransformer {
 	
 	// Key method: reference expression
 	
-	def List<ReferenceExpression> transformReferenceExpression(ReferenceExpression expression) {
+	def List<Expression> transformReferenceExpression(ReferenceExpression _expression) {
+		val expression = _expression.needPreprocessForReferenceExpression ?
+				_expression.preprocessReferenceExpression : _expression
+		
+		val reference = expression.accessReference
 		// a[0].b.c[1].d
 		val fieldAccess = expression.fieldAccess // .b .c
 		val indexes = expression.indexAccess // [0] and [1]
 		// It is the callers responsibility to make sure the original expression contains all necessary indexes
 		val lowlevelIndexes = indexes.map[it.transformSimpleExpression].toList
 		
-		val reference = expression.accessReference
 		val lowlevelVariables = <ValueDeclaration>newArrayList
 		
-		// If original is not a full access, other potential fields are explored, that is,
-		// fieldAccess can be an extensible field access 
+		// If original is not a full access, other potential fields are explored, i.e., fieldAccess can be an extensible field access
 		if (reference instanceof DirectReferenceExpression) {
 			val declaration = reference.declaration as ValueDeclaration
 			if (trace.isForStatementParameterMapped(declaration)) {
@@ -315,15 +311,46 @@ class ExpressionTransformer {
 			val parameter = reference.parameter
 			lowlevelVariables += trace.getAllInParameters(port, event, parameter -> fieldAccess)
 		}
-		else if (reference instanceof FunctionAccessExpression) {
-			// FunctionAccess?
-		}
 		
 		// Simple references are returned if indexes are empty
-		val lowlevelReferences = newArrayList
-		lowlevelReferences += lowlevelVariables.map[it.index(lowlevelIndexes)]
+		val lowlevelReferences = <Expression>newArrayList
+		lowlevelReferences += lowlevelVariables.map[
+				it.index(lowlevelIndexes)]
 		
 		return lowlevelReferences
+	}
+	
+	protected def needPreprocessForReferenceExpression(ReferenceExpression expression) {
+		return expression.isOrContainsTypesTransitively(
+					#[ FunctionAccessExpression, ArrayAccessExpression ])
+	}
+	
+	protected def preprocessReferenceExpression(ReferenceExpression expression) {
+		val _expression = expression.clone
+				.createNotExpression // Dummy container due to 'replace'
+		
+		// Inline lambdas
+		while (_expression.containsTypeTransitively(FunctionAccessExpression)) {
+			val functionAccesses = _expression.getAllContentsOfType(FunctionAccessExpression)
+			checkState(functionAccesses.map[it.functionDeclaration].forall[it.pure])
+			functionAccesses.forEach[it.createInlinedLambaExpression.replace(it)]
+		}
+		// Inline array literals
+		var arrayLiterals = _expression.getAllContentsOfType(ArrayAccessExpression)
+		while (arrayLiterals.exists[it.arrayAccessEvaluable]) {
+			arrayLiterals.filter[it.arrayAccessEvaluable]
+					.forEach[it.evaluateArrayAccess.replace(it)]
+			arrayLiterals = _expression.getAllContentsOfType(ArrayAccessExpression)
+		}
+		// Inline record literals
+		var recordAccesses = _expression.getAllContentsOfType(RecordAccessExpression)
+		while (recordAccesses.exists[it.recordAccessEvaluable]) {
+			recordAccesses.filter[it.recordAccessEvaluable]
+					.forEach[it.evaluateRecordAccess.replace(it)]
+			recordAccesses = _expression.getAllContentsOfType(RecordAccessExpression)
+		}
+		
+		return _expression.operand // Dummy container
 	}
 	
 	// Function access
@@ -364,7 +391,7 @@ class ExpressionTransformer {
 			}
 			else {
 				// Basic method call
-				val gammaFunction = expression.declaration as FunctionDeclaration
+				val gammaFunction = expression.functionDeclaration
 				val arguments = expression.arguments
 				// By now, the procedure must be transformed by ExpressionPreconditionTransformer
 				if (!trace.isMapped(gammaFunction)) { // On-the-fly transformation added here

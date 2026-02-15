@@ -281,6 +281,16 @@ public class XstsActionUtil extends ExpressionUtil {
 		ecoreUtil.appendTo(pivot, action);
 	}
 	
+	public void mergeIntoAction(Action pivot, Action action) {
+		if (pivot instanceof SequentialAction _pivot && action instanceof SequentialAction _action) {
+			_pivot.getActions().addAll(
+					_action.getActions());
+		}
+		else {
+			appendToAction(pivot, action);
+		}
+	}
+	
 	public void extractArrayLiteralAssignments(Action action) {
 		List<AssignmentAction> assignmentActions = ecoreUtil
 				.getSelfAndAllContentsOfType(action, AssignmentAction.class);

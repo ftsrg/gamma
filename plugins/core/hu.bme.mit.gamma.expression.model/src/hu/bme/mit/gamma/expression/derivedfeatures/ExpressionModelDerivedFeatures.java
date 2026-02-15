@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -21,6 +21,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
 import hu.bme.mit.gamma.expression.model.BooleanLiteralExpression;
@@ -47,6 +48,7 @@ import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FinalVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
+import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.InjectedVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
@@ -61,6 +63,7 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
+import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
@@ -330,6 +333,13 @@ public class ExpressionModelDerivedFeatures {
 		return false;
 	}
 	
+	public static boolean isEmptyArrayLiteral(Expression expression) {
+		if (expression instanceof ArrayLiteralExpression literal) {
+			return literal.getOperands().isEmpty();
+		}
+		return false;
+	}
+	
 	public static boolean isRecord(Declaration declaration) {
 		Type type = declaration.getType();
 		return isRecord(type);
@@ -380,7 +390,7 @@ public class ExpressionModelDerivedFeatures {
 		List<FunctionAccessExpression> functionCalls = ecoreUtil.getAllContentsOfType(root, FunctionAccessExpression.class);
 		for (FunctionAccessExpression functionCall : functionCalls) {
 			Expression operand = functionCall.getOperand();
-			FunctionDeclaration function = (FunctionDeclaration) expressionUtil.getDeclaration(operand);
+			FunctionDeclaration function = expressionUtil.getFunctionDeclaration(operand);
 			if (isRecursive(function)) {
 				return true;
 			}
@@ -408,9 +418,48 @@ public class ExpressionModelDerivedFeatures {
 	public static List<FunctionDeclaration> getCalledFunctions(FunctionDeclaration function) {
 		List<FunctionAccessExpression> functionCalls = ecoreUtil.getAllContentsOfType(function, FunctionAccessExpression.class);
 		List<FunctionDeclaration> calledFunctions = functionCalls.stream()
-				.map(it -> (FunctionDeclaration) expressionUtil.getDeclaration(it.getOperand()))
-				.collect(Collectors.toList());
+				.map(it -> expressionUtil.getFunctionDeclaration(it.getOperand()))
+				.toList();
 		return calledFunctions;
+	}
+	
+	public static Set<FunctionDeclaration> getAllCalledFunctions(FunctionDeclaration function) {
+		Set<FunctionDeclaration> calledFunctions = new LinkedHashSet<FunctionDeclaration>();
+		
+		int size = -1;
+		while (calledFunctions.size() != size) {
+			size = calledFunctions.size();
+			for (FunctionDeclaration functionDeclaration : javaUtil.union(function, calledFunctions)) {
+				calledFunctions.addAll(
+						getCalledFunctions(functionDeclaration));
+			}
+		}
+		
+		return calledFunctions;
+	}
+	
+	public static <T extends Expression> boolean isOrReferencedElement(Expression expression, Class<T> clazz) {
+		try {
+			return getAsIsOrReferencedElement(expression, clazz) != null;
+		} catch (IllegalArgumentException e) {
+			return false;
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T extends Expression> T getAsIsOrReferencedElement(Expression expression, Class<T> clazz) {
+		if (clazz.isInstance(expression)) {
+			return (T) expression;
+		}
+		if (expression instanceof DirectReferenceExpression reference) {
+			Declaration declaration = reference.getDeclaration();
+			if (declaration instanceof ConstantDeclaration constantDeclaration) {
+				Expression value = constantDeclaration.getExpression();
+				return getAsIsOrReferencedElement(value, clazz);
+			}
+		}
+		
+		throw new IllegalArgumentException("Expression is not of type " + clazz.getName());
 	}
 	
 	public static TypeDefinition getElementTypeDefinition(Declaration declaration) {
@@ -458,6 +507,14 @@ public class ExpressionModelDerivedFeatures {
 		}
 		
 		return types;
+	}
+	
+	public static List<Type> getNativeTypes(Type type) {
+		TypeDefinition typeDefinition = getTypeDefinition(type);
+		if (typeDefinition instanceof TupleTypeDefinition tupleType) {
+			return getNativeTypes(tupleType);
+		}
+		return List.of(type);
 	}
 	
 	public static List<Declaration> getNativeDeclarations(TupleReferenceExpression tuple) {
@@ -529,12 +586,26 @@ public class ExpressionModelDerivedFeatures {
 		return getArrayElementType(type);
 	}
 	
+	public static Type getArrayElementTypeOrType(Declaration declaration) {
+		Type type = declaration.getType();
+		return getArrayElementTypeOrType(type);
+	}
+	
 	public static Type getArrayElementType(Type type) {
 		TypeDefinition typeDefinition = getTypeDefinition(type);
 		if (typeDefinition instanceof ArrayTypeDefinition arrayTypeDefinition) {
 			return arrayTypeDefinition.getElementType();
 		}
 		throw new IllegalArgumentException("Not array type: " + type);
+	}
+	
+	public static Type getArrayElementTypeOrType(Type type) {
+		try {
+			return getArrayElementType(type);
+		}
+		catch (IllegalArgumentException e) {
+			return type;
+		}
 	}
 	
 	public static int getDimension(Declaration declaration) {
@@ -567,6 +638,51 @@ public class ExpressionModelDerivedFeatures {
 		else {
 			return 0;
 		}
+	}
+	
+	public static List<Integer> getDimensions(Type type) {
+		TypeDefinition typeDefinition = getTypeDefinition(type);
+		if (typeDefinition instanceof ArrayTypeDefinition arrayTypeDefinition) {
+			int size = evaluator.evaluate(
+					arrayTypeDefinition.getSize());
+			Type elementType = arrayTypeDefinition.getElementType();
+			List<Integer> dimensions = getDimensions(elementType);
+			dimensions.add(0, size);
+			return dimensions;
+		}
+		return new ArrayList<Integer>();
+	}
+	
+	public static Integer getFirstDimension(Type type) {
+		return getDimensions(type)
+					.get(0);
+	}
+	
+	public static List<List<Integer>> allIndexes(ArrayTypeDefinition type) {
+		List<List<Integer>> allIndexes = new ArrayList<>();
+		
+		List<Integer> dimensions = getDimensions(type);
+		boolean first = true;
+		for (Integer dimension : dimensions) {
+			List<List<Integer>> extendedAllIndexes = new ArrayList<>();
+			for (int i = 0; i < dimension; i++) {
+				if (first) {
+					extendedAllIndexes.add(
+							List.of(i));
+				}
+				else {
+					for (List<Integer> indexes : allIndexes) {
+						List<Integer> extendedIndexes = new ArrayList<Integer>(indexes);
+						extendedIndexes.add(i);
+						extendedAllIndexes.add(extendedIndexes);
+					}
+				}
+			}
+			allIndexes = extendedAllIndexes;
+			first = false;
+		}
+		
+		return allIndexes;
 	}
 	
 	// Type references
@@ -654,6 +770,30 @@ public class ExpressionModelDerivedFeatures {
 			}
 		}
 		return references.isEmpty();
+	}
+	
+	public static boolean isIfThenElseEvaluable(IfThenElseExpression expression) {
+		Expression condition = expression.getCondition();
+		Expression then = expression.getThen();
+		Expression _else = expression.getElse();
+		return evaluator.isDefinitelyTrueExpression(condition) ||
+				evaluator.isDefinitelyFalseExpression(condition) ||
+				ecoreUtil.helperEquals(then, _else) ||
+				(isEvaluable(then) && isEvaluable(_else) && evaluator.evaluate(then) == evaluator.evaluate(_else));
+	}
+	
+	public static boolean isArrayAccessEvaluable(ArrayAccessExpression access) {
+		Expression operand = access.getOperand();
+		if (isOrReferencedElement(operand, ArrayLiteralExpression.class)) {
+			Expression index = access.getIndex();
+			return ExpressionModelDerivedFeatures.isEvaluable(index);
+		}
+		return false;
+	}
+	
+	public static boolean isRecordAccessEvaluable(RecordAccessExpression access) {
+		Expression operand = access.getOperand();
+		return isOrReferencedElement(operand, RecordLiteralExpression.class);
 	}
 	
 	public static boolean isNativeLiteral(Expression expression) {

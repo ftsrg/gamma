@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -29,7 +29,7 @@ class JavaUtil {
 	public static final String DELIM_CHAR = "_"
 	//
 
-	def <T> List<T> filterIntoList(Iterable<? super T> collection, Class<T> clazz) {
+	def <E, T> List<T> filterIntoList(Iterable<E> collection, Class<T> clazz) {
 		val list = <T>newArrayList
 		for (element : collection) {
 			if (clazz.isInstance(element)) {
@@ -150,6 +150,10 @@ class JavaUtil {
 		return !lhs.containsAny(rhs)
 	}
 	
+	def <T> Set<T> union(T lhs, Iterable<? extends T> rhs) {
+		return #[lhs].union(rhs)
+	}
+	
 	def <T> Set<T> union(Iterable<T> lhs, Iterable<? extends T> rhs) {
 		val set = newLinkedHashSet
 		
@@ -170,7 +174,7 @@ class JavaUtil {
 	
 	def <T> T getOnlyElement(Iterable<T> collection) {
 		if (collection.size !== 1) {
-			throw new IllegalArgumentException("Not one elment: " + collection)
+			throw new IllegalArgumentException("Not one element: " + collection)
 		}
 		return collection.lastElement
 	}
@@ -437,6 +441,22 @@ class JavaUtil {
 	
 	def String replaceLast(String string, String regex, String replacement) {
 		return string.replaceFirst("(?s)(.*)" + regex, "$1" + replacement)
+	}
+	
+	def String replaceFromString(String string,
+			String start, String target, String replacement) {
+		val i = string.indexOf(start)
+		if (i < 0) {
+			return string
+		}
+		
+		val _1 = string.substring(0, i)
+		val _2 = string.substring(i)
+		val __2 = _2.replace(target, replacement)
+		
+		val final = _1 + __2
+		
+		return final
 	}
 	
 	def matchFirstCharacterCapitalization(String string, String example) {

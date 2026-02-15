@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -113,13 +113,19 @@ public class ExpressionTypeDeterminator2 {
 			return typeReference;
 		}
 		if (expression instanceof ArrayLiteralExpression arrayLiteralExpression) {
+			ArrayTypeDefinition arrayTypeDefinition = factory.createArrayTypeDefinition();
+			
 			List<Expression> operands = arrayLiteralExpression.getOperands();
 			if (operands.isEmpty()) {
 				// Maybe this should be changed to VoidTypeDefinition, as empty array literals could be useful
-				throw new IllegalArgumentException();
+//				throw new IllegalArgumentException();
+				arrayTypeDefinition.setElementType(
+						factory.createVoidTypeDefinition());
+				arrayTypeDefinition.setSize(
+						ExpressionUtil.INSTANCE.createLiteralZero());
+				return arrayTypeDefinition;
 			}
 			Expression firstOperand = operands.get(0);
-			ArrayTypeDefinition arrayTypeDefinition = factory.createArrayTypeDefinition();
 			arrayTypeDefinition.setElementType(
 					getType(firstOperand));
 			IntegerLiteralExpression size = factory.createIntegerLiteralExpression();
@@ -344,10 +350,12 @@ public class ExpressionTypeDeterminator2 {
 	
 	private <T extends ArithmeticExpression & BinaryExpression> Type getArithmeticBinaryType(T expression) {
 		List<Type> types = new ArrayList<Type>();
+		Expression lhs = expression.getLeftOperand();
+		Expression rhs = expression.getRightOperand();
 		types.add(
-				getType(expression.getLeftOperand()));
+				getType(lhs));
 		types.add(
-				getType(expression.getRightOperand()));
+				getType(rhs));
 		return getArithmeticType(types);
 	}
 	
@@ -407,7 +415,8 @@ public class ExpressionTypeDeterminator2 {
 	
 	public boolean isInteger(Expression expression) {
 		try {
-			return expression != null && getTypeDefinition(expression) instanceof IntegerTypeDefinition;
+			return expression != null && isInteger(
+					getTypeDefinition(expression));
 		} catch (IllegalArgumentException e) {
 			return false; // e.g., if getTypeDefinition(expression) throws an exception
 		}
@@ -419,6 +428,33 @@ public class ExpressionTypeDeterminator2 {
 				ExpressionModelDerivedFeatures.getTypeDefinition(type) instanceof IntegerTypeDefinition;
 		} catch (IllegalArgumentException e) {
 			return false; // e.g., if getType(expression) throws an exception
+		}
+	}
+	
+	public boolean isDecimal(Expression expression) {
+		try {
+			return expression != null && isDecimal(
+					getTypeDefinition(expression));
+		} catch (IllegalArgumentException e) {
+			return false; // e.g., if getTypeDefinition(expression) throws an exception
+		}
+	}
+	
+	public boolean isDecimal(Type type) {
+		try {
+			return type != null &&
+				ExpressionModelDerivedFeatures.getTypeDefinition(type) instanceof DecimalTypeDefinition;
+		} catch (IllegalArgumentException e) {
+			return false; // e.g., if getType(expression) throws an exception
+		}
+	}
+	
+	public boolean isArray(Expression expression) {
+		try {
+			return expression != null && ExpressionModelDerivedFeatures.isArray(
+					getTypeDefinition(expression));
+		} catch (IllegalArgumentException e) {
+			return false; // e.g., if getTypeDefinition(expression) throws an exception
 		}
 	}
 	
@@ -473,5 +509,33 @@ public class ExpressionTypeDeterminator2 {
 		
 		return "Unknown type: " + type; // During parsing, there can be null typeDefinitions
 	}
+	
+	//
+	
+	public String serializeTypeId(Expression expression) {
+		TypeSerializer typeSerializer = TypeSerializer.INSTANCE;
+		Type type = getType(expression);
+		return typeSerializer.serializeId(type);
+	}
+	
+	public String serializeTypeId(Collection<? extends Expression> expressions, String delimeter) {
+		if (expressions.isEmpty()) {
+			return "";
+		}
 		
+		StringBuilder builder = new StringBuilder();
+		
+		for (Expression expression : expressions) {
+			builder.append(
+					serializeTypeId(expression) + delimeter);
+		}
+		builder.setLength(builder.length() - delimeter.length());
+		
+		return builder.toString();
+	}
+	
+	public String serializeTypeId(Collection<? extends Expression> expressions) {
+		return serializeTypeId(expressions, "_");
+	}
+	
 }

@@ -220,10 +220,10 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			
 //			xStsReducer.deleteUnnecessaryStates(xSts, formula, reachableStates); // Still experimental
 			if (optimizeOutEvents) {
-				xStsReducer.deleteUnusedAndWrittenOnlyVariables(xSts, keepableGammaVariables);
+				xStsReducer.deleteUnusedAndWrittenOnlyVariables2(xSts, keepableGammaVariables, keepableGammaStates);
 			}
 			else {
-				xStsReducer.deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(xSts, keepableGammaVariables);
+				xStsReducer.deleteUnusedAndWrittenOnlyVariablesExceptOutEvents(xSts, keepableGammaVariables, keepableGammaStates);
 			}
 			xStsReducer.deleteUnusedInputEventVariables(xSts, keepableGammaVariables);
 			xStsReducer.deleteTrivialCodomainVariablesExceptOutEvents(xSts, keepableGammaVariables, keepableGammaStates);

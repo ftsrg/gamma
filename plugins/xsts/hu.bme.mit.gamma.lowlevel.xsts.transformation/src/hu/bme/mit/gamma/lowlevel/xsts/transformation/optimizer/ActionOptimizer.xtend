@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,16 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer
 
-import hu.bme.mit.gamma.expression.model.AndExpression
-import hu.bme.mit.gamma.expression.model.ArithmeticExpression
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.expression.model.FalseExpression
-import hu.bme.mit.gamma.expression.model.ImplyExpression
-import hu.bme.mit.gamma.expression.model.LogicExpression
-import hu.bme.mit.gamma.expression.model.MultiaryExpression
-import hu.bme.mit.gamma.expression.model.OrExpression
-import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction
@@ -43,7 +36,6 @@ import hu.bme.mit.gamma.xsts.model.XTransition
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.List
 import java.util.logging.Logger
-import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -118,7 +110,7 @@ class ActionOptimizer {
 			newXStsAction.deleteUnnecessaryAssumeActions // Not correct in other transformation implementations
 			newXStsAction.deleteDefinitelyFalseBranches
 			newXStsAction.deleteDefinitelyFalseBranchesFromAssumptions
-			newXStsAction.optimizeExpressions // Could be extracted to the expression metamodel?
+			newXStsAction.optimizeExpressions
 		}
 		
 		return newXStsAction
@@ -643,13 +635,16 @@ class ActionOptimizer {
 			
 			if (xStsFirstAction instanceof AbstractAssignmentAction) {
 				val lhs = xStsFirstAction.lhs
-				if (lhs instanceof DirectReferenceExpression) { // Only simple lhs now
+				if (lhs instanceof DirectReferenceExpression || // 'a'
+						lhs instanceof ArrayAccessExpression) { // 'b[i]'
 					val variable = lhs.accessedDeclaration
 					var foundAssignmentToTheSameVariable = false
 					for (var j = i + 1; j < xStsActions.size && !foundAssignmentToTheSameVariable; j++) {
 						val xStsSecondAction = xStsActions.get(j)
 						if (xStsSecondAction instanceof AbstractAssignmentAction) {
-							if (xStsSecondAction.lhs.helperEquals(lhs)) {
+							val secondLhs = xStsSecondAction.lhs
+							if (secondLhs.helperEquals(lhs) || // 'a' or 'b[i]'
+									(secondLhs instanceof DirectReferenceExpression && secondLhs.declaration == lhs.declaration)) { // 'b'
 								foundAssignmentToTheSameVariable = true
 								var isVariableRead = false
 								for (var k = i + 1; k <= j && !isVariableRead; k++) {
@@ -912,63 +907,6 @@ class ActionOptimizer {
 			}
 			else {
 				// Both are null, so the whole transition must be removed: should not happen in practice
-			}
-		}
-	}
-	
-	//
-	
-	protected def void optimizeExpressions(Action action) {
-		val eObjects = action.getAllContentsOfType(EObject)
-		
-		val booleanExpressions = eObjects.filter(LogicExpression)
-		for (booleanExpression : booleanExpressions) {
-			if (booleanExpression.definitelyFalseExpression) {
-				expressionFactory.createFalseExpression.replace(booleanExpression)
-			}
-			else if (booleanExpression.definitelyTrueExpression) {
-				expressionFactory.createTrueExpression.replace(booleanExpression)
-			}
-			else {
-				if (booleanExpression instanceof OrExpression) {
-					booleanExpression.operands.removeIf[it instanceof FalseExpression]
-				}
-				else if (booleanExpression instanceof AndExpression) {
-					booleanExpression.operands.removeIf[it instanceof TrueExpression]
-				}
-				else if (booleanExpression instanceof ImplyExpression) {
-					val left = booleanExpression.leftOperand
-					val right = booleanExpression.rightOperand
-					if (left.definitelyTrueExpression) {
-						right.replace(booleanExpression)
-					}
-				}
-			}
-		}
-		
-		val multiaryExpressions = newArrayList
-		multiaryExpressions += eObjects.filter(ArithmeticExpression).filter(MultiaryExpression) // Add, Mul
-		multiaryExpressions += booleanExpressions.filter(MultiaryExpression) // And, Xor, Or
-		
-		for (multiaryExpression : multiaryExpressions) {
-			val operands = multiaryExpression.operands
-			val container = multiaryExpression.eContainer
-			if (container !== null) {
-				if (container.eClass == multiaryExpression.eClass) {
-					val _container = container as MultiaryExpression
-					_container.operands += operands
-					multiaryExpression.remove
-				}
-				else {
-					val operandSize = operands.size
-					if (operandSize == 0) {
-						multiaryExpression.remove
-					}
-					else if (operandSize == 1) {
-						val operand = operands.head
-						operand.replace(multiaryExpression)
-					}
-				}
 			}
 		}
 	}

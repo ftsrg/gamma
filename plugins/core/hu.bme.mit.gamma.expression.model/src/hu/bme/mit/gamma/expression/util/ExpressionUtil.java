@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,7 +17,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -88,6 +90,7 @@ import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
+import hu.bme.mit.gamma.expression.model.UnaryMinusExpression;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclarationAnnotation;
@@ -116,14 +119,23 @@ public class ExpressionUtil {
 			return reference.getDeclaration();
 		}
 		if (expression instanceof RecordAccessExpression access) {
+			if (ExpressionModelDerivedFeatures.isRecordAccessEvaluable(access)) { // RecordLiteral
+				Expression evaluatedRecordAccess = evaluator.evaluateRecordAccess(access);
+				return getDeclaration(evaluatedRecordAccess);
+			}
+			// Or this branch...
 			FieldReferenceExpression reference = access.getFieldReference();
 			return getDeclaration(reference);
 		}
 		if (expression instanceof FieldReferenceExpression reference) {
 			return reference.getFieldDeclaration();
 		}
-		if (expression instanceof ArrayAccessExpression) {
-			// Below branch
+		if (expression instanceof ArrayAccessExpression access) {
+			if (ExpressionModelDerivedFeatures.isArrayAccessEvaluable(access)) { // ArrayLiteral
+				Expression evaluatedArrayAccess = evaluator.evaluateArrayAccess(access);
+				return getDeclaration(evaluatedArrayAccess);
+			}
+			// Also below branch...
 		}
 		if (expression instanceof AccessExpression access) {
 			// Default access
@@ -136,6 +148,20 @@ public class ExpressionUtil {
 	public ReferenceExpression getAccessReference(Expression expression) {
 		if (expression instanceof DirectReferenceExpression reference) {
 			return reference;
+		}
+		if (expression instanceof ArrayAccessExpression access) {
+			if (ExpressionModelDerivedFeatures.isArrayAccessEvaluable(access)) { // ArrayLiteral
+				Expression evaluatedArrayAccess = evaluator.evaluateArrayAccess(access);
+				return getAccessReference(evaluatedArrayAccess);
+			}
+			// Also below branch...
+		}
+		if (expression instanceof RecordAccessExpression access) {
+			if (ExpressionModelDerivedFeatures.isRecordAccessEvaluable(access)) { // RecordLiteral
+				Expression evaluatedRecordAccess = evaluator.evaluateRecordAccess(access);
+				return getAccessReference(evaluatedRecordAccess);
+			}
+			// Also below branch...
 		}
 		if (expression instanceof AccessExpression access) {
 			return getAccessReference(
@@ -170,6 +196,11 @@ public class ExpressionUtil {
 		
 		return List.of(
 				getAccessedDeclaration(expression));
+	}
+	
+	public FunctionDeclaration getFunctionDeclaration(Expression expression) {
+		Declaration declaration = getDeclaration(expression);
+		return (FunctionDeclaration) declaration;
 	}
 	
 	public Collection<TypeDeclaration> getTypeDeclarations(EObject context) {
@@ -260,12 +291,12 @@ public class ExpressionUtil {
 	
 	// Arithmetic: for now, integers only
 
-	public Expression add(Expression expression, int value) {
+	public Expression add(Expression expression, long value) {
 		return toIntegerLiteral(
 				evaluator.evaluate(expression) + value);
 	}
 
-	public Expression subtract(Expression expression, int value) {
+	public Expression subtract(Expression expression, long value) {
 		return toIntegerLiteral(
 				evaluator.evaluate(expression) - value);
 	}
@@ -280,17 +311,29 @@ public class ExpressionUtil {
 		return opaqueExpression;
 	}
 	
-	public Expression createIncrementExpression(VariableDeclaration variable) {
-		return wrapIntoAdd(
-				createReferenceExpression(variable), 1);
-	}
-
-	public Expression createDecrementExpression(VariableDeclaration variable) {
-		return wrapIntoSubtract(
-				createReferenceExpression(variable), 1);
+	public Expression createIncrementExpression(Declaration variable) {
+		DirectReferenceExpression reference = createReferenceExpression(variable);
+		return createIncrementExpression(reference);
 	}
 	
-	public Expression wrapIntoAdd(Expression expression, int value) {
+	public Expression createIncrementExpression(Expression expression) {
+		Type type = typeDeterminator.getType(expression);
+		Expression _1 = createLiteralOne(type);
+		return wrapIntoAddExpression(expression, _1);
+	}
+
+	public Expression createDecrementExpression(Declaration variable) {
+		DirectReferenceExpression reference = createReferenceExpression(variable);
+		return createDecrementExpression(reference);
+	}
+	
+	public Expression createDecrementExpression(Expression expression) {
+		Type type = typeDeterminator.getType(expression);
+		Expression _1 = createLiteralOne(type);
+		return createSubtractExpression(expression, _1);
+	}
+	
+	public Expression wrapIntoAdd(Expression expression, long value) {
 		AddExpression addExpression = factory.createAddExpression();
 		addExpression.getOperands().add(expression);
 		addExpression.getOperands().add(
@@ -298,7 +341,7 @@ public class ExpressionUtil {
 		return addExpression;
 	}
 	
-	public Expression wrapIntoSubtract(Expression expression, int value) {
+	public Expression wrapIntoSubtract(Expression expression, long value) {
 		SubtractExpression subtractExpression = factory.createSubtractExpression();
 		subtractExpression.setLeftOperand(expression);
 		subtractExpression.setRightOperand(
@@ -1019,6 +1062,38 @@ public class ExpressionUtil {
 		return toIntegerLiteral(1);
 	}
 	
+	public LiteralExpression createLiteralZero(Type type) {
+		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
+		if (typeDefinition instanceof IntegerTypeDefinition) {
+			return createLiteralZero();
+		}
+		if (typeDefinition instanceof RationalTypeDefinition ||
+				typeDefinition instanceof DecimalTypeDefinition) {
+			return toDecimalLiteral(0);
+		}
+		if (typeDefinition instanceof ArrayTypeDefinition arrayTypeDefinition) {
+			Type elementType = arrayTypeDefinition.getElementType();
+			return createLiteralZero(elementType);
+		}
+		throw new IllegalArgumentException("Unkown type: " + type);
+	}
+	
+	public LiteralExpression createLiteralOne(Type type) {
+		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
+		if (typeDefinition instanceof IntegerTypeDefinition) {
+			return createLiteralOne();
+		}
+		if (typeDefinition instanceof RationalTypeDefinition ||
+				typeDefinition instanceof DecimalTypeDefinition) {
+			return toDecimalLiteral(1);
+		}
+		if (typeDefinition instanceof ArrayTypeDefinition arrayTypeDefinition) {
+			Type elementType = arrayTypeDefinition.getElementType();
+			return createLiteralOne(elementType);
+		}
+		throw new IllegalArgumentException("Unkown type: " + type);
+	}
+	
 	public EnumerationLiteralDefinition createEnumerationLiteralDefinition(String name) {
 		EnumerationLiteralDefinition literal = factory.createEnumerationLiteralDefinition();
 		literal.setName(name);
@@ -1180,6 +1255,41 @@ public class ExpressionUtil {
 		return and;
 	}
 	
+	public TupleLiteralExpression createTupleLiteralExpression(
+				Collection<? extends Expression> values, Type type) {
+		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
+		if (typeDefinition instanceof TupleTypeDefinition tupleTypeDefinition) {
+			return createTupleLiteralExpression(values, tupleTypeDefinition);
+		}
+		return createTupleLiteralExpression(values);
+	}
+	
+	public TupleLiteralExpression createTupleLiteralExpression(
+				Collection<? extends Expression> values, TupleTypeDefinition tupleType) {
+		Queue<Expression> expressions = new LinkedList<Expression>(values);
+		return createTupleLiteralExpression(expressions, tupleType);
+	}
+	
+	private TupleLiteralExpression createTupleLiteralExpression(
+				Queue<? extends Expression> expressions, TupleTypeDefinition tupleType) {
+		TupleLiteralExpression tuple = factory.createTupleLiteralExpression();
+		List<Expression> operands = tuple.getOperands();
+		
+		for (Type subtype : tupleType.getTypes()) {
+			TypeDefinition subtypeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(subtype);
+			if (subtypeDefinition instanceof TupleTypeDefinition subtupleType) {
+				operands.add(
+						createTupleLiteralExpression(expressions, subtupleType));
+			}
+			else {
+				operands.add(
+						expressions.remove());
+			}
+		}
+		
+		return tuple;
+	}
+	
 	public TupleLiteralExpression createTupleLiteralExpression(Collection<? extends Expression> values) {
 		TupleLiteralExpression tuple = factory.createTupleLiteralExpression();
 		
@@ -1229,6 +1339,11 @@ public class ExpressionUtil {
 			reference.setDeclaration(variable);
 		}
 		return tuple;
+	}
+	
+	public IntegerRangeLiteralExpression createIntegerRangeLiteralExpression(
+			Expression start, Expression end) {
+		return createIntegerRangeLiteralExpression(start, true, end, false);
 	}
 	
 	public IntegerRangeLiteralExpression createIntegerRangeLiteralExpression(
@@ -1324,6 +1439,24 @@ public class ExpressionUtil {
 		return first;
 	}
 	
+	public IfThenElseExpression weaveIntoIfThenElse(Collection<? extends Expression> conditions, Expression primaryReturnValue) {
+		Expression finalReturnValue = negator.negate(primaryReturnValue);
+		return weaveIntoIfThenElse(conditions, primaryReturnValue, finalReturnValue);
+	}
+	
+	public IfThenElseExpression weaveIntoIfThenElse(Collection<? extends Expression> conditions,
+				Expression primaryReturnValue, Expression finalReturnValue) {
+		List<IfThenElseExpression> ifThenElses = conditions.stream().map(it ->
+					createIfThenElseExpression(it, ecoreUtil.clone(primaryReturnValue), null))
+			.collect(Collectors.toList());
+		
+		IfThenElseExpression lastIfThenElse = javaUtil.getLastElement(ifThenElses);
+		lastIfThenElse.setElse(finalReturnValue);
+		
+		IfThenElseExpression weavedIfThenElse = weave(ifThenElses);
+		return weavedIfThenElse;
+	}
+	
 	public FunctionAccessExpression createFunctionAccessExpression(FunctionDeclaration function, List<? extends Expression> arguments) {
 		DirectReferenceExpression reference = createReferenceExpression(function);
 		FunctionAccessExpression callExpression = factory.createFunctionAccessExpression();
@@ -1374,11 +1507,56 @@ public class ExpressionUtil {
 		return createArrayAccessExpression(operand, integerLiteralExpression);
 	}
 	
+	public ArrayAccessExpression createArrayAccessExpression(Expression operand, List<Integer> indexes) {
+		List<IntegerLiteralExpression> indexing = indexes.stream()
+				.map(it -> toIntegerLiteral(it)).collect(Collectors.toList());
+		return createArrayAccessExpression(operand, indexing);
+	}
+	
 	public ArrayAccessExpression createArrayAccessExpression(Expression operand, Expression index) {
 		ArrayAccessExpression access = factory.createArrayAccessExpression();
 		access.setOperand(operand);
 		access.setIndex(index);
 		return access;
+	}
+	
+	public ArrayAccessExpression createArrayAccessExpression(Expression operand,
+				Collection<? extends Expression> indexes) {
+		ArrayAccessExpression accessExpression = null;
+		for (Expression index : indexes) {
+			accessExpression = (accessExpression == null) ?
+					createArrayAccessExpression(operand, index) :
+					createArrayAccessExpression(accessExpression, index);
+		}
+		return accessExpression;
+	}
+	
+	public ArrayLiteralExpression createArrayLiteralExpression(Declaration declaration) {
+		DirectReferenceExpression referenceExpression = createReferenceExpression(declaration);
+		return createArrayLiteralExpression(referenceExpression);
+	}
+	
+	public ArrayLiteralExpression createArrayLiteralExpression(Expression operand) {
+		ArrayLiteralExpression arrayLiteralExpression = factory.createArrayLiteralExpression();
+		
+		TypeDefinition typeDefinition = typeDeterminator.getTypeDefinition(operand);
+		for (int i = 0; i < ExpressionModelDerivedFeatures.getFirstDimension(typeDefinition); i++) {
+			ArrayAccessExpression arrayAccessExpression = createArrayAccessExpression(
+					ecoreUtil.clone(operand), i);
+			arrayLiteralExpression.getOperands().add(arrayAccessExpression);
+		}
+		
+		return arrayLiteralExpression;
+	}
+	
+	public ArrayLiteralExpression createArrayLiteralExpression(Collection<? extends Expression> values) {
+		ArrayLiteralExpression array = factory.createArrayLiteralExpression();
+		
+		for (Expression value : values) {
+			array.getOperands().add(value);
+		}
+		
+		return array;
 	}
 	
 	public DirectReferenceExpression createReferenceExpression(Declaration declaration) {
@@ -1509,13 +1687,26 @@ public class ExpressionUtil {
 	}
 	
 	public IfThenElseExpression createMinExpression(Expression lhs, Expression rhs) {
-		return createIfThenElseExpression(createLessExpression(lhs, rhs),
+		return createIfThenElseExpression(
+			createLessExpression(lhs, rhs),
 				ecoreUtil.clone(lhs), ecoreUtil.clone(rhs));
 	}
 	
 	public IfThenElseExpression createMaxExpression(Expression lhs, Expression rhs) {
-		return createIfThenElseExpression(createLessExpression(lhs, rhs),
+		return createIfThenElseExpression(
+			createLessExpression(lhs, rhs),
 				ecoreUtil.clone(rhs), ecoreUtil.clone(lhs));
+	}
+	
+	public IfThenElseExpression createAbsExpression(Expression operand) {
+		Type type = typeDeterminator.getType(operand);
+		UnaryMinusExpression minus = factory.createUnaryMinusExpression();
+		minus.setOperand(
+				ecoreUtil.clone(operand));
+		Expression _0 = createLiteralZero(type);
+		return createIfThenElseExpression(
+			createLessExpression(operand, _0),
+				minus, ecoreUtil.clone(operand));
 	}
 	
 	public EnumerationLiteralExpression createEnumerationLiteralExpression(
@@ -1526,6 +1717,13 @@ public class ExpressionUtil {
 		TypeReference typeReference = createTypeReference(typeDeclaration);
 		literalExpression.setTypeReference(typeReference);
 		return literalExpression;
+	}
+	
+	public SubtractExpression createSubtractExpression(Expression lhs, Expression rhs) {
+		SubtractExpression subtractExpression = factory.createSubtractExpression();
+		subtractExpression.setLeftOperand(lhs);
+		subtractExpression.setRightOperand(rhs);
+		return subtractExpression;
 	}
 	
 	public Expression createDefaultExpression(Collection<? extends Expression> expressions) {

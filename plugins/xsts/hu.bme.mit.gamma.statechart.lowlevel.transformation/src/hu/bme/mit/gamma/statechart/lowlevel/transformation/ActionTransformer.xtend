@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.action.model.ExpressionStatement
 import hu.bme.mit.gamma.action.model.ForStatement
 import hu.bme.mit.gamma.action.model.HavocStatement
 import hu.bme.mit.gamma.action.model.IfStatement
+import hu.bme.mit.gamma.action.model.ProcedureDeclaration
 import hu.bme.mit.gamma.action.model.ReturnStatement
 import hu.bme.mit.gamma.action.model.SwitchStatement
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
@@ -32,6 +33,7 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.InitializableElement
 import hu.bme.mit.gamma.expression.model.OpaqueExpression
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
@@ -43,6 +45,7 @@ import java.util.Collection
 import java.util.List
 
 import static extension com.google.common.collect.Iterables.getOnlyElement
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class ActionTransformer {
 	// Auxiliary objects
@@ -99,9 +102,7 @@ class ActionTransformer {
 	}
 	
 	protected def dispatch List<Action> transformAction(EmptyStatement action) {
-		return #[
-			createEmptyStatement
-		]
+		return #[ createEmptyStatement ]
 	}
 	
 	protected def dispatch List<Action> transformAction(Block action) {
@@ -181,7 +182,10 @@ class ActionTransformer {
 					null :
 					(lowlevelExpressions.size == 1) ?
 						lowlevelExpressions.head :
-						lowlevelExpressions.createTupleLiteralExpression
+						lowlevelExpressions.createTupleLiteralExpression(
+							trace.get(action
+								.getContainerOfType(ProcedureDeclaration))
+									.typeDefinition)
 			]
 		]
 	}
@@ -265,7 +269,8 @@ class ActionTransformer {
 		val result = <Action>newLinkedList
 		
 		val actionLhs = action.lhs
-		val lowlevelLhs = actionLhs.transformReferenceExpression // Potentially more references are expected
+		val lowlevelLhs = actionLhs.transformReferenceExpression
+				.filter(ReferenceExpression).toList
 		// This addresses record1 := record2 like assignments
 		
 		val actionRhs = action.rhs
@@ -283,7 +288,7 @@ class ActionTransformer {
 		val result = <Action>newLinkedList
 		
 		val actionLhs = action.lhs
-		val lowlevelLhs = actionLhs.transformReferenceExpression // Potentially more references are expected
+		val lowlevelLhs = actionLhs.transformReferenceExpression
 		// This addresses record1 := record2 like assignments
 		
 		val assumption = action.constraint
@@ -301,7 +306,7 @@ class ActionTransformer {
 			val lowlevelHavoc = actionFactory.createHavocStatement
 			result += lowlevelHavoc
 			
-			lowlevelHavoc.lhs = lhs
+			lowlevelHavoc.lhs = lhs as ReferenceExpression
 			if (lhs === lowlevelLhs.lastOrNull) { // One constraint is enough at the end
 				lowlevelHavoc.constraint = lowlevelAssumption
 			}

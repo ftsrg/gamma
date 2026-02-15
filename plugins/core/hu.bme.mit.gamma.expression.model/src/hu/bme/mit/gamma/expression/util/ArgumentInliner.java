@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the Gamma project
+ * Copyright (c) 2022-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
-import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
@@ -29,9 +28,7 @@ public class ArgumentInliner {
 	public static final ArgumentInliner INSTANCE = new ArgumentInliner();
 	protected ArgumentInliner() {}
 	//
-
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
-	
 	//
 	
 	public void inlineParamaters(List<? extends ParameterDeclaration> parameters,
@@ -79,9 +76,8 @@ public class ArgumentInliner {
 	}
 	
 	public Expression createInlinedLambaExpression(FunctionAccessExpression expression) {
-		DirectReferenceExpression operand = (DirectReferenceExpression) expression.getOperand();
-		Declaration lamdaDeclaration = operand.getDeclaration();
-		FunctionDeclaration function = (FunctionDeclaration) lamdaDeclaration;
+		FunctionDeclaration function = ExpressionUtil.INSTANCE
+					.getFunctionDeclaration(expression);
 		
 		List<Expression> arguments = expression.getArguments();
 		List<ParameterDeclaration> parameters = function.getParameterDeclarations();
@@ -91,7 +87,8 @@ public class ArgumentInliner {
 		
 		Expression clonedBody = ExpressionModelDerivedFeatures.getLambdaExpression(function);
 		// createInlinedExpression clones the body
-		return createInlinedExpression(clonedBody, parameters, arguments);
+		Expression inlinedExpression = createInlinedExpression(clonedBody, parameters, arguments);
+		return inlinedExpression;
 	}
 	
 }

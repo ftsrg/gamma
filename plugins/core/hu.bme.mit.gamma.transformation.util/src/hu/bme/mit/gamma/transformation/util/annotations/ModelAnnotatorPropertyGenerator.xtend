@@ -60,6 +60,9 @@ class ModelAnnotatorPropertyGenerator {
 		// Deadlock coverage
 		val testedComponentsForDeadlock = getIncludedSynchronousInstances(
 				annotableElements.testedComponentsForDeadlock, newTopComponent)
+		// Completeness coverage
+		val testedComponentsForCompleteness = getIncludedSynchronousInstances(
+				annotableElements.testedComponentsForCompleteness, newTopComponent)
 		// Nondeterministic transition coverage
 		val testedComponentsForNondeterministicTransitions = getIncludedSynchronousInstances(
 				annotableElements.testedComponentsForNondeterministicTransitions, newTopComponent)
@@ -100,6 +103,7 @@ class ModelAnnotatorPropertyGenerator {
 				!testedComponentsForUnstableStates.nullOrEmpty ||
 				!testedComponentsForTrapStates.nullOrEmpty ||
 				!testedComponentsForDeadlock.nullOrEmpty ||
+				!testedComponentsForCompleteness.nullOrEmpty ||
 				!testedComponentsForNondeterministicTransitions.nullOrEmpty ||
 				!testedComponentsForQueueOverflow.nullOrEmpty ||
 				!testedComponentsForTransitions.nullOrEmpty ||
@@ -112,6 +116,7 @@ class ModelAnnotatorPropertyGenerator {
 			val annotator = new StatechartAnnotator(newPackage,
 				new AnnotatableElements(
 					testedComponentsForDeadlock,
+					testedComponentsForCompleteness,
 					testedComponentsForNondeterministicTransitions,
 					testedComponentsForQueueOverflow,
 					testedComponentsForTransitions,
@@ -135,6 +140,7 @@ class ModelAnnotatorPropertyGenerator {
 			formulas += propertyGenerator.createUnstableStateInvariance(testedComponentsForUnstableStates)
 			formulas += propertyGenerator.createTrapStateInvariance(testedComponentsForTrapStates)
 			formulas += propertyGenerator.createDeadlockInvariance(annotator.getDeadlockTransitionVariables)
+			formulas += propertyGenerator.createTransitionReachability(annotator.getCompletenessTransitionVariables)// Completeness transition coverage
 			formulas += propertyGenerator.createStateReachabilityFormulas(annotator.trapStates) // Nondeterministic transition coverage
 			formulas += propertyGenerator.createQueueOverflowInvariance(testedComponentsForQueueOverflow) // Nondeterministic transition coverage
 			

@@ -44,6 +44,7 @@ abstract class ImlSemanticDiffer {
 	//
 	protected static final String INVARIANT_DELIM = " " + ImlApiHelper.CONSTRAINT_DELIM + System.lineSeparator
 	//
+	protected final boolean printDiff
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
@@ -51,6 +52,14 @@ abstract class ImlSemanticDiffer {
 	protected final StatechartEcoreUtil statechartEcoreUtil = StatechartEcoreUtil.INSTANCE
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//
+	
+	new() {
+		this(false)
+	}
+	
+	new(boolean printDiff) {
+		this.printDiff = printDiff
+	}
 	
 	abstract def ExecutionTrace execute(Object traceability, File modelFile, File modelFile2)
 	
@@ -109,7 +118,9 @@ abstract class ImlSemanticDiffer {
 			val diffAdapter = new SemanticDiffAdapter
 			val diffTrace = diffAdapter.execute(diff)
 //			val diffTrace = diffAdapter.exampleDiff // Test
-			println(diffTrace)
+			if (printDiff) {
+				println(diffTrace)
+			}
 			
 			val gammaPackage = traceability as Package
 			val scanner = new Scanner(diffTrace)
@@ -126,7 +137,7 @@ abstract class ImlSemanticDiffer {
 			if (statechartEcoreUtil.existsOriginalComponent(unfoldedComponent)) {
 				val originalComponent = statechartEcoreUtil.loadAndReplaceToOriginalComponent(unfoldedComponent)
 				if (!originalComponent.statechart) {
-					val backAnnotator = new UnfoldedExecutionTraceBackAnnotator(trace, originalComponent)
+					val backAnnotator = new UnfoldedExecutionTraceBackAnnotator(trace, originalComponent, false)
 					val orignalTrace = backAnnotator.execute
 					return orignalTrace
 				}
@@ -150,6 +161,9 @@ abstract class ImlSemanticDiffer {
 			if (assertion instanceof OpaqueExpression) {
 				if (assertion.expression == SemanticDiffAdapter.V_INVARIANT) {
 					assertion.remove
+				}
+				else if (assertion.expression == SemanticDiffAdapter.O_INVARIANT) {
+					assertion.expression = SemanticDiffAdapter.INVARIANT
 				}
 			}
 		}
@@ -270,6 +284,7 @@ abstract class ImlSemanticDiffer {
 		
 		val constraints = new StringBuilder
 		val invariants = new StringBuilder
+		val newInvariants = new StringBuilder
 		
 		var currentBuilder = constraints
 		
@@ -278,22 +293,24 @@ abstract class ImlSemanticDiffer {
 					.deleteAll("\"")
 			switch (string) {
 				case string.startsWith(SemanticDiffAdapter.REGION): {
-					regions += Region.of(constraints.toString, invariants.toString)
+					regions += Region2.of(constraints.toString, invariants.toString, newInvariants.toString)
 					constraints.length = 0
 					invariants.length = 0
+					newInvariants.length = 0
 				}
 				case SemanticDiffAdapter.CONSTRAINTS:
 					currentBuilder = constraints
-				case SemanticDiffAdapter.O_INVARIANT:
+				case SemanticDiffAdapter.O_INVARIANT,
+				case SemanticDiffAdapter.INVARIANT:
 					currentBuilder = invariants
 				case SemanticDiffAdapter.V_INVARIANT:
-					currentBuilder = invariants
+					currentBuilder = newInvariants
 				default:
 					currentBuilder.append(string + ";")
 			}
 		}
 		regions.removeFirstElement // Empty region
-		regions += Region.of(constraints.toString, invariants.toString) // Last region
+		regions += Region2.of(constraints.toString, invariants.toString, newInvariants.toString) // Last region
 		
 		return regions
 	}
@@ -608,8 +625,8 @@ abstract class ImlSemanticDiffer {
 	
 	static class Region {
 		//
-		String constraints
-		String invariant
+		protected String constraints
+		protected String invariant
 		//
 		new(String constraints, String invariant) {
 			this.constraints = constraints.trimLine.sort // We use this as key in one of the subclasses; must be sorted: 'canonical' representation
@@ -684,6 +701,31 @@ abstract class ImlSemanticDiffer {
 			sortable.sortInplace
 			val result = sortable.join(ImlApiHelper.CONSTRAINT_DELIM)
 			return result
+		}
+		
+	}
+	
+	static class Region2 extends Region {
+		//
+		protected String invariant2
+		//
+		new(String constraints, String invariant, String invariant2) {
+			super(constraints, invariant)
+			this.invariant2 = invariant2.trimLine.changeTopmostSemicolons
+		}
+		
+		def static of(String constraints, String invariant, String invariant2) {
+			if (invariant2.nullOrEmpty) {
+				return of(constraints, invariant)
+			}
+			val region2 = new Region2(constraints, invariant, invariant2)
+			region2.invariant = invariant
+			region2.invariant2 = invariant2
+			return region2
+		}
+		
+		def getInvariant2() {
+			return invariant2
 		}
 		
 	}
@@ -911,6 +953,7 @@ abstract class ImlSemanticDiffer {
 		protected static final String CONSTRAINTS = "- Constraints:"
 		protected static final String O_INVARIANT = "- Original invariant:"
 		protected static final String V_INVARIANT = "- New invariant:"
+		protected static final String INVARIANT = "- Invariant:" // For plain region decomp
 		
 		//
 		protected final String REC = "r"

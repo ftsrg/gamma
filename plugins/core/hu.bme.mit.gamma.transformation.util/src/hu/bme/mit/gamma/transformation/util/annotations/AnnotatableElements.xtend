@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -23,6 +23,8 @@ import org.eclipse.xtend.lib.annotations.Data
 class AnnotatableElements {
 	
 	Collection<SynchronousComponentInstance> deadlockCoverableComponents
+	
+	Collection<SynchronousComponentInstance> completenessCoverableComponents
 	
 	Collection<SynchronousComponentInstance> nondeterministicTransitionCoverableComponents
 	

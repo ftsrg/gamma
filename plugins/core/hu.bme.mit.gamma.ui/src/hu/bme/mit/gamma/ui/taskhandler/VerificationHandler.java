@@ -339,8 +339,9 @@ public class VerificationHandler extends TaskHandler {
 			long elapsed = stopwatch.elapsed(timeUnit);
 			String elapsedString = elapsed + " " + timeUnit;
 			
+			String modelPath = ecoreUtil.getPlatformUri(modelFile).toPlatformString(true);
 			derivedVerificationResults.add(
-				new VerificationResult(
+				new VerificationResult(modelPath,
 					serializedFormula, verificationResult, arguments, elapsedString));
 			
 			// Checking if some of the unchecked properties are already covered
@@ -764,17 +765,19 @@ public class VerificationHandler extends TaskHandler {
 		@SuppressWarnings("unused")
 		public static class VerificationResult {
 			
+			private String modelPath;
 			private String query;
 			private ThreeStateBoolean result;
 			private String[] parameters;
 			private String executionTime;
 			
-			public VerificationResult(String query, ThreeStateBoolean result) {
-				this(query, result, null, null);
+			public VerificationResult(String modelPath, String query, ThreeStateBoolean result) {
+				this(modelPath, query, result, null, null);
 			}
 			
-			public VerificationResult(String query, ThreeStateBoolean result,
+			public VerificationResult(String modelPath, String query, ThreeStateBoolean result,
 					String[] parameters, String executionTime) {
+				this.modelPath = modelPath;
 				this.query = query;
 				this.result = result;
 				this.parameters = parameters;

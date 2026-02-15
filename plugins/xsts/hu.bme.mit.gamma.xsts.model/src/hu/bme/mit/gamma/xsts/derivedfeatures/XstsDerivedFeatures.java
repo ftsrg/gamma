@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -253,20 +253,19 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	public static SequentialAction getInitializingAction(XSTS xSts) {
 		SequentialAction sequentialAction = xStsFactory.createSequentialAction();
 		Action variableInitializingAction = xSts.getVariableInitializingTransition().getAction();
-		List<Action> actions = sequentialAction.getActions();
 		if (!(variableInitializingAction instanceof EmptyAction)) {
-			actions.add(
+			xStsActionUtil.mergeIntoAction(sequentialAction,
 					ecoreUtil.clone(variableInitializingAction));
 		}
 		Action configurationInitializingAction =
 				xSts.getConfigurationInitializingTransition().getAction();
 		if (!(configurationInitializingAction instanceof EmptyAction)) {
-			actions.add(
+			xStsActionUtil.mergeIntoAction(sequentialAction,
 					ecoreUtil.clone(configurationInitializingAction));
 		}
 		Action entryEventAction = xSts.getEntryEventTransition().getAction();
 		if (!(entryEventAction instanceof EmptyAction)) {
-			actions.add(
+			xStsActionUtil.mergeIntoAction(sequentialAction,
 					ecoreUtil.clone(entryEventAction));
 		}
 		return sequentialAction;
@@ -468,20 +467,22 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return false;
 	}
 	
-	public static boolean isLhs(Expression expression) {
+	public static boolean isWrittenLhs(Expression expression) {
 		AbstractAssignmentAction assignmentAction = ecoreUtil.getContainerOfType(expression, AbstractAssignmentAction.class);
 		if (assignmentAction != null) {
 			ReferenceExpression lhs = assignmentAction.getLhs();
-			return ecoreUtil.selfOrContainsTransitively(lhs, expression);
+			List<Declaration> accessedDeclarations = xStsActionUtil.getAccessedDeclarations(lhs);
+			List<Declaration> accessedDeclaration = xStsActionUtil.getAccessedDeclarations(expression);
+			return accessedDeclarations.containsAll(accessedDeclaration);
 		}
 		return false;
 	}
-
+	
 	public static boolean isDefinitelyTrueAssumeAction(AssumeAction action) {
 		Expression expression = action.getAssumption();
 		return evaluator.isDefinitelyTrueExpression(expression);
 	}
-
+	
 	public static boolean isDefinitelyFalseAssumeAction(AssumeAction action) {
 		Expression expression = action.getAssumption();
 		return evaluator.isDefinitelyFalseExpression(expression);
@@ -871,7 +872,7 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 			throw new IllegalArgumentException("Unhandled action type: " + action);
 		}
 	}
-
+	
 	public static Set<VariableDeclaration> getWrittenVariables(Action action) {
 		if (action instanceof AbstractAssignmentAction _action) {
 			return _getWrittenVariables(_action);
@@ -1069,17 +1070,22 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		EObject root = ecoreUtil.getRoot(variable);
 		List<AssignmentAction> assignmentActions = ecoreUtil.getSelfAndAllContentsOfType(
 				root, AssignmentAction.class);
+		List<VariableDeclarationAction> variableDeclarationActions = ecoreUtil.getSelfAndAllContentsOfType(
+				root, VariableDeclarationAction.class);
+		
+		List<Action> actions = new ArrayList<Action>(assignmentActions);
+		actions.addAll(variableDeclarationActions);
 		
 		int size = -1;
 		while (size != writtenVariables.size()) {
 			size = writtenVariables.size();
 			
-			for (AssignmentAction assignmentAction : assignmentActions) {
-				Set<VariableDeclaration> readVariables = getReadVariables(assignmentAction);
+			for (Action action : actions) {
+				Set<VariableDeclaration> readVariables = getReadVariables(action);
 				if (readVariables.contains(variable) ||
 						javaUtil.containsAny(readVariables, writtenVariables)) {
 					Set<VariableDeclaration> writtenVariablesOfAction =
-							getWrittenVariables(assignmentAction); // Only one
+							getWrittenAndLocalVariables(action); // Only one
 					
 					writtenVariables.addAll(writtenVariablesOfAction);
 				}
@@ -1399,8 +1405,7 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 			VariableDeclaration localVariable = variableDeclarationAction.getVariableDeclaration();
 			Expression initialValue = xStsActionUtil.getInitialValue(localVariable);
 			if (isEvaluable(initialValue)) {
-				double value = evaluator.evaluateDouble(initialValue);
-				LiteralExpression literalExpression = literalCreator.of(localVariable, value);
+				LiteralExpression literalExpression = (LiteralExpression) evaluator.evaluateExpression(initialValue);
 				List<LiteralExpression> literals =
 						javaUtil.getOrCreateList(literalVariableAssignments, localVariable);
 				literals.add(literalExpression);
