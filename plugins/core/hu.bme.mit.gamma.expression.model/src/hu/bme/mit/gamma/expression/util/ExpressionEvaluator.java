@@ -114,8 +114,8 @@ public class ExpressionEvaluator {
 			return evaluateArrayExpression(expression);
 		}
 		
-		// None of the above
-		return expression;
+		// None of the above, e.g., enum
+		return ecoreUtil.clone(expression); // Cloning - new value is expected
 	}
 	
 	public Expression evaluateArrayExpression(Expression expression) {
