@@ -1101,7 +1101,16 @@ public class ExpressionUtil {
 	}
 	
 	public BigDecimal toBigDec(double value) {
-		return BigDecimal.valueOf(value);
+		BigDecimal decimal = BigDecimal.valueOf(value);
+		if (decimal.toString().contains("E")) { // Xtext serializer cannot handle this form
+			String plainString = decimal.toPlainString();
+			decimal = new BigDecimal(plainString);
+		}
+		if (!decimal.toString().contains(".")) { // Needed by grammar
+			String plainString = decimal.toPlainString() + ".0";
+			decimal = new BigDecimal(plainString);
+		}
+		return decimal;
 	}
 	
 	public DecimalLiteralExpression toDecimalLiteral(double value) {
