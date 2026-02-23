@@ -160,8 +160,9 @@ class ActionTransformer {
 		}
 		
 		if (expression instanceof OpaqueExpression) {
+			val supportedPrefixes = #[ "language ", "doc "] // Should be extracted to a static place
 			val string = expression.expression
-			if (string.startsWith("language ")) {
+			if (supportedPrefixes.exists[string.startsWith(it)]) {
 				actions += action.clone
 			}
 		}
