@@ -1387,7 +1387,7 @@ class ComponentTransformer {
 	def dispatch XSTS transform(SynchronousCoordinationStatechartDefinition component, Package lowlevelPackage) {
 		val name = component.name
 		logger.info( "Transforming Synchronous Coordination Statechart " + name)
-		// TODO
+
 		val xSts = name.createXsts
 		val componentMergedActions = <Component, Action>newHashMap // To handle multiple schedulings in CascadeCompositeComponents
 		val components = component.components
@@ -1432,10 +1432,7 @@ class ComponentTransformer {
 		xSts.entryEventTransition = coordinationEntryAction.wrap
 		
 		component.components.add(coordinationInstance)
-		
-//		val coordinationActualComponentMergedAction = createSequentialAction => [
-//			it.actions += coordinationXSts.mergedAction
-//		]
+
 		// In and Out actions - using sequential actions to make sure they are composite actions
 		// Methods reset... and delete... require this
 		
@@ -1452,13 +1449,7 @@ class ComponentTransformer {
 		// 1) the Sync ort semantics: Resetting channel IN events AFTER schedule would result in a deadlock
 		// 2) the Casc semantics: Resetting channel OUT events BEFORE schedule would delete in events of subsequent components
 		// Note, System in and out events are reset in the env action
-
-		// TODO
-		// Resetting OUT events BEFORE schedule
-//		val clonedNewOutEventAction = newOutEventAction.clone // Clone is important
-//				.resetEverythingExceptPersistentParameters(subcomponentType)
-//		actualComponentMergedAction.actions.add(0, clonedNewOutEventAction) // Putting the new action BEFORE
-
+		// 3) Coordination automata semantics: following the the Casc semantics resetting IN events AFTER schedule
 		
 		for (subcomponent : components.reject[it == coordinationInstance]) {
 			val subcomponentType = subcomponent.type
@@ -1506,12 +1497,12 @@ class ComponentTransformer {
 			// 1) the Sync ort semantics: Resetting channel IN events AFTER schedule would result in a deadlock
 			// 2) the Casc semantics: Resetting channel OUT events BEFORE schedule would delete in events of subsequent components
 			// Note, System in and out events are reset in the env action
+			// 3) Coordination automata semantics: following the the Casc semantics resetting IN events AFTER schedule
 
-			// TODO
-			// Resetting OUT events BEFORE schedule
-//			val clonedNewOutEventAction = newOutEventAction.clone // Clone is important
-//					.resetEverythingExceptPersistentParameters(subcomponentType)
-//			actualComponentMergedAction.actions.add(0, clonedNewOutEventAction) // Putting the new action BEFORE
+
+			val clonedNewInEventAction = newInEventAction.clone.
+				resetEverythingExceptPersistentParameters(subcomponentType) // Clone is important
+			actualComponentMergedAction.actions += clonedNewInEventAction // Putting the new action AFTER
 			// Tracing merged action
 			componentMergedActions += subcomponentType -> actualComponentMergedAction.clone
 			
