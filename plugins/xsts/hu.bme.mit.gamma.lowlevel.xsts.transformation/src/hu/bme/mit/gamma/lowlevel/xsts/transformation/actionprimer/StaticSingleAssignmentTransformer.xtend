@@ -25,6 +25,7 @@ import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
+import hu.bme.mit.gamma.xsts.model.OpaqueAction
 import hu.bme.mit.gamma.xsts.model.PrimedVariable
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
@@ -204,6 +205,10 @@ class StaticSingleAssignmentTransformer {
 	}
 	
 	//
+	
+	protected def dispatch void primeAction(OpaqueAction action) {
+		// No op
+	}
 	
 	protected def dispatch void primeAction(EmptyAction action) {
 		// No op

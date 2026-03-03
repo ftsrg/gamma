@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
+import hu.bme.mit.gamma.xsts.model.OpaqueAction
 import hu.bme.mit.gamma.xsts.model.PrimedVariable
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
@@ -257,6 +258,8 @@ class ModelSerializer {
 	protected def dispatch String serialize(EmptyAction action) '''TRUE'''
 	
 	protected def dispatch String serialize(HavocAction action) '''TRUE'''
+	
+	protected def dispatch String serialize(OpaqueAction action) '''-- «action.action.replaceAll("\n|\r\n", " ")»«System.lineSeparator»TRUE'''
 	
 	protected def dispatch String serialize(AssumeAction action) '''«action.assumption.serialize»'''
 	
