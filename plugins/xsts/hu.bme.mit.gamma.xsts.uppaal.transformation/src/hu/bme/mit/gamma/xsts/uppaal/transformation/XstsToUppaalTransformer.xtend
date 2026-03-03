@@ -17,7 +17,6 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.XSTS
-import java.util.logging.Level
 import java.util.logging.Logger
 import uppaal.templates.LocationKind
 
@@ -96,7 +95,7 @@ class XstsToUppaalTransformer {
 			environmentFinishLocation.locationTimeKind = LocationKind.COMMITED
 		}
 		
-		logger.log(Level.INFO, "Basic NTA transformation has finished")
+		logger.info("Basic NTA transformation has finished")
 		
 		//
 		optimizelIntegerCodomains

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
+import hu.bme.mit.gamma.xsts.model.OpaqueAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.transformation.util.MessageQueueUtil
@@ -85,6 +86,10 @@ class FunctionActionTransformer {
 	
 	protected def dispatch Statement transformAction(EmptyAction action) {
 		return null
+	}
+	
+	protected def dispatch Statement transformAction(OpaqueAction action) {
+		return '''/* «action.action» */'''.toString.createLiteralExpression.createStatement
 	}
 	
 	protected def dispatch Statement transformAction(AssumeAction action) {
