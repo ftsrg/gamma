@@ -30,6 +30,7 @@ import java.io.File
 import java.util.List
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.statechart.statechart.CoordinationStatechartDefinition
 
 class Gamma2XstsTransformerSerializer {
 	
@@ -153,6 +154,17 @@ class Gamma2XstsTransformerSerializer {
 		val xSts = gammaToXSTSTransformer.execute(newGammaPackage)
 		// EMF
 		xSts.normalSave(targetFolderUri, fileName.emfXStsFileName)
+		
+		if (newTopComponent instanceof CoordinationStatechartDefinition) {
+			/* This is needed because during the transformation new ComponentInstances, States and Transitions are created, 
+			 * and the updated .gsm is needed for the trace and the property language 
+			 * 
+			 * note: might be worth to makes this generic, e.g. create a definition which means that the model changed during the 
+			 * transformation as is needed to be saved again
+			 */ 
+
+			newGammaPackage.eResource.save
+		}
 		// String
 		xSts.serializeAndSaveXSts
 	}

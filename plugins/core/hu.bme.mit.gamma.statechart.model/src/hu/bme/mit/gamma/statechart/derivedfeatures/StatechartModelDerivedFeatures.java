@@ -831,8 +831,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			for (SynchronousComponentInstance instance : synchronousCompositeComponent.getComponents()) {
 				instances.add(instance);
 				SynchronousComponent type = instance.getType();
-				instances.addAll(
-						getAllInstances(type));
+				if (!(type instanceof CoordinationStatechartDefinition)) {
+					// The instances of the components of a CoordinationStatechart are already visited
+					instances.addAll(getAllInstances(type));  
+				}
 			}
 		}
 		return instances;
@@ -2398,6 +2400,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		if (component instanceof AsynchronousAdapter adapter) {
 			return !isSimplifiable(adapter);
 		}
+		else if (component instanceof SynchronousCoordinationStatechartDefinition) {
+			// CoordinationStatechartDefinitions are composite components as well
+			return false;
+		}
+		// TODO check again when implementing AsynchronousCoordinationStatechartDefinition
 		return isStatechart(component);
 	}
     
