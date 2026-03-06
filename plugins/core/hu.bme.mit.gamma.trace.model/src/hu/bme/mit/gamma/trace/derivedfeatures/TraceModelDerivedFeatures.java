@@ -196,10 +196,13 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return ecoreUtil.clone(generalElapsedTime);
 	}
 	
-	public static boolean isTransitionExecutionExpression(OpaqueExpression expression) {
-		String TRANSITION_EXEC_PREFIX = "Transition executed: ";
-		String text = expression.getExpression();
-		return text.startsWith(TRANSITION_EXEC_PREFIX);
+	public static boolean isTransitionExecutionExpression(Expression expression) {
+		if (expression instanceof OpaqueExpression opaque) {
+			String TRANSITION_EXEC_PREFIX = "Transition executed: ";
+			String text = opaque.getExpression();
+			return text.startsWith(TRANSITION_EXEC_PREFIX);
+		}
+		return false;
 	}
 	
 	public static Expression getLowermostAssert(Expression assertion) {
