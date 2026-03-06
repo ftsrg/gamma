@@ -314,6 +314,18 @@ class JavaUtil {
 		return string
 	}
 	
+	def removeLongest(String string, String start, String end) {
+		val i = string.indexOf(start)
+		val j = string.lastIndexOf(end)
+		
+		if (0 < i && 0 < j) {
+			val result = string.substring(0, i) + string.substring(j)
+			return result
+		}
+		
+		return string
+	}
+	
 	def isAlfaNumerical(char character) {
 		val String string = character.toString
 		return string.matches("[A-Za-z0-9]")
