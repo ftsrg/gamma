@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -25,6 +25,7 @@ import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
+import hu.bme.mit.gamma.expression.model.OpaqueExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression;
@@ -52,6 +53,8 @@ import hu.bme.mit.gamma.trace.model.TimeElapse;
 import hu.bme.mit.gamma.trace.model.TimeUnitAnnotation;
 
 public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
+	//
+	public static final String TRANSITION_EXEC_PREFIX = "Transition executed: ";
 	//
 	protected static final ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE;
 	//
@@ -191,6 +194,12 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		
 		Expression generalElapsedTime = schedulingTimeElapse.getElapsedTime();
 		return ecoreUtil.clone(generalElapsedTime);
+	}
+	
+	public static boolean isTransitionExecutionExpression(OpaqueExpression expression) {
+		String TRANSITION_EXEC_PREFIX = "Transition executed: ";
+		String text = expression.getExpression();
+		return text.startsWith(TRANSITION_EXEC_PREFIX);
 	}
 	
 	public static Expression getLowermostAssert(Expression assertion) {

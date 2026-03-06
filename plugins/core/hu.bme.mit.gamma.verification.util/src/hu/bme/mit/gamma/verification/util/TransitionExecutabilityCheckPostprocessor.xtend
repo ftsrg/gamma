@@ -15,8 +15,8 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceEx
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
+import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
-import hu.bme.mit.gamma.transformation.util.UnfoldedExecutionTraceBackAnnotator
 import java.util.Collection
 import java.util.List
 import java.util.Map
@@ -28,7 +28,7 @@ import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerived
 
 class TransitionExecutabilityCheckPostprocessor extends VerificationPostprocessor {
 	//
-	public static final String metadataBeginning = UnfoldedExecutionTraceBackAnnotator.EXECUTED_TRANSITION_MESSAGE_BEGINNING
+	public static final String metadataBeginning = TraceModelDerivedFeatures.TRANSITION_EXEC_PREFIX
 	//
 	protected final List<Collection<? extends
 			Entry<ComponentInstanceReferenceExpression, Transition>>> executedTransitions = newArrayList

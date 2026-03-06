@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -35,6 +35,7 @@ import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.util.ElementSerializer
+import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.Cycle
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
@@ -82,7 +83,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 	
 	public static final String EXECUTED_TRANSITION_VARIABLE_BEGINNING = "__id_"
 	public static final String EXECUTED_TRANSITION_VARIABLE_END = "_"
-	public static final String EXECUTED_TRANSITION_MESSAGE_BEGINNING = "Transition executed: "
+	public static final String EXECUTED_TRANSITION_MESSAGE_BEGINNING = TraceModelDerivedFeatures.TRANSITION_EXEC_PREFIX
 	
 	public static final String SENT_INTERACTION_VARIABLE_BEGINNING = EXECUTED_TRANSITION_VARIABLE_BEGINNING + "first_"
 	public static final String RECEIVED_INTERACTION_VARIABLE_BEGINNING = EXECUTED_TRANSITION_VARIABLE_BEGINNING + "second_"

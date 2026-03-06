@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -23,6 +23,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.OpaqueExpression;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
@@ -78,6 +79,12 @@ public class TraceUtil extends StatechartUtil {
 		public int compare(Expression lhsAssert, Expression rhsAssert) {
 			Expression lhs = TraceModelDerivedFeatures.getPrimaryAssert(lhsAssert);
 			Expression rhs = TraceModelDerivedFeatures.getPrimaryAssert(rhsAssert);
+			if (lhs instanceof OpaqueExpression opaqueLhs && TraceModelDerivedFeatures.isTransitionExecutionExpression(opaqueLhs)) {
+				if (rhs instanceof OpaqueExpression opaqueRhs && TraceModelDerivedFeatures.isTransitionExecutionExpression(opaqueRhs)) {
+					return opaqueLhs.getExpression().compareTo(opaqueRhs.getExpression());
+				}
+				return -1;
+			}
 			if (lhs instanceof RaiseEventAct lhsAct) {
 				if (rhs instanceof RaiseEventAct rhsAct) {
 					String lhsName = lhsAct.getPort().getName() + lhsAct.getEvent().getName();
