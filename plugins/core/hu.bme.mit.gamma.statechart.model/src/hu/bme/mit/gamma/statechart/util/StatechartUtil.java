@@ -621,12 +621,16 @@ public class StatechartUtil extends ActionUtil {
 	public Port createOppositePort(Port port) {
 		Port oppositePort = ecoreUtil.clone(port);
 		
-		InterfaceRealization interfaceRealization = oppositePort.getInterfaceRealization();
+		conjugate(oppositePort);
+		
+		return oppositePort;
+	}
+	
+	public void conjugate(Port port) {
+		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
 		RealizationMode realizationMode = interfaceRealization.getRealizationMode();
 		RealizationMode opposite = StatechartModelDerivedFeatures.getOpposite(realizationMode);
 		interfaceRealization.setRealizationMode(opposite);
-		
-		return oppositePort;
 	}
 	
 	public Interface createBroadcastInterface(Interface _interface) {
@@ -856,6 +860,16 @@ public class StatechartUtil extends ActionUtil {
 		portEventReference.setPort(port);
 		portEventReference.setEvent(event);
 		return portEventReference;
+	}
+	
+	public EventPassing createEventPassing(Port port) {
+		return createEventPassing(
+				createAnyPortEventReference(port), null);
+	}
+	
+	public EventPassing createEventPassing(Port port, Event event) {
+		return createEventPassing(
+				createPortEventReference(port, event), null);
 	}
 	
 	public EventPassing createEventPassing(EventReference source) {
