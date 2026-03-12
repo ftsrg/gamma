@@ -512,6 +512,15 @@ public class StatechartUtil extends ActionUtil {
 		}
 	}
 	
+	public long evaluateForSmallestUnit(TimeSpecification time, Package _package) {
+		Expression value = time.getValue();
+		TimeUnit unit = time.getUnit();
+		TimeUnit base = StatechartModelDerivedFeatures.getSmallestTimeUnit(_package);
+		long multiplicator = StatechartModelDerivedFeatures.getMultiplicator(unit, base);
+		Expression value_ = ecoreUtil.clone(value);
+		return evaluator.evaluateInteger(value_) * multiplicator;
+	}
+	
 	public AsynchronousAdapter wrapIntoAdapter(SynchronousComponent component,
 			String adapterName, String instanceName) {
 		AsynchronousAdapter adapter = wrapIntoAdapter(component, adapterName);

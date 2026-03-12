@@ -100,7 +100,7 @@ class TransitionToStepTransformer {
 	private def dispatch transformEventReference(TimeoutEventReference eventReference) {
 		val timeout = eventReference.timeout
 		val value = timeout.timeoutValue
-		val elapsedTime = value.evaluateMilliseconds
+		val elapsedTime = value.evaluateForSmallestUnit(eventReference.containingPackage)
 		return createTimeElapse => [
 			it.elapsedTime = elapsedTime.toIntegerLiteral
 		]

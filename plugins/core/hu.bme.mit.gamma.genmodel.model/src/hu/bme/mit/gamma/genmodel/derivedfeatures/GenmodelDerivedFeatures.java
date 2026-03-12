@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,6 +17,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
+import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
@@ -30,7 +31,9 @@ import hu.bme.mit.gamma.genmodel.model.TestAutomatonType;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.genmodel.model.XstsReference;
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.Package;
 
 public class GenmodelDerivedFeatures extends ExpressionModelDerivedFeatures {
 
@@ -50,24 +53,26 @@ public class GenmodelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static List<Task> getIncludedTasks(GenModel genmodel) {
 		List<Task> tasks = getAllTasks(genmodel);
-		tasks.removeAll(genmodel.getTasks());
+		tasks.removeAll(
+				genmodel.getTasks());
 		return tasks;
 	}
 
 	public static List<Task> getAllTasks(GenModel genmodel) {
 		List<Task> tasks = new ArrayList<Task>(genmodel.getTasks());
 		for (GenModel includedGenmodel : genmodel.getGenmodelImports()) {
-			tasks.addAll(getAllTasks(includedGenmodel));
+			tasks.addAll(
+					getAllTasks(includedGenmodel));
 		}
 		return tasks;
 	}
 
-	public static EObject getModel(AnalysisModelTransformation analysisModelTransformation) {
+	public static NamedElement getModel(AnalysisModelTransformation analysisModelTransformation) {
 		ModelReference modelReference = analysisModelTransformation.getModel();
 		return getModel(modelReference);
 	}
 
-	public static EObject getModel(ModelReference modelReference) {
+	public static NamedElement getModel(ModelReference modelReference) {
 		if (modelReference instanceof ComponentReference) {
 			ComponentReference componentReference = (ComponentReference) modelReference;
 			return componentReference.getComponent();
@@ -77,6 +82,16 @@ public class GenmodelDerivedFeatures extends ExpressionModelDerivedFeatures {
 			return xStsReference.getXSts();
 		}
 		throw new IllegalArgumentException("Not supported model reference: " + modelReference);
+	}
+	
+	public static Component getComponent(AnalysisModelTransformation analysisModelTransformation) {
+		EObject model = getModel(analysisModelTransformation);
+		return (Component) model;
+	}
+	
+	public static Package getPackage(AnalysisModelTransformation analysisModelTransformation) {
+		Component component = getComponent(analysisModelTransformation);
+		return StatechartModelDerivedFeatures.getContainingPackage(component);
 	}
 
 	public static boolean isVerifyAnalysisTask(AnalysisModelTransformation analysisModelTransformation) {

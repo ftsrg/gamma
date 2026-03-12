@@ -515,6 +515,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return value;
 	}
 	
+	public static long getMultiplicator(TimeUnit unit, Package _package) {
+		TimeUnit base = getSmallestTimeUnit(_package);
+		return getMultiplicator(unit, base);
+	}
+	
 	public static Set<Package> getImportableInterfacePackages(Component component) {
 		List<Port> ports = getAllPorts(component);
 		return ports.stream().map(it -> getContainingPackage(

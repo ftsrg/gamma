@@ -31,8 +31,8 @@ class Gamma2XstsImlTransformerSerializer {
 	protected final String targetFolderUri
 	protected final String fileName
 	
-	protected final Integer minSchedulingConstraint
-	protected final Integer maxSchedulingConstraint
+	protected final Long minSchedulingConstraint
+	protected final Long maxSchedulingConstraint
 	// Configuration
 	protected final boolean inlineFunctions
 	protected final boolean optimize
@@ -60,8 +60,7 @@ class Gamma2XstsImlTransformerSerializer {
 	}
 	
 	new(Component component, List<Expression> arguments,
-			String targetFolderUri, String fileName,
-			Integer schedulingConstraint) {
+			String targetFolderUri, String fileName, Long schedulingConstraint) {
 		this(component, arguments, targetFolderUri, fileName, schedulingConstraint, schedulingConstraint,
 			true,
 			true, false, TransitionMerging.HIERARCHICAL,
@@ -76,7 +75,7 @@ class Gamma2XstsImlTransformerSerializer {
 	
 	new(Component component, List<? extends Expression> arguments,
 			String targetFolderUri, String fileName,
-			Integer minSchedulingConstraint, Integer maxSchedulingConstraint,
+			Long minSchedulingConstraint, Long maxSchedulingConstraint,
 			boolean inlineFunctions,
 			boolean optimize,
 			boolean optimizeNondeterministicChoices,

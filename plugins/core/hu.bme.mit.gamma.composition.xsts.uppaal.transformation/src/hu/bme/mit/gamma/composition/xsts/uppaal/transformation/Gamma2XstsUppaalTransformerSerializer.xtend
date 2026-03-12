@@ -32,8 +32,8 @@ class Gamma2XstsUppaalTransformerSerializer {
 	protected final String targetFolderUri
 	protected final String fileName
 	
-	protected final Integer minSchedulingConstraint
-	protected final Integer maxSchedulingConstraint
+	protected final Long minSchedulingConstraint
+	protected final Long maxSchedulingConstraint
 	// Configuration
 	protected final boolean optimize
 	protected final TransitionMerging transitionMerging
@@ -59,7 +59,7 @@ class Gamma2XstsUppaalTransformerSerializer {
 	
 	new(Component component, List<Expression> arguments,
 			String targetFolderUri, String fileName,
-			Integer schedulingConstraint) {
+			Long schedulingConstraint) {
 		this(component, arguments, targetFolderUri, fileName, schedulingConstraint, schedulingConstraint,
 			true, TransitionMerging.HIERARCHICAL,
 			null, new AnnotatablePreprocessableElements(
@@ -73,7 +73,7 @@ class Gamma2XstsUppaalTransformerSerializer {
 	
 	new(Component component, List<? extends Expression> arguments,
 			String targetFolderUri, String fileName,
-			Integer minSchedulingConstraint, Integer maxSchedulingConstraint,
+			Long minSchedulingConstraint, Long maxSchedulingConstraint,
 			boolean optimize,
 			TransitionMerging transitionMerging,
 			PropertyPackage slicingProperties,

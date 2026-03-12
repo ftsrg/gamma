@@ -38,8 +38,8 @@ class Gamma2XstsTransformerSerializer {
 	protected final String targetFolderUri
 	protected final String fileName
 	
-	protected final Integer minSchedulingConstraint
-	protected final Integer maxSchedulingConstraint
+	protected final Long minSchedulingConstraint
+	protected final Long maxSchedulingConstraint
 	// Configuration
 	protected final boolean inlineFunctions
 	protected final boolean optimize
@@ -71,8 +71,7 @@ class Gamma2XstsTransformerSerializer {
 	}
 	
 	new(Component component, List<? extends Expression> arguments,
-			String targetFolderUri, String fileName,
-			Integer schedulingConstraint) {
+			String targetFolderUri, String fileName, Long schedulingConstraint) {
 		this(component, arguments, targetFolderUri, fileName, schedulingConstraint, schedulingConstraint,
 			true, false, false, true, TransitionMerging.HIERARCHICAL,
 			null,
@@ -85,7 +84,7 @@ class Gamma2XstsTransformerSerializer {
 	
 	new(Component component, List<? extends Expression> arguments,
 			String targetFolderUri, String fileName,
-			Integer minSchedulingConstraint, Integer maxSchedulingConstraint,
+			Long minSchedulingConstraint, Long maxSchedulingConstraint,
 			boolean optimize, boolean optimizeArray,
 			boolean optimizeMessageQueues, boolean optimizeEnvironmentalMessageQueues,
 			TransitionMerging transitionMerging,
@@ -100,7 +99,7 @@ class Gamma2XstsTransformerSerializer {
 	
 	new(Component component, List<? extends Expression> arguments,
 			String targetFolderUri, String fileName,
-			Integer minSchedulingConstraint, Integer maxSchedulingConstraint,
+			Long minSchedulingConstraint, Long maxSchedulingConstraint,
 			boolean inlineFunctions,
 			boolean optimize, boolean optimizeArray,
 			boolean optimizeMessageQueues, boolean optimizeEnvironmentalMessageQueues,

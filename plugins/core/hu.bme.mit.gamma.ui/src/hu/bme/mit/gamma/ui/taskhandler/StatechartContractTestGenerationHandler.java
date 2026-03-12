@@ -31,13 +31,13 @@ public class StatechartContractTestGenerationHandler extends TaskHandler {
 
 	public void execute(StatechartContractTestGeneration testGeneration) {
 		setTargetFolder(testGeneration);
-		Integer constraintValue = null;
+		Long constraintValue = null;
 		if (testGeneration.getConstraint() != null) {
 			AnalysisModelTransformationHandler analysisModelTransformationHandler =
 					new AnalysisModelTransformationHandler(file);
 			Gamma2XstsTransformer transformer = analysisModelTransformationHandler
 					.new Gamma2XstsTransformer();
-			Entry<Integer,Integer> constraint = transformer.evaluateConstraint(testGeneration.getConstraint());
+			Entry<Long, Long> constraint = transformer.evaluateConstraint(testGeneration.getConstraint());
 			if (constraint != null) {
 				// TODO now only lower bound
 				constraintValue = constraint.getKey();

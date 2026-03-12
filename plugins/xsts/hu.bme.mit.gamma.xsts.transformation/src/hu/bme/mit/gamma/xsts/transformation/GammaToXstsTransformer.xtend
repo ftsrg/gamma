@@ -59,8 +59,8 @@ class GammaToXstsTransformer {
 	// Transformation utility
 	protected final extension ComponentTransformer componentTransformer
 	// Transformation settings
-	protected final Integer minSchedulingConstraint
-	protected final Integer maxSchedulingConstraint
+	protected final Long minSchedulingConstraint
+	protected final Long maxSchedulingConstraint
 	
 	protected final PropertyPackage initialState
 	protected final InitialStateSetting initialStateSetting
@@ -87,7 +87,7 @@ class GammaToXstsTransformer {
 		this(null, true, true, false, false, true, TransitionMerging.HIERARCHICAL)
 	}
 	
-	new(Integer schedulingConstraint, boolean transformOrthogonalActions,
+	new(Long schedulingConstraint, boolean transformOrthogonalActions,
 			boolean optimize, boolean optimizeOneCapacityArrays,
 			boolean unfoldMessageQueues, boolean optimizeEnvironmentalMessageQueues,
 			TransitionMerging transitionMerging) {
@@ -96,7 +96,7 @@ class GammaToXstsTransformer {
 				transitionMerging, null, null)
 	}
 	
-	new(Integer schedulingConstraint, boolean transformOrthogonalActions,
+	new(Long schedulingConstraint, boolean transformOrthogonalActions,
 			boolean optimize, boolean optimizeOneCapacityArrays,
 			boolean unfoldMessageQueues, boolean optimizeEnvironmentalMessageQueues,
 			TransitionMerging transitionMerging,
@@ -106,7 +106,7 @@ class GammaToXstsTransformer {
 			optimizeEnvironmentalMessageQueues, transitionMerging, initialState, initialStateSetting)
 	}
 	
-	new(Integer minSchedulingConstraint, Integer maxSchedulingConstraint,
+	new(Long minSchedulingConstraint, Long maxSchedulingConstraint,
 			boolean inlineFunctions,
 			boolean transformOrthogonalActions,	boolean optimize, boolean optimizeOneCapacityArrays,
 			boolean unfoldMessageQueues, boolean optimizeEnvironmentalMessageQueues,

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -63,6 +63,7 @@ import hu.bme.mit.gamma.querygenerator.serializer.XstsUppaalPropertySerializer;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
@@ -317,7 +318,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					notNullCoverage.getInteractionDataflowCoverageCriterion());
 		}
 				
-		protected Entry<Integer, Integer> evaluateConstraint(hu.bme.mit.gamma.genmodel.model.Constraint constraint) {
+		protected Entry<Long, Long> evaluateConstraint(hu.bme.mit.gamma.genmodel.model.Constraint constraint) {
 			if (constraint == null) {
 				return null;
 			}
@@ -337,11 +338,15 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			}
 			
 			if (orchestratingConstraint != null) {
+				AnalysisModelTransformation task = ecoreUtil.getContainerOfType(
+						orchestratingConstraint, AnalysisModelTransformation.class);
+				Package package_ = GenmodelDerivedFeatures.getPackage(task);
+				
 				TimeSpecification minimumPeriod = orchestratingConstraint.getMinimumPeriod();
 				TimeSpecification maximumPeriod = orchestratingConstraint.getMaximumPeriod();
-				int min = statechartUtil.evaluateMilliseconds(minimumPeriod);
-				int max = statechartUtil.evaluateMilliseconds(maximumPeriod);
-				return new SimpleEntry<Integer, Integer>(min, max);
+				long min = statechartUtil.evaluateForSmallestUnit(minimumPeriod, package_);
+				long max = statechartUtil.evaluateForSmallestUnit(maximumPeriod, package_);
+				return new SimpleEntry<Long, Long>(min, max);
 			}
 			
 			throw new IllegalArgumentException("Not known constraint: " + constraint);
@@ -523,9 +528,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			ComponentReference reference = (ComponentReference) transformation.getModel();
 			Component component = reference.getComponent();
 			preprocessModel(component);
-			Entry<Integer, Integer> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
-			Integer minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
-			Integer maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
+			Entry<Long, Long> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
+			Long minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
+			Long maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
 			
 			String fileName = transformation.getFileName().get(0);
 			// Coverages
@@ -649,9 +654,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			ComponentReference reference = (ComponentReference) transformation.getModel();
 			Component component = reference.getComponent();
 			preprocessModel(component);
-			Entry<Integer, Integer> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
-			Integer minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
-			Integer maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
+			Entry<Long, Long> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
+			Long minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
+			Long maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
 			String fileName = transformation.getFileName().get(0);
 			// Coverages
 			List<Coverage> coverages = transformation.getCoverages();
@@ -740,9 +745,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			ComponentReference reference = (ComponentReference) transformation.getModel();
 			Component component = reference.getComponent();
 			preprocessModel(component);
-			Entry<Integer, Integer> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
-			Integer minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
-			Integer maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
+			Entry<Long, Long> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
+			Long minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
+			Long maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
 			String fileName = transformation.getFileName().get(0);
 			// Coverages
 			List<Coverage> coverages = transformation.getCoverages();
@@ -830,9 +835,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			ComponentReference reference = (ComponentReference) transformation.getModel();
 			Component component = reference.getComponent();
 			preprocessModel(component);
-			Entry<Integer, Integer> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
-			Integer minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
-			Integer maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
+			Entry<Long, Long> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
+			Long minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
+			Long maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
 			String fileName = transformation.getFileName().get(0);
 			// Coverages
 			List<Coverage> coverages = transformation.getCoverages();
@@ -920,15 +925,14 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			ComponentReference componentReference = (ComponentReference) transformation.getModel();
 			List<Expression> arguments = componentReference.getArguments();
 			Component component = componentReference.getComponent();
-			Entry<Integer, Integer> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
-			Integer minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
-			Integer maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
+			Entry<Long, Long> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
+			Long minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
+			Long maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
 			
 			String fileName = transformation.getFileName().get(0);
 			targetFolderUri = targetFolderUri + File.separator + "ocra";
 			
 			serializeProperties(transformation.getPropertyPackage(), fileName);
-			
 			
 			Gamma2OcraTransformerSerializer gamma2OcraTransformer =
 					new Gamma2OcraTransformerSerializer(component, arguments, targetFolderUri, fileName, minSchedulingConstraint, maxSchedulingConstraint);
@@ -951,7 +955,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				PropertySerializer propertySerializer = getPropertySerializer();
 				
 				//String serializedFormulas = propertySerializer.serializeCommentableStateFormulas(propertyPackage.getFormulas());
-		        String serializedContracts = ((OcraPropertySerializer) propertySerializer).serializeContracts(propertyPackage.getContracts(), propertyPackage.getComponent());
+		        OcraPropertySerializer ocraPropertySerializer = (OcraPropertySerializer) propertySerializer;
+				String serializedContracts = ocraPropertySerializer.serializeContracts(
+							propertyPackage.getContracts(), propertyPackage.getComponent());
 		        //String combinedSerialization = serializedFormulas + "\n" + serializedContracts;
 
 				fileUtil.saveString(targetFolderUri + File.separator + "." +
@@ -968,9 +974,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			ComponentReference reference = (ComponentReference) transformation.getModel();
 			Component component = reference.getComponent();
 			preprocessModel(component);
-			Entry<Integer, Integer> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
-			Integer minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
-			Integer maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
+			Entry<Long, Long> schedulingConstraint = evaluateConstraint(transformation.getConstraint());
+			Long minSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getKey() : null;
+			Long maxSchedulingConstraint = (schedulingConstraint != null) ? schedulingConstraint.getValue() : null;
 			String fileName = transformation.getFileName().get(0);
 			// Coverages
 			List<Coverage> coverages = transformation.getCoverages();
