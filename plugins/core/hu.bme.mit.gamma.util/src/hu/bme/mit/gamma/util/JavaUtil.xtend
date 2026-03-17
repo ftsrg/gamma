@@ -58,11 +58,7 @@ class JavaUtil {
 	}
 	
 	def <T> T getLastElement(Iterable<T> collection) {
-		var T last = null
-		for (element : collection) {
-			last = element
-		}
-		return last
+		return collection.lastOrNull
 	}
 	
 	def <T> T getBeforeLastElement(Iterable<T> collection) {
@@ -176,7 +172,7 @@ class JavaUtil {
 		if (collection.size !== 1) {
 			throw new IllegalArgumentException("Not one element: " + collection)
 		}
-		return collection.lastElement
+		return collection.head
 	}
 	
 	def <K, V> List<V> getOrCreateList(Map<K, List<V>> map, K key) {
