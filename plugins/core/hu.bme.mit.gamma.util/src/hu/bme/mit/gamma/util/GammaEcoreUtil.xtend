@@ -18,7 +18,6 @@ import java.util.Iterator
 import java.util.List
 import java.util.function.BiPredicate
 import java.util.function.Predicate
-import java.util.logging.Level
 import java.util.logging.Logger
 import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.core.runtime.Path
@@ -72,6 +71,11 @@ class GammaEcoreUtil {
 		return !settings.empty
 	}
 	
+	def referencesDirectly(EObject source, EObject target) {
+		val referencedObjects = source.eCrossReferences
+		return referencedObjects.contains(target)
+	}
+	
 	def inlineReferences(EObject target, EObject newObject, EObject container) {
 		val settings = UsageCrossReferencer.find(target, container).toSet
 		for (setting : settings) {
@@ -121,7 +125,7 @@ class GammaEcoreUtil {
 					}
 				} catch (UnsupportedOperationException e) {
 					// Derived feature, cannot be changed
-					logger.log(Level.WARNING, "Reference from " + oldObject
+					logger.warning("Reference from " + oldObject
 						+ " to " + newObject + " in " + container + " cannot be changed")
 				}
 			}
@@ -170,7 +174,7 @@ class GammaEcoreUtil {
 			removableElement.remove
 			if (clazz.isInstance(container)) {
 				if (!container.eContents.empty) {
-					logger.log(Level.WARNING, "The content is not empty")
+					logger.warning("The content is not empty")
 				}
 				queue += container as T
 			}
@@ -442,6 +446,35 @@ class GammaEcoreUtil {
 		return container.getChildOfContainerOfType(type)
 	}
 	
+	def <T extends EObject> List<EObject> getSelfAndAllContentsOfTypeReferencing(Iterable<? extends EObject> objects, EObject target) {
+		val referencers = newArrayList
+		
+		for (object : objects) {
+			referencers += object.getSelfAndAllContentsOfTypeReferencing(target)
+		}
+		
+		return referencers
+	}
+	
+	def <T extends EObject> List<EObject> getSelfAndAllContentsOfTypeReferencing(EObject object, EObject target) {
+		val referencers = object.getAllContentsOfTypeReferencing(target)
+		if (object.referencesDirectly(target)) {
+			referencers.add(0, object)
+		}
+		return referencers
+	}
+	
+	def <T extends EObject> List<EObject> getAllContentsOfTypeReferencing(EObject object, EObject target) {
+		val referencers = newArrayList
+		
+		for (content : object.getAllContentsOfType(EObject)) {
+			if (content.referencesDirectly(target)) {
+				referencers += content
+			}
+		}
+		
+		return referencers
+	}
 	
 	def <T extends EObject> List<T> getContentsOfType(EObject object, Class<T> type) {
 		return object.eContents.filter(type).toList
