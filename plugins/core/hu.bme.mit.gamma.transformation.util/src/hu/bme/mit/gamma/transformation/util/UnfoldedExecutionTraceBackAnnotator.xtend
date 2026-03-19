@@ -149,7 +149,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 			newStep.asserts += assert.transformAssert
 		}
 		// Handling removed (reduced) variables (if any)
-		newStep.handleRemovedVariables
+		newStep.handleRemovedStatesAndVariables
 		
 		return newStep
 	}
@@ -349,9 +349,12 @@ class UnfoldedExecutionTraceBackAnnotator {
 	
 	//
 	
-	protected def void handleRemovedVariables(Step step) {
+	protected def void handleRemovedStatesAndVariables(Step step) {
 		val variableInstances = step.asserts
 				.map[it.getSelfAndAllContentsOfType(ComponentInstanceVariableReferenceExpression)]
+				.flatten
+		val stateInstances = step.asserts
+				.map[it.getSelfAndAllContentsOfType(ComponentInstanceStateReferenceExpression)]
 				.flatten
 		
 		val instances = originalTopComponent.allSimpleInstanceReferences
@@ -362,16 +365,31 @@ class UnfoldedExecutionTraceBackAnnotator {
 				val presentInstanceVariables = variableInstances.filter[it.instance.name == instance.name]
 				val presentVariables = presentInstanceVariables.map[it.variableDeclaration]
 				
-				val unpresentVariables = statechartVariables.filter[!presentVariables.contains(it)]
-				for (unpresentVariable : unpresentVariables) {
+				val absentVariables = statechartVariables.filter[!presentVariables.contains(it)]
+				for (absentVariable : absentVariables) {
 					// We know what to do only if the variable is unwritten
-					if (unpresentVariable.unwritten) {
+					if (absentVariable.unwritten) {
 						val unwrittenVariable = instance.clone
-								.createVariableReference(unpresentVariable)
-						val value = unpresentVariable.initialValue
+								.createVariableReference(absentVariable)
+						val value = absentVariable.initialValue
 						
 						val assertion = unwrittenVariable.createEqualityExpression(value)
 						step.asserts += assertion
+					}
+				}
+				
+				val statechartRegions = statechart.allRegions
+				val presentRegions = stateInstances.filter[it.instance.name == instance.name].map[it.region]
+				
+				val absentRegions = statechartRegions.filter[!presentRegions.contains(it)]
+				for (absentRegion : absentRegions) {
+					val states = absentRegion.states
+					// We know what to do only if there is one state in the region
+					if (states.size == 1) {
+						val initialStateAssertion = instance.clone
+								.createStateReference(states.head)
+								
+						step.asserts += initialStateAssertion
 					}
 				}
 			}
