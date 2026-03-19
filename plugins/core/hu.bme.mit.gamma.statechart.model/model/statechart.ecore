@@ -108,6 +108,9 @@
   <eClassifiers xsi:type="ecore:EClass" name="AnyPortEventReference" eSuperTypes="interface.ecore#//EventReference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="ecore:EClass interface.ecore#//Port"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EventAnyPortReference" eSuperTypes="interface.ecore#//EventReference">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="ecore:EClass interface.ecore#//Event"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="PortEventReference" eSuperTypes="interface.ecore#//EventReference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="ecore:EClass interface.ecore#//Event"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="ecore:EClass interface.ecore#//Port"/>

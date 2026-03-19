@@ -178,7 +178,8 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				}
 			}
 			//
-			if (reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__EVENT) {
+			if (reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__EVENT || 
+					reference == StatechartModelPackage.Literals.EVENT_ANY_PORT_REFERENCE__EVENT) {
 				// If the branch above does not work
 				Collection<Event> inputEvents = new ArrayList<Event>();
 				Collection<Event> allEvents = new ArrayList<Event>();
