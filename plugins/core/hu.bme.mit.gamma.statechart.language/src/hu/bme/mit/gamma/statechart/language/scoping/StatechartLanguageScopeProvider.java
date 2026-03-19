@@ -74,6 +74,7 @@ import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation;
 import hu.bme.mit.gamma.statechart.phase.PhaseModelPackage;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
+import hu.bme.mit.gamma.statechart.statechart.EventAnyPortReference;
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.Region;
@@ -184,23 +185,39 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				Collection<Event> inputEvents = new ArrayList<Event>();
 				Collection<Event> allEvents = new ArrayList<Event>();
 				// Not only in events are returned as less-aware users tend to write out events on triggers
+				StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
+				List<Port> statechartPorts = statechart.getPorts();
+				
 				List<Port> ports = new ArrayList<Port>();
 				if (context instanceof PortEventReference portEventReference) {
-					ports.add(portEventReference.getPort());
+					ports.add(
+							portEventReference.getPort());
+				}
+				else if (context instanceof EventAnyPortReference eventAnyPortReference) {
+					Interface interface_ = eventAnyPortReference.getInterface();
+					if (interface_ != null) {
+						return Scopes.scopeFor(
+								StatechartModelDerivedFeatures.getAllEvents(interface_));
+					}
+					else {
+						ports.addAll(statechartPorts);
+					}
 				}
 				else {
-					StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
-					ports.addAll(statechart.getPorts());
+					ports.addAll(statechartPorts);
 				}
+				
 				for (Port port : ports) {
-					inputEvents.addAll(StatechartModelDerivedFeatures.getInputEvents(port));
-					allEvents.addAll(StatechartModelDerivedFeatures.getAllEvents(port));
+					inputEvents.addAll(
+							StatechartModelDerivedFeatures.getInputEvents(port));
+					allEvents.addAll(
+							StatechartModelDerivedFeatures.getAllEvents(port));
 				}
 				return Scopes.scopeFor(inputEvents,
 						Scopes.scopeFor(allEvents));
 			}
-			if (context instanceof RaiseEventAction raiseEventAction
-					&& reference == StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT) {
+			if (context instanceof RaiseEventAction raiseEventAction && 
+					reference == StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT) {
 				Port port = raiseEventAction.getPort();
 				// Not only in events are returned as less-aware users tend to write in events on actions
 				return Scopes.scopeFor(
@@ -256,7 +273,8 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			// Composite system
 
 			// Ports
-			if (context instanceof InterfaceRealization && reference == InterfaceModelPackage.Literals.INTERFACE_REALIZATION__INTERFACE) {
+			if (context instanceof InterfaceRealization && reference == InterfaceModelPackage.Literals.INTERFACE_REALIZATION__INTERFACE ||
+					reference == StatechartModelPackage.Literals.EVENT_ANY_PORT_REFERENCE__INTERFACE) {
 				Package gammaPackage = StatechartModelDerivedFeatures.getContainingPackage(context);
 				if (!gammaPackage.getImports().isEmpty()) {
 					Set<Interface> interfaces = new HashSet<Interface>();

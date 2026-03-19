@@ -364,6 +364,7 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statechart.ecore#//AnyPortEventReference/port"/>
     </genClasses>
     <genClasses ecoreClass="statechart.ecore#//EventAnyPortReference">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statechart.ecore#//EventAnyPortReference/interface"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statechart.ecore#//EventAnyPortReference/event"/>
     </genClasses>
     <genClasses ecoreClass="statechart.ecore#//PortEventReference">

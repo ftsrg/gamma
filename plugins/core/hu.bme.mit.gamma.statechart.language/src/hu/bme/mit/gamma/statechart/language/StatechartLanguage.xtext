@@ -158,7 +158,7 @@ AnyPortEventReference returns AnyPortEventReference:
 ;
 
 EventAnyPortReference returns EventAnyPortReference:
-	'any' '.' event=[InterfaceModel::Event]
+	'any' '.'(interface=[InterfaceModel::Interface] '.')? event=[InterfaceModel::Event]
 ;
 
 PortEventReference returns PortEventReference:

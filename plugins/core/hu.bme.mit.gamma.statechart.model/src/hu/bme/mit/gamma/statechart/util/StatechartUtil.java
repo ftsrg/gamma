@@ -92,6 +92,7 @@ import hu.bme.mit.gamma.statechart.statechart.BinaryType;
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
 import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
 import hu.bme.mit.gamma.statechart.statechart.EntryState;
+import hu.bme.mit.gamma.statechart.statechart.EventAnyPortReference;
 import hu.bme.mit.gamma.statechart.statechart.InitialState;
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
@@ -346,6 +347,28 @@ public class StatechartUtil extends ActionUtil {
 		
 		EventTrigger eventTrigger = interfaceFactory.createEventTrigger();
 		eventTrigger.setEventReference(portEventReference);
+		
+		return eventTrigger;
+	}
+	
+	public EventTrigger createAnyPortEventTrigger(Port port) {
+		AnyPortEventReference anyPortEventReference = statechartFactory.createAnyPortEventReference();
+		anyPortEventReference.setPort(port);
+		
+		EventTrigger eventTrigger = interfaceFactory.createEventTrigger();
+		eventTrigger.setEventReference(anyPortEventReference);
+		
+		return eventTrigger;
+	}
+	
+	public EventTrigger createAnyEventTrigger(Event event) {
+		EventAnyPortReference anyEventReference = statechartFactory.createEventAnyPortReference();
+		anyEventReference.setInterface(
+				ecoreUtil.getContainerOfType(event, Interface.class));
+		anyEventReference.setEvent(event);
+		
+		EventTrigger eventTrigger = interfaceFactory.createEventTrigger();
+		eventTrigger.setEventReference(anyEventReference);
 		
 		return eventTrigger;
 	}
