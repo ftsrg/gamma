@@ -46,6 +46,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference
+import hu.bme.mit.gamma.statechart.statechart.EventAnyPortReference
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
 import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression
@@ -421,11 +422,24 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch Expression transformEventReference(AnyPortEventReference reference) {
-		val port = reference.port
-		val allEvents = trace.getAllLowlevelEvents(port, EventDirection.IN) // Considering only IN events
 		val triggerGuards = newLinkedList
-		for (event : allEvents) {
-			triggerGuards += event.transformToLowlevelGuard
+		val port = reference.port
+		val allLowlevelEvents = trace.getAllLowlevelEvents(port, EventDirection.IN) // Considering only IN events
+		for (lowlevelEvent : allLowlevelEvents) {
+			triggerGuards += lowlevelEvent.transformToLowlevelGuard
+		}
+		return triggerGuards.wrapIntoOrExpression
+	}
+	
+	def dispatch Expression transformEventReference(EventAnyPortReference reference) {
+		val triggerGuards = newLinkedList
+		val event = reference.event
+		for (inputEvent : reference.inputEvents) {
+			if (inputEvent.value === event) {
+				val port = inputEvent.key
+				val lowlevelEvent = trace.get(port, event, EventDirection.IN)
+				triggerGuards += lowlevelEvent.transformToLowlevelGuard
+			}
 		}
 		return triggerGuards.wrapIntoOrExpression
 	}
@@ -522,7 +536,7 @@ class ExpressionTransformer {
 		}
 		return time.value.transform(time.unit, smallestTimeUnit)
 	}
-
+	
 	protected def Expression transform(Expression timeValue, TimeUnit timeUnit, TimeUnit base) {
 		val plainValue = timeValue.transformSimpleExpression
 		val multiplicator = timeUnit.getMultiplicator(base)

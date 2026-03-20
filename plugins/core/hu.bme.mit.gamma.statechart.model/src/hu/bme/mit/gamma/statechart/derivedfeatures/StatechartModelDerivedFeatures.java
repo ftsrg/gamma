@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -115,6 +115,7 @@ import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
 import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
 import hu.bme.mit.gamma.statechart.statechart.DeepHistoryState;
 import hu.bme.mit.gamma.statechart.statechart.EntryState;
+import hu.bme.mit.gamma.statechart.statechart.EventAnyPortReference;
 import hu.bme.mit.gamma.statechart.statechart.ForkState;
 import hu.bme.mit.gamma.statechart.statechart.InitialState;
 import hu.bme.mit.gamma.statechart.statechart.JoinState;
@@ -1229,6 +1230,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return events;
 	}
 	
+	public static boolean hasInputEvent(Port port, Event event) {
+		return getInputEvents(port).contains(event);
+	}
+	
 	public static boolean hasInputEvents(Port port) {
 		return !getInputEvents(port).isEmpty();
 	}
@@ -1264,6 +1269,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 					.collect(Collectors.toList()));
 		}
 		return events;
+	}
+	
+	public static boolean hasOutputEvent(Port port, Event event) {
+		return getOutputEvents(port).contains(event);
 	}
 	
 	public static boolean hasOutputEvents(Port port) {
@@ -1845,6 +1854,17 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			for (Event inputEvent : getInputEvents(port)) {
 				events.add(
 						new SimpleEntry<Port, Event>(port, inputEvent));
+			}
+		}
+		else if (eventReference instanceof EventAnyPortReference eventAnyPortReference) {
+			Event inputEvent = eventAnyPortReference.getEvent();
+			StatechartDefinition statechart = getContainingStatechart(eventAnyPortReference);
+			List<Port> ports = statechart.getPorts();
+			for (Port port : ports) {
+				if (hasInputEvent(port, inputEvent)) {
+					events.add(
+							new SimpleEntry<Port, Event>(port, inputEvent));
+				}
 			}
 		}
 		else if (eventReference instanceof ClockTickReference) {
@@ -3259,6 +3279,22 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				for (Event inputEvent : inputEvents) {
 					EventTrigger newEventTrigger = statechartUtil.createEventTrigger(port, inputEvent);
 					newEventTriggers.add(newEventTrigger);
+				}
+				
+				return newEventTriggers;
+			}
+
+			if (eventReference instanceof EventAnyPortReference eventAnyPortReference) {
+				List<EventTrigger> newEventTriggers = new ArrayList<EventTrigger>();
+				
+				Event inputEvent = eventAnyPortReference.getEvent();
+				StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(trigger);
+				List<Port> ports = statechart.getPorts();
+				for (Port port : ports) {
+					if (StatechartModelDerivedFeatures.hasInputEvent(port, inputEvent)) {
+						EventTrigger newEventTrigger = statechartUtil.createEventTrigger(port, inputEvent);
+						newEventTriggers.add(newEventTrigger);
+					}
 				}
 				
 				return newEventTriggers;
