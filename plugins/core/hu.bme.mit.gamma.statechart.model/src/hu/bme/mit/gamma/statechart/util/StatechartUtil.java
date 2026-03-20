@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
@@ -892,6 +893,22 @@ public class StatechartUtil extends ActionUtil {
 		portEventReference.setPort(port);
 		portEventReference.setEvent(event);
 		return portEventReference;
+	}
+	
+	public IfThenElseExpression createIfRaisedThenExpression(Port port, ParameterDeclaration parameter) {
+		EventParameterReferenceExpression eventParameterReference = createEventParameterReference(port, parameter);
+		return createIfRaisedThenExpression(eventParameterReference);
+	}
+	
+	public IfThenElseExpression createIfRaisedThenExpression(EventParameterReferenceExpression expression) {
+		return createIfRaisedThenExpression(
+				expression.getPort(), expression.getEvent(), expression);
+	}
+	
+	public IfThenElseExpression createIfRaisedThenExpression(Port port, Event event, Expression then) {
+		PortEventReference portEventReference = createPortEventReference(port, event);
+		IfThenElseExpression ifThenElseExpression = createIfThenElseExpression(portEventReference, then, null);
+		return ifThenElseExpression;
 	}
 	
 	public EventPassing createEventPassing(Port port) {
