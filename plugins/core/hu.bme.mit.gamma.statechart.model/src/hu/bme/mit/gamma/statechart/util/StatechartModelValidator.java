@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -684,7 +684,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 				if (references.stream().noneMatch(it -> it.getPort() == port && it.getEvent() == event)) {
 					validationResultMessages.add(
 						new ValidationResultMessage(ValidationResult.WARNING,
-							"None of the preceding transitions are triggered by this port-event combination", 
+							"None of the corresponding transitions are triggered by this specific port-event combination", 
 								new ReferenceInfo(InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT)));
 				}
 			}
