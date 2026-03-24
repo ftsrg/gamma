@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -49,6 +49,8 @@ class ModelAnnotatorPropertyGenerator {
 		// State coverage
 		val testedComponentsForStates = getIncludedSynchronousInstances(
 				annotableElements.testedComponentsForStates, newTopComponent)
+		val testedComponentsForOrthogonalStateCombinations = getIncludedSynchronousInstances(
+				annotableElements.testedComponentsForOrthogonalStateCombinations, newTopComponent)
 		// Unstable state coverage
 		val testedComponentsForUnstableStates = getIncludedSynchronousInstances(
 				annotableElements.testedComponentsForUnstableStates, newTopComponent)
@@ -100,6 +102,7 @@ class ModelAnnotatorPropertyGenerator {
 				annotableElements.testedComponentsForInteractionDataflow, newTopComponent)
 		
 		if (!testedComponentsForStates.nullOrEmpty ||
+				!testedComponentsForOrthogonalStateCombinations.nullOrEmpty ||
 				!testedComponentsForUnstableStates.nullOrEmpty ||
 				!testedComponentsForTrapStates.nullOrEmpty ||
 				!testedComponentsForDeadlock.nullOrEmpty ||
@@ -136,6 +139,7 @@ class ModelAnnotatorPropertyGenerator {
 			val formulas = generatedPropertyPackage.formulas
 			
 			formulas += propertyGenerator.createStateReachability(testedComponentsForStates)
+			formulas += propertyGenerator.createOrthogonalStateCombinationReachability(testedComponentsForOrthogonalStateCombinations)
 			
 			formulas += propertyGenerator.createUnstableStateInvariance(testedComponentsForUnstableStates)
 			formulas += propertyGenerator.createTrapStateInvariance(testedComponentsForTrapStates)
@@ -155,7 +159,7 @@ class ModelAnnotatorPropertyGenerator {
 					annotator.dataflowCoverageCriterion)
 			formulas += propertyGenerator.createInteractionDataflowReachability(
 					annotator.getInteractionDefUses, annotator.interactionDataflowCoverageCriterion)
-			// Saving the property package and serializing the properties has to be done by the caller!
+			// Saving the property package and serializing the properties must be done by the caller!
 		}
 		return new Result(generatedPropertyPackage)
 	}

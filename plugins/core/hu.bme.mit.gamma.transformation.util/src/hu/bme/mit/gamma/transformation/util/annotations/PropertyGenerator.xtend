@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -34,6 +34,7 @@ import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeature
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.CompositeElement
 import hu.bme.mit.gamma.statechart.statechart.CoverageAvoidanceAnnotation
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.State
@@ -108,7 +109,15 @@ class PropertyGenerator {
 	
 	def List<CommentableStateFormula> createStateReachabilityFormulas(Iterable<? extends State> states) {
 		val formulas = newArrayList
+		
 		for (state : states) {
+			formulas += state.createStateReachabilityFormula
+		}
+		
+		return formulas
+	}
+	
+	def CommentableStateFormula createStateReachabilityFormula(State state) {
 			val instance = state.containingComponent.referencingComponentInstance
 			val stateReference = compositeFactory.createComponentInstanceStateReferenceExpression
 			val parentRegion = StatechartModelDerivedFeatures.getParentRegion(state)
@@ -118,7 +127,62 @@ class PropertyGenerator {
 			val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(stateReference))
 			val commentableStateFormula = propertyUtil.createCommentableStateFormula(
 					'''«instance.name».«parentRegion.name».«state.name»''', stateFormula)
-			formulas += commentableStateFormula
+			return commentableStateFormula
+	}
+	
+	def List<CommentableStateFormula> createOrthogonalStateCombinationReachability(Iterable<? extends SynchronousComponentInstance> instances) {
+		val formulas = newArrayList
+		
+		for (SynchronousComponentInstance instance : instances) {
+			val allStateCombinations = newArrayList
+			val type = instance.type
+			if (type instanceof StatechartDefinition) {
+				val compositeElements = type.getSelfAndAllContentsOfType(CompositeElement)
+						.filter[it.regions.size > 1]
+				for (compositeElement : compositeElements) {
+					val stateCombinations = <List<State>>newArrayList
+					val regions = compositeElement.regions
+					var isFirst = true
+					for (region : regions
+								.filter[it.states.size > 1]) { // Single state regions are uninteresting
+						val states = region.states
+						if (isFirst) {
+							isFirst = false
+							stateCombinations += states.map[newArrayList(it)]
+						}
+						else {
+							val extendedStateCombinations = <List<State>>newArrayList
+							for (stateCombination : stateCombinations) {
+								for (state : states) {
+									val extendedStateCombination = newArrayList(state)
+									extendedStateCombination += stateCombination
+									extendedStateCombinations += extendedStateCombination
+								}
+							}
+							stateCombinations.clear
+							stateCombinations += extendedStateCombinations
+						}
+					}
+					allStateCombinations += stateCombinations
+				}
+			}
+			
+			for (stateCombination : allStateCombinations
+						.reverseView /* Farthest first to support optimization*/
+						.filter[it.size > 1] /* Multi-element combinations */) {
+				val stateReferences = newArrayList
+				for (state : stateCombination) {
+					stateReferences += instance.createInstanceReference
+							.createStateReference(state)
+				}
+				val comment = stateCombination.map[it.id].join(" and ")
+				val reachabilityFormula = stateReferences.wrapIntoAndExpression
+						.createAtomicFormula
+						.createEF
+				val formula = comment.createCommentableStateFormula(reachabilityFormula)
+				
+				formulas += formula
+			}
 		}
 		
 		return formulas

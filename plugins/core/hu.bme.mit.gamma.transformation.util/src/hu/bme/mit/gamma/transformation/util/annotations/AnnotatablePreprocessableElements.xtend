@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -16,6 +16,8 @@ import org.eclipse.xtend.lib.annotations.Data
 class AnnotatablePreprocessableElements {
 	
 	ComponentInstanceReferences testedComponentsForStates
+	
+	ComponentInstanceReferences testedComponentsForOrthogonalStateCombinations
 	
 	ComponentInstanceReferences testedComponentsForUnstableStates
 	
@@ -50,10 +52,11 @@ class AnnotatablePreprocessableElements {
 	new() {
 		// If only a placeholder is needed, this constructor can be used
 		this(null, null, null, null, null, null, null, null, null, null, null, null, null,
-				null, null, null, null)
+				null, null, null, null, null)
 	}
 
 	new(ComponentInstanceReferences testedComponentsForStates,
+			ComponentInstanceReferences testedComponentsForOrthogonalStateCombinations,
 			ComponentInstanceReferences testedComponentsForUnstableStates,
 			ComponentInstanceReferences testedComponentsForTrapStates,
 			ComponentInstanceReferences testedComponentsForDeadlock,
@@ -67,6 +70,7 @@ class AnnotatablePreprocessableElements {
 			ComponentInstanceVariableReferences dataflowTestedVariables, DataflowCoverageCriterion dataflowCoverageCriterion,
 			ComponentInstancePortReferences testedComponentsForInteractionDataflow, DataflowCoverageCriterion interactionDataflowCoverageCriterion) {
 		this.testedComponentsForStates = testedComponentsForStates
+		this.testedComponentsForOrthogonalStateCombinations = testedComponentsForOrthogonalStateCombinations
 		this.testedComponentsForUnstableStates = testedComponentsForUnstableStates
 		this.testedComponentsForTrapStates = testedComponentsForTrapStates
 		this.testedComponentsForDeadlock = testedComponentsForDeadlock
