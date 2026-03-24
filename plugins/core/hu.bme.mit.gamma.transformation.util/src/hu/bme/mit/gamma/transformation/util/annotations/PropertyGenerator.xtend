@@ -137,38 +137,11 @@ class PropertyGenerator {
 			val allStateCombinations = newArrayList
 			val type = instance.type
 			if (type instanceof StatechartDefinition) {
-				val compositeElements = type.getSelfAndAllContentsOfType(CompositeElement)
-						.filter[it.regions.size > 1]
-				for (compositeElement : compositeElements) {
-					val stateCombinations = <List<State>>newArrayList
-					val regions = compositeElement.regions
-					var isFirst = true
-					for (region : regions
-								.filter[it.states.size > 1]) { // Single state regions are uninteresting
-						val states = region.states
-						if (isFirst) {
-							isFirst = false
-							stateCombinations += states.map[newArrayList(it)]
-						}
-						else {
-							val extendedStateCombinations = <List<State>>newArrayList
-							for (stateCombination : stateCombinations) {
-								for (state : states) {
-									val extendedStateCombination = newArrayList(state)
-									extendedStateCombination += stateCombination
-									extendedStateCombinations += extendedStateCombination
-								}
-							}
-							stateCombinations.clear
-							stateCombinations += extendedStateCombinations
-						}
-					}
-					allStateCombinations += stateCombinations
-				}
+				allStateCombinations += type.allOrthogonalStateCombinations
 			}
 			
 			for (stateCombination : allStateCombinations
-						.reverseView /* Farthest first to support optimization*/
+						.reverseView /* Farthest first to support optimization */
 						.filter[it.size > 1] /* Multi-element combinations */) {
 				val stateReferences = newArrayList
 				for (state : stateCombination) {
@@ -186,6 +159,39 @@ class PropertyGenerator {
 		}
 		
 		return formulas
+	}
+	
+	def getAllOrthogonalStateCombinations(StatechartDefinition type) {
+		val allStateCombinations = newArrayList
+		val compositeElements = type.getSelfAndAllContentsOfType(CompositeElement)
+						.filter[it.regions.size > 1]
+		for (compositeElement : compositeElements) {
+			val stateCombinations = <List<State>>newArrayList
+			val regions = compositeElement.regions
+			var isFirst = true
+			for (region : regions
+						.filter[it.states.size > 1]) { // Single state regions are uninteresting
+				val states = region.states
+				if (isFirst) {
+					isFirst = false
+					stateCombinations += states.map[newArrayList(it)]
+				}
+				else {
+					val extendedStateCombinations = <List<State>>newArrayList
+					for (stateCombination : stateCombinations) {
+						for (state : states) {
+							val extendedStateCombination = newArrayList(state)
+							extendedStateCombination += stateCombination
+							extendedStateCombinations += extendedStateCombination
+						}
+					}
+					stateCombinations.clear
+					stateCombinations += extendedStateCombinations
+				}
+			}
+			allStateCombinations += stateCombinations
+		}
+		return allStateCombinations
 	}
 	
 	def List<CommentableStateFormula> createUnstableStateInvariance(Iterable<? extends State> states) {

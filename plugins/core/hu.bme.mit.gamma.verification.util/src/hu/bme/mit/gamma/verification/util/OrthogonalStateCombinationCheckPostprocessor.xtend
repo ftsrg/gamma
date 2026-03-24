@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2025-2026 Contributors to the Gamma project
+ * Copyright (c) 2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,13 +15,14 @@ import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
+import java.util.Collection
 import java.util.List
 
-abstract class StateCheckPostprocessor extends VerificationPostprocessor {
+abstract class OrthogonalStateCombinationCheckPostprocessor extends VerificationPostprocessor {
 	//
 	protected final Component originalTopComponent
 	//
-	protected final List<ComponentInstanceStateReferenceExpression> states = newArrayList
+	protected final List<Collection<? extends ComponentInstanceStateReferenceExpression>> stateCombinations = newArrayList
 	//
 	
 	new(Component originalTopComponent) {
@@ -35,11 +36,11 @@ abstract class StateCheckPostprocessor extends VerificationPostprocessor {
 		if (res == ThreeStateBoolean.TRUE) {
 			// Knowing the structure of the property
 			val property = result.property
-			state = property.selectState
+			val states = property.selectStates
 			
-			val originalState = state.getOriginal(originalTopComponent)
+			val originalStates = states.map[it.getOriginal(originalTopComponent)]
 			
-			states += originalState
+			states += originalStates
 		}
 		
 		return state
@@ -51,8 +52,8 @@ abstract class StateCheckPostprocessor extends VerificationPostprocessor {
 	
 	//
 	
-	def getStates() {
-		return states
+	def getOrthogonalStateCombinations() {
+		return stateCombinations
 	}
 	
 }
