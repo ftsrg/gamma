@@ -84,6 +84,10 @@ abstract class VerificationPostprocessor {
 	
 	//
 	
+	def getId(ComponentInstanceStateReferenceExpression reference) {
+		return reference.instance.name + "." + reference.state.fullContainmentHierarchy
+	}
+	
 	protected def getOriginal(ComponentInstanceStateReferenceExpression reference, Component originalTopComponent) {
 		val instance = reference.instance
 		val lastInstance = instance.lastInstance as SynchronousComponentInstance

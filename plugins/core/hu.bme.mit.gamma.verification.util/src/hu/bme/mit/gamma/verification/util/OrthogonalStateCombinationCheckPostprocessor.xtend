@@ -12,13 +12,16 @@ package hu.bme.mit.gamma.verification.util
 
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
 import java.util.Collection
 import java.util.List
 
-abstract class OrthogonalStateCombinationCheckPostprocessor extends VerificationPostprocessor {
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+
+class OrthogonalStateCombinationCheckPostprocessor extends VerificationPostprocessor {
 	//
 	protected final Component originalTopComponent
 	//
@@ -32,7 +35,6 @@ abstract class OrthogonalStateCombinationCheckPostprocessor extends Verification
 	override execute(Result result) {
 		val res = result.result
 		
-		var ComponentInstanceStateReferenceExpression state = null
 		if (res == ThreeStateBoolean.TRUE) {
 			// Knowing the structure of the property
 			val property = result.property
@@ -40,10 +42,10 @@ abstract class OrthogonalStateCombinationCheckPostprocessor extends Verification
 			
 			val originalStates = states.map[it.getOriginal(originalTopComponent)]
 			
-			states += originalStates
+			stateCombinations += originalStates
 		}
 		
-		return state
+		return stateCombinations
 	}
 	
 	override execute(ExecutionTrace trace) {
@@ -54,6 +56,29 @@ abstract class OrthogonalStateCombinationCheckPostprocessor extends Verification
 	
 	def getOrthogonalStateCombinations() {
 		return stateCombinations
+	}
+	
+	def getUncoveredOrthogonalStateCombinations() {
+		val uncoveredOrthogonalStateCombinations = <List<? extends ComponentInstanceStateReferenceExpression>>newArrayList
+		val coveredOrthogonalStateCombinations = this.getOrthogonalStateCombinations
+		
+		val instances = originalTopComponent.allSimpleInstanceReferences
+		for (instance : instances) {
+			val lastInstance = instance.lastInstance
+			val statechart = lastInstance.derivedType as StatechartDefinition
+			val orthogonalStateCombinations = statechart.allOrthogonalStateCombinations
+			for (orthogonalStateCombination : orthogonalStateCombinations) {
+				val newInstances = orthogonalStateCombination.map[instance.clone.createStateReference(it)].toList
+				val ids = newInstances.map[it.id]
+				
+				if (!coveredOrthogonalStateCombinations.exists[
+						it.forall[ids.contains(it.id)]]) {
+					uncoveredOrthogonalStateCombinations += newInstances
+				}
+			}
+		}
+		
+		return uncoveredOrthogonalStateCombinations
 	}
 	
 }

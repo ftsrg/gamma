@@ -2670,6 +2670,43 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return regions;
 	}
 	
+	public static Collection<? extends Collection<State>> getAllOrthogonalStateCombinations(StatechartDefinition statechart) {
+		List<List<State>> allStateCombinations = new ArrayList<List<State>>();
+		
+		List<CompositeElement> compositeElements = ecoreUtil.getSelfAndAllContentsOfType(statechart, CompositeElement.class)
+				.stream().filter(it -> it.getRegions().size() > 1).toList();
+		for (CompositeElement compositeElement : compositeElements) {
+			List<List<State>> stateCombinations = new ArrayList<List<State>>();
+			List<Region> regions = compositeElement.getRegions();
+			boolean isFirst = true;
+			for (Region region : regions
+//						.stream().filter(it -> getStates(it).size() > 1).toList() // Single state regions are uninteresting
+						) {
+				List<State> states = getStates(region);
+				if (isFirst) {
+					isFirst = false;
+					stateCombinations.addAll(
+							states.stream().map(it -> List.of(it)).toList());
+				}
+				else {
+					List<List<State>> extendedStateCombinations = new ArrayList<List<State>>();
+					for (List<State> stateCombination : stateCombinations) {
+						for (State state : states) {
+							List<State> extendedStateCombination = new ArrayList<State>(stateCombination);
+							extendedStateCombination.add(state);
+							extendedStateCombinations.add(extendedStateCombination);
+						}
+					}
+					stateCombinations.clear();
+					stateCombinations.addAll(extendedStateCombinations);
+				}
+			}
+			allStateCombinations.addAll(stateCombinations);
+		}
+		
+		return allStateCombinations;
+	}
+	
 	public static State getParentState(StateAnnotation annotation) {
 		return (State) annotation.eContainer();
 	}
