@@ -146,6 +146,55 @@ class JavaUtil {
 		return !lhs.containsAny(rhs)
 	}
 	
+	def <T> Collection<Collection<T>> combine(Iterable<Collection<T>> collection) {
+		val newCollection = <Collection<T>>newArrayList
+		
+		if (collection.empty) {
+			return newCollection
+		}
+		if (collection.size == 1) {
+			newCollection += collection.head.map[newArrayList(it)]
+			return newCollection
+		}
+		
+		val head = collection.head
+		val tail = collection.tail
+		val combinedTail = tail.combine
+		
+		for (element : head) {
+			for (combinedTailList : combinedTail) {
+				val newCombinedTailList = newArrayList
+				newCombinedTailList += element
+				newCombinedTailList += combinedTailList
+				
+				newCollection += newCombinedTailList
+			}
+		}
+		
+		return newCollection
+	}
+	
+	def <T> Collection<Collection<T>> combine(Iterable<Collection<T>> a, Iterable<Collection<T>> b) {
+		if (a.nullOrEmpty) {
+			return b.toList
+		}
+		if (b.nullOrEmpty) {
+			return a.toList
+		}
+		
+		val lists = newArrayList
+		for (_a : a) {
+			for (_b : b) {
+				val newList = newArrayList
+				newList += a
+				newList += b
+				lists += newList
+			}
+		}
+		return lists
+	}
+	
+	
 	def <T> Set<T> union(T lhs, Iterable<? extends T> rhs) {
 		return #[lhs].union(rhs)
 	}

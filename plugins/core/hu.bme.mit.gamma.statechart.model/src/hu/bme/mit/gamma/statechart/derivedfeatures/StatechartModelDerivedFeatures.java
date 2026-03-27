@@ -2670,41 +2670,74 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return regions;
 	}
 	
-	public static Collection<? extends Collection<State>> getAllOrthogonalStateCombinations(StatechartDefinition statechart) {
-		List<List<State>> allStateCombinations = new ArrayList<List<State>>();
+	public static Collection<? extends Collection<State>> getAllOrthogonalStateCombinations(CompositeElement composite) {
+		List<Collection<State>> allStateCombinations = new ArrayList<Collection<State>>();
 		
-		List<CompositeElement> compositeElements = ecoreUtil.getSelfAndAllContentsOfType(statechart, CompositeElement.class)
+		List<CompositeElement> compositeElements = ecoreUtil.getSelfAndAllContentsOfType(composite, CompositeElement.class)
 				.stream().filter(it -> it.getRegions().size() > 1).toList();
 		for (CompositeElement compositeElement : compositeElements) {
-			List<List<State>> stateCombinations = new ArrayList<List<State>>();
-			List<Region> regions = compositeElement.getRegions();
-			boolean isFirst = true;
-			for (Region region : regions
-//						.stream().filter(it -> getStates(it).size() > 1).toList() // Single state regions are uninteresting
-						) {
-				List<State> states = getStates(region);
-				if (isFirst) {
-					isFirst = false;
-					stateCombinations.addAll(
-							states.stream().map(it -> List.of(it)).toList());
-				}
-				else {
-					List<List<State>> extendedStateCombinations = new ArrayList<List<State>>();
-					for (List<State> stateCombination : stateCombinations) {
-						for (State state : states) {
-							List<State> extendedStateCombination = new ArrayList<State>(stateCombination);
-							extendedStateCombination.add(state);
-							extendedStateCombinations.add(extendedStateCombination);
-						}
-					}
-					stateCombinations.clear();
-					stateCombinations.addAll(extendedStateCombinations);
-				}
-			}
-			allStateCombinations.addAll(stateCombinations);
+			allStateCombinations.addAll(
+					getOrthogonalStateCombinations(compositeElement));
 		}
 		
 		return allStateCombinations;
+	}
+
+	public static Collection<Collection<State>> getOrthogonalStateCombinations(CompositeElement compositeElement) {
+		List<Collection<State>> stateCombinations = new ArrayList<Collection<State>>();
+		List<Region> regions = compositeElement.getRegions();
+		boolean isFirst = true;
+		for (Region region : regions
+//						.stream().filter(it -> getStates(it).size() > 1).toList() // Single state regions are uninteresting
+					) {
+			List<State> states = getStates(region);
+			if (isFirst) {
+				isFirst = false;
+				stateCombinations.addAll(
+						states.stream().map(it -> List.of(it)).toList());
+			}
+			else {
+				List<Collection<State>> extendedStateCombinations = new ArrayList<Collection<State>>();
+				for (Collection<State> stateCombination : stateCombinations) {
+					for (State state : states) {
+						List<State> extendedStateCombination = new ArrayList<State>(stateCombination);
+						extendedStateCombination.add(state);
+						extendedStateCombinations.add(extendedStateCombination);
+					}
+				}
+				stateCombinations.clear();
+				stateCombinations.addAll(extendedStateCombinations);
+			}
+		}
+		
+		return stateCombinations;
+	}
+	
+	public static Collection<Collection<State>> getAllOrthogonalLeafStateCombinations(CompositeElement composite) {
+		Collection<Collection<State>> stateCombinations = new ArrayList<Collection<State>>();
+		
+		List<Region> regions = composite.getRegions();
+		if (regions.isEmpty()) {
+			return stateCombinations;
+		}
+		
+		for (Region region : regions) {
+			var regionLeafStates = new ArrayList<Collection<State>>();
+			List<State> states = getStates(region);
+			for (State state : states) {
+				if (isComposite(state)) {
+					var substateCombinations = getAllOrthogonalLeafStateCombinations(state);
+					regionLeafStates.addAll(substateCombinations);
+				}
+				else {
+					regionLeafStates.add(
+							List.of(state));
+				}
+			}
+			stateCombinations = javaUtil.combine(stateCombinations, regionLeafStates);
+		}
+		
+		return stateCombinations;
 	}
 	
 	public static State getParentState(StateAnnotation annotation) {
