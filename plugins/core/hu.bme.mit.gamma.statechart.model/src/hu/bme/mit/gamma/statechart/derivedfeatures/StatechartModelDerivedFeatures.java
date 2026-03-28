@@ -2734,7 +2734,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 							List.of(state));
 				}
 			}
-			stateCombinations = javaUtil.combine(stateCombinations, regionLeafStates);
+			stateCombinations = (stateCombinations.isEmpty()) ?
+					regionLeafStates :
+					javaUtil.combine(stateCombinations, regionLeafStates);
 		}
 		
 		return stateCombinations;

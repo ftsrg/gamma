@@ -122,6 +122,7 @@
     <genClasses ecoreClass="genmodel.ecore#//TransitionCoverage"/>
     <genClasses ecoreClass="genmodel.ecore#//StateCoverage"/>
     <genClasses ecoreClass="genmodel.ecore#//OrthogonalStateCombinationCoverage"/>
+    <genClasses ecoreClass="genmodel.ecore#//OrthogonalLeafStateCombinationCoverage"/>
     <genClasses ecoreClass="genmodel.ecore#//Coverage">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//Coverage/include"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//Coverage/exclude"/>

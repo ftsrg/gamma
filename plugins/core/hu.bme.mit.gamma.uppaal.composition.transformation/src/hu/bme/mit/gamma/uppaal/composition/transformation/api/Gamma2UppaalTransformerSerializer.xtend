@@ -51,12 +51,7 @@ class Gamma2UppaalTransformerSerializer {
 			boolean optimize) {
 		this(component, arguments, targetFolderUri, fileName, constraint,
 			scheduler, optimize, null,
-			new AnnotatablePreprocessableElements(
-				null, null, null, null, null, null, null, null, null, null, null, null,
-				InteractionCoverageCriterion.EVERY_INTERACTION, InteractionCoverageCriterion.EVERY_INTERACTION,
-				null, DataflowCoverageCriterion.ALL_USE,
-				null, DataflowCoverageCriterion.ALL_USE)
-			)
+			new AnnotatablePreprocessableElements)
 	}
 	
 	new(Component component, List<Expression> arguments,

@@ -19,6 +19,8 @@ class AnnotatablePreprocessableElements {
 	
 	ComponentInstanceReferences testedComponentsForOrthogonalStateCombinations
 	
+	ComponentInstanceReferences testedComponentsForOrthogonalLeafStateCombinations
+	
 	ComponentInstanceReferences testedComponentsForUnstableStates
 	
 	ComponentInstanceReferences testedComponentsForTrapStates
@@ -51,12 +53,13 @@ class AnnotatablePreprocessableElements {
 	
 	new() {
 		// If only a placeholder is needed, this constructor can be used
-		this(null, null, null, null, null, null, null, null, null, null, null, null, null,
+		this(null, null, null, null, null, null, null, null, null, null, null, null, null, null,
 				null, null, null, null, null)
 	}
 
 	new(ComponentInstanceReferences testedComponentsForStates,
 			ComponentInstanceReferences testedComponentsForOrthogonalStateCombinations,
+			ComponentInstanceReferences testedComponentsForOrthogonalLeafStateCombinations,
 			ComponentInstanceReferences testedComponentsForUnstableStates,
 			ComponentInstanceReferences testedComponentsForTrapStates,
 			ComponentInstanceReferences testedComponentsForDeadlock,
@@ -71,6 +74,7 @@ class AnnotatablePreprocessableElements {
 			ComponentInstancePortReferences testedComponentsForInteractionDataflow, DataflowCoverageCriterion interactionDataflowCoverageCriterion) {
 		this.testedComponentsForStates = testedComponentsForStates
 		this.testedComponentsForOrthogonalStateCombinations = testedComponentsForOrthogonalStateCombinations
+		this.testedComponentsForOrthogonalLeafStateCombinations = testedComponentsForOrthogonalLeafStateCombinations
 		this.testedComponentsForUnstableStates = testedComponentsForUnstableStates
 		this.testedComponentsForTrapStates = testedComponentsForTrapStates
 		this.testedComponentsForDeadlock = testedComponentsForDeadlock

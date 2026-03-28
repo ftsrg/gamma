@@ -27,13 +27,14 @@ import org.eclipse.xtend.lib.annotations.Data
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class ModelAnnotatorPropertyGenerator {
-	
+	//
 	protected final Component newTopComponent
 	
 	protected final AnnotatablePreprocessableElements annotableElements
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension UnfoldingTraceability traceability = UnfoldingTraceability.INSTANCE
+	//
 	
 	new(Component newTopComponent, AnnotatablePreprocessableElements annotableElements) {
 		this.newTopComponent = newTopComponent
@@ -51,6 +52,8 @@ class ModelAnnotatorPropertyGenerator {
 				annotableElements.testedComponentsForStates, newTopComponent)
 		val testedComponentsForOrthogonalStateCombinations = getIncludedSynchronousInstances(
 				annotableElements.testedComponentsForOrthogonalStateCombinations, newTopComponent)
+		val testedComponentsForOrthogonalLeafStateCombinations = getIncludedSynchronousInstances(
+				annotableElements.testedComponentsForOrthogonalLeafStateCombinations, newTopComponent)
 		// Unstable state coverage
 		val testedComponentsForUnstableStates = getIncludedSynchronousInstances(
 				annotableElements.testedComponentsForUnstableStates, newTopComponent)
@@ -103,6 +106,7 @@ class ModelAnnotatorPropertyGenerator {
 		
 		if (!testedComponentsForStates.nullOrEmpty ||
 				!testedComponentsForOrthogonalStateCombinations.nullOrEmpty ||
+				!testedComponentsForOrthogonalLeafStateCombinations.nullOrEmpty ||
 				!testedComponentsForUnstableStates.nullOrEmpty ||
 				!testedComponentsForTrapStates.nullOrEmpty ||
 				!testedComponentsForDeadlock.nullOrEmpty ||
@@ -116,8 +120,7 @@ class ModelAnnotatorPropertyGenerator {
 				!testedTransitionsForInteractions.nullOrEmpty ||
 				!dataflowTestedVariables.nullOrEmpty ||
 				!testedPortsForInteractionDataflow.nullOrEmpty) {
-			val annotator = new StatechartAnnotator(newPackage,
-				new AnnotatableElements(
+			val annotator = new StatechartAnnotator(newPackage, new AnnotatableElements(
 					testedComponentsForDeadlock,
 					testedComponentsForCompleteness,
 					testedComponentsForNondeterministicTransitions,
@@ -139,7 +142,10 @@ class ModelAnnotatorPropertyGenerator {
 			val formulas = generatedPropertyPackage.formulas
 			
 			formulas += propertyGenerator.createStateReachability(testedComponentsForStates)
-			formulas += propertyGenerator.createOrthogonalStateCombinationReachability(testedComponentsForOrthogonalStateCombinations)
+			formulas += propertyGenerator.createOrthogonalStateCombinationReachability(
+					testedComponentsForOrthogonalStateCombinations)
+			formulas += propertyGenerator.createOrthogonalStateCombinationReachability(
+					testedComponentsForOrthogonalLeafStateCombinations, true)
 			
 			formulas += propertyGenerator.createUnstableStateInvariance(testedComponentsForUnstableStates)
 			formulas += propertyGenerator.createTrapStateInvariance(testedComponentsForTrapStates)

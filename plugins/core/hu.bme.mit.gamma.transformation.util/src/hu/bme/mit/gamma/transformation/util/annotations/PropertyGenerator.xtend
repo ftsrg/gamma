@@ -129,14 +129,21 @@ class PropertyGenerator {
 			return commentableStateFormula
 	}
 	
-	def List<CommentableStateFormula> createOrthogonalStateCombinationReachability(Iterable<? extends SynchronousComponentInstance> instances) {
+	def List<CommentableStateFormula> createOrthogonalStateCombinationReachability(
+			Iterable<? extends SynchronousComponentInstance> instances) {
+		return instances.createOrthogonalStateCombinationReachability(false)
+	}
+	
+	def List<CommentableStateFormula> createOrthogonalStateCombinationReachability(
+			Iterable<? extends SynchronousComponentInstance> instances, boolean targetLeafStates) {
 		val formulas = newArrayList
 		
 		for (SynchronousComponentInstance instance : instances) {
 			val allStateCombinations = newArrayList
 			val type = instance.type
 			if (type instanceof StatechartDefinition) {
-				allStateCombinations += type.allOrthogonalStateCombinations
+				allStateCombinations += (targetLeafStates) ?
+					type.allOrthogonalLeafStateCombinations : type.allOrthogonalStateCombinations
 			}
 			
 			for (stateCombination : allStateCombinations

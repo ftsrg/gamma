@@ -182,12 +182,12 @@ class JavaUtil {
 			return a.toList
 		}
 		
-		val lists = newArrayList
+		val lists = <Collection<T>>newArrayList
 		for (_a : a) {
 			for (_b : b) {
-				val newList = newArrayList
-				newList += a
-				newList += b
+				val newList = <T>newArrayList
+				newList += _a
+				newList += _b
 				lists += newList
 			}
 		}

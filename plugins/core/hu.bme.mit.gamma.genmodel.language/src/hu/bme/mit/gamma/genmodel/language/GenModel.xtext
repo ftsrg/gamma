@@ -220,7 +220,8 @@ enum AnalysisLanguage returns AnalysisLanguage:
 ;
 
 Coverage returns Coverage:
-	StateCoverage | OrthogonalStateCombinationCoverage | UnstableStateCoverage | TrapStateCoverage |
+	StateCoverage | OrthogonalStateCombinationCoverage | OrthogonalLeafStateCombinationCoverage |
+	UnstableStateCoverage | TrapStateCoverage |
 	DeadlockCoverage | CompletenessCoverage | NonDeterministicTransitionCoverage |
 	TransitionCoverage | TransitionPairCoverage | OutEventCoverage |
 	InteractionCoverage | DataflowCoverage | InteractionDataflowCoverage |
@@ -235,7 +236,14 @@ StateCoverage returns StateCoverage:
 ;
 
 OrthogonalStateCombinationCoverage returns OrthogonalStateCombinationCoverage:
-	{OrthogonalStateCombinationCoverage} 'orthogonal-state-combination-coverage' ('{' 
+	{OrthogonalStateCombinationCoverage} 'orthogonal-state-combination-coverage' ('{'
+		('include' ':' '[' include+=ComponentInstanceReferenceExpression (',' include+=ComponentInstanceReferenceExpression)* ']')?
+		('exclude' ':' '[' exclude+=ComponentInstanceReferenceExpression (',' exclude+=ComponentInstanceReferenceExpression)* ']')?
+	'}')?
+;
+
+OrthogonalLeafStateCombinationCoverage returns OrthogonalLeafStateCombinationCoverage:
+	{OrthogonalLeafStateCombinationCoverage} 'orthogonal-leaf-state-combination-coverage' ('{'
 		('include' ':' '[' include+=ComponentInstanceReferenceExpression (',' include+=ComponentInstanceReferenceExpression)* ']')?
 		('exclude' ':' '[' exclude+=ComponentInstanceReferenceExpression (',' exclude+=ComponentInstanceReferenceExpression)* ']')?
 	'}')?
