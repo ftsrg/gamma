@@ -54,19 +54,23 @@ class OrthogonalStateCombinationCheckPostprocessor extends VerificationPostproce
 	
 	//
 	
-	def getOrthogonalStateCombinations() {
+	def getCoveredOrthogonalStateCombinations() {
 		return stateCombinations
+	}
+	
+	protected def calculateAllOrthogonalStateCombinations(StatechartDefinition statechart) {
+		return statechart.allOrthogonalStateCombinations
 	}
 	
 	def getUncoveredOrthogonalStateCombinations() {
 		val uncoveredOrthogonalStateCombinations = <List<? extends ComponentInstanceStateReferenceExpression>>newArrayList
-		val coveredOrthogonalStateCombinations = this.getOrthogonalStateCombinations
+		val coveredOrthogonalStateCombinations = this.coveredOrthogonalStateCombinations
 		
 		val instances = originalTopComponent.allSimpleInstanceReferences
 		for (instance : instances) {
 			val lastInstance = instance.lastInstance
 			val statechart = lastInstance.derivedType as StatechartDefinition
-			val orthogonalStateCombinations = statechart.allOrthogonalStateCombinations
+			val orthogonalStateCombinations = statechart.calculateAllOrthogonalStateCombinations
 			for (orthogonalStateCombination : orthogonalStateCombinations) {
 				val newInstances = orthogonalStateCombination.map[instance.clone.createStateReference(it)].toList
 				val ids = newInstances.map[it.id]
