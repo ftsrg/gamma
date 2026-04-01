@@ -119,6 +119,7 @@ public class VerificationHandler extends TaskHandler {
 	//
 	
 	protected final List<ExecutionTrace> traces = new ArrayList<ExecutionTrace>();
+	protected final List<Result> optimizedResults = new ArrayList<Result>();
 	protected final VerificationPostprocessor verificationPostprocessor;
 	
 	//
@@ -355,7 +356,7 @@ public class VerificationHandler extends TaskHandler {
 			verificationResults.removeIf(it -> removedTraces.contains(it.getTrace()));
 		}
 		
-		// Back-annotating
+		// Back-annotation
 		if (verification.isBackAnnotateToOriginal()) {
 			List<ExecutionTrace> backAnnotatedTraces = new ArrayList<ExecutionTrace>();
 			for (ExecutionTrace trace : retrievedTraces) {
@@ -393,7 +394,10 @@ public class VerificationHandler extends TaskHandler {
 		}
 		
 		if (verificationPostprocessor != null) {
-			verificationPostprocessor.execute(verificationResults);
+			List<Result> allResults = new ArrayList<Result>(verificationResults);
+			allResults.addAll(optimizedResults);
+			
+			verificationPostprocessor.execute(allResults);
 		}
 	}
 	
@@ -490,7 +494,9 @@ public class VerificationHandler extends TaskHandler {
 	}
 
 	private void removeCoveredProperties(ExecutionTrace trace,
-			Collection<? extends Entry<?, StateFormula>> formulas) {
+				Collection<? extends Entry<?, StateFormula>> formulas) {
+		List<StateFormula> allCoveredProperties = new ArrayList<StateFormula>();
+		
 		if (trace != null) {
 			List<StateFormula> stateFormulas = formulas.stream()
 					.map(it -> it.getValue())
@@ -502,8 +508,18 @@ public class VerificationHandler extends TaskHandler {
 			for (StateFormula coveredProperty : coveredProperties) {
 				String serializedProperty = propertySerializer.serialize(coveredProperty);
 				logger.info("Property already covered: " + serializedProperty);
-				formulas.removeIf(it -> it.getValue() == coveredProperty);
+				allCoveredProperties.add(coveredProperty);
 			}
+		}
+		
+		formulas.removeIf(it -> allCoveredProperties.contains(it.getValue()));
+		
+		// Registering optimized properties
+		for (StateFormula coveredProperty : allCoveredProperties) {
+			ThreeStateBoolean value = ThreeStateBoolean.of(
+					PropertyModelDerivedFeatures.getBooleanResultIfTraceExists(coveredProperty));
+			Result optimizedResult = new Result(coveredProperty, value, null);
+			optimizedResults.add(optimizedResult);
 		}
 	}
 	

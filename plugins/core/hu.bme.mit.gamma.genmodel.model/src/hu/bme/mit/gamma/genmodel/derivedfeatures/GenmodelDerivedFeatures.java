@@ -22,12 +22,20 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.AnalysisTask;
+import hu.bme.mit.gamma.genmodel.model.CompletenessCoverage;
 import hu.bme.mit.gamma.genmodel.model.ComponentReference;
+import hu.bme.mit.gamma.genmodel.model.Coverage;
+import hu.bme.mit.gamma.genmodel.model.DataflowCoverage;
+import hu.bme.mit.gamma.genmodel.model.DeadlockCoverage;
 import hu.bme.mit.gamma.genmodel.model.GenModel;
+import hu.bme.mit.gamma.genmodel.model.InteractionCoverage;
+import hu.bme.mit.gamma.genmodel.model.InteractionDataflowCoverage;
 import hu.bme.mit.gamma.genmodel.model.ModelReference;
 import hu.bme.mit.gamma.genmodel.model.StatechartContractGeneration;
 import hu.bme.mit.gamma.genmodel.model.Task;
 import hu.bme.mit.gamma.genmodel.model.TestAutomatonType;
+import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
+import hu.bme.mit.gamma.genmodel.model.TransitionPairCoverage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.genmodel.model.XstsReference;
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
@@ -38,13 +46,11 @@ import hu.bme.mit.gamma.statechart.interface_.Package;
 public class GenmodelDerivedFeatures extends ExpressionModelDerivedFeatures {
 
 	public static List<ParameterDeclaration> getParameterDeclarations(ArgumentedElement element) {
-		if (element instanceof ComponentReference) {
-			ComponentReference componentReference = (ComponentReference) element;
+		if (element instanceof ComponentReference componentReference) {
 			Component component = componentReference.getComponent();
 			return component.getParameterDeclarations();
 		}
-		if (element instanceof StatechartContractGeneration) {
-			StatechartContractGeneration statechartContractGeneration = (StatechartContractGeneration) element;
+		if (element instanceof StatechartContractGeneration statechartContractGeneration) {
 			ScenarioDeclaration scenarioDeclaration = statechartContractGeneration.getScenario();
 			return scenarioDeclaration.getParameterDeclarations();
 		}
@@ -73,12 +79,10 @@ public class GenmodelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 
 	public static NamedElement getModel(ModelReference modelReference) {
-		if (modelReference instanceof ComponentReference) {
-			ComponentReference componentReference = (ComponentReference) modelReference;
+		if (modelReference instanceof ComponentReference componentReference) {
 			return componentReference.getComponent();
 		}
-		if (modelReference instanceof XstsReference) {
-			XstsReference xStsReference = (XstsReference) modelReference;
+		if (modelReference instanceof XstsReference xStsReference) {
 			return xStsReference.getXSts();
 		}
 		throw new IllegalArgumentException("Not supported model reference: " + modelReference);
@@ -147,6 +151,16 @@ public class GenmodelDerivedFeatures extends ExpressionModelDerivedFeatures {
 			return AnalysisLanguage.XSTS_UPPAAL;
 		}
 		return analysisLanguage;
+	}
+	
+	public static boolean benefitsFromModelOptimization(Coverage coverage) {
+		return coverage instanceof DataflowCoverage ||
+				coverage instanceof TransitionCoverage ||
+				coverage instanceof TransitionPairCoverage ||
+				coverage instanceof InteractionCoverage ||
+				coverage instanceof InteractionDataflowCoverage ||
+				coverage instanceof DeadlockCoverage ||
+				coverage instanceof CompletenessCoverage;
 	}
 	
 }

@@ -255,7 +255,7 @@ class PropertyGenerator {
 				] // state -> G (!outgoingTransitionFireable1 && .. && !outgoingTransitionFireableN)
 				
 				val stateFormula = propertyUtil.createAG(implication) // A G(state -> (G (!outgoingTransitionFireable1 && .. && !outgoingTransitionFireableN))
-				
+				// TODO? E F(state && (G (!outgoingTransitionFireable1 && .. && !outgoingTransitionFireableN))
 				val commentableStateFormula = propertyUtil.createCommentableStateFormula(
 						'''Is «instance.name».«parentRegion.name».«leafState.name» a deadlock state?''', stateFormula)
 				formulas += commentableStateFormula
