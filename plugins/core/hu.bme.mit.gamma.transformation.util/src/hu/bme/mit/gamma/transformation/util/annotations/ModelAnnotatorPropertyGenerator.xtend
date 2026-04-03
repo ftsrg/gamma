@@ -152,7 +152,7 @@ class ModelAnnotatorPropertyGenerator {
 			formulas += propertyGenerator.createDeadlockInvariance(annotator.getDeadlockTransitionVariables)
 			formulas += propertyGenerator.createTransitionReachability(annotator.getCompletenessTransitionVariables)// Completeness transition coverage
 			formulas += propertyGenerator.createStateReachabilityFormulas(annotator.trapStates) // Nondeterministic transition coverage
-			formulas += propertyGenerator.createQueueOverflowInvariance(testedComponentsForQueueOverflow) // Nondeterministic transition coverage
+			formulas += propertyGenerator.createQueueOverflowInvariance(testedComponentsForQueueOverflow)
 			
 			formulas += propertyGenerator.createTransitionReachability(
 							annotator.getTransitionVariables)
