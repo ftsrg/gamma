@@ -62,6 +62,9 @@ class ModelAnnotatorPropertyGenerator {
 		val testedComponentsForTrapStates = getIncludedSynchronousInstances(
 				annotableElements.testedComponentsForTrapStates, newTopComponent)
 				.map[it.type].filter(StatechartDefinition).map[it.allStates].flatten
+		// Deadlock state coverage
+		val testedComponentsForDeadlockStates = getIncludedSynchronousInstances(
+				annotableElements.testedComponentsForDeadlockStates, newTopComponent)
 		// Deadlock coverage
 		val testedComponentsForDeadlock = getIncludedSynchronousInstances(
 				annotableElements.testedComponentsForDeadlock, newTopComponent)
@@ -109,6 +112,7 @@ class ModelAnnotatorPropertyGenerator {
 				!testedComponentsForOrthogonalLeafStateCombinations.nullOrEmpty ||
 				!testedComponentsForUnstableStates.nullOrEmpty ||
 				!testedComponentsForTrapStates.nullOrEmpty ||
+				!testedComponentsForDeadlockStates.nullOrEmpty ||
 				!testedComponentsForDeadlock.nullOrEmpty ||
 				!testedComponentsForCompleteness.nullOrEmpty ||
 				!testedComponentsForNondeterministicTransitions.nullOrEmpty ||
@@ -121,6 +125,7 @@ class ModelAnnotatorPropertyGenerator {
 				!dataflowTestedVariables.nullOrEmpty ||
 				!testedPortsForInteractionDataflow.nullOrEmpty) {
 			val annotator = new StatechartAnnotator(newPackage, new AnnotatableElements(
+					testedComponentsForDeadlockStates,
 					testedComponentsForDeadlock,
 					testedComponentsForCompleteness,
 					testedComponentsForNondeterministicTransitions,
@@ -149,6 +154,7 @@ class ModelAnnotatorPropertyGenerator {
 			
 			formulas += propertyGenerator.createUnstableStateInvariance(testedComponentsForUnstableStates)
 			formulas += propertyGenerator.createTrapStateInvariance(testedComponentsForTrapStates)
+			formulas += propertyGenerator.createDeadlockStateInvariance(annotator.getDeadlockStateTransitionVariables)
 			formulas += propertyGenerator.createDeadlockInvariance(annotator.getDeadlockTransitionVariables)
 			formulas += propertyGenerator.createTransitionReachability(annotator.getCompletenessTransitionVariables)// Completeness transition coverage
 			formulas += propertyGenerator.createStateReachabilityFormulas(annotator.trapStates) // Nondeterministic transition coverage
@@ -167,6 +173,7 @@ class ModelAnnotatorPropertyGenerator {
 					annotator.getInteractionDefUses, annotator.interactionDataflowCoverageCriterion)
 			// Saving the property package and serializing the properties must be done by the caller!
 		}
+		
 		return new Result(generatedPropertyPackage)
 	}
 

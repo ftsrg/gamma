@@ -479,7 +479,8 @@ public class VerificationHandler extends TaskHandler {
 		//
 		removeCoveredProperties(wrappedFormulas);
 		//
-		formulas.removeIf(it -> !wrappedFormulas.contains(Map.entry(dummyKey, it.getFormula())));
+		formulas.removeIf(it -> !wrappedFormulas.contains(
+				Map.entry(dummyKey, it.getFormula())));
 	}
 	
 	protected void removeCoveredProperties(Collection<? extends Entry<?, StateFormula>> formulas) {

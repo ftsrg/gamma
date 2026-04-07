@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -68,6 +68,12 @@ class StatechartAnnotator {
 	//
 	protected final Package gammaPackage
 	protected final ViatraQueryEngine engine
+	
+	// Deadlock state coverage
+	protected boolean DEADLOCK_STATE_COVERAGE
+	protected final Set<SynchronousComponentInstance> deadlockStateCoverableComponents = newHashSet
+	protected final Set<Transition> coverableDeadlockStateTransitions = newHashSet
+	protected final Map<Transition, VariableDeclaration> deadlockStateTransitionVariables = newHashMap // Boolean variables
 	
 	// Deadlock coverage
 	protected boolean DEADLOCK_COVERAGE
@@ -165,6 +171,13 @@ class StatechartAnnotator {
 			new EMFScope(
 				gammaPackage.eResource.resourceSet))
 		
+		if (!annotableElements.deadlockStateCoverableComponents.empty) {
+			this.DEADLOCK_STATE_COVERAGE = true
+			this.deadlockStateCoverableComponents += annotableElements.deadlockStateCoverableComponents
+			this.coverableDeadlockStateTransitions += deadlockStateCoverableComponents
+					.map[it.type].filter(StatechartDefinition)
+					.map[it.transitions].flatten.filter[it.sourceState.state]
+		}
 		if (!annotableElements.deadlockCoverableComponents.empty) {
 			this.DEADLOCK_COVERAGE = true
 			this.deadlockCoverableComponents += annotableElements.deadlockCoverableComponents
@@ -225,6 +238,7 @@ class StatechartAnnotator {
 	// Entry point
 	
 	def annotateModel() {
+		annotateModelForDeadlockStateCoverage
 		annotateModelForDeadlockCoverage
 		annotateModelForCompletenessCoverage
 		annotateModelForNondeterministicTransitionCoverage
@@ -233,6 +247,22 @@ class StatechartAnnotator {
 		annotateModelForInteractionCoverage
 		annotateModelForDataFlowCoverage
 		annotateModelForInteractionDataFlowCoverage
+	}
+	
+	// Deadlock state coverage
+	
+	def annotateModelForDeadlockStateCoverage() {
+		if (!DEADLOCK_STATE_COVERAGE) {
+			return
+		}
+		for (transition : coverableDeadlockStateTransitions.filter[it.needsAnnotation]) {
+			val variable = transition.createTransitionVariable(deadlockStateTransitionVariables)
+			transition.effects += variable.createAssignment(createTrueExpression)
+		}
+	}
+	
+	def getDeadlockStateTransitionVariables() {
+		return new TransitionAnnotations(this.deadlockStateTransitionVariables)
 	}
 	
 	// Deadlock coverage

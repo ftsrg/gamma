@@ -220,7 +220,7 @@ class PropertyGenerator {
 		return formulas
 	}
 	
-	def List<CommentableStateFormula> createDeadlockInvariance(TransitionAnnotations transitionAnnotations) {
+	def List<CommentableStateFormula> createDeadlockStateInvariance(TransitionAnnotations transitionAnnotations) {
 		val formulas = newArrayList
 		
 		val transitions = transitionAnnotations.transitions
@@ -253,6 +253,31 @@ class PropertyGenerator {
 						'''Is «instance.name».«parentRegion.name».«leafState.name» a deadlock state?''', stateFormula)
 				formulas += commentableStateFormula
 			}
+		}
+		
+		return formulas
+	}
+	
+	def List<CommentableStateFormula> createDeadlockInvariance(TransitionAnnotations transitionAnnotations) {
+		val formulas = newArrayList
+		
+		val transitions = transitionAnnotations.transitions
+		if (!transitions.empty) {
+			val variableReferences = newArrayList
+			for (transition : transitions) {
+				val instance = transition.containingComponent.referencingComponentInstance
+				val variable = transitionAnnotations.getVariable(transition)
+				val variableReference = instance.createInstanceReference
+							.createVariableReference(variable)
+				variableReferences += variableReference
+			}
+			val variableReference = variableReferences.wrapIntoOrExpression
+			val stateFormula = variableReference.createAtomicFormula
+					.createF.createAG
+			// AG F (outgoingTransitionFireable1 || ... || outgoingTransitionFireableN)
+			val commentableStateFormula = propertyUtil.createCommentableStateFormula(
+					'''Is there deadlock in the model?''', stateFormula)
+			formulas += commentableStateFormula
 		}
 		
 		return formulas

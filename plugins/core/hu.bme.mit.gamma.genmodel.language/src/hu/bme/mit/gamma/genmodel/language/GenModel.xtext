@@ -221,7 +221,7 @@ enum AnalysisLanguage returns AnalysisLanguage:
 
 Coverage returns Coverage:
 	StateCoverage | OrthogonalStateCombinationCoverage | OrthogonalLeafStateCombinationCoverage |
-	UnstableStateCoverage | TrapStateCoverage |
+	UnstableStateCoverage | TrapStateCoverage | DeadlockStateCoverage |
 	DeadlockCoverage | CompletenessCoverage | NonDeterministicTransitionCoverage |
 	TransitionCoverage | TransitionPairCoverage | OutEventCoverage |
 	InteractionCoverage | DataflowCoverage | InteractionDataflowCoverage |
@@ -257,6 +257,13 @@ UnstableStateCoverage returns UnstableStateCoverage:
 ;
 
 TrapStateCoverage returns TrapStateCoverage:
+	{TrapStateCoverage} 'trap-state-coverage' ('{' 
+		('include' ':' '[' include+=ComponentInstanceReferenceExpression (',' include+=ComponentInstanceReferenceExpression)* ']')?
+		('exclude' ':' '[' exclude+=ComponentInstanceReferenceExpression (',' exclude+=ComponentInstanceReferenceExpression)* ']')?
+	'}')?
+;
+
+DeadlockStateCoverage returns TrapStateCoverage:
 	{TrapStateCoverage} 'trap-state-coverage' ('{' 
 		('include' ':' '[' include+=ComponentInstanceReferenceExpression (',' include+=ComponentInstanceReferenceExpression)* ']')?
 		('exclude' ':' '[' exclude+=ComponentInstanceReferenceExpression (',' exclude+=ComponentInstanceReferenceExpression)* ']')?

@@ -117,6 +117,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="UnstableStateCoverage" eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="TrapStateCoverage" eSuperTypes="#//Coverage"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DeadlockStateCoverage" eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="DeadlockCoverage" eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="CompletenessCoverage" eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="NonDeterministicTransitionCoverage"

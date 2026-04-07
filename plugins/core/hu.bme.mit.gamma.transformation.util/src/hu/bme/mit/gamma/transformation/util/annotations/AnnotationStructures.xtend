@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -47,6 +47,10 @@ class TransitionAnnotations {
 	
 	def getTransitions() {
 		return transitionPairVariables.keySet
+	}
+	
+	def getVariables() {
+		return transitionPairVariables.values
 	}
 	
 	def isAnnotated(Transition transition) {

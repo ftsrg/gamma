@@ -14,7 +14,6 @@ import org.eclipse.xtend.lib.annotations.Data
 
 @Data
 class AnnotatablePreprocessableElements {
-	
 	ComponentInstanceReferences testedComponentsForStates
 	
 	ComponentInstanceReferences testedComponentsForOrthogonalStateCombinations
@@ -24,6 +23,8 @@ class AnnotatablePreprocessableElements {
 	ComponentInstanceReferences testedComponentsForUnstableStates
 	
 	ComponentInstanceReferences testedComponentsForTrapStates
+	
+	ComponentInstanceReferences testedComponentsForDeadlockStates
 	
 	ComponentInstanceReferences testedComponentsForDeadlock
 	
@@ -54,14 +55,15 @@ class AnnotatablePreprocessableElements {
 	new() {
 		// If only a placeholder is needed, this constructor can be used
 		this(null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-				null, null, null, null, null)
+				null, null, null, null, null, null)
 	}
-
+	
 	new(ComponentInstanceReferences testedComponentsForStates,
 			ComponentInstanceReferences testedComponentsForOrthogonalStateCombinations,
 			ComponentInstanceReferences testedComponentsForOrthogonalLeafStateCombinations,
 			ComponentInstanceReferences testedComponentsForUnstableStates,
 			ComponentInstanceReferences testedComponentsForTrapStates,
+			ComponentInstanceReferences testedComponentsForDeadlockStates,
 			ComponentInstanceReferences testedComponentsForDeadlock,
 			ComponentInstanceReferences testedComponentsForCompleteness,
 			ComponentInstanceReferences testedComponentsForNondeterministicTransitions,
@@ -77,6 +79,7 @@ class AnnotatablePreprocessableElements {
 		this.testedComponentsForOrthogonalLeafStateCombinations = testedComponentsForOrthogonalLeafStateCombinations
 		this.testedComponentsForUnstableStates = testedComponentsForUnstableStates
 		this.testedComponentsForTrapStates = testedComponentsForTrapStates
+		this.testedComponentsForDeadlockStates = testedComponentsForDeadlockStates
 		this.testedComponentsForDeadlock = testedComponentsForDeadlock
 		this.testedComponentsForCompleteness = testedComponentsForCompleteness
 		this.testedComponentsForNondeterministicTransitions = testedComponentsForNondeterministicTransitions
