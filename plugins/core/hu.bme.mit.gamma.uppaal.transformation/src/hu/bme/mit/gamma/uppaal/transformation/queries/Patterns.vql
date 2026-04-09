@@ -68,7 +68,7 @@ private pattern eventDirection(eventDeclaration : EventDeclaration, direction : 
 
 pattern events(port : Port, event : Event, name : java String) {
 	Port.interfaceRealization.interface(port, interface);
-	Interface.events.event(interface, event);
+	Interface.eventDeclarations.event(interface, event);
 	Event.name(event, name);
 }
 
@@ -76,7 +76,7 @@ pattern inEvents(port : Port, event : Event, name : java String) {
 	Port.interfaceRealization(port, realization);
 	InterfaceRealization.realizationMode(realization, ::PROVIDED);
 	InterfaceRealization.interface(realization, interface);
-	Interface.events(interface, declaration);
+	Interface.eventDeclarations(interface, declaration);
 	// OUT events are NOT returned
 	neg find eventDirection(declaration, EventDirection::OUT);
 	EventDeclaration.event(declaration, event);
@@ -85,7 +85,7 @@ pattern inEvents(port : Port, event : Event, name : java String) {
 	Port.interfaceRealization(port, realization);
 	InterfaceRealization.realizationMode(realization, ::REQUIRED);
 	InterfaceRealization.interface(realization, interface);
-	Interface.events(interface, declaration);
+	Interface.eventDeclarations(interface, declaration);
 	// OUT events are NOT returned
 	neg find eventDirection(declaration, EventDirection::IN);
 	EventDeclaration.event(declaration, event);

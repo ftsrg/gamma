@@ -96,7 +96,7 @@ class InterfaceToPlantUmlTransformer {
 
 	def ifGenerate(Interface _interface) '''
 		interface «_interface.name» {
-		«FOR event : _interface.events»
+		«FOR event : _interface.eventDeclarations»
 			«event.direction.name().toLowerCase» event «event.event.name» («FOR param : event.event.parameterDeclarations SEPARATOR ", "»«param.name» : «param.type.serialize»«ENDFOR»)
 		«ENDFOR»
 		}

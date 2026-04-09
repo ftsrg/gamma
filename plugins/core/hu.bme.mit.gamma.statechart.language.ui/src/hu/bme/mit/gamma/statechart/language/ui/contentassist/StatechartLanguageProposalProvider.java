@@ -133,7 +133,7 @@ public class StatechartLanguageProposalProvider extends AbstractStatechartLangua
 								String eventName = getEventNameInWrappers(arg);
 								Interface portInterface = port.getInterfaceRealization().getInterface();
 								if (portInterface.getName().equals(interfaceName)) {
-									Optional<Event> optional = portInterface.getEvents().stream().map(it -> it.getEvent())
+									Optional<Event> optional = portInterface.getEventDeclarations().stream().map(it -> it.getEvent())
 															.filter(it -> it.getName().equals(eventName)).findAny();
 									if (optional.isPresent()) {
 										trueEvent = optional.get();
@@ -217,7 +217,7 @@ public class StatechartLanguageProposalProvider extends AbstractStatechartLangua
 		for (Interface parentInterface : anInterface.getParents()) {
 			eventSet.addAll(getAllEvents(parentInterface, oppositeDirection));
 		}
-		for (Event event : anInterface.getEvents().stream().filter(it -> it.getDirection() != oppositeDirection)
+		for (Event event : anInterface.getEventDeclarations().stream().filter(it -> it.getDirection() != oppositeDirection)
 				.map(it -> it.getEvent()).collect(Collectors.toSet())) {
 			eventSet.add(event);
 		}

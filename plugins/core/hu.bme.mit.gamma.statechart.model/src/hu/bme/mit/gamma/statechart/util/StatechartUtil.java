@@ -669,7 +669,7 @@ public class StatechartUtil extends ActionUtil {
 	public Interface createBroadcastInterface(Interface _interface) {
 		Interface broadcastInterface = ecoreUtil.clone(_interface);
 		
-		for (EventDeclaration event : broadcastInterface.getEvents()) {
+		for (EventDeclaration event : broadcastInterface.getEventDeclarations()) {
 			event.setDirection(EventDirection.OUT);
 		}
 		

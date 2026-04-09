@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,7 +12,6 @@ package hu.bme.mit.gamma.xsts.codegeneration.java
 
 import hu.bme.mit.gamma.codegeneration.java.util.InternalEventHandlerCodeGenerator
 import hu.bme.mit.gamma.codegeneration.java.util.TypeSerializer
-import hu.bme.mit.gamma.statechart.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.xsts.model.XSTS
 
@@ -32,7 +31,6 @@ class StatechartWrapperCodeGenerator {
 	final XSTS xSts
 
 	final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
-	final extension PortDiagnoser portDiagnoser = PortDiagnoser.INSTANCE
 	final extension ValueDeclarationAccessor valueDeclarationAccessor = ValueDeclarationAccessor.INSTANCE
 	final extension InternalEventHandlerCodeGenerator internalEventHandler = InternalEventHandlerCodeGenerator.INSTANCE
 
@@ -157,13 +155,13 @@ class StatechartWrapperCodeGenerator {
 			«FOR port : gammaStatechart.ports SEPARATOR System.lineSeparator»
 				public class «port.name.toFirstUpper» implements «port.interfaceRealization.interface.name.toFirstUpper»Interface.«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpper» {
 					private List<«port.interfaceRealization.interface.name.toFirstUpper»Interface.Listener.«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpper»> listeners = new LinkedList<«port.interfaceRealization.interface.name.toFirstUpper»Interface.Listener.«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpper»>();
-					«FOR event : port.getEvents(EventDirection.IN)»
+					«FOR event : port.inputEvents»
 						@Override
 						public void raise«event.name.toFirstUpper»(«FOR parameter : event.parameterDeclarations SEPARATOR ', '»«parameter.type.serialize» «parameter.name»«ENDFOR») {
-						getInsertQueue().add(new Event("«port.name».«event.name»"«IF !event.parameterDeclarations.empty», «FOR parameter : event.parameterDeclarations SEPARATOR ', '»«parameter.name»«ENDFOR»«ENDIF»));
+							getInsertQueue().add(new Event("«port.name».«event.name»"«IF !event.parameterDeclarations.empty», «FOR parameter : event.parameterDeclarations SEPARATOR ', '»«parameter.name»«ENDFOR»«ENDIF»));
 						}
 					«ENDFOR»
-					«FOR event : port.getEvents(EventDirection.OUT)»
+					«FOR event : port.outputEvents»
 						@Override
 						public boolean isRaised«event.name.toFirstUpper»() {
 							return «CLASS_NAME.toFirstLower».get«event.getOutputName(port).toFirstUpper»();
@@ -209,7 +207,7 @@ class StatechartWrapperCodeGenerator {
 					«GAMMA_EVENT_CLASS» event = eventQueue.remove();
 					switch (event.getEvent()) {
 						«FOR port : gammaStatechart.ports»
-							«FOR event : port.getEvents(EventDirection.IN)»
+							«FOR event : port.inputEvents»
 								case "«port.name».«event.name»": 
 									«CLASS_NAME.toFirstLower».set«event.getInputName(port).toFirstUpper»(true);
 									«FOR parameter : event.parameterDeclarations»
@@ -243,7 +241,7 @@ class StatechartWrapperCodeGenerator {
 			
 			public void notifyListeners() {
 				«FOR port : gammaStatechart.ports»
-					«FOR event : port.getEvents(EventDirection.OUT)»
+					«FOR event : port.outputEvents»
 						if («port.name.toFirstLower».isRaised«event.name.toFirstUpper»()) {
 							for («port.interfaceRealization.interface.name.toFirstUpper»Interface.Listener.«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpper» listener : «port.name.toFirstLower».getRegisteredListeners()) {
 								listener.raise«event.name.toFirstUpper»(«FOR parameter : event.parameterDeclarations SEPARATOR ", "»«CLASS_NAME.toFirstLower.accessOut(port, parameter)»«ENDFOR»);

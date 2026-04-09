@@ -5,10 +5,13 @@
   <eClassifiers xsi:type="ecore:EClass" name="Interface" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="parents" upperBound="-1"
         eType="#//Interface"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="events" upperBound="-1"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eventDeclarations" upperBound="-1"
         eType="#//EventDeclaration" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="invariants" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="functionDeclarations" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//FunctionDeclaration"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="EventDirection">

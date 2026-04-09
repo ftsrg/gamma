@@ -88,7 +88,7 @@ class ReflectiveComponentCodeGenerator {
 				switch (port) {
 					«FOR port : component.allPorts»
 						case "«port.name»":
-							return new String[] { «FOR event : port.interfaceRealization.interface.events SEPARATOR ", "»"«event.event.name»"«ENDFOR» };
+							return new String[] { «FOR event : port.interfaceRealization.interface.eventDeclarations SEPARATOR ", "»"«event.event.name»"«ENDFOR» };
 					«ENDFOR»
 					default:
 						throw new IllegalArgumentException("Not known port: " + port);

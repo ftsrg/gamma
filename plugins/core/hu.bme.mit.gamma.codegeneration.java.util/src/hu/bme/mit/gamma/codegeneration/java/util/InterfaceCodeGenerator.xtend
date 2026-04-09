@@ -84,7 +84,7 @@ class InterfaceCodeGenerator {
 		for (parentInterface : anInterface.parents) {
 			eventSet.addAll(parentInterface.collectAllEvents(oppositeDirection))
 		}
-		for (event : anInterface.events
+		for (event : anInterface.eventDeclarations
 				.filter[it.direction != oppositeDirection]
 				.map[it.event]) {
 			eventSet.add(event)

@@ -643,7 +643,8 @@ BroadcastChannel returns CompositeModel::BroadcastChannel:
 Interface returns InterfaceModel::Interface:
 	{InterfaceModel::Interface}
 	'interface' name=ID ('extends' (parents+=[InterfaceModel::Interface]) (',' (parents+=[InterfaceModel::Interface]))* )? '{'
-		((events+=EventDeclaration))*
+		(eventDeclarations+=EventDeclaration)*
+		(functionDeclarations+=FunctionDeclaration)*
 		('invariant' invariants+=Expression)*
 	'}'
 ;

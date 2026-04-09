@@ -1105,7 +1105,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		List<Interface> interfaces = getAllParentsAndSelf(_interface);
 		for (Interface parentInterface : interfaces) {
 			eventDeclarations.addAll(
-					parentInterface.getEvents());
+					parentInterface.getEventDeclarations());
 		}
 		return eventDeclarations;
 	}
@@ -1186,6 +1186,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return ecoreUtil.getContainerOfType(object, Interface.class);
 	}
 	
+	public static List<EventDeclaration> getEventDeclarations(Port port) {
+		return port.getInterfaceRealization().getInterface().getEventDeclarations();
+	}
+	
+	public static List<Event> getEvents(Port port) {
+		List<EventDeclaration> eventDeclarations = getEventDeclarations(port);
+		return eventDeclarations.stream()
+				.map(it -> it.getEvent()).toList();
+	}
+	
 	public static List<EventDeclaration> getAllEventDeclarations(Port port) {
 		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
 		Interface interface1 = interfaceRealization.getInterface();
@@ -1201,7 +1211,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static List<Event> getInputEvents(Iterable<? extends Port> ports) {
 		List<Event> events = new ArrayList<Event>();
 		for (Port port : ports) {
-			events.addAll(getInputEvents(port));
+			events.addAll(
+					getInputEvents(port));
 		}
 		return events;
 	}

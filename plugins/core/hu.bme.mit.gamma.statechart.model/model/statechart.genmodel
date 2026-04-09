@@ -187,8 +187,9 @@
     </genEnums>
     <genClasses ecoreClass="interface.ecore#//Interface">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference interface.ecore#//Interface/parents"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference interface.ecore#//Interface/events"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference interface.ecore#//Interface/eventDeclarations"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference interface.ecore#//Interface/invariants"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference interface.ecore#//Interface/functionDeclarations"/>
     </genClasses>
     <genClasses ecoreClass="interface.ecore#//EventDeclaration">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute interface.ecore#//EventDeclaration/direction"/>

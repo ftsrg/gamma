@@ -112,7 +112,7 @@ class ComponentDeactivator {
 			val activityInterface = interfaceFactory.createInterface
 			activityInterface.name = activityInterfaceName
 			val eventDeclaration = interfaceFactory.createEventDeclaration
-			activityInterface.events += eventDeclaration
+			activityInterface.eventDeclarations += eventDeclaration
 			eventDeclaration.direction = EventDirection.OUT
 			val event = interfaceFactory.createEvent
 			eventDeclaration.event = event
