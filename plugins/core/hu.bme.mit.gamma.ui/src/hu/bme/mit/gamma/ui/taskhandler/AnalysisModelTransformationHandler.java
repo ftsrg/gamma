@@ -202,7 +202,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				ecoreUtil.deleteResource(propertyPackage);
 				serializeProperties(propertyPackage, fileName);
 			} catch (Exception e) {
-				// Property was not serialized
+				logger.warning("Property file for " + fileName + " could not be serialized");
 			}
 		}
 		

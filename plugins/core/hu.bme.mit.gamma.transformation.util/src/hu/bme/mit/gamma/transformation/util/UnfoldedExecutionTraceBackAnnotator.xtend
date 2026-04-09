@@ -385,7 +385,8 @@ class UnfoldedExecutionTraceBackAnnotator {
 				for (absentRegion : absentRegions) {
 					val states = absentRegion.states
 					// We know what to do only if there is one state in the region
-					if (states.size == 1) {
+					if (states.size == 1 &&
+							(absentRegion.topRegion || presentRegions.contains(absentRegion.parentState))) { // Could be more sophisticated
 						val initialStateAssertion = instance.clone
 								.createStateReference(states.head)
 								
