@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2025 Contributors to the Gamma project
+ * Copyright (c) 2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,17 +10,27 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.verification.util
 
-import hu.bme.mit.gamma.property.model.StateFormula
-import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.trace.model.ExecutionTrace
+import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
+import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
 
-class DeadlockCheckPostprocessor extends StateCheckPostprocessor {
+class DeadlockCheckPostprocessor extends VerificationPostprocessor {
 	
-	new(Component originalTopComponent) {
-		super(originalTopComponent)
+	protected boolean deadlock
+	
+	override execute(Result result) {
+		val res = result.result
+		deadlock = res == ThreeStateBoolean.FALSE
+		return deadlock
 	}
 	
-	protected override selectState(StateFormula property) {  // G (state a -> G(!outoing_transition1_id && ...))
-		return super.selectState(property) // Returns the first reference
+	override execute(ExecutionTrace trace) {
+		deadlock = trace !== null
+		return deadlock
+	}
+	
+	def isDeadlock() {
+		return deadlock
 	}
 	
 }
