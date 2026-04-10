@@ -76,7 +76,9 @@ private pattern relevantEvents(port : Port, event : Event) {
 	PortEventReference.port(portEventReference, port);
 	PortEventReference.event(portEventReference, event);
 } or {
-	Port.interfaceRealization.interface.eventDeclarations.event(port, event);
+	Port.interfaceRealization.interface(port, interface);
+	find parentInterfaces*(interface, parentOrSameInterface);
+	Interface.eventDeclarations.event(parentOrSameInterface, event);
 	AnyPortEventReference.port(_, port);
 } or {
 	RaiseEventAction.port(raiseEventAction, port);
@@ -279,7 +281,9 @@ private pattern simpleChannelRequired(channel : SimpleChannel, inInstance : Comp
 private pattern instancePortReferences(portRef : InstancePortReference, instance : ComponentInstance , port : Port, event : Event) {
 	InstancePortReference.instance(portRef, instance);
 	InstancePortReference.port(portRef, port);
-	Port.interfaceRealization.interface.eventDeclarations.event(port, event);
+	Port.interfaceRealization.interface(port, interface);
+	find parentInterfaces*(interface, parentOrSameInterface);
+	Interface.eventDeclarations.event(parentOrSameInterface, event);
 }
 
 /**
@@ -697,7 +701,9 @@ pattern timeoutValues(timeSpec : TimeSpecification, valueExp : Expression, unit 
 // Triggerable transition optimization patterns
 
 private pattern internalPorts(port : Port) {
-	Port.interfaceRealization.interface.eventDeclarations(port, eventDeclaration);
+	Port.interfaceRealization.interface(port, interface);
+	find parentInterfaces*(interface, parentOrSameInterface);
+	Interface.eventDeclarations(parentOrSameInterface, eventDeclaration);
 	EventDeclaration.direction(eventDeclaration, EventDirection::INTERNAL);
 }
 
