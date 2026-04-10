@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -36,6 +36,7 @@ import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
+import hu.bme.mit.gamma.expression.model.LambdaDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 
@@ -105,6 +106,21 @@ public class ActionModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 			}
 		}
 		return false;
+	}
+	
+	public static boolean hasDefinition(FunctionDeclaration functionDeclaration) {
+		if (functionDeclaration instanceof LambdaDeclaration lambdaDeclaration) {
+			return ExpressionModelDerivedFeatures.hasDefinition(lambdaDeclaration);
+		}
+		if (functionDeclaration instanceof ProcedureDeclaration procedureDeclaration) {
+			return hasDefinition(procedureDeclaration);
+		}
+		throw new IllegalArgumentException("Unknown function: " + functionDeclaration);
+	}
+	
+	public static boolean hasDefinition(ProcedureDeclaration procedureDeclaration) {
+		Block body = procedureDeclaration.getBody();
+		return body != null;
 	}
 	
 	//

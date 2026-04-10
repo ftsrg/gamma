@@ -415,6 +415,11 @@ public class ExpressionModelDerivedFeatures {
 		return false;
 	}
 	
+	public static boolean hasDefinition(LambdaDeclaration lambdaDeclaration) {
+		Expression expression = lambdaDeclaration.getExpression();
+		return expression != null;
+	}
+	
 	public static List<FunctionDeclaration> getCalledFunctions(FunctionDeclaration function) {
 		List<FunctionAccessExpression> functionCalls = ecoreUtil.getAllContentsOfType(function, FunctionAccessExpression.class);
 		List<FunctionDeclaration> calledFunctions = functionCalls.stream()

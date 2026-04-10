@@ -26,7 +26,7 @@ FunctionDeclaration returns ConstraintModel::FunctionDeclaration:
 
 ProcedureDeclaration returns ActionModel::ProcedureDeclaration:
 	'procedure' name=ID ('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')? ':' type=Type
-	body=Block
+	(body=Block)?
 ;
 
 Block returns ActionModel::Block:
