@@ -1,0 +1,7 @@
+import "PortFunctionsSystem.gcd"
+
+analysis {
+	component : PortFunctionsSystem
+	language : Theta
+	state-coverage
+}

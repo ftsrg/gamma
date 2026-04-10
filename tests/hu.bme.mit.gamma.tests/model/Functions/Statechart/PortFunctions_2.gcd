@@ -9,14 +9,14 @@ statechart PortFunctions_2 [
 	var _bool : boolean
 	region main {
 		initial Initial
-		state _A
+		state _X
 		
-		state _B
-		state _C
+		state _Y
+		state _Z
 	}
 	
-	transition from Initial to _A
-	transition from _A to _B when FunctionExecute.^execute / {
+	transition from Initial to _X
+	transition from _X to _Y when FunctionExecute.^execute / {
 		var a : integer := _int;
 		if (getValue() < 1000) {
 			setValue(_int);
@@ -24,6 +24,6 @@ statechart PortFunctions_2 [
 		}
 		_int := _int / a;
 	}
-	transition from _B to _C when FunctionExecute.^execute / _int := getValue();
+	transition from _Y to _Z when FunctionExecute.^execute / _int := getValue();
 	
 }
