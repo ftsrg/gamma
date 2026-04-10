@@ -46,6 +46,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
@@ -2410,6 +2411,25 @@ public class StatechartModelValidator extends ActionModelValidator {
 			}
 		}
 
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkPortFunctionImplementations(StatechartDefinition statechart) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+
+		List<FunctionDeclaration> functionDefinitions = statechart.getFunctionDeclarations();
+		for (Port port : StatechartModelDerivedFeatures.getAllProvidedPorts(statechart)) {
+			for (FunctionDeclaration interfaceFunctionDeclaration : StatechartModelDerivedFeatures.getAllFunctionDeclarations(port)) {
+				if (!StatechartModelDerivedFeatures.hasDefinition(interfaceFunctionDeclaration) &&
+						!StatechartModelDerivedFeatures.hasMatchingFunctionDeclaration(interfaceFunctionDeclaration, functionDefinitions)) {
+					validationResultMessages.add(
+							new ValidationResultMessage(ValidationResult.ERROR,
+								"The following function declaration has no definition: " + interfaceFunctionDeclaration.getName(),
+									new ReferenceInfo(InterfaceModelPackage.Literals.PORT__INTERFACE_REALIZATION, port)));
+				}
+			}
+		}
+		
 		return validationResultMessages;
 	}
 	

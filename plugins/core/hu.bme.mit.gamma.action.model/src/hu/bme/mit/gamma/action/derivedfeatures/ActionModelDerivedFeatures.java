@@ -123,6 +123,27 @@ public class ActionModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return body != null;
 	}
 	
+	public static FunctionDeclaration selectMatchingFunctionDeclaration(FunctionDeclaration functionDeclaration,
+				Iterable<? extends FunctionDeclaration> functionDefinitions) {
+		for (FunctionDeclaration functionDefinition : functionDefinitions) {
+			boolean match = functionDeclaration.getName().equals(functionDefinition.getName()) &&
+					ecoreUtil.helperEquals(
+							functionDeclaration.getType(), functionDefinition.getType()) &&
+					ecoreUtil.helperEquals(
+							functionDeclaration.getParameterDeclarations(), functionDefinition.getParameterDeclarations());
+			if (match) {
+				return functionDefinition;
+			}
+		}
+		return null;
+	}
+	
+	public static boolean hasMatchingFunctionDeclaration(FunctionDeclaration functionDeclaration,
+			Iterable<? extends FunctionDeclaration> functionDefinitions) {
+		FunctionDeclaration matchingFunctionDeclaration = selectMatchingFunctionDeclaration(functionDeclaration, functionDefinitions);
+		return matchingFunctionDeclaration != null;
+	}
+	
 	//
 	
 	public static boolean isContainedByChoiceStatement(Branch branch) {

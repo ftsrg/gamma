@@ -1326,9 +1326,18 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static List<FunctionDeclaration> getAllInterfaceFunctionDeclarations(Component component) {
+		List<Port> ports = getAllPorts(component);
+		return getAllFunctionDeclarations(ports);
+	}
+	
+	public static List<FunctionDeclaration> getAllProvidedInterfaceFunctionDeclarations(Component component) {
+		List<Port> ports = getAllProvidedPorts(component);
+		return getAllFunctionDeclarations(ports);
+	}
+	
+	public static List<FunctionDeclaration> getAllFunctionDeclarations(Iterable<? extends Port> ports) {
 		List<FunctionDeclaration> functionDeclarations = new ArrayList<FunctionDeclaration>();
 		
-		List<Port> ports = getAllPorts(component);
 		for (Port port : ports) {
 			functionDeclarations.addAll(
 					getAllFunctionDeclarations(port));
@@ -1388,6 +1397,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			return getAllPorts(adapter);
 		}
 		return component.getPorts();
+	}
+	
+	public static List<Port> getAllProvidedPorts(Component component) {
+		return getAllPorts(component).stream()
+				.filter(it -> isProvided(it)).toList();
 	}
 	
 	public static List<Port> getAllInternalPorts(Component component) {

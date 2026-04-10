@@ -75,18 +75,23 @@ public class StatechartLanguageProposalProvider extends AbstractStatechartLangua
 	 */
 	public void completeInstancePortReference_Port(CompositeComponent model, Assignment assignment,
 			ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
-		lookupCrossReference(((CrossReference) assignment.getTerminal()), context, acceptor,
+		CrossReference crossReference = (CrossReference) assignment.getTerminal();
+		lookupCrossReference(crossReference, context, acceptor,
 			new Predicate<IEObjectDescription>() {
 				@Override
 				public boolean apply(IEObjectDescription arg) {
 					EObject port = arg.getEObjectOrProxy();
 					// Previous: ".", previous-previous: name of the component instance - see the grammar
 					String instanceName = context.getCurrentNode().getPreviousSibling().getPreviousSibling().getText();
-					ComponentInstance instance = StatechartModelDerivedFeatures.getDerivedComponents(model).stream()
-													.filter(it -> it.getName().equals(instanceName)).findFirst().get();
-					Collection<Port> ports = StatechartModelDerivedFeatures
-								.getAllPorts(StatechartModelDerivedFeatures.getDerivedType(instance));
-					return ports.contains(port);
+					Optional<? extends ComponentInstance> optional = StatechartModelDerivedFeatures.getDerivedComponents(model).stream()
+													.filter(it -> it.getName().equals(instanceName)).findFirst();
+					if (optional.isPresent()) {
+						ComponentInstance instance = optional.get();
+						Collection<Port> ports = StatechartModelDerivedFeatures
+									.getAllPorts(StatechartModelDerivedFeatures.getDerivedType(instance));
+						return ports.contains(port);
+					}
+					return false;
 				}
 			});
 	}
