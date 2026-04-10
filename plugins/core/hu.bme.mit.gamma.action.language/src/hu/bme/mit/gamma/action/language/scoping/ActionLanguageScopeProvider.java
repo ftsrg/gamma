@@ -33,10 +33,12 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FieldReferenceExpression;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 
@@ -58,21 +60,19 @@ public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProv
 			}
 		}
 		// Local declarations
-		if (context instanceof Action &&
+		if (context instanceof Action action &&
 				reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			IScope parentScope = getParentScope(context, reference);
 			EObject container = context.eContainer();
-			if (container instanceof Block) {
-				Block block = (Block) container;
-				Action action = (Action) context;
+			if (container instanceof Block block) {
 				List<VariableDeclaration> precedingLocalDeclaratations =
 						ActionModelDerivedFeatures.getPrecedingVariableDeclarations(block, action);
 				return Scopes.scopeFor(precedingLocalDeclaratations, parentScope);
 			}
 			// For statement
-			if (container instanceof ForStatement) {
-				ForStatement forStatement = (ForStatement) container;
-				return Scopes.scopeFor(List.of(forStatement.getParameter()), parentScope);
+			if (container instanceof ForStatement forStatement) {
+				List<ParameterDeclaration> parameterList = List.of(forStatement.getParameter());
+				return Scopes.scopeFor(parameterList, parentScope);
 			}
 			return parentScope;
 		}
@@ -80,30 +80,26 @@ public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProv
 	}
 	
 	protected List<FieldDeclaration> getFieldDeclarations(Expression operand) {
-		if (operand instanceof DirectReferenceExpression) {
-			DirectReferenceExpression reference = (DirectReferenceExpression) operand;
+		if (operand instanceof DirectReferenceExpression reference) {
 			Declaration declaration = reference.getDeclaration();
 			return getFieldDeclarations(declaration);
 		}
-		if (operand instanceof FieldReferenceExpression) {
-			FieldReferenceExpression reference = (FieldReferenceExpression) operand;
+		if (operand instanceof FieldReferenceExpression reference) {
 			FieldDeclaration declaration = reference.getFieldDeclaration();
 			return Collections.singletonList(declaration);
 		}
-		if (operand instanceof RecordAccessExpression) {
-			RecordAccessExpression reference = (RecordAccessExpression) operand;
+		if (operand instanceof RecordAccessExpression reference) {
 			FieldReferenceExpression fieldReference = reference.getFieldReference();
 			if (fieldReference != null) {
 				Declaration declaration = fieldReference.getFieldDeclaration();
 				return getFieldDeclarations(declaration);
 			}
 		}
-		if (operand instanceof RecordLiteralExpression) {
-			RecordLiteralExpression recordLiteralExpression = (RecordLiteralExpression) operand;
-			return getFieldDeclarations(recordLiteralExpression.getTypeDeclaration());
+		if (operand instanceof RecordLiteralExpression recordLiteralExpression) {
+			TypeDeclaration typeDeclaration = recordLiteralExpression.getTypeDeclaration();
+			return getFieldDeclarations(typeDeclaration);
 		}
-		if (operand instanceof ArrayAccessExpression) {
-			ArrayAccessExpression reference = (ArrayAccessExpression) operand;
+		if (operand instanceof ArrayAccessExpression reference) {
 			Expression accessedExpression = reference.getOperand();
 			return getFieldDeclarations(accessedExpression);
 		}
@@ -118,13 +114,12 @@ public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProv
 	protected List<FieldDeclaration> getFieldDeclarations(Type type) {
 		if (type != null) {
 			TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
-			if (typeDefinition instanceof RecordTypeDefinition) {
-				RecordTypeDefinition record = (RecordTypeDefinition) typeDefinition;
+			if (typeDefinition instanceof RecordTypeDefinition record) {
 				return record.getFieldDeclarations();
 			}
-			if (typeDefinition instanceof ArrayTypeDefinition) {
-				ArrayTypeDefinition array = (ArrayTypeDefinition) typeDefinition;
-				return getFieldDeclarations(array.getElementType());
+			if (typeDefinition instanceof ArrayTypeDefinition array) {
+				Type elementType = array.getElementType();
+				return getFieldDeclarations(elementType);
 			}
 		}
 		return Collections.emptyList();

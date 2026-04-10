@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -35,6 +35,7 @@ import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
@@ -125,8 +126,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				MissionPhaseStateAnnotation container = ecoreUtil.getContainerOfType(context, MissionPhaseStateAnnotation.class);
 				ComponentInstance instance = container.getComponent();
 				Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
-				if (type instanceof StatechartDefinition) {
-					StatechartDefinition statechart = (StatechartDefinition) type;
+				if (type instanceof StatechartDefinition statechart) {
 					return Scopes.scopeFor(
 							statechart.getVariableDeclarations());
 				}
@@ -235,8 +235,8 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			}
 			if (context instanceof EventParameterReferenceExpression expression &&
 					reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT) {
-				checkState(expression.getPort() != null);
 				Port port = expression.getPort();
+				checkState(port != null);
 				return Scopes.scopeFor(
 						StatechartModelDerivedFeatures.getInputEvents(port));
 			}
@@ -244,7 +244,8 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PARAMETER) {
 				checkState(expression.getPort() != null);
 				Event event = expression.getEvent();
-				return Scopes.scopeFor(event.getParameterDeclarations());
+				List<ParameterDeclaration> parameterDeclarations = event.getParameterDeclarations();
+				return Scopes.scopeFor(parameterDeclarations);
 			}
 			if (reference == StatechartModelPackage.Literals.STATE_REFERENCE_EXPRESSION__REGION) {
 				StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
@@ -259,8 +260,8 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			}
 			if (context instanceof InterfaceParameterReferenceExpression interfaceParameterReferenceExpression) {
 				if (reference == InterfaceModelPackage.Literals.INTERFACE_PARAMETER_REFERENCE_EXPRESSION__PARAMETER) {
-					checkState(interfaceParameterReferenceExpression.getEvent() != null);
 					Event event = interfaceParameterReferenceExpression.getEvent();					
+					checkState(event != null);
 					return Scopes.scopeFor(
 							event.getParameterDeclarations());
 				} else if (reference == InterfaceModelPackage.Literals.INTERFACE_PARAMETER_REFERENCE_EXPRESSION__EVENT) {
@@ -278,7 +279,8 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				Package gammaPackage = StatechartModelDerivedFeatures.getContainingPackage(context);
 				if (!gammaPackage.getImports().isEmpty()) {
 					Set<Interface> interfaces = new HashSet<Interface>();
-					gammaPackage.getImports().stream().map(it -> it.getInterfaces()).forEach(it -> interfaces.addAll(it));
+					gammaPackage.getImports().stream()
+							.map(it -> it.getInterfaces()).forEach(it -> interfaces.addAll(it));
 					return Scopes.scopeFor(interfaces);
 				}
 			}
@@ -375,6 +377,10 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 						Collection<Declaration> declarations = new ArrayList<Declaration>();
 						declarations.addAll(statechart.getVariableDeclarations());
 						declarations.addAll(statechart.getFunctionDeclarations());
+						
+						declarations.addAll(
+								StatechartModelDerivedFeatures.getAllInterfaceFunctionDeclarations(statechart));
+						
 						scope = Scopes.scopeFor(declarations, parentScope);
 					}
 					else {

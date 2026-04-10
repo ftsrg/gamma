@@ -1325,6 +1325,23 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return getInternalEvents(port).contains(event);
 	}
 	
+	public static List<FunctionDeclaration> getAllInterfaceFunctionDeclarations(Component component) {
+		List<FunctionDeclaration> functionDeclarations = new ArrayList<FunctionDeclaration>();
+		
+		List<Port> ports = getAllPorts(component);
+		for (Port port : ports) {
+			functionDeclarations.addAll(
+					getAllFunctionDeclarations(port));
+		}
+		
+		return functionDeclarations;
+	}
+	
+	public static List<FunctionDeclaration> getAllFunctionDeclarations(Port port) {
+		Interface interface_ = getInterface(port);
+		return getAllFunctionDeclarations(interface_);
+	}
+	
 	public static List<FunctionDeclaration> getAllFunctionDeclarations(Interface _interface) {
 		List<FunctionDeclaration> functionDeclarations = new ArrayList<FunctionDeclaration>();
 		

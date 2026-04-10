@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.expression.language.scoping;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
@@ -21,11 +22,14 @@ import org.eclipse.xtext.scoping.impl.SimpleScope;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.ExpressionPackage;
+import hu.bme.mit.gamma.expression.model.FieldDeclaration;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
@@ -66,22 +70,22 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 			}
 			RecordTypeDefinition recordType = (RecordTypeDefinition)
 					ExpressionModelDerivedFeatures.getTypeDefinition(typeDeclaration);
-			return Scopes.scopeFor(recordType.getFieldDeclarations());
+			List<FieldDeclaration> fieldDeclarations = recordType.getFieldDeclarations();
+			return Scopes.scopeFor(fieldDeclarations);
 		}
-		if (context instanceof ExpressionPackage &&
+		if (context instanceof ExpressionPackage expressionPackage &&
 				reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
-			ExpressionPackage expressionPackage = (ExpressionPackage) context;
 			Collection<Declaration> declarations = new ArrayList<Declaration>();
 			declarations.addAll(expressionPackage.getConstantDeclarations());
 			declarations.addAll(expressionPackage.getFunctionDeclarations());
 			// Parameter declarations could be added too, but what for?
 			return Scopes.scopeFor(declarations);
 		} // Order is important, as ExpressionPackage is a ParametricElement
-		if (context instanceof ParametricElement &&
+		if (context instanceof ParametricElement parametricElement &&
 				reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			IScope parentScope = getParentScope(context, reference);
-			ParametricElement parametricElement = (ParametricElement) context;
-			return Scopes.scopeFor(parametricElement.getParameterDeclarations(), parentScope);
+			List<ParameterDeclaration> parameterDeclarations = parametricElement.getParameterDeclarations();
+			return Scopes.scopeFor(parameterDeclarations, parentScope);
 		}
 		if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			// Right now, this might not be necessary as parametric elements are contained directly by packages
@@ -100,7 +104,8 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 				try {
 					EnumerationTypeDefinition enumeration = (EnumerationTypeDefinition)
 							ExpressionModelDerivedFeatures.getTypeDefinition(typeReference);
-					return Scopes.scopeFor(enumeration.getLiterals());
+					List<EnumerationLiteralDefinition> literals = enumeration.getLiterals();
+					return Scopes.scopeFor(literals);
 				} catch (IllegalArgumentException e) {
 					// LazyLinkingResource bug: 'type == null'
 				}
