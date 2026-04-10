@@ -1,0 +1,23 @@
+package functions
+
+import "Interfaces/Interfaces.gcd"
+
+statechart PortFunctions_1 [
+	port Execute : requires Execute
+	port FunctionExecute : provides FunctionExecute
+] {
+	region main {
+		initial Initial
+		state _A
+		
+		state _B
+		state _C
+	}
+	
+	transition from Initial to _A
+	transition from _A to _B when Execute.^execute / {
+		raise FunctionExecute.^execute;
+	}
+	transition from _B to _C when Execute.^execute / raise FunctionExecute.^execute;
+	
+}

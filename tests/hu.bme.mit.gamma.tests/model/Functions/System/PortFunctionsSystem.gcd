@@ -1,0 +1,17 @@
+package asynchronousreactive
+
+import "Interfaces/Interfaces.gcd"
+
+import "Statechart/PortFunctions_1.gcd"
+import "Statechart/PortFunctions_2.gcd"
+
+cascade PortFunctionsSystem [
+	port Execute : requires Execute
+] {
+	component _1 : PortFunctions_1
+	component _2 : PortFunctions_2
+	
+	bind Execute -> _1.Execute
+	
+	channel [_1.FunctionExecute] -o)- [_2.FunctionExecute]
+}

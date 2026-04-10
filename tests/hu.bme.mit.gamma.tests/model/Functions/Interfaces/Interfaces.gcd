@@ -4,6 +4,11 @@ interface Execute {
 	out event ^execute
 }
 
+interface FunctionExecute extends Execute {
+	procedure setValue(x : integer) : void
+	lambda getValue : integer
+}
+
 type Record : record {
 	a : boolean,
 	b : integer

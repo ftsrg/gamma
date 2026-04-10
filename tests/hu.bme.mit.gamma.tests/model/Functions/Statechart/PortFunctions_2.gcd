@@ -1,0 +1,29 @@
+package functions
+
+import "Interfaces/Interfaces.gcd"
+
+statechart PortFunctions_2 [
+	port FunctionExecute : requires FunctionExecute
+] {
+	var _int : integer
+	var _bool : boolean
+	region main {
+		initial Initial
+		state _A
+		
+		state _B
+		state _C
+	}
+	
+	transition from Initial to _A
+	transition from _A to _B when FunctionExecute.^execute / {
+		var a : integer := _int;
+		if (getValue() < 1000) {
+			setValue(_int);
+			_bool := true;
+		}
+		_int := _int / a;
+	}
+	transition from _B to _C when FunctionExecute.^execute / _int := getValue();
+	
+}
