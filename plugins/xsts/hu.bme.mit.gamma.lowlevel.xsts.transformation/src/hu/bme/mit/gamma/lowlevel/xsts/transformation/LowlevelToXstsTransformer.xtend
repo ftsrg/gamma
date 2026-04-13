@@ -332,14 +332,14 @@ class LowlevelToXstsTransformer {
 				
 				if (lowlevelFunctionDeclaration instanceof ProcedureDeclaration) {
 					val lowlevelBody = lowlevelFunctionDeclaration.body
-					val xStsBody = lowlevelBody.transformAction as SequentialAction
+					val xStsBody = lowlevelBody?.transformAction as SequentialAction // Can be null: declaration
 					
 					val xStsProcedureDeclaration = xStsFunctionDeclaration as hu.bme.mit.gamma.xsts.model.ProcedureDeclaration
 					xStsProcedureDeclaration.body = xStsBody
 				}
 				else if (lowlevelFunctionDeclaration instanceof LambdaDeclaration) {
 					val lowlevelExpression = lowlevelFunctionDeclaration.expression
-					val xStsExpression = lowlevelExpression.transformExpression
+					val xStsExpression = lowlevelExpression?.transformExpression // Can be null: declaration
 					
 					val xStsLambdaDeclaration = xStsFunctionDeclaration as LambdaDeclaration
 					xStsLambdaDeclaration.expression = xStsExpression

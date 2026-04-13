@@ -47,6 +47,7 @@ import java.util.List
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
@@ -312,6 +313,16 @@ class StatechartToLowlevelTransformer {
 		val statechartInvariants = statechart.invariants
 		if (!statechartInvariants.empty) {
 			lowlevelStatechart.invariants += statechartInvariants.map[it.transformSimpleExpression]
+		}
+		
+		// Interface function definitions
+		val functionDeclarations = statechart.functionDeclarations
+		for (interfacefunctionDeclaration : statechart.allProvidedInterfaceFunctionDeclarations) {
+			val functionDefinition = interfacefunctionDeclaration.getMatchingFunctionDeclaration(functionDeclarations)
+			if (!trace.isMapped(functionDefinition)) {
+				val extension functionTransformer = new FunctionTransformer(trace, ADD_RETURN_GUARDS)
+				functionDefinition.transformAndStoreFunction
+			}
 		}
 		
 		return lowlevelStatechart

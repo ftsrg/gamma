@@ -1071,7 +1071,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			InitialStateSetting initialStateSetting = transformInitialStateSetting(
 					transformation.getInitialStateSetting());
 			
-			boolean inlineFunctions = !StatechartModelDerivedFeatures.getSelfOrAllContainedStatecharts(component).stream().anyMatch(
+			boolean inlineFunctions = !StatechartModelDerivedFeatures.hasInterfaceFunctionDeclarationsInStatecharts(component) &&
+					!StatechartModelDerivedFeatures.getSelfOrAllContainedStatecharts(component).stream().anyMatch(
 					it -> StatechartModelDerivedFeatures.callsRecursiveFunctions(it) ||
 						it.getFunctionDeclarations().stream().anyMatch(fun -> !ecoreUtil.getSelfAndAllContentsOfType(fun, OpaqueExpression.class).isEmpty()));
 			

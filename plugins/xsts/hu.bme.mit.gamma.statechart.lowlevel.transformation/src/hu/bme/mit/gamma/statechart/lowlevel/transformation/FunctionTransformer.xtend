@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.action.model.ProcedureDeclaration
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration
+import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -56,9 +57,14 @@ class FunctionTransformer {
 	def FunctionDeclaration transformAndStoreFunction(FunctionDeclaration function) {
 		val lowlevelFunction = function.transformFunction
 		
-		val gammaComponent = function.containingComponent // TODO packages
-		val lowlevelStatechart = trace.get(gammaComponent)
-		lowlevelStatechart.functionDeclarations += lowlevelFunction
+		if (function.hasContainerOfType(Component)) {
+			val gammaComponent = function.containingComponent
+			val lowlevelComponent = trace.get(gammaComponent)
+			lowlevelComponent.functionDeclarations += lowlevelFunction
+		}
+		else {
+			trace.lowlevelPackage.functionDeclarations += lowlevelFunction
+		}
 		
 		return lowlevelFunction
 	}
@@ -79,10 +85,10 @@ class FunctionTransformer {
 			
 			lowlevelProcedure.type = lowlevelType // Needed here for returning tuple literals
 			
-			val lowlevelBody = function.body.transformAction.wrap
+			val lowlevelBody = function.body?.transformAction?.wrap // Can be null: declaration
 			lowlevelProcedure.body = lowlevelBody
 			
-			if (ADD_RETURN_GUARDS) {
+			if (ADD_RETURN_GUARDS && lowlevelBody !== null) {
 				val extension returnGuardHandler = new ProcedureReturnGuardHandler
 				lowlevelBody.createAndSetReturnedDeclarationAndAddReturnGuard
 			}
@@ -95,7 +101,9 @@ class FunctionTransformer {
 			
 			lowlevelLambda.type = lowlevelType
 			
-			val lowlevelExpressions = function.expression.transformExpression
+			val expression = function.expression
+			val lowlevelExpressions = (expression !== null) ?
+					expression.transformExpression : #[ null ] // Declaration: can be null
 			lowlevelLambda.expression = (lowlevelExpressions.size > 1) ?
 				lowlevelExpressions.createTupleLiteralExpression(lowlevelType.typeDefinition) :
 				lowlevelExpressions.head

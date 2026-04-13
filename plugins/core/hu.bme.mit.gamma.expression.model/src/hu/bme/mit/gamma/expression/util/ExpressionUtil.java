@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -1291,8 +1292,12 @@ public class ExpressionUtil {
 						createTupleLiteralExpression(expressions, subtupleType));
 			}
 			else {
+				try {
 				operands.add(
 						expressions.remove());
+				} catch (NoSuchElementException e) {
+					System.out.println("A");
+				}
 			}
 		}
 		

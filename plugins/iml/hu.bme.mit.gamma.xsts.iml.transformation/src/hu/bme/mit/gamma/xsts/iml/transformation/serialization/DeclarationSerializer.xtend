@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024-2025 Contributors to the Gamma project
+ * Copyright (c) 2024-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -59,7 +59,7 @@ class DeclarationSerializer {
 		//
 		return '''«declaration.serializeName» : «declaration.type.serializeType»;'''
 	}
-			
+	
 	def serializeEnvFieldDeclaration(HavocAction havoc) '''«
 			havoc.serializeFieldName» : «havoc.lhs.declaration.type.serializeType»;'''
 	
@@ -90,12 +90,22 @@ class DeclarationSerializer {
 	
 	protected def serializeParameterDeclaration(Declaration declaration)'''«declaration.serializeName» : «declaration.type.serializeType»'''
  	
-	protected def dispatch serializeFunctionDeclarationBody(LambdaDeclaration function) '''«function.expression.serialize»'''
+	protected def dispatch serializeFunctionDeclarationBody(LambdaDeclaration function) '''
+		«IF function.hasDefinition»
+			«function.expression.serialize»
+		«ELSE /* Placeholder */»
+			false
+		«ENDIF»
+	'''
 	
 	protected def dispatch serializeFunctionDeclarationBody(ProcedureDeclaration function) '''
-		«(function.localVariables + #[function.createReturnVariable])
-					.initVariablesIfNotEmpty(LOCAL_RECORD_IDENTIFIER)»
-		«function.body.serializeActionIntermediate»«functionReturnValues»
+		«IF function.hasDefinition»
+			«(function.localVariables + #[function.createReturnVariable])
+						.initVariablesIfNotEmpty(LOCAL_RECORD_IDENTIFIER)»
+			«function.body.serializeActionIntermediate»«functionReturnValues»
+		«ELSE /* Placeholder */»
+			false
+		«ENDIF»
 	'''
 	
 	//

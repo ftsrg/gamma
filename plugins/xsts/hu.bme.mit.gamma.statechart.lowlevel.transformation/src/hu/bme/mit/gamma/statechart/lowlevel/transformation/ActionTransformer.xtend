@@ -186,7 +186,7 @@ class ActionTransformer {
 						lowlevelExpressions.createTupleLiteralExpression(
 							trace.get(action
 								.getContainerOfType(ProcedureDeclaration))
-									.typeDefinition)
+									.typeDefinition) // TODO function inline
 			]
 		]
 	}

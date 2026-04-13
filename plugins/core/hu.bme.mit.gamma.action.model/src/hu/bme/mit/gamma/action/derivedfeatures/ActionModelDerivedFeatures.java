@@ -53,7 +53,7 @@ public class ActionModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 
 	public static boolean isPure(FunctionDeclaration function) {
-		if (isLambda(function)) {
+		if (!hasDefinition(function) || isLambda(function)) {
 			return true;
 		}
 		
@@ -123,7 +123,7 @@ public class ActionModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return body != null;
 	}
 	
-	public static FunctionDeclaration selectMatchingFunctionDeclaration(FunctionDeclaration functionDeclaration,
+	public static FunctionDeclaration getMatchingFunctionDeclaration(FunctionDeclaration functionDeclaration,
 				Iterable<? extends FunctionDeclaration> functionDefinitions) {
 		for (FunctionDeclaration functionDefinition : functionDefinitions) {
 			boolean match = functionDeclaration.getName().equals(functionDefinition.getName()) &&
@@ -140,7 +140,7 @@ public class ActionModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static boolean hasMatchingFunctionDeclaration(FunctionDeclaration functionDeclaration,
 			Iterable<? extends FunctionDeclaration> functionDefinitions) {
-		FunctionDeclaration matchingFunctionDeclaration = selectMatchingFunctionDeclaration(functionDeclaration, functionDefinitions);
+		FunctionDeclaration matchingFunctionDeclaration = getMatchingFunctionDeclaration(functionDeclaration, functionDefinitions);
 		return matchingFunctionDeclaration != null;
 	}
 	

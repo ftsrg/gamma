@@ -16,8 +16,6 @@ import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
 import hu.bme.mit.gamma.transformation.util.annotations.AnnotatablePreprocessableElements
-import hu.bme.mit.gamma.transformation.util.annotations.DataflowCoverageCriterion
-import hu.bme.mit.gamma.transformation.util.annotations.InteractionCoverageCriterion
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.transformation.InitialStateSetting
