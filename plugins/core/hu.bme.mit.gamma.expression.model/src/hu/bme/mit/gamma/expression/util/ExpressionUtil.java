@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -1286,18 +1285,18 @@ public class ExpressionUtil {
 		List<Expression> operands = tuple.getOperands();
 		
 		for (Type subtype : tupleType.getTypes()) {
+			Expression value = expressions.peek();
 			TypeDefinition subtypeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(subtype);
-			if (subtypeDefinition instanceof TupleTypeDefinition subtupleType) {
+			if (typeDeterminator.equalsType(subtype, value)) { // Primitive or tuple
+				operands.add(
+						expressions.remove());
+			}
+			else if (subtypeDefinition instanceof TupleTypeDefinition subtupleType) {
 				operands.add(
 						createTupleLiteralExpression(expressions, subtupleType));
 			}
 			else {
-				try {
-				operands.add(
-						expressions.remove());
-				} catch (NoSuchElementException e) {
-					System.out.println("A");
-				}
+				throw new IllegalArgumentException("Unknown tuple literal type: " + subtype);
 			}
 		}
 		
