@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
@@ -39,6 +40,7 @@ class EventConnector {
 	//
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
+	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	
 	// TODO Introduce EventReferenceToXstsVariableMapper
 	
@@ -197,30 +199,35 @@ class EventConnector {
 		val channels = component.channels
 		for (channel : channels) {
 			val providedInstancePort = channel.providedPort
-			val providedInstance = providedInstancePort.instance
+			val providedPort = providedInstancePort.port
+			val providedSimplePort = providedPort.allBoundSimplePorts.onlyElement
+			val providedInstance = providedSimplePort.containingComponentInstance
 			val providedType = providedInstance.derivedType
 			val providedFunctions = providedType.functionDeclarations
 			
 			val requiredInstancePorts = channel.requiredPorts
 			for (requiredInstancePort : requiredInstancePorts) {
-				val requiredInstance = requiredInstancePort.instance
-				val requiredFunctions = requiredInstancePort.port.allFunctionDeclarations
-				for (requiredFunction : requiredFunctions) {
-					val xStsFunctionDeclarationName = requiredFunction.getCustomizedName(requiredInstance)
-					val xStsFunctionDeclaration = xStsFunctionDeclarations.findFirst[it.name == xStsFunctionDeclarationName]
-					
-					val functionDefinition = requiredFunction.getMatchingFunctionDeclaration(providedFunctions)
-					val xStsFunctionDefinitionName = functionDefinition.getCustomizedName(providedInstance)
-					val xStsFunctionDefinition = xStsFunctionDeclarations.findFirst[it.name == xStsFunctionDefinitionName]
-					
-					for (xStsFunctionCall : xStsFunctionCalls) {
-						if (xStsFunctionCall.declaration === xStsFunctionDeclaration) {
-							xStsFunctionCall.operand = xStsFunctionDefinition.createReferenceExpression
-							logger.info('''Changing interface function reference «xStsFunctionDeclarationName» to «xStsFunctionDefinitionName»''')
+				val requiredPort = requiredInstancePort.port
+				for (requiredSimplePort : requiredPort.allBoundSimplePorts) {
+					val requiredInstance = requiredSimplePort.containingComponentInstance
+					val requiredFunctions = requiredInstancePort.port.allFunctionDeclarations
+					for (requiredFunction : requiredFunctions) {
+						val xStsFunctionDeclarationName = requiredFunction.getCustomizedName(requiredInstance)
+						val xStsFunctionDeclaration = xStsFunctionDeclarations.findFirst[it.name == xStsFunctionDeclarationName]
+						
+						val functionDefinition = requiredFunction.getMatchingFunctionDeclaration(providedFunctions)
+						val xStsFunctionDefinitionName = functionDefinition.getCustomizedName(providedInstance)
+						val xStsFunctionDefinition = xStsFunctionDeclarations.findFirst[it.name == xStsFunctionDefinitionName]
+						
+						for (xStsFunctionCall : xStsFunctionCalls) {
+							if (xStsFunctionCall.declaration === xStsFunctionDeclaration) {
+								xStsFunctionCall.operand = xStsFunctionDefinition.createReferenceExpression
+								logger.info('''Changing interface function reference «xStsFunctionDeclarationName» to «xStsFunctionDefinitionName»''')
+							}
 						}
+						
+						xStsFunctionDeclaration.remove
 					}
-					
-					xStsFunctionDeclaration.remove
 				}
 			}
 		}
