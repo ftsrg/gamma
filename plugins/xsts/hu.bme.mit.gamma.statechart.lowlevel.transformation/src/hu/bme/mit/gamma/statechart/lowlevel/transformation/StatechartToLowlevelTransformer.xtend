@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -99,7 +99,7 @@ class StatechartToLowlevelTransformer {
 		//
 		return statechart.transformComponent as hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
 	}
-
+	
 	protected def hu.bme.mit.gamma.statechart.lowlevel.model.Package transform(Package _package) {
 		if (trace.isMapped(_package)) {
 			// It is already transformed
@@ -455,10 +455,8 @@ class StatechartToLowlevelTransformer {
 			lowlevelGuardList += gammaTrigger.transformTrigger // Trigger guard
 		}
 		var guard = transition.guard
-		if (guard !== null) {
-			if (!guard.elseOrDefault) {
-				lowlevelGuardList += guard.transformExpression
-			}
+		if (guard !== null && !guard.elseOrDefault) {
+			lowlevelGuardList += guard.transformExpression
 			// We do not transform the else guard: priority is already set during the creation of the transition
 		}
 		// The expressions are in an AND relation

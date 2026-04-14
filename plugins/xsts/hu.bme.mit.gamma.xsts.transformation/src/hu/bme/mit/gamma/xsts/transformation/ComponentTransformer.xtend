@@ -1324,6 +1324,9 @@ class ComponentTransformer {
 		logger.info("Connecting events through channels in " + name)
 		xSts.connectEventsThroughChannels(component) // Event (variable setting) connecting across channels
 		
+		logger.info("Connecting interface functions through channels in " + name)
+		xSts.connectInterfaceFunctionsThroughChannels(component)
+		
 		logger.info("Binding event to system port events in " + name)
 		val oldInEventAction = xSts.inEventTransition.action
 		val bindingAssignments = xSts.createEventAndParameterAssignmentsBoundToTheSameSystemPort(component)

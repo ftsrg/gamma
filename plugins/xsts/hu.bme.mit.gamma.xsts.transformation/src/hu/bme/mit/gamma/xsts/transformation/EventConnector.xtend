@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
@@ -21,9 +22,11 @@ import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.List
+import java.util.logging.Logger
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
@@ -32,7 +35,9 @@ class EventConnector {
 	public static final EventConnector INSTANCE = new EventConnector
 	protected new() {}
 	// Auxiliary objects
-	protected final extension GammaEcoreUtil expressionUtil = GammaEcoreUtil.INSTANCE
+	protected final Logger logger = Logger.getLogger("GammaLogger")
+	//
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	
 	// TODO Introduce EventReferenceToXstsVariableMapper
@@ -182,6 +187,42 @@ class EventConnector {
 			val xStsOutVariable = xStsOutVariables.get(i)
 			val xStsInVariable = xStsInVariables.get(i)
 			xStsOutVariable.connectEvents(xStsInVariable, xStsAssignmentActions)
+		}
+	}
+	
+	def void connectInterfaceFunctionsThroughChannels(XSTS xSts, CompositeComponent component) {
+		val xStsFunctionDeclarations = xSts.functionDeclarations
+		val xStsFunctionCalls = xSts.getAllContentsOfType(FunctionAccessExpression)
+		
+		val channels = component.channels
+		for (channel : channels) {
+			val providedInstancePort = channel.providedPort
+			val providedInstance = providedInstancePort.instance
+			val providedType = providedInstance.derivedType
+			val providedFunctions = providedType.functionDeclarations
+			
+			val requiredInstancePorts = channel.requiredPorts
+			for (requiredInstancePort : requiredInstancePorts) {
+				val requiredInstance = requiredInstancePort.instance
+				val requiredFunctions = requiredInstancePort.port.allFunctionDeclarations
+				for (requiredFunction : requiredFunctions) {
+					val xStsFunctionDeclarationName = requiredFunction.getCustomizedName(requiredInstance)
+					val xStsFunctionDeclaration = xStsFunctionDeclarations.findFirst[it.name == xStsFunctionDeclarationName]
+					
+					val functionDefinition = requiredFunction.getMatchingFunctionDeclaration(providedFunctions)
+					val xStsFunctionDefinitionName = functionDefinition.getCustomizedName(providedInstance)
+					val xStsFunctionDefinition = xStsFunctionDeclarations.findFirst[it.name == xStsFunctionDefinitionName]
+					
+					for (xStsFunctionCall : xStsFunctionCalls) {
+						if (xStsFunctionCall.declaration === xStsFunctionDeclaration) {
+							xStsFunctionCall.operand = xStsFunctionDefinition.createReferenceExpression
+							logger.info('''Changing interface function reference «xStsFunctionDeclarationName» to «xStsFunctionDefinitionName»''')
+						}
+					}
+					
+					xStsFunctionDeclaration.remove
+				}
+			}
 		}
 	}
 	
