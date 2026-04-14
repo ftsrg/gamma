@@ -2,6 +2,13 @@ import "PortFunctionsSystem.gcd"
 
 analysis {
 	component : PortFunctionsSystem
-	language : Theta
+	language : IML
 	state-coverage
+}
+
+verification {
+	file : "PortFunctionsSystem.iml"
+	language : Imandra
+	property-file : ".PortFunctionsSystem.gpd"
+	optimize-traces : true
 }

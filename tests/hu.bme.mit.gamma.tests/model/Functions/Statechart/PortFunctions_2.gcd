@@ -5,7 +5,7 @@ import "Interfaces/Interfaces.gcd"
 statechart PortFunctions_2 [
 	port FunctionExecute : requires FunctionExecute
 ] {
-	var _int : integer
+	var _int : integer := 2
 	var _bool : boolean
 	region main {
 		initial Initial
@@ -19,7 +19,7 @@ statechart PortFunctions_2 [
 	transition from _X to _Y when FunctionExecute.^execute / {
 		var a : integer := _int;
 		if (getValue() < 1000) {
-			setValue(_int);
+			setValue(_int + 69);
 			_bool := true;
 		}
 		_int := _int / a;
