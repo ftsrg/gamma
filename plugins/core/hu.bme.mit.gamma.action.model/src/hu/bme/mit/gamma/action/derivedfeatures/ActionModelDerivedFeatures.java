@@ -135,7 +135,7 @@ public class ActionModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 				return functionDefinition;
 			}
 		}
-		return null;
+		return functionDeclaration; // Returning the original function (may have a definition)
 	}
 	
 	public static boolean hasMatchingFunctionDeclaration(FunctionDeclaration functionDeclaration,

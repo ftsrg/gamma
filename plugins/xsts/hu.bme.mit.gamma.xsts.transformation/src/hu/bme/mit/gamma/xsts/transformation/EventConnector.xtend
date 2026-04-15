@@ -192,6 +192,8 @@ class EventConnector {
 		}
 	}
 	
+	//
+	
 	def void connectInterfaceFunctionsThroughChannels(XSTS xSts, CompositeComponent component) {
 		val xStsFunctionDeclarations = xSts.functionDeclarations
 		val xStsFunctionCalls = xSts.getAllContentsOfType(FunctionAccessExpression)

@@ -41,7 +41,8 @@ class ProcedureReturnGuardHandler {
 	}
 	
 	def void createAndSetReturnedDeclarationAndAddReturnGuard(Action top) {
-		val isReturnedVariableDeclaration = createBooleanTypeDefinition.createDeclarationStatement("isReturned")
+		val isReturnedVariableDeclaration = createBooleanTypeDefinition
+				.createDeclarationStatement("isReturned")
 		isReturnedVariableDeclaration.prepend(top)
 		isReturnedDeclaration = isReturnedVariableDeclaration.variableDeclaration
 		

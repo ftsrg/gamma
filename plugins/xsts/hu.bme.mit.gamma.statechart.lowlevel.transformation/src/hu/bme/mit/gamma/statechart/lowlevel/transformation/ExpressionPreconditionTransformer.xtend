@@ -60,7 +60,7 @@ class ExpressionPreconditionTransformer {
 	protected final boolean ADD_RETURN_GUARDS
 	protected final int MAX_RECURSION_DEPTH
 	
-	protected int currentRecursionDepth // For procedures
+	protected int currentRecursionDepth
 	
 	new(Trace trace, ActionTransformer actionTransformer) {
 		this(trace, actionTransformer, true, true, 7)

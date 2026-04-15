@@ -399,6 +399,38 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 	}
 	
+	public static boolean isInterfaceFunctionDeclaration(FunctionDeclaration functionDeclaration) {
+		EObject container = functionDeclaration.eContainer();
+		return container instanceof Interface;
+	}
+	
+	// For unfolded composite components
+	public static FunctionDeclaration fetchFunctionDefinition(FunctionAccessExpression accessExpression) {
+		FunctionDeclaration functionDeclaration = statechartUtil.getFunctionDeclaration(accessExpression);
+		if (!isInterfaceFunctionDeclaration(functionDeclaration)) {
+			return functionDeclaration;
+		}
+		
+		Component component = getContainingComponent(accessExpression);
+		Port port = getPort(functionDeclaration, component);
+		List<Port> allConnectedSimplePorts = getAllConnectedSimplePorts(port);
+		Port realizingPort = javaUtil.getOnlyElement(allConnectedSimplePorts); // One provider
+		List<FunctionDeclaration> functionDefinitions = getAllFunctionDeclarations(realizingPort);
+		FunctionDeclaration functionDefinition = getMatchingFunctionDeclaration(functionDeclaration, functionDefinitions);
+		
+		return functionDefinition;
+	}
+	
+	public static Port getPort(FunctionDeclaration functionDeclaration, Component component) {
+		for (Port port : getAllPorts(component)) {
+			List<FunctionDeclaration> functionDeclarations = getAllFunctionDeclarations(port);
+			if (functionDeclarations.contains(functionDeclaration)) {
+				return port; // Return the first one - more could be present
+			}
+		}
+		return null;
+	}
+	
 	public static List<Expression> getTopComponentArguments(Package unfoldedPackage) {
 		List<Expression> topComponentArguments = new ArrayList<Expression>();
 		for (PackageAnnotation annotation : unfoldedPackage.getAnnotations()) {
@@ -2247,6 +2279,23 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return Collections.emptyList();
 	}
 	
+	public static List<Port> getAllConnectedSimplePorts(Port port) {
+		List<Port> portsConnectedViaChannel = new ArrayList<Port>();
+		Port actualPort = port;
+		while (actualPort != null /* Broadcast ports can go through multiple levels */ &&
+				isSynchronous(getContainingComponent(actualPort))) {
+			portsConnectedViaChannel.addAll(
+					getPortsConnectedViaChannel(actualPort));
+			actualPort = getBoundCompositePort(actualPort);
+		}
+		List<Port> simplePorts = new ArrayList<Port>();
+		for (Port portConnectedViaChannel : portsConnectedViaChannel) {
+			simplePorts.addAll(
+					getAllBoundSimplePorts(portConnectedViaChannel));
+		}
+		return simplePorts;
+	}
+	
 	public static List<Port> getAllConnectedAsynchronousSimplePorts(Port port) {
 		List<Port> portsConnectedViaChannel = new ArrayList<Port>();
 		Port actualPort = port;
@@ -2306,7 +2355,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static Set<Port> getUnusedPorts(ComponentInstance instance) {
 		Component container = (CompositeComponent) getContainingComponent(instance);
-		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
+		Component type = getDerivedType(instance);
 		
 		Set<Port> usedPorts = ecoreUtil.getAllContentsOfType(
 				container, InstancePortReference.class).stream()
