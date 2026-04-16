@@ -113,7 +113,7 @@ class ExpressionPreconditionTransformer {
 		val arguments = expression.arguments
 		actions += arguments.map[it.transformPrecondition].flatten
 		
-		val function = expression.fetchFunctionDefinition // Referenced function (potentially via channels)
+		val function = expression.functionDeclaration // Referenced function (potentially via channels)
 		if (FUNCTION_INLINING) {
 			if (currentRecursionDepth <= 0) {
 				// Reached max recursion

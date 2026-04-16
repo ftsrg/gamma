@@ -356,7 +356,7 @@ class ExpressionTransformer {
 	def dispatch List<Expression> transformExpression(FunctionAccessExpression expression) {
 		val result = <Expression>newArrayList
 		
-		val function = expression.fetchFunctionDefinition // Referenced function (potentially via channels)
+		val function = expression.functionDeclaration // Referenced function (potentially via channels)
 		
 		if (FUNCTION_INLINING) {
 			if (trace.isMapped(expression)) {
