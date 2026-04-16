@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -25,10 +25,8 @@ import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
-import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
-import hu.bme.mit.gamma.expression.model.SelectExpression
 import hu.bme.mit.gamma.expression.model.TupleTypeDefinition
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.model.VoidTypeDefinition
@@ -41,6 +39,7 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class ExpressionPreconditionTransformer {
 	// 
@@ -108,17 +107,13 @@ class ExpressionPreconditionTransformer {
 		return actions
 	}
 	
-	def dispatch List<Action> transformPrecondition(SelectExpression expression) {
-		throw new IllegalArgumentException("Select expressions are not supported: " + expression)
-	}
-	
 	def dispatch List<Action> transformPrecondition(FunctionAccessExpression expression) {
 		val actions = newArrayList
 		
 		val arguments = expression.arguments
 		actions += arguments.map[it.transformPrecondition].flatten
 		
-		val function = expression.accessedDeclaration as FunctionDeclaration
+		val function = expression.fetchFunctionDefinition // Referenced function (potentially via channels)
 		if (FUNCTION_INLINING) {
 			if (currentRecursionDepth <= 0) {
 				// Reached max recursion
@@ -288,6 +283,7 @@ class ExpressionPreconditionTransformer {
 		if (lowlevelAction instanceof Block) {
 			return lowlevelAction.actions
 		}
+		
 		return #[lowlevelAction]
 	}
 	

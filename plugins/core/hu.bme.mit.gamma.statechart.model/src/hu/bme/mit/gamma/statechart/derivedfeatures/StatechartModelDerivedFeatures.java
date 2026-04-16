@@ -414,8 +414,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		Component component = getContainingComponent(accessExpression);
 		Port port = getPort(functionDeclaration, component);
 		List<Port> allConnectedSimplePorts = getAllConnectedSimplePorts(port);
-		Port realizingPort = javaUtil.getOnlyElement(allConnectedSimplePorts); // One provider
-		List<FunctionDeclaration> functionDefinitions = getAllFunctionDeclarations(realizingPort);
+		Port realizingPort = javaUtil.getOnlyElement(allConnectedSimplePorts);
+		Component realizingComponent = StatechartModelDerivedFeatures.getContainingComponent(realizingPort);
+		List<FunctionDeclaration> functionDefinitions = getAllFunctionDeclarations(realizingComponent);
 		FunctionDeclaration functionDefinition = getMatchingFunctionDeclaration(functionDeclaration, functionDefinitions);
 		
 		return functionDefinition;
@@ -1359,7 +1360,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<FunctionDeclaration> getAllFunctionDeclarations(Component component) {
 		List<FunctionDeclaration> functionDeclarations = getAllInterfaceFunctionDeclarations(component);
-		functionDeclarations.addAll(
+		functionDeclarations.addAll(0, // Definitions first
 				component.getFunctionDeclarations());
 		return functionDeclarations;
 	}

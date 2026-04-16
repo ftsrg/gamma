@@ -22,7 +22,6 @@ import hu.bme.mit.gamma.expression.model.EquivalenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
-import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.InequalityExpression
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression
@@ -45,7 +44,6 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
-import hu.bme.mit.gamma.statechart.statechart.ClockTickReference
 import hu.bme.mit.gamma.statechart.statechart.EventAnyPortReference
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
@@ -163,8 +161,7 @@ class ExpressionTransformer {
 		return #[
 			(expression instanceof EqualityExpression) ?
 				expressions.wrapIntoAndExpression :
-				expressions.wrapIntoOrExpression
-		]
+				expressions.wrapIntoOrExpression ]
 	}
 	
 	def dispatch List<Expression> transformExpression(MultiaryExpression expression) {
@@ -187,12 +184,12 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch List<Expression> transformExpression(StateReferenceExpression expression) {
-		val gammaRegion = expression.region
-		val gammaState = expression.state
+		val region = expression.region
+		val state = expression.state
 		return #[
 			statechartModelFactory.createStateReferenceExpression => [
-				it.region = trace.get(gammaRegion)
-				it.state = trace.get(gammaState)
+				it.region = trace.get(region)
+				it.state = trace.get(state)
 			]
 		]
 	}
@@ -208,11 +205,11 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch List<Expression> transformExpression(EnumerationLiteralExpression expression) {
-		val gammaEnumLiteral = expression.reference
-		val index = gammaEnumLiteral.index
-		val gammaEnumTypeDeclaration = gammaEnumLiteral.typeDeclaration
-		checkState(trace.isMapped(gammaEnumTypeDeclaration))
-		val lowlevelEnumTypeDeclaration = trace.get(gammaEnumTypeDeclaration)
+		val enumLiteral = expression.reference
+		val index = enumLiteral.index
+		val enumTypeDeclaration = enumLiteral.typeDeclaration
+		checkState(trace.isMapped(enumTypeDeclaration))
+		val lowlevelEnumTypeDeclaration = trace.get(enumTypeDeclaration)
 		val lowlevelEnumTypeDefinition = lowlevelEnumTypeDeclaration.type as EnumerationTypeDefinition
 		return #[
 			lowlevelEnumTypeDefinition.literals.get(index).createEnumerationLiteralExpression
@@ -358,6 +355,9 @@ class ExpressionTransformer {
 	
 	def dispatch List<Expression> transformExpression(FunctionAccessExpression expression) {
 		val result = <Expression>newArrayList
+		
+		val function = expression.fetchFunctionDefinition // Referenced function (potentially via channels)
+		
 		if (FUNCTION_INLINING) {
 			if (trace.isMapped(expression)) {
 				// By now, the procedure call must be inlined by ExpressionPreconditionTransformer
@@ -366,7 +366,6 @@ class ExpressionTransformer {
 				}
 			}
 			else {
-				val function = expression.declaration as FunctionDeclaration
 				checkState(function.lambda)
 				val type = function.type
 				if (currentRecursionDepth <= 0) {
@@ -392,20 +391,20 @@ class ExpressionTransformer {
 			}
 			else {
 				// Basic method call
-				val gammaFunction = expression.functionDeclaration
 				val arguments = expression.arguments
 				// By now, the procedure must be transformed by ExpressionPreconditionTransformer
-				if (!trace.isMapped(gammaFunction)) { // On-the-fly transformation added here
+				if (!trace.isMapped(function)) { // On-the-fly transformation added here
 					val extension functionTransformer = new FunctionTransformer(trace, ADD_RETURN_GUARDS)
-					gammaFunction.transformAndStoreFunction
+					function.transformAndStoreFunction
 				}
 				
-				val lowlevelFunction = trace.get(gammaFunction)
+				val lowlevelFunction = trace.get(function)
 				val lowlevelArguments = arguments.map[it.transformExpression].flatten.toList
 				val lowlevelCall = lowlevelFunction.createFunctionAccessExpression(lowlevelArguments)
 				result += lowlevelCall
 			}
 		}
+		
 		return result
 	}
 	
@@ -442,10 +441,6 @@ class ExpressionTransformer {
 			}
 		}
 		return triggerGuards.wrapIntoOrExpression
-	}
-	
-	def dispatch Expression transformEventReference(ClockTickReference reference) {
-		throw new IllegalArgumentException("Clock references are not yet transformed: " + reference)
 	}
 	
 	def dispatch Expression transformEventReference(PortEventReference reference) {
@@ -511,8 +506,8 @@ class ExpressionTransformer {
 	//
 	
 	private def Expression getValueOfTimeout(TimeoutDeclaration timeoutDeclaration) {
-		val gammaStatechart = timeoutDeclaration.containingStatechart
-		val timeoutSettings = gammaStatechart.getAllContentsOfType(SetTimeoutAction)
+		val statechart = timeoutDeclaration.containingStatechart
+		val timeoutSettings = statechart.getAllContentsOfType(SetTimeoutAction)
 		val correctTimeoutSetting = timeoutSettings.filter[it.timeoutDeclaration == timeoutDeclaration]
 		val times = correctTimeoutSetting.map[it.time].toList
 		if (times.empty) {
