@@ -68,7 +68,8 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	override String serialize(Expression expression) {
 		if (expression instanceof TimeoutReferenceExpression) {
 			return expression.serialize
-		} else {
+		}
+		else {
 			return super.serialize(expression)
 		}
 	}

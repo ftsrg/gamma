@@ -60,6 +60,7 @@ class ValueDeclarationTransformer {
 		checkState(typeDefinition instanceof IntegerTypeDefinition, typeDefinition)
 		val lowlevelParameter = gammaParameter.clone
 		trace.put(gammaParameter, lowlevelParameter)
+		
 		return lowlevelParameter
 	}
 	
@@ -122,6 +123,7 @@ class ValueDeclarationTransformer {
 			ParameterDeclaration gammaParameter, List<String> lowlevelVariableNames, Tracer<T> tracer) {
 		val lowlevelVariables = gammaParameter.transformValue(tracer)
 		lowlevelVariables.nameLowlevelVariables(lowlevelVariableNames)
+		
 		return lowlevelVariables
 	}
 
@@ -142,7 +144,7 @@ class ValueDeclarationTransformer {
 		// Constant variable names do not really matter in terms of traceability
 		val lowlevelVariableNames = gammaConstant.names
 		lowlevelVariables.nameLowlevelVariables(lowlevelVariableNames)
-		//
+		
 		return lowlevelVariables
 	}
 	
@@ -158,6 +160,7 @@ class ValueDeclarationTransformer {
 		) as List<VariableDeclaration>
 		val lowlevelVariableNames = gammaVariable.names
 		lowlevelVariables.nameLowlevelVariables(lowlevelVariableNames)
+		
 		return lowlevelVariables
 	}
 	

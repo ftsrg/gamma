@@ -1,4 +1,5 @@
 import "PortFunctionsSystem.gcd"
+import "PortFunctionsSystem3.gcd"
 
 analysis {
 	component : PortFunctionsSystem
@@ -10,5 +11,18 @@ verification {
 	file : "PortFunctionsSystem.iml"
 	language : Imandra
 	property-file : ".PortFunctionsSystem.gpd"
+	optimize-traces : true
+}
+
+analysis {
+	component : PortFunctionsSystem3
+	language : IML
+	state-coverage
+}
+
+verification {
+	file : "PortFunctionsSystem3.iml"
+	language : Imandra
+	property-file : ".PortFunctionsSystem3.gpd"
 	optimize-traces : true
 }

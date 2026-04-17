@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2025 Contributors to the Gamma project
+ * Copyright (c) 2025-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -41,8 +41,9 @@ class ProcedureReturnGuardHandler {
 	}
 	
 	def void createAndSetReturnedDeclarationAndAddReturnGuard(Action top) {
+		val name = "isReturned"
 		val isReturnedVariableDeclaration = createBooleanTypeDefinition
-				.createDeclarationStatement("isReturned")
+				.createDeclarationStatement(name)
 		isReturnedVariableDeclaration.prepend(top)
 		isReturnedDeclaration = isReturnedVariableDeclaration.variableDeclaration
 		
