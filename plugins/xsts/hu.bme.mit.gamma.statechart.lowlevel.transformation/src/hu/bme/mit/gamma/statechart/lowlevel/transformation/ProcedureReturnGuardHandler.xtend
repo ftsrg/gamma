@@ -104,9 +104,10 @@ class ProcedureReturnGuardHandler {
 				guardedActions += container
 			}
 		}
+		// No 'if (a < 5) return 5;' - every 'return' is contained by block due to 'addReturnGuard' call
 		
 		// Recursion to the top
 		container.addReturnGuard
-	} 
+	}
 	
 }

@@ -13,10 +13,8 @@ package hu.bme.mit.gamma.statechart.lowlevel.transformation
 import hu.bme.mit.gamma.action.model.Action
 import hu.bme.mit.gamma.action.model.ActionModelFactory
 import hu.bme.mit.gamma.action.model.Block
-import hu.bme.mit.gamma.action.model.ConstantDeclarationStatement
 import hu.bme.mit.gamma.action.model.ExpressionStatement
 import hu.bme.mit.gamma.action.model.ProcedureDeclaration
-import hu.bme.mit.gamma.action.model.ReturnStatement
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
 import hu.bme.mit.gamma.expression.model.AccessExpression
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
@@ -28,18 +26,14 @@ import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.TupleTypeDefinition
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.model.VoidTypeDefinition
 import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.List
 
-import static com.google.common.base.Preconditions.checkState
-
 import static extension hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class ExpressionPreconditionTransformer {
 	// 
@@ -48,6 +42,7 @@ class ExpressionPreconditionTransformer {
 	protected final extension ActionTransformer actionTransformer
 	protected final extension ValueDeclarationTransformer valueDeclarationTransformer
 	protected final extension TypeTransformer typeTransformer
+	protected final extension FunctionInliner functionInliner
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
@@ -70,8 +65,9 @@ class ExpressionPreconditionTransformer {
 		this.trace = trace
 		this.actionTransformer = actionTransformer
 		this.expressionTransformer = actionTransformer.expressionTransformer
-		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
-		this.typeTransformer = new TypeTransformer(this.trace)
+		this.valueDeclarationTransformer = new ValueDeclarationTransformer(trace)
+		this.typeTransformer = new TypeTransformer(trace)
+		this.functionInliner = new FunctionInliner(trace, actionTransformer)
 		this.FUNCTION_INLINING = functionInlining
 		this.ADD_RETURN_GUARDS = addReturnGuards
 		this.MAX_RECURSION_DEPTH = maxRecursionDepth
@@ -193,92 +189,7 @@ class ExpressionPreconditionTransformer {
 	
 	protected def dispatch List<Action> transformFunction(ProcedureDeclaration procedure,
 			FunctionAccessExpression expression) {
-		val arguments = expression.arguments
-		val parameterDeclarations = procedure.parameterDeclarations
-		val size = arguments.size
-		checkState(size == parameterDeclarations.size)
-		
-		val inlinedActions = <Action>newArrayList
-		val clonedBlock = procedure.body.clone
-		
-		val namePostfix = expression.uniqueIndex + "_" + procedure.uniqueIndex + "_" + currentRecursionDepth
-		
-		// Rename local declarations
-		val declarations = clonedBlock.getAllContentsOfType(VariableDeclarationStatement)
-				.map[it.variableDeclaration] + 
-			clonedBlock.getAllContentsOfType(ConstantDeclarationStatement).map[it.constantDeclaration]
-		for (declaration : declarations) {
-			val name = declaration.name
-			declaration.name = '''«name»_«namePostfix»'''
-			// A default expression is needed, otherwise some uninitialized parts of record can be havoced
-			if (declaration.expression === null) {
-				declaration.expression = declaration.type.defaultExpression
-			}
-		}
-		
-		// Create local parameter declarations
-		for (var i = 0; i < size; i++) {
-			val argument = arguments.get(i)
-			val parameterDeclaration = parameterDeclarations.get(i)
-			
-			val parameterType = parameterDeclaration.type.clone
-			val name = '''_«parameterDeclaration.name»_«namePostfix»'''
-			val localStatement = parameterType.createDeclarationStatement(name, argument.clone)
-			val localParameterDeclaration = localStatement.variableDeclaration
-			
-			inlinedActions += localStatement
-			localParameterDeclaration.change(parameterDeclaration, clonedBlock)
-		}
-		
-		// Handling return statements
-		var VariableDeclaration localReturnDeclaration = null
-		val returnStatements = clonedBlock.getSelfAndAllContentsOfType(ReturnStatement)
-		if (!returnStatements.empty) {
-			val procedureType = procedure.type.clone // typeDefinition is not correct due to record literals
-			val localDeclarationPostfix = '''_«procedure.name»_«namePostfix»'''
-			// This declaration will store the return value
-			val isVoid = procedureType.typeDefinition instanceof VoidTypeDefinition 
-			if (!isVoid) {
-				val localStatement = procedureType.createDeclarationStatement(
-					'''_returnValue«localDeclarationPostfix»''')
-				localReturnDeclaration = localStatement.variableDeclaration
-				inlinedActions += localStatement
-			}
-			// This declaration will store during execution, whether we have to return
-			// Later optimizations will remove these declarations if they are unnecessary
-			val localIsReturnedStatement = createBooleanTypeDefinition.createDeclarationStatement(
-				'''_isReturned«localDeclarationPostfix»''')
-			val localIsReturnedDeclaration = localIsReturnedStatement.variableDeclaration
-			inlinedActions += localIsReturnedStatement
-			
-			val extension returnGuardHandler = new ProcedureReturnGuardHandler(localIsReturnedDeclaration)
-			
-			for (returnStatement : returnStatements) {
-				// Setting the boolean flag: a return is executed
-				returnStatement.setReturnedDeclarationAndAddReturnGuard
-				
-				// Storing the return value
-				val returnExpression = returnStatement.expression
-				if (returnExpression !== null) {
-					val clonedReturnExpression = returnExpression.clone
-					val returnAssignment = localReturnDeclaration.createAssignment(clonedReturnExpression)
-					returnAssignment.replace(returnStatement)
-				}
-				else {
-					returnStatement.remove
-				}
-			}
-		
-		}
-		inlinedActions += clonedBlock
-		
-		// Transforming local parameters, local return declarations and the block
-		val lowlevelAction = inlinedActions.transformActions
-		if (localReturnDeclaration !== null) {
-			// Tracing the function access expression to the return declarations 
-			val lowlevelReturnDeclarations = trace.getAll(localReturnDeclaration -> new FieldHierarchy)
-			trace.put(expression, lowlevelReturnDeclarations)
-		}
+		val lowlevelAction = expression.execute
 		
 		if (lowlevelAction instanceof Block) {
 			return lowlevelAction.actions
