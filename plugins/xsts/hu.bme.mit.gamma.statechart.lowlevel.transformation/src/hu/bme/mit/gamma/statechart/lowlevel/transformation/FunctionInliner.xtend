@@ -52,7 +52,7 @@ class FunctionInliner {
 		val inlinedActions = <Action>newArrayList
 		val clonedBlock = procedure.body.clone
 		
-		val namePostfix = expression.uniqueIndex + "_" + procedure.uniqueIndex + "_" + currentRecursionDepth
+		val namePostfix = expression.uniqueIndex + "_" + procedure.uniqueIndex + "_" + currentRecursionDepth++
 		
 		// Rename local declarations
 		val declarations = clonedBlock.getAllContentsOfType(VariableDeclarationStatement)

@@ -25,6 +25,7 @@ import hu.bme.mit.gamma.expression.model.AndExpression;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
+import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DefaultExpression;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
@@ -35,6 +36,7 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
+import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
@@ -81,7 +83,6 @@ public class XstsActionUtil extends ExpressionUtil {
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
 	protected final XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
-	
 	//
 	
 	public XSTS createXsts(String name) {
@@ -485,18 +486,28 @@ public class XstsActionUtil extends ExpressionUtil {
 		return functionCallAction;
 	}
 	
-	public VariableDeclarationAction createVariableDeclarationAction(Type type, String name) {
+	public VariableDeclarationAction createBooleanVariableDeclarationAction(CharSequence name) {
+		BooleanTypeDefinition type = factory.createBooleanTypeDefinition();
+		return createVariableDeclarationAction(type, name, null);
+	}
+	
+	public VariableDeclarationAction createIntegerVariableDeclarationAction(CharSequence name) {
+		IntegerTypeDefinition type = factory.createIntegerTypeDefinition();
+		return createVariableDeclarationAction(type, name, null);
+	}
+	
+	public VariableDeclarationAction createVariableDeclarationAction(Type type, CharSequence name) {
 		return createVariableDeclarationAction(type, name, null);
 	}
 	
 	public VariableDeclarationAction createVariableDeclarationAction(
-			TypeDeclaration type, String name, Expression expression) {
+			TypeDeclaration type, CharSequence name, Expression expression) {
 		TypeReference typeReference = createTypeReference(type);
 		return createVariableDeclarationAction(typeReference, name, expression);
 	}
 	
 	public VariableDeclarationAction createVariableDeclarationAction(
-			Type type, String name, Expression expression) {
+			Type type, CharSequence name, Expression expression) {
 		VariableDeclaration variableDeclaration = createVariableDeclaration(type, name, expression);
 		VariableDeclarationAction action = xStsFactory.createVariableDeclarationAction();
 		action.setVariableDeclaration(variableDeclaration);

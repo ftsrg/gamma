@@ -142,6 +142,16 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return !clockVariables.isEmpty();
 	}
 	
+	public static EObject getBody(FunctionDeclaration functionDeclaration) {
+		if (functionDeclaration instanceof LambdaDeclaration lambdaDeclaration) {
+			return lambdaDeclaration.getExpression();
+		}
+		if (functionDeclaration instanceof ProcedureDeclaration procedureDeclaration) {
+			return procedureDeclaration.getBody();
+		}
+		throw new IllegalArgumentException("Unknown function: " + functionDeclaration);
+	}
+	
 	public static boolean hasDefinition(FunctionDeclaration functionDeclaration) {
 		if (functionDeclaration instanceof LambdaDeclaration lambdaDeclaration) {
 			return ExpressionModelDerivedFeatures.hasDefinition(lambdaDeclaration);

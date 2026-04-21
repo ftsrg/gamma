@@ -1197,22 +1197,31 @@ public class ExpressionUtil {
 			throw new IllegalArgumentException("Not known literal: " + literalExpression);
 		}
 	}
-
 	
-	public VariableDeclaration createVariableDeclaration(Type type, String name) {
+	public VariableDeclaration createBooleanVariableDeclaration(CharSequence name) {
+		BooleanTypeDefinition type = factory.createBooleanTypeDefinition();
+		return createVariableDeclarationWithDefaultInitialValue(type, name);
+	}
+	
+	public VariableDeclaration createIntegerVariableDeclaration(CharSequence name) {
+		IntegerTypeDefinition type = factory.createIntegerTypeDefinition();
+		return createVariableDeclarationWithDefaultInitialValue(type, name);
+	}
+	
+	public VariableDeclaration createVariableDeclaration(Type type, CharSequence name) {
 		return createVariableDeclaration(type, name, null);
 	}
 	
 	public VariableDeclaration createVariableDeclarationWithDefaultInitialValue(
-			Type type, String name) {
+			Type type, CharSequence name) {
 		return createVariableDeclaration(type, name,
 				ExpressionModelDerivedFeatures.getDefaultExpression(type));
 	}
 	
-	public VariableDeclaration createVariableDeclaration(Type type, String name, Expression expression) {
+	public VariableDeclaration createVariableDeclaration(Type type, CharSequence name, Expression expression) {
 		VariableDeclaration variableDeclaration = factory.createVariableDeclaration();
 		variableDeclaration.setType(type);
-		variableDeclaration.setName(name);
+		variableDeclaration.setName(name.toString());
 		variableDeclaration.setExpression(expression);
 		return variableDeclaration;
 	}

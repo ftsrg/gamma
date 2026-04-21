@@ -4166,6 +4166,15 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 	}
 	
+	public static boolean isTopSynchronous(Component component) {
+		try {
+			Component parent = getParentComponent(component);
+			return parent == null || isAsynchronous(parent);
+		} catch (IllegalArgumentException e) {
+			return true;
+		}
+	}
+	
 	@SuppressWarnings("unchecked")
 	protected static <T extends ComponentAnnotation> T getComponentAnnotation(
 			Component component, Class<T> annotation) {

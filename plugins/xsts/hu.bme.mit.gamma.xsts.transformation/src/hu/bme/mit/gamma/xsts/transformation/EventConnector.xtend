@@ -198,7 +198,7 @@ class EventConnector {
 		val xStsFunctionDeclarations = xSts.functionDeclarations
 		val xStsFunctionCalls = xSts.getAllContentsOfType(FunctionAccessExpression)
 		
-		val channels = component.channels
+		val channels = component.channels // component.selfAndAllComponents.filter(CompositeComponent).map[it.channels].flatten
 		for (channel : channels) {
 			val providedInstancePort = channel.providedPort
 			val providedPort = providedInstancePort.port

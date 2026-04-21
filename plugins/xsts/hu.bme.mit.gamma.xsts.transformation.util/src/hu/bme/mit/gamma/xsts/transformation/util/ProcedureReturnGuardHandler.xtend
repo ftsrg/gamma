@@ -10,15 +10,15 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation.util
 
-import hu.bme.mit.gamma.action.model.Action
-import hu.bme.mit.gamma.action.model.ActionModelFactory
-import hu.bme.mit.gamma.action.model.Block
-import hu.bme.mit.gamma.action.model.ForStatement
-import hu.bme.mit.gamma.action.model.ReturnStatement
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.model.Action
+import hu.bme.mit.gamma.xsts.model.LoopAction
+import hu.bme.mit.gamma.xsts.model.ReturnAction
+import hu.bme.mit.gamma.xsts.model.SequentialAction
+import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Set
 import org.eclipse.emf.ecore.EObject
 
@@ -28,9 +28,9 @@ class ProcedureReturnGuardHandler {
 	protected final Set<Action> guardedActions = newHashSet // A block or for statement is guarded only once
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
-	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
+	protected final extension XstsActionUtil xStsUtil = XstsActionUtil.INSTANCE
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
-	protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
+	protected final extension XSTSModelFactory actionFactory = XSTSModelFactory.eINSTANCE
 	
 	new() {
 		this(null)
@@ -42,19 +42,18 @@ class ProcedureReturnGuardHandler {
 	
 	def void createAndSetReturnedDeclarationAndAddReturnGuard(Action top) {
 		val name = "isReturned"
-		val isReturnedVariableDeclaration = createBooleanTypeDefinition
-				.createDeclarationStatement(name)
-		isReturnedVariableDeclaration.prepend(top)
+		val isReturnedVariableDeclaration = name.createBooleanVariableDeclarationAction
+		isReturnedVariableDeclaration.prependToAction(top)
 		isReturnedDeclaration = isReturnedVariableDeclaration.variableDeclaration
 		
-		for (returnAction : top.getAllContentsOfType(ReturnStatement)) {
+		for (returnAction : top.getAllContentsOfType(ReturnAction)) {
 			returnAction.setReturnedDeclarationAndAddReturnGuard
 		}
 	}
 	
-	def void setReturnedDeclarationAndAddReturnGuard(ReturnStatement returnAction) {
-		val setDeclarationAction = isReturnedDeclaration.createAssignment(createTrueExpression)
-		setDeclarationAction.prepend(returnAction)
+	def void setReturnedDeclarationAndAddReturnGuard(ReturnAction returnAction) {
+		val setDeclarationAction = isReturnedDeclaration.createAssignmentAction(createTrueExpression)
+		setDeclarationAction.prependToAction(returnAction)
 		
 		returnAction.addReturnGuard
 	}
@@ -67,7 +66,7 @@ class ProcedureReturnGuardHandler {
 			return
 		}
 		
-		if (container instanceof Block) {
+		if (container instanceof SequentialAction) {
 			if (!guardedActions.contains(container)) {
 				val actions = container.actions
 				val size = actions.size
@@ -76,13 +75,10 @@ class ProcedureReturnGuardHandler {
 				if (firstGuardableActionIndex < size) {
 					val guard = isReturnedDeclaration.createReferenceExpression
 							.createNotExpression
-					val guardedBlock = createBlock => [
+					val guardedBlock = createSequentialAction => [
 						it.actions += actions.subList(firstGuardableActionIndex, size)
 					]
-					val branch = guard.createBranch(guardedBlock)
-					val ifStatement = createIfStatement => [
-						it.conditionals += branch
-					]
+					val ifStatement = guard.createIfAction(guardedBlock)
 					// Putting the guarded block to the end (guardable actions are inside)
 					actions += ifStatement
 				}
@@ -90,16 +86,13 @@ class ProcedureReturnGuardHandler {
 				guardedActions += container
 			}
 		}
-		else if (container instanceof ForStatement) {
+		else if (container instanceof LoopAction) {
 			if (!guardedActions.contains(container)) {
 				val guard = createNotExpression => [
 					it.operand = isReturnedDeclaration.createReferenceExpression
 				]
-				val branch = guard.createBranch(container.body)
-				val ifStatement = createIfStatement => [
-					it.conditionals += branch
-				]
-				container.body = ifStatement
+				val ifStatement = guard.createIfAction(container.action)
+				container.action = ifStatement
 				
 				guardedActions += container
 			}

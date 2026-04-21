@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
@@ -46,6 +47,7 @@ import hu.bme.mit.gamma.xsts.model.InEventGroup
 import hu.bme.mit.gamma.xsts.model.RegionGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
+import hu.bme.mit.gamma.xsts.transformation.util.FunctionInliner
 import hu.bme.mit.gamma.xsts.transformation.util.OrthogonalActionTransformer
 import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
@@ -88,6 +90,7 @@ class ComponentTransformer {
 	protected final extension EventConnector eventConnector = EventConnector.INSTANCE
 	protected final extension InternalEventHandler internalEventHandler = InternalEventHandler.INSTANCE
 	protected final extension SystemReducer systemReducer = SystemReducer.INSTANCE
+	protected final extension FunctionInliner functionInliner = FunctionInliner.INSTANCE
 	
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension XSTSModelFactory xStsModelFactory = XSTSModelFactory.eINSTANCE
@@ -1327,6 +1330,10 @@ class ComponentTransformer {
 		logger.info("Connecting interface functions through channels in " + name)
 		xSts.connectInterfaceFunctionsThroughChannels(component)
 		
+		if (true && component.isTopSynchronous) {
+			xSts.inlineFunctionCalls
+		}
+		
 		logger.info("Binding event to system port events in " + name)
 		val oldInEventAction = xSts.inEventTransition.action
 		val bindingAssignments = xSts.createEventAndParameterAssignmentsBoundToTheSameSystemPort(component)
@@ -1502,6 +1509,14 @@ class ComponentTransformer {
 		val resetAction = clonedInEventAction.resetEverythingExceptPersistentParameters(type)
 		val mergedAction = xSts.mergedAction
 		mergedAction.appendToAction(resetAction)
+	}
+	
+	private def void inlineFunctionCalls(XSTS xSts) {
+		for (functionAccess : xSts.getAllContentsOfType(FunctionAccessExpression)) {
+			functionAccess.inline
+		}
+		
+		xSts.functionDeclarations.clear
 	}
 	
 	private def void customizeDeclarationNames(XSTS xSts, ComponentInstance instance) {
