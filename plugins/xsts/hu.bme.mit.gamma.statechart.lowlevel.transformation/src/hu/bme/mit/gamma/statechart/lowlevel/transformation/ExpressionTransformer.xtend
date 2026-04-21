@@ -294,7 +294,7 @@ class ExpressionTransformer {
 				val forLoopParameter = declaration as ParameterDeclaration
 				lowlevelVariables += trace.get(forLoopParameter)
 			}
-			else if (trace.isParMapped(declaration -> fieldAccess)) {
+			else if (trace.isAnyParMapped(declaration -> fieldAccess)) {
 				// Function parameter value
 				lowlevelVariables += trace.getAllPar(declaration -> fieldAccess)
 			}

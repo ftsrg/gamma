@@ -599,6 +599,14 @@ class Trace {
 		throw new IllegalArgumentException("Not found: " + recordField)
 	}
 	
+	def isAnyParMapped(Pair<ValueDeclaration, FieldHierarchy> recordField) {
+		try {
+			return !recordField.allPar.empty
+		} catch (Exception e) {
+			return false
+		}
+	}
+	
 	def getAllPar(Pair<ValueDeclaration, FieldHierarchy> recordField) {
 		// Returns potentially multiple values, that can be retrieved by extending the given field hierarchy
 		val lowlevelParameters = newArrayList
