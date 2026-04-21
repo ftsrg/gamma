@@ -7,12 +7,14 @@ statechart PortFunctions_1 [
 	port FunctionExecute : provides FunctionExecute
 ] {
 	var value : int := 1
+	var rec : Record
 	region main {
 		initial Initial
 		state _A
 		
 		state _B
 		state _C
+		state _D
 	}
 	
 	transition from Initial to _A
@@ -20,9 +22,12 @@ statechart PortFunctions_1 [
 		raise FunctionExecute.^execute;
 		value := value + 1;
 	}
-	transition from _B to _C when Execute.^execute / raise FunctionExecute.^execute;
+	transition from _B to _C when Execute.^execute / raise FunctionExecute.^execute; rec.b := rec.b - 5;
+	transition from _C to _D when Execute.^execute / raise FunctionExecute.^execute;
 	
 	procedure setValue(x : integer) : void { value := x; }
 	lambda getValue : integer := value
 	
+	procedure setRecord(r : Record) : void { rec := r; }
+	lambda getRecord : Record := rec
 }

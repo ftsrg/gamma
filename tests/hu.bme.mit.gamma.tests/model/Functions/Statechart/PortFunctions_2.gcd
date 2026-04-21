@@ -7,12 +7,14 @@ statechart PortFunctions_2 [
 ] {
 	var _int : integer := 2
 	var _bool : boolean
+	var rec : Record := #Record{a := true, b := 5}
 	region main {
 		initial Initial
 		state _X
 		
 		state _Y
 		state _Z
+		state _A
 	}
 	
 	transition from Initial to _X
@@ -24,6 +26,7 @@ statechart PortFunctions_2 [
 		}
 		_int := _int / a;
 	}
-	transition from _Y to _Z when FunctionExecute.^execute / _int := getValue();
+	transition from _Y to _Z when FunctionExecute.^execute / _int := getValue(); setRecord(#Record{a := false, b := 10});
+	transition from _Y to _A when FunctionExecute.^execute / _int := getValue(); rec := getRecord(); rec.b := rec.b + 1;
 	
 }
