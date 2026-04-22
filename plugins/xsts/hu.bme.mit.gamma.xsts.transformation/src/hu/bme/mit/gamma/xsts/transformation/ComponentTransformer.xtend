@@ -1511,7 +1511,7 @@ class ComponentTransformer {
 	}
 	
 	private def void inlineFunctionCalls(XSTS xSts) {
-		xSts.inlineFunctionCalls
+		xSts.inlineFunctionAccessExpressions
 		xSts.functionDeclarations.clear
 	}
 	

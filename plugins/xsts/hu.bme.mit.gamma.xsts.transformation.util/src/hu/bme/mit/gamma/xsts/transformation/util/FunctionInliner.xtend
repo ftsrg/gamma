@@ -41,7 +41,7 @@ class FunctionInliner {
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	//
 	
-	def void inlineFunctionCalls(EObject object) {
+	def void inlineFunctionAccessExpressions(EObject object) {
 		for (functionAccess : object.getAllContentsOfType(FunctionAccessExpression)
 					.reject[it.calledFromFunctionDeclaration] /* Recursing handling inside */) {
 			functionAccess.inline
