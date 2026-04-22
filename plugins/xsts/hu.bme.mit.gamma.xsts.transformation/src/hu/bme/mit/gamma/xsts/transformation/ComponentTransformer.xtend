@@ -14,7 +14,6 @@ import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
@@ -1512,11 +1511,7 @@ class ComponentTransformer {
 	}
 	
 	private def void inlineFunctionCalls(XSTS xSts) {
-		for (functionAccess : xSts.getAllContentsOfType(FunctionAccessExpression)
-					.reject[it.calledFromFunctionDeclaration] /* Recursing handling inside */) {
-			functionAccess.inline
-		}
-		
+		xSts.inlineFunctionCalls
 		xSts.functionDeclarations.clear
 	}
 	

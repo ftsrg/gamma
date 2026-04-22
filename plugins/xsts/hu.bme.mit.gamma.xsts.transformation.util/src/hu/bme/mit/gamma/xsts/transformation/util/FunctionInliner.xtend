@@ -41,6 +41,13 @@ class FunctionInliner {
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	//
 	
+	def void inlineFunctionCalls(EObject object) {
+		for (functionAccess : object.getAllContentsOfType(FunctionAccessExpression)
+					.reject[it.calledFromFunctionDeclaration] /* Recursing handling inside */) {
+			functionAccess.inline
+		}
+	}
+	
 	def void inline(FunctionAccessExpression expression) {
 		val inlined = expression.execute
 		val action = inlined.key
@@ -60,7 +67,7 @@ class FunctionInliner {
 			}
 		}
 		
-		// Recursion
+		// Recursion here (not in execute due to containment hierarchy)
 		val functionAccessExpressions = newArrayList
 		if (action !== null) {
 			functionAccessExpressions += action.getSelfAndAllContentsOfType(FunctionAccessExpression)
