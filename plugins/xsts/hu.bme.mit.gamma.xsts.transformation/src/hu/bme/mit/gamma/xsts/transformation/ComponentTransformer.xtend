@@ -1512,7 +1512,8 @@ class ComponentTransformer {
 	}
 	
 	private def void inlineFunctionCalls(XSTS xSts) {
-		for (functionAccess : xSts.getAllContentsOfType(FunctionAccessExpression)) {
+		for (functionAccess : xSts.getAllContentsOfType(FunctionAccessExpression)
+					.reject[it.calledFromFunctionDeclaration] /* Recursing handling inside */) {
 			functionAccess.inline
 		}
 		

@@ -33,6 +33,7 @@ import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
+import hu.bme.mit.gamma.expression.model.FalseExpression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
@@ -55,6 +56,7 @@ import hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures;
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction;
 import hu.bme.mit.gamma.xsts.model.Action;
 import hu.bme.mit.gamma.xsts.model.ActionAnnotation;
+import hu.bme.mit.gamma.xsts.model.AssertAction;
 import hu.bme.mit.gamma.xsts.model.AssignmentAction;
 import hu.bme.mit.gamma.xsts.model.AssumeAction;
 import hu.bme.mit.gamma.xsts.model.CompositeAction;
@@ -258,7 +260,7 @@ public class XstsActionUtil extends ExpressionUtil {
 					Expression operand = operands.get(0);
 					
 					AssignmentAction elementAssignmentAction = createAssignmentAction(referenceExpression, operand);
-					appendToAction(assignmentAction, elementAssignmentAction);
+					prependToAction(elementAssignmentAction, assignmentAction);
 				}
 				
 				ecoreUtil.remove(assignmentAction);
@@ -612,6 +614,17 @@ public class XstsActionUtil extends ExpressionUtil {
 		HavocAction havocAction = createHavocAction(variableDeclaration);
 		return new SimpleEntry<VariableDeclarationAction, HavocAction>(
 				variableDeclarationAction, havocAction);
+	}
+	
+	public AssertAction createFalseAssertAction() {
+		FalseExpression falseExpression = factory.createFalseExpression();
+		return createAssertAction(falseExpression);
+	}
+	
+	public AssertAction createAssertAction(Expression expression) {
+		AssertAction assertAction = xStsFactory.createAssertAction();
+		assertAction.setAssertion(expression);
+		return assertAction;
 	}
 	
 	public AssignmentAction increment(VariableDeclaration variable) {

@@ -44,6 +44,7 @@ import hu.bme.mit.gamma.util.Triple;
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction;
 import hu.bme.mit.gamma.xsts.model.Action;
 import hu.bme.mit.gamma.xsts.model.ActionAnnotation;
+import hu.bme.mit.gamma.xsts.model.AssertAction;
 import hu.bme.mit.gamma.xsts.model.AssignmentAction;
 import hu.bme.mit.gamma.xsts.model.AssumeAction;
 import hu.bme.mit.gamma.xsts.model.AsynchronousSystemAnnotation;
@@ -572,6 +573,11 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 				action.getAssumption());
 	}
 	
+	private static Set<VariableDeclaration> _getReadVariables(AssertAction action) {
+		return expressionUtil.getReferredVariables(
+				action.getAssertion());
+	}
+	
 	private static Set<VariableDeclaration> _getReadVariables(ReturnAction action) {
 		return expressionUtil.getReferredVariables(
 				action.getExpression());
@@ -835,6 +841,9 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 			return _getReadVariables(_action);
 		}
 		else if (action instanceof AssumeAction _action) {
+			return _getReadVariables(_action);
+		}
+		else if (action instanceof AssertAction _action) {
 			return _getReadVariables(_action);
 		}
 		else if (action instanceof EmptyAction _action) {

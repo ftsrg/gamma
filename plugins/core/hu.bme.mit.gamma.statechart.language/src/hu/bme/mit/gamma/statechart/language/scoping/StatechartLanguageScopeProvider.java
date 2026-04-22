@@ -334,6 +334,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					return Scopes.scopeFor(scheduled.getComponents());
 				}
 			}
+			
 			// Asynchronous adapter-specific rules
 			if (context instanceof PortEventReference && reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__PORT ||
 				context instanceof AnyPortEventReference && reference == StatechartModelPackage.Literals.ANY_PORT_EVENT_REFERENCE__PORT) {
@@ -394,6 +395,13 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					IScope parent = super.getScope(_import, reference);
 					scope = new SimpleScope(parent, scope.getAllElements());
 				}
+				// 4. Interface declarations
+				if (context instanceof Interface _interface) {
+					Collection<Declaration> declarations = new ArrayList<Declaration>();
+					declarations.addAll(_interface.getFunctionDeclarations());
+					scope = Scopes.scopeFor(declarations);
+				}
+				
 				return scope;
 			}
 		} catch (NullPointerException e) {

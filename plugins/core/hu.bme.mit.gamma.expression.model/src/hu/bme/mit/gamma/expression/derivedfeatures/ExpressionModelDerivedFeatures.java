@@ -78,6 +78,7 @@ import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclarationAnnotation;
+import hu.bme.mit.gamma.expression.model.VoidTypeDefinition;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.expression.util.FieldHierarchy;
@@ -292,6 +293,11 @@ public class ExpressionModelDerivedFeatures {
 	
 	// Types
 	
+	public static boolean isVoid(Type type) {
+		TypeDefinition typeDefinition = getTypeDefinition(type);
+		return typeDefinition instanceof VoidTypeDefinition;
+	}
+	
 	public static boolean isPrimitive(Declaration declaration) {
 		Type type = declaration.getType();
 		return isPrimitive(type);
@@ -300,7 +306,8 @@ public class ExpressionModelDerivedFeatures {
 	public static boolean isPrimitive(Type type) {
 		TypeDefinition typeDefinition = getTypeDefinition(type);
 		return typeDefinition instanceof BooleanTypeDefinition || typeDefinition instanceof IntegerTypeDefinition ||
-				typeDefinition instanceof DecimalTypeDefinition || typeDefinition instanceof RationalTypeDefinition;
+				typeDefinition instanceof DecimalTypeDefinition || typeDefinition instanceof RationalTypeDefinition ||
+				typeDefinition instanceof VoidTypeDefinition;
 	}
 	
 	public static boolean isNative(Declaration declaration) {
@@ -384,6 +391,10 @@ public class ExpressionModelDerivedFeatures {
 	
 	public static boolean isElseOrDefault(Expression expression) {
 		return expression instanceof ElseExpression || expression instanceof DefaultExpression;
+	}
+	
+	public static boolean isCalledFromFunctionDeclaration(FunctionAccessExpression expression) {
+		return ecoreUtil.hasContainerOfType(expression, FunctionDeclaration.class);
 	}
 	
 	public static boolean callsRecursiveFunctions(EObject root) {

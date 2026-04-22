@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.xsts.model.FunctionCallAction
 import hu.bme.mit.gamma.xsts.model.ProcedureDeclaration
 import hu.bme.mit.gamma.xsts.model.ReturnAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
+import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import org.eclipse.emf.ecore.EObject
 
@@ -34,7 +35,7 @@ class FunctionInliner {
 	public static final FunctionInliner INSTANCE =  new FunctionInliner
 	protected new() {}
 	//
-	protected int currentRecursionDepth
+	protected int currentRecursionDepth = 7 // TODO
 	//
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
@@ -58,10 +59,36 @@ class FunctionInliner {
 				returnExpression.inlineTupleAssignmentAction
 			}
 		}
+		
+		// Recursion
+		val functionAccessExpressions = newArrayList
+		if (action !== null) {
+			functionAccessExpressions += action.getSelfAndAllContentsOfType(FunctionAccessExpression)
+		}
+		if (returnExpression !== null) {
+			functionAccessExpressions += returnExpression.getSelfAndAllContentsOfType(FunctionAccessExpression)
+		}
+		for (functionAccessExpression : functionAccessExpressions.filterNull) {
+			currentRecursionDepth--
+			
+			functionAccessExpression.inline
+			
+			currentRecursionDepth++
+		}
 	}
 	
 	def execute(FunctionAccessExpression expression) {
 		val procedure = expression.functionDeclaration
+		
+		// End of recursion
+		if (currentRecursionDepth <= 0) {
+			val procedureType = procedure.type.clone
+			val xStsAssertion = XSTSModelFactory.eINSTANCE.createEmptyAction // Should be assert(false)?
+			val defaultExpression = (procedureType.isVoid) ? null : procedureType.defaultExpression
+			return xStsAssertion -> defaultExpression
+		}
+		//
+		
 		val arguments = expression.arguments
 		val parameterDeclarations = procedure.parameterDeclarations
 		val size = arguments.size
@@ -70,7 +97,7 @@ class FunctionInliner {
 		val inlinedActions = <Action>newArrayList
 		val EObject clonedBody = procedure.body.clone
 		
-		val namePostfix = expression.uniqueIndex + "_" + procedure.uniqueIndex + "_" + currentRecursionDepth++
+		val namePostfix = expression.uniqueIndex + "_" + procedure.uniqueIndex + "_" + currentRecursionDepth
 		
 		// Create local parameter declarations
 		for (var i = 0; i < size; i++) {
@@ -140,13 +167,11 @@ class FunctionInliner {
 			}
 			inlinedActions += clonedBody
 		}
-		// TODO recursion
-		// TODO lambda
 		
 		val xStsAction = inlinedActions.createSequentialAction
-		// No tracing
+		// No tracing needed
 		val returnExpression = (clonedBody instanceof Expression) ? clonedBody :
-				localReturnDeclaration?.createReferenceExpression // TODO tuples
+				localReturnDeclaration?.createReferenceExpression
 		return xStsAction -> returnExpression
 	}
 	
