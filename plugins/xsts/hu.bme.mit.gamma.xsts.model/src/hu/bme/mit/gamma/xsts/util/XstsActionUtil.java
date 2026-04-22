@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -41,6 +41,8 @@ import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
+import hu.bme.mit.gamma.expression.model.TupleLiteralExpression;
+import hu.bme.mit.gamma.expression.model.TupleReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
@@ -236,6 +238,32 @@ public class XstsActionUtil extends ExpressionUtil {
 	public XTransition createEmptyTransition() {
 		EmptyAction emptyAction = xStsFactory.createEmptyAction();
 		return wrap(emptyAction);
+	}
+	
+	public void inlineTupleAssignmentAction(Expression expression) {
+		EObject container = expression.eContainer();
+		if (container instanceof AssignmentAction assignmentAction) {
+			ReferenceExpression _lhs = assignmentAction.getLhs();
+			Expression _rhs = assignmentAction.getRhs();
+			if (_lhs instanceof TupleReferenceExpression lhs && _rhs instanceof TupleLiteralExpression rhs) {
+				List<ReferenceExpression> references = lhs.getReferences();
+				List<Expression> operands = rhs.getOperands();
+				int size = references.size();
+				if (size != operands.size()) {
+					throw new IllegalArgumentException("Inconsistent tuple assignment: " + assignmentAction);
+				}
+				
+				for (int i = 0; i < size; i++) {
+					ReferenceExpression referenceExpression = references.get(0); // Not i - elements are removed from the list
+					Expression operand = operands.get(0);
+					
+					AssignmentAction elementAssignmentAction = createAssignmentAction(referenceExpression, operand);
+					appendToAction(assignmentAction, elementAssignmentAction);
+				}
+				
+				ecoreUtil.remove(assignmentAction);
+			}
+		}
 	}
 	
 	public void prependToAction(Collection<? extends Action> actions, Action pivot) {

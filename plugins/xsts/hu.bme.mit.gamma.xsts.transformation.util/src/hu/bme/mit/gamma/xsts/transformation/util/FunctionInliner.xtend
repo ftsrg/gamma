@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.xsts.transformation.util
 
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
+import hu.bme.mit.gamma.expression.model.TupleLiteralExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.model.VoidTypeDefinition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -52,6 +53,10 @@ class FunctionInliner {
 			action.prependToAction(actionContainer)
 			checkState(returnExpression !== null, expression.functionDeclaration.name)
 			returnExpression.replace(expression)
+			
+			if (returnExpression instanceof TupleLiteralExpression) {
+				returnExpression.inlineTupleAssignmentAction
+			}
 		}
 	}
 	
