@@ -27,6 +27,6 @@ statechart PortFunctions_2 [
 		_int := _int / a;
 	}
 	transition from _Y to _Z when FunctionExecute.^execute / _int := getValue(); setRecord(#Record{a := false, b := 10});
-	transition from _Y to _A when FunctionExecute.^execute / _int := getValue(); rec := getRecord(); rec.b := rec.b + 1;
+	transition from _Z to _A when FunctionExecute.^execute / _int := getValue(); rec := getRecord(); rec.b := rec.b + 1;
 	
 }

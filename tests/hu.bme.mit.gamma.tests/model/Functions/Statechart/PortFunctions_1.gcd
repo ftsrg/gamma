@@ -22,8 +22,8 @@ statechart PortFunctions_1 [
 		raise FunctionExecute.^execute;
 		value := value + 1;
 	}
-	transition from _B to _C when Execute.^execute / raise FunctionExecute.^execute; rec.b := rec.b - 5;
-	transition from _C to _D when Execute.^execute / raise FunctionExecute.^execute;
+	transition from _B to _C when Execute.^execute / raise FunctionExecute.^execute; rec.b := rec.b - 25;
+	transition from _C to _D when Execute.^execute / raise FunctionExecute.^execute; rec.b := rec.b - 15;
 	
 	procedure setValue(x : integer) : void { value := x; }
 	lambda getValue : integer := value
