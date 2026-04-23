@@ -73,6 +73,7 @@ class ComponentTransformer {
 	// Traceability
 	protected XSTS xSts
 	// Transformation settings
+	protected final boolean inlineFunctions
 	protected final boolean transformOrthogonalActions
 	protected final boolean optimize
 	protected final boolean optimizeEnvironmentalMessageQueues
@@ -98,9 +99,11 @@ class ComponentTransformer {
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//
 	
-	new(GammaToLowlevelTransformer gammaToLowlevelTransformer, boolean transformOrthogonalActions,
-			boolean optimize, boolean optimizeEnvironmentalMessageQueues, TransitionMerging transitionMerging) {
+	new(GammaToLowlevelTransformer gammaToLowlevelTransformer, boolean inlineFunctions,
+			boolean transformOrthogonalActions, boolean optimize,
+			boolean optimizeEnvironmentalMessageQueues, TransitionMerging transitionMerging) {
 		this.gammaToLowlevelTransformer = gammaToLowlevelTransformer
+		this.inlineFunctions = inlineFunctions
 		this.transformOrthogonalActions = transformOrthogonalActions
 		this.optimize = optimize
 		this.optimizeEnvironmentalMessageQueues = optimizeEnvironmentalMessageQueues
@@ -1329,7 +1332,7 @@ class ComponentTransformer {
 		logger.info("Connecting interface functions through channels in " + name)
 		xSts.connectInterfaceFunctionsThroughChannels(component)
 		
-		if (true && component.isTopSynchronous) {
+		if (inlineFunctions && component.topSynchronous) {
 			xSts.inlineFunctionCalls
 		}
 		

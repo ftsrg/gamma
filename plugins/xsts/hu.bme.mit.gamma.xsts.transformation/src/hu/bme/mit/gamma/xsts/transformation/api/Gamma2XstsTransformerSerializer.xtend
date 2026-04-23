@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,8 +17,6 @@ import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
 import hu.bme.mit.gamma.transformation.util.ModelSlicerModelAnnotatorPropertyGenerator
 import hu.bme.mit.gamma.transformation.util.annotations.AnnotatablePreprocessableElements
-import hu.bme.mit.gamma.transformation.util.annotations.DataflowCoverageCriterion
-import hu.bme.mit.gamma.transformation.util.annotations.InteractionCoverageCriterion
 import hu.bme.mit.gamma.transformation.util.preprocessor.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -41,7 +39,8 @@ class Gamma2XstsTransformerSerializer {
 	protected final Long minSchedulingConstraint
 	protected final Long maxSchedulingConstraint
 	// Configuration
-	protected final boolean inlineFunctions
+	protected final boolean inlineLowlevelFunctions
+	protected final boolean inlineXStsFunctions
 	protected final boolean optimize
 	protected final boolean optimizeArray
 	protected final boolean optimizeMessageQueues
@@ -111,7 +110,8 @@ class Gamma2XstsTransformerSerializer {
 		this.minSchedulingConstraint = minSchedulingConstraint
 		this.maxSchedulingConstraint = maxSchedulingConstraint
 		//
-		this.inlineFunctions = inlineFunctions
+		this.inlineLowlevelFunctions = inlineFunctions && !component.hasInterfaceFunctionDeclarationsInStatecharts
+		this.inlineXStsFunctions = inlineFunctions && !inlineLowlevelFunctions
 		this.optimize = optimize
 		this.optimizeArray = optimizeArray
 		this.optimizeMessageQueues = optimizeMessageQueues
@@ -141,7 +141,7 @@ class Gamma2XstsTransformerSerializer {
 		slicerAnnotatorAndPropertyGenerator.execute
 		val gammaToXSTSTransformer = new GammaToXstsTransformer(
 			minSchedulingConstraint, maxSchedulingConstraint,
-			inlineFunctions,
+			inlineLowlevelFunctions, inlineXStsFunctions,
 			true, true, optimizeArray,
 			optimizeMessageQueues, optimizeEnvironmentalMessageQueues,
 			transitionMerging, initialState, initialStateSetting)

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -101,20 +101,21 @@ class GammaToXstsTransformer {
 			boolean unfoldMessageQueues, boolean optimizeEnvironmentalMessageQueues,
 			TransitionMerging transitionMerging,
 			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
-		this(schedulingConstraint, schedulingConstraint, true,
+		this(schedulingConstraint, schedulingConstraint, true, false,
 			transformOrthogonalActions, optimize, optimizeOneCapacityArrays, unfoldMessageQueues,
 			optimizeEnvironmentalMessageQueues, transitionMerging, initialState, initialStateSetting)
 	}
 	
 	new(Long minSchedulingConstraint, Long maxSchedulingConstraint,
-			boolean inlineFunctions,
+			boolean inlineLowlevelFunctions, boolean inlineXStsFunctions,
 			boolean transformOrthogonalActions,	boolean optimize, boolean optimizeOneCapacityArrays,
 			boolean unfoldMessageQueues, boolean optimizeEnvironmentalMessageQueues,
 			TransitionMerging transitionMerging,
 			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
-		this.gammaToLowlevelTransformer = new GammaToLowlevelTransformer(inlineFunctions)
-		this.componentTransformer = new ComponentTransformer(this.gammaToLowlevelTransformer,
-			transformOrthogonalActions, optimize, optimizeEnvironmentalMessageQueues, transitionMerging)
+		this.gammaToLowlevelTransformer = new GammaToLowlevelTransformer(inlineLowlevelFunctions)
+		this.componentTransformer = new ComponentTransformer(gammaToLowlevelTransformer,
+				inlineXStsFunctions, transformOrthogonalActions, optimize,
+				optimizeEnvironmentalMessageQueues, transitionMerging)
 		this.minSchedulingConstraint = minSchedulingConstraint
 		this.maxSchedulingConstraint = maxSchedulingConstraint
 		this.initialState = initialState
