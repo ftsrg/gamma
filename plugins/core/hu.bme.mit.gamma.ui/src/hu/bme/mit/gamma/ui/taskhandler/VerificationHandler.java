@@ -598,7 +598,18 @@ public class VerificationHandler extends TaskHandler {
 				ecoreUtil.getFile(resource).getParentFile() : // If Verification is contained in a resource
 					fileUtil.toFile(super.file).getParentFile(); // If Verification is created in Java
 		// Setting the file paths
-		verification.getFileName().replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
+		List<String> fileNames = verification.getFileName();
+		for (int i = 0; i < fileNames.size(); i++) {
+			String fileName = fileNames.get(i);
+			if (!fileUtil.hasExtension(fileName)) {
+				AnalysisLanguage language = verification.getAnalysisLanguages().getFirst();
+				String newFileName = fileUtil.changeExtension(fileName,
+						fileNamer.getFileExtension(language));
+				logger.info("Setting file extension: " + newFileName);
+				fileNames.set(i, newFileName);
+			}
+		}
+		fileNames.replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
 		// Setting the query paths
 		verification.getQueryFiles().replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
 		// Setting the timeout

@@ -209,6 +209,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 				"A single formal language must be specified",
 					new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__ANALYSIS_LANGUAGES)));
 		}
+		AnalysisLanguage language = languages.getFirst();
 		File resourceFile = ecoreUtil.getFile(verification.eResource());
 		List<String> modelFiles = verification.getFileName();
 		if (modelFiles.size() != 1) {
@@ -218,10 +219,14 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		}
 		for (String modelFile : modelFiles) {
 			if (!fileUtil.isValidRelativeFile(resourceFile, modelFile)) {
-				int index = modelFiles.indexOf(modelFile);
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"This is not a valid relative path to a model file: " + modelFile,
-						new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, index)));
+				String adjustedModelFile = fileUtil.changeExtension(modelFile, fileNamer.getFileExtension(language));
+				if (fileUtil.hasExtension(modelFile) ||
+						!fileUtil.isValidRelativeFile(resourceFile, adjustedModelFile)) { 
+					int index = modelFiles.indexOf(modelFile);
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+						"This is not a valid relative path to a model file: " + modelFile,
+							new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, index)));
+				}
 			}
 		}
 		

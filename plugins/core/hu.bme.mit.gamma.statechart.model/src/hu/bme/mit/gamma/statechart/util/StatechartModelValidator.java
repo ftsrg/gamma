@@ -786,7 +786,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 							new ReferenceInfo(elseExpression.eContainingFeature(), container)));
 			}
 			StateNode node = transition.getSourceState();
-			List<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(node);
+			List<Transition> outgoingTransitions = new ArrayList<Transition>(
+					StatechartModelDerivedFeatures.getOutgoingTransitions(node));
 			outgoingTransitions.remove(transition);
 			if (outgoingTransitions.stream().anyMatch(it -> it.getGuard() instanceof ElseExpression)) {
 				validationResultMessages.add(
@@ -944,7 +945,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 	}
 	
 	public boolean allTransitionsAreLoop(StateNode node) {
-		Collection<Transition> incomingTransitions = StatechartModelDerivedFeatures.getIncomingTransitions(node);
+		Collection<Transition> incomingTransitions = new ArrayList<Transition>(
+				StatechartModelDerivedFeatures.getIncomingTransitions(node));
 		Collection<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(node);
 		if (incomingTransitions.size() != outgoingTransitions.size()) {
 			return false;
