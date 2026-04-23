@@ -393,7 +393,7 @@ public class ExpressionModelDerivedFeatures {
 		return expression instanceof ElseExpression || expression instanceof DefaultExpression;
 	}
 	
-	public static boolean isCalledFromFunctionDeclaration(FunctionAccessExpression expression) {
+	public static boolean isCalledFromFunctionDeclaration(ReferenceExpression expression) {
 		return ecoreUtil.hasContainerOfType(expression, FunctionDeclaration.class);
 	}
 	

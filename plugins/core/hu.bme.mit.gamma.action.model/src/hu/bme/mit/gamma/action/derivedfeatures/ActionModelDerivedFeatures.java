@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.action.derivedfeatures;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -135,13 +136,15 @@ public class ActionModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 				return functionDefinition;
 			}
 		}
+		
 		return functionDeclaration; // Returning the original function (may have a definition)
 	}
 	
 	public static boolean hasMatchingFunctionDeclaration(FunctionDeclaration functionDeclaration,
-			Iterable<? extends FunctionDeclaration> functionDefinitions) {
+			Collection<? extends FunctionDeclaration> functionDefinitions) {
 		FunctionDeclaration matchingFunctionDeclaration = getMatchingFunctionDeclaration(functionDeclaration, functionDefinitions);
-		return matchingFunctionDeclaration != null;
+		return matchingFunctionDeclaration != null &&
+					functionDefinitions.contains(matchingFunctionDeclaration);
 	}
 	
 	//

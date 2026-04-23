@@ -609,20 +609,27 @@ public class StatechartModelValidator extends ActionModelValidator {
 		
 		List<Declaration> declarations = ecoreUtil.getAllContentsOfType(component, Declaration.class);
 		
-		Set<Declaration> usedDeclarations = new HashSet<Declaration>();		
-		ecoreUtil.getAllContentsOfType(component, DirectReferenceExpression.class).stream()
-				.map(it -> it.getDeclaration()).forEach(it -> usedDeclarations.add(it));
-		ecoreUtil.getAllContentsOfType(component, VariableBinding.class).stream()
-				.map(it -> it.getStatechartVariable()).forEach(it -> usedDeclarations.add(it));
+		Set<Declaration> usedDeclarations = new HashSet<Declaration>();
+		usedDeclarations.addAll(
+				ecoreUtil.getAllContentsOfType(component, DirectReferenceExpression.class).stream()
+					.map(it -> it.getDeclaration()).toList());
+		usedDeclarations.addAll(
+				ecoreUtil.getAllContentsOfType(component, VariableBinding.class).stream()
+						.map(it -> it.getStatechartVariable()).toList());
 		
-		for (Declaration declaration : declarations) {
-			if (!usedDeclarations.contains(declaration)) {
-				validationResultMessages.add(
-					new ValidationResultMessage(ValidationResult.WARNING, 
-						"This declaration is unused", 
-							new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, declaration)));
-			}
+		List<FunctionDeclaration> functionImplementations = StatechartModelDerivedFeatures.getFunctionImplementations(component);
+		
+		Set<Declaration> unusedDeclarations = new HashSet<Declaration>(declarations);
+		unusedDeclarations.removeAll(usedDeclarations);
+		unusedDeclarations.removeAll(functionImplementations);
+		
+		for (Declaration declaration : unusedDeclarations) {
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.WARNING, 
+					"This declaration is unused", 
+						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, declaration)));
 		}
+		
 		return validationResultMessages;
 	}
 	
