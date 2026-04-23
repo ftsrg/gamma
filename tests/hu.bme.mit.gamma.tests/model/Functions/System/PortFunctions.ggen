@@ -8,7 +8,7 @@ analysis {
 }
 
 verification {
-	file : "PortFunctionsSystem.iml"
+	file : "PortFunctionsSystem"
 	language : Imandra
 	property-file : ".PortFunctionsSystem.gpd"
 	optimize-traces : true
@@ -21,7 +21,7 @@ analysis {
 }
 
 verification {
-	file : "PortFunctionsSystem3.iml"
+	file : "PortFunctionsSystem3"
 	language : Imandra
 	property-file : ".PortFunctionsSystem3.gpd"
 	optimize-traces : true

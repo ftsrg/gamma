@@ -30,4 +30,6 @@ statechart PortFunctions_1 [
 	
 	procedure setRecord(r : Record) : void { rec := r; }
 	lambda getRecord : Record := rec
+	
+//	lambda factorial(value : integer) : integer := (value <= 1) ? 1 : value * factorial(value - 2)
 }

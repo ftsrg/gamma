@@ -7,6 +7,11 @@ interface Execute {
 interface FunctionExecute extends Execute {
 	procedure setValue(x : integer) : void
 	lambda getValue : integer
+	
+	procedure setRecord(r : Record) : void
+	lambda getRecord : Record
+	
+	lambda factorial(value : integer) : integer := (value <= 1) ? 1 : value * factorial(value - 1)
 }
 
 type Record : record {
