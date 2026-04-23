@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.expression.model.TupleTypeDefinition
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures
 import hu.bme.mit.gamma.xsts.model.ProcedureDeclaration
 import hu.bme.mit.gamma.xsts.model.XSTS
 
@@ -167,7 +168,9 @@ class StatechartCodeGenerator {
 			«FOR function : xSts.functionDeclarations»
 				private «function.type.serialize» «function.name»(«
 						FOR parameter : function.parameterDeclarations SEPARATOR ', '»«parameter.type.serialize» «parameter.name»«ENDFOR») {
-					«IF function instanceof LambdaDeclaration»
+					«IF !XstsDerivedFeatures.hasDefinition(function)»
+						return;
+					«ELSEIF function instanceof LambdaDeclaration»
 						return «function.expression.serialize»;
 					«ELSEIF function instanceof ProcedureDeclaration»
 						«function.body.serialize»
