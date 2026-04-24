@@ -45,7 +45,7 @@ class ValueDeclarationAccessor {
 		return objectId.access(declaration, declaration.customizeInNames(port))
 	}
 	
-	def protected access(String objectId, ValueDeclaration declaration, List<String> fieldNames) {
+	protected def access(String objectId, ValueDeclaration declaration, List<String> fieldNames) {
 		val type = declaration.typeDefinition
 		val fieldPairs = type.formFieldPairs(fieldNames)
 		return objectId.access(type, fieldPairs, new IndexHierarchy)

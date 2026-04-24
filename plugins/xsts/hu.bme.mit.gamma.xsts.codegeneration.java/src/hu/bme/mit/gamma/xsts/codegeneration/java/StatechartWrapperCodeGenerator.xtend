@@ -173,6 +173,14 @@ class StatechartWrapperCodeGenerator {
 							}
 						«ENDFOR»
 					«ENDFOR»
+					«IF port.provided»
+						«FOR function : port.allFunctionDeclarations»
+							@Override
+							public «function.type.serialize» «function.name»(«FOR parameter : function.parameterDeclarations SEPARATOR ", "»«parameter.type.serialize» «parameter.name»«ENDFOR») {
+								«IF !function.type.isVoid»return «ENDIF»«CLASS_NAME.toFirstLower».«function.name»(«FOR parameter : function.parameterDeclarations SEPARATOR ", "»«parameter.name»«ENDFOR»);
+							}
+						«ENDFOR»
+					«ENDIF»
 					@Override
 					public void registerListener(«port.interfaceRealization.interface.name.toFirstUpper»Interface.Listener.«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpper» listener) {
 						listeners.add(listener);

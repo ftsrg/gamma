@@ -158,7 +158,7 @@ class StatechartToJavaCodeGenerator {
 	}
 	
 	def generateInterfaces() {
-		for (interface : gammaStatechart.interfaces) {
+		for (interface : gammaStatechart.allInterfaces) {
 			val interfacePackageName = interface.getPackageString(BASE_PACKAGE_NAME)
 			val INTERFACE_FOLDER_URI = SRC_FOLDER_URI.generateUri(interfacePackageName)
 			val componentUri = INTERFACE_FOLDER_URI + File.separator + interface.implementationName + ".java"

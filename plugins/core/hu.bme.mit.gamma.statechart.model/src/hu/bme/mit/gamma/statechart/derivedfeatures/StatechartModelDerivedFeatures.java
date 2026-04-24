@@ -369,6 +369,12 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return interfaceRealization.getInterface();
 	}
 	
+	public static List<Interface> getAllInterfaces(Port port) {
+		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
+		Interface _interface = interfaceRealization.getInterface();
+		return getAllParentsAndSelf(_interface);
+	}
+	
 	public static boolean contains(Component component, Port port) {
 		List<Port> ports = getAllPorts(component);
 		return ports.contains(port);
@@ -1451,6 +1457,17 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static Set<Interface> getInterfaces(Component component) {
 		return getAllPorts(component).stream()
 				.map(it -> getInterface(it)).collect(Collectors.toSet());
+	}
+	
+	public static Set<Interface> getAllInterfaces(Component component) {
+		Set<Interface> interfaces = new HashSet<Interface>();
+		
+		for (Port port : getAllPorts(component)) {
+			interfaces.addAll(
+					getAllInterfaces(port));
+		}
+		
+		return interfaces;
 	}
 	
 	public static List<Port> getAllPorts(AsynchronousAdapter wrapper) {

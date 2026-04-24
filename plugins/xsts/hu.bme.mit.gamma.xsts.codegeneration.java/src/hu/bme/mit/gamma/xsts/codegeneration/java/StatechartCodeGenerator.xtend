@@ -166,7 +166,7 @@ class StatechartCodeGenerator {
 			}
 			
 			«FOR function : xSts.functionDeclarations»
-				private «function.type.serialize» «function.name»(«
+				protected «function.type.serialize» «function.name»(«
 						FOR parameter : function.parameterDeclarations SEPARATOR ', '»«parameter.type.serialize» «parameter.name»«ENDFOR») {
 					«IF !XstsDerivedFeatures.hasDefinition(function)»
 						return;

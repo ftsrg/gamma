@@ -41,10 +41,11 @@ class InterfaceCodeGenerator {
 			import «importedPackage.getPackageString(BASE_PACKAGE_NAME)».*;
 		«ENDFOR»
 		
-		public interface «_interface.implementationName» {
+		public interface «_interface.implementationName»«IF !_interface.parents.empty
+				» extends «FOR parent : _interface.parents SEPARATOR ', '»«parent.implementationName»«ENDFOR»«ENDIF» {
 		
 			interface Provided extends Listener.Required {
-				
+				«_interface.createFunctionDeclarations»
 				«_interface.createInterface(EventDirection.OUT)»
 				
 				void registerListener(Listener.Provided listener);
@@ -61,14 +62,14 @@ class InterfaceCodeGenerator {
 			
 			interface Listener {
 				
-			interface Provided«IF !_interface.parents.empty» extends «FOR parent : _interface.parents
-						SEPARATOR ', '»«parent.implementationName».Listener.Provided«ENDFOR»«ENDIF» {
-				«_interface.createListenerInterface(EventDirection.OUT)»
+				interface Provided«IF !_interface.parents.empty» extends «FOR parent : _interface.parents
+							SEPARATOR ', '»«parent.implementationName».Listener.Provided«ENDFOR»«ENDIF» {
+					«_interface.createListenerInterface(EventDirection.OUT)»
 				}
 				
-			interface Required«IF !_interface.parents.empty» extends «FOR parent : _interface.parents
-						SEPARATOR ', '»«parent.implementationName».Listener.Required«ENDFOR»«ENDIF» {
-				«_interface.createListenerInterface(EventDirection.IN)»
+				interface Required«IF !_interface.parents.empty» extends «FOR parent : _interface.parents
+							SEPARATOR ', '»«parent.implementationName».Listener.Required«ENDFOR»«ENDIF» {
+					«_interface.createListenerInterface(EventDirection.IN)»
 				}
 				
 			}
@@ -107,13 +108,18 @@ class InterfaceCodeGenerator {
 	private def createListenerInterface(Interface _interface, EventDirection eventDirection) {
 		val notCorrectDirection = eventDirection.opposite
 		'''
-			«FOR event : collectAllEvents(_interface,notCorrectDirection)»
+			«FOR event : collectAllEvents(_interface, notCorrectDirection)»
 				void raise«event.name.toFirstUpper»(«FOR parameter : event.parameterDeclarations SEPARATOR ", "»«parameter.type.serialize» «parameter.name»«ENDFOR»);
 			«ENDFOR»
 		'''
 	}
 	
-		
+	private def createFunctionDeclarations(Interface _interface) '''
+		«FOR function : _interface.functionDeclarations»
+			«function.type.serialize» «function.name»(«FOR parameter : function.parameterDeclarations SEPARATOR ", "»«parameter.type.serialize» «parameter.name»«ENDFOR»);
+		«ENDFOR»
+	'''
+	
 	def createReflectiveInterface() '''
 		package «BASE_PACKAGE_NAME»;
 		
