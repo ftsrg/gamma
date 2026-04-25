@@ -36,7 +36,10 @@ class TypeDeclarationGenerator {
 		«FOR _package : type.containingPackage.imports.toSet»
 			import «_package.getPackageString(BASE_PACKAGE_NAME)».*;
 		«ENDFOR»
-		«IF type.getAllContentsOfType(Type).exists[!it.primitive]»import java.util.Objects;«ENDIF»
+		«IF type.getAllContentsOfType(Type).exists[!it.primitive]»
+			import java.util.Objects;
+			import java.util.List;
+		«ENDIF»
 		
 		public «type.serialize»
 	'''

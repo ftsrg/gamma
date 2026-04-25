@@ -58,6 +58,19 @@ class TypeDeclarationSerializer {
 				«ENDFOR»
 			}
 			
+			public «name»(List<Object> elements) {
+				«var i = 0»
+				«FOR field : type.fieldDeclarations»
+					«val fieldType = field.typeDefinition»
+					«IF fieldType instanceof RecordTypeDefinition»
+						«val size = fieldType.nativeTypes.size»
+						this.«field.name» = new «fieldType.typeDeclaration.name»(elements.subList(«i», «i += size»));
+					«ELSE»
+						this.«field.name» = («field.type.serialize») elements.get(«i++»);
+					«ENDIF»
+				«ENDFOR»
+			}
+			
 			@Override
 			public boolean equals(Object object) {
 				if (this == object) {
