@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegeneration.java.util
 
+import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.interface_.Interface
@@ -18,19 +19,19 @@ import java.util.HashSet
 import java.util.Set
 
 import static extension hu.bme.mit.gamma.codegeneration.java.util.Namings.*
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class InterfaceCodeGenerator {
 	
 	final String BASE_PACKAGE_NAME
 	
+	final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
 	final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	
 	new(String basePackageName) {
 		this.BASE_PACKAGE_NAME = basePackageName
 	}
-	
-
 	
 	def createInterface(Interface _interface) '''
 		package «_interface.getPackageString(BASE_PACKAGE_NAME)»;
@@ -45,7 +46,6 @@ class InterfaceCodeGenerator {
 				» extends «FOR parent : _interface.parents SEPARATOR ', '»«parent.implementationName»«ENDFOR»«ENDIF» {
 		
 			interface Provided extends Listener.Required {
-				«_interface.createFunctionDeclarations»
 				«_interface.createInterface(EventDirection.OUT)»
 				
 				void registerListener(Listener.Provided listener);
@@ -69,6 +69,7 @@ class InterfaceCodeGenerator {
 				
 				interface Required«IF !_interface.parents.empty» extends «FOR parent : _interface.parents
 							SEPARATOR ', '»«parent.implementationName».Listener.Required«ENDFOR»«ENDIF» {
+					«_interface.createFunctionDeclarations»
 					«_interface.createListenerInterface(EventDirection.IN)»
 				}
 				
@@ -117,6 +118,10 @@ class InterfaceCodeGenerator {
 	private def createFunctionDeclarations(Interface _interface) '''
 		«FOR function : _interface.functionDeclarations»
 			«function.type.serialize» «function.name»(«FOR parameter : function.parameterDeclarations SEPARATOR ", "»«parameter.type.serialize» «parameter.name»«ENDFOR»);
+			«IF function.hasRecordParameterDeclaration»
+				«var i = 0»
+				«function.type.serialize» «function.name»(«FOR parameter : function.parameterDeclarations SEPARATOR ", "»«FOR type : parameter.nativeTypes SEPARATOR ", "»«type.serialize» «parameter.name»«i++»«ENDFOR»«ENDFOR»);
+			«ENDIF»
 		«ENDFOR»
 	'''
 	

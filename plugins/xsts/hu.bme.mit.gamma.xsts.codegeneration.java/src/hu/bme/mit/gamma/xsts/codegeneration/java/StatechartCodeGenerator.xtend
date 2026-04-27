@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -32,7 +32,7 @@ class StatechartCodeGenerator {
 	final String STATECHART_PACKAGE_NAME
 	final String CLASS_NAME
 	
-	final StatechartDefinition gammaStatechart // Needed for the type declarations 
+	final StatechartDefinition gammaStatechart // Needed for the type declarations and interface functions
 	final XSTS xSts
 	
 	final extension TypeDeclarationSerializer typeDeclarationSerializer = TypeDeclarationSerializer.INSTANCE
@@ -80,11 +80,15 @@ class StatechartCodeGenerator {
 			«FOR variableDeclaration : xSts.retrieveTimeouts»
 				private long «variableDeclaration.name»;
 			«ENDFOR»
+«««			Wrapper statechart
+			private «gammaStatechart.componentClassName» wrapper;
 			
-			public «CLASS_NAME»(«FOR parameter : xSts.retrieveComponentParameters SEPARATOR ', '»«parameter.type.serialize» «parameter.name»«ENDFOR») {
+			public «CLASS_NAME»(«FOR parameter : xSts.retrieveComponentParameters»«
+					parameter.type.serialize» «parameter.name», «ENDFOR»«gammaStatechart.componentClassName» wrapper) {
 				«FOR parameter : xSts.retrieveComponentParameters»
 					this.«parameter.name» = «parameter.name»;
 				«ENDFOR»
+				this.wrapper = wrapper;
 			}
 			
 			//
@@ -123,7 +127,7 @@ class StatechartCodeGenerator {
 			}
 			//
 			
-«««			No separation of variables on this level (apart from type)
+«««			No separation of variables at this level (apart from type)
 			«FOR variable : xSts.variableGroups
 					.map[it.variables]
 					.flatten SEPARATOR System.lineSeparator»
@@ -138,7 +142,6 @@ class StatechartCodeGenerator {
 			
 			public void runCycle() {
 				clearOutEvents();
-«««				signalTimePassing(); ««« It causes bugs when the entered timed state is not exited right away on the next run	 
 				changeState();
 				clearInEvents();
 			}
@@ -169,7 +172,15 @@ class StatechartCodeGenerator {
 				protected «function.type.serialize» «function.name»(«
 						FOR parameter : function.parameterDeclarations SEPARATOR ', '»«parameter.type.serialize» «parameter.name»«ENDFOR») {
 					«IF !XstsDerivedFeatures.hasDefinition(function)»
-						return;
+						«val port = gammaStatechart.getDeclaringPort(function)»
+						«IF port !== null»
+							var listener = wrapper.get«port.name.toFirstUpper»().getRegisteredListeners().getFirst(); // Shall be one
+							«IF !function.isVoid»«function.type.serialize» result = «ENDIF»listener.«function.name»(«
+									FOR parameter : function.parameterDeclarations SEPARATOR ", "»«parameter.name»«ENDFOR»);
+							«IF !function.isVoid»return result«IF function.record».toList()«ENDIF»;«ENDIF»
+						«ELSE»
+							throw new UnsupportedOperationException();
+						«ENDIF»
 					«ELSEIF function instanceof LambdaDeclaration»
 						return «function.expression.serialize»;
 					«ELSEIF function instanceof ProcedureDeclaration»
@@ -217,8 +228,8 @@ class StatechartCodeGenerator {
 		privateTypeDeclarations += xSts.typeDeclarations
 		privateTypeDeclarations -= xSts.publicTypeDeclarations
 		return privateTypeDeclarations
-	} 
-		
+	}
+	
 	def getClassName() {
 		return CLASS_NAME
 	}

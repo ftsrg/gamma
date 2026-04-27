@@ -12,6 +12,8 @@ package hu.bme.mit.gamma.xsts.codegeneration.java
 
 import hu.bme.mit.gamma.codegeneration.java.util.InternalEventHandlerCodeGenerator
 import hu.bme.mit.gamma.codegeneration.java.util.TypeSerializer
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration
+import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.xsts.model.XSTS
 
@@ -33,7 +35,8 @@ class StatechartWrapperCodeGenerator {
 	final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	final extension ValueDeclarationAccessor valueDeclarationAccessor = ValueDeclarationAccessor.INSTANCE
 	final extension InternalEventHandlerCodeGenerator internalEventHandler = InternalEventHandlerCodeGenerator.INSTANCE
-
+	final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
+	
 	new(String basePackageName, String statechartPackageName, StatechartDefinition gammaStatechart, XSTS xSts) {
 		this.BASE_PACKAGE_NAME = basePackageName
 		this.STATECHART_PACKAGE_NAME = statechartPackageName
@@ -41,7 +44,7 @@ class StatechartWrapperCodeGenerator {
 		this.gammaStatechart = gammaStatechart
 		this.xSts = xSts
 	}
-
+	
 	protected def createStatechartWrapperClass() '''
 		package «STATECHART_PACKAGE_NAME»;
 		
@@ -73,7 +76,7 @@ class StatechartWrapperCodeGenerator {
 			«gammaStatechart.createInternalPortHandlingAttributes»
 			
 			public «CLASS_NAME»(«FOR parameter : gammaStatechart.parameterDeclarations SEPARATOR ', '»«parameter.type.serialize» «parameter.name»«ENDFOR») {
-				«CLASS_NAME.toFirstLower» = new «gammaStatechart.wrappedStatemachineClassName»(«FOR parameter : gammaStatechart.parameterDeclarations SEPARATOR ', '»«parameter.name»«ENDFOR»);
+				«CLASS_NAME.toFirstLower» = new «gammaStatechart.wrappedStatemachineClassName»(«FOR parameter : gammaStatechart.parameterDeclarations»«parameter.name», «ENDFOR»this);
 			}
 			
 			//
@@ -175,16 +178,7 @@ class StatechartWrapperCodeGenerator {
 					«ENDFOR»
 					«IF port.provided»
 						«FOR function : port.allFunctionDeclarations»
-							@Override
-							public «function.type.serialize» «function.name»(«FOR parameter : function.parameterDeclarations SEPARATOR ", "»«parameter.type.serialize» «parameter.name»«ENDFOR») {
-								«val functionCall = '''«CLASS_NAME.toFirstLower».«function.name»(«FOR parameter : function.parameterDeclarations SEPARATOR ", "»«parameter.typeDefinition.accessIn(parameter.name).join(", ")»«ENDFOR»)'''»
-								«IF function.type.isVoid»
-									«functionCall»;
-								«ELSE»
-									«val type = function.typeDefinition»
-									return «IF type.record»new «type.typeDeclaration.name»(«functionCall»)«ELSE»«functionCall»«ENDIF»;
-								«ENDIF»
-							}
+							«function.serializeFunction»
 						«ENDFOR»
 					«ENDIF»
 					@Override
@@ -305,6 +299,35 @@ class StatechartWrapperCodeGenerator {
 				return «CLASS_NAME.toFirstLower».toString();
 			}
 		}
+	'''
+	
+	private def serializeFunction(FunctionDeclaration function) '''
+		@Override
+		public «function.type.serialize» «function.name»(«FOR parameter : function.parameterDeclarations SEPARATOR ", "»«parameter.type.serialize» «parameter.name»«ENDFOR») {
+			«val functionCall = '''«CLASS_NAME.toFirstLower».«function.name»(«
+					FOR parameter : function.parameterDeclarations SEPARATOR ", "»«parameter.typeDefinition.accessIn(parameter.name).join(", ")»«ENDFOR»)'''»
+			«IF function.isVoid»
+				«functionCall»;
+			«ELSE»
+				«val type = function.typeDefinition»
+				return «IF type.record»new «type.typeDeclaration.name»(«functionCall»)«ELSE»«functionCall»«ENDIF»;
+			«ENDIF»
+		}
+		«IF function.hasRecordParameterDeclaration /* Flattened version */»
+			«var i = 0»
+			«var j = i»
+			@Override
+			public «function.type.serialize» «function.name»(«FOR parameter : function.parameterDeclarations SEPARATOR ", "»«FOR nativeType : parameter.type.nativeTypes SEPARATOR ", "»«nativeType.serialize» «parameter.name»«i++»«ENDFOR»«ENDFOR») {
+				«val functionCall_ = '''«CLASS_NAME.toFirstLower».«function.name»(«
+						FOR parameter : function.parameterDeclarations SEPARATOR ", "»«FOR nativeType : parameter.type.nativeTypes SEPARATOR ", "»«parameter.name»«j++»«ENDFOR»«ENDFOR»)'''»
+				«IF function.isVoid»
+					«functionCall_»;
+				«ELSE»
+					«val type = function.typeDefinition»
+					return «IF type.record»new «type.typeDeclaration.name»(«functionCall_»)«ELSE»«functionCall»«ENDIF»;
+				«ENDIF»
+			}
+		«ENDIF»
 	'''
 	
 	def getClassName() {

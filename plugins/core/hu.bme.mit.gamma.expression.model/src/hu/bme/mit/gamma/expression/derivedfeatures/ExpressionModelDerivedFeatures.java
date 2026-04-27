@@ -293,6 +293,11 @@ public class ExpressionModelDerivedFeatures {
 	
 	// Types
 	
+	public static boolean isVoid(Declaration declaration) {
+		TypeDefinition typeDefinition = getTypeDefinition(declaration);
+		return isVoid(typeDefinition);
+	}
+	
 	public static boolean isVoid(Type type) {
 		TypeDefinition typeDefinition = getTypeDefinition(type);
 		return typeDefinition instanceof VoidTypeDefinition;
@@ -555,6 +560,23 @@ public class ExpressionModelDerivedFeatures {
 		return expressionUtil.getAccessedDeclarations(tuple);
 	}
 	
+//	public static List<FieldDeclaration> getAllNativeDeclarations(RecordTypeDefinition type) {
+//		List<FieldDeclaration> fieldDeclarations = new ArrayList<FieldDeclaration>();
+//		
+//		for (FieldDeclaration fieldDeclaration : type.getFieldDeclarations()) {
+//			Type fieldType = getTypeDefinition(fieldDeclaration);
+//			if (fieldType instanceof RecordTypeDefinition fieldRecordType) {
+//				fieldDeclarations.addAll(
+//						getAllNativeDeclarations(fieldRecordType));
+//			}
+//			else {
+//				fieldDeclarations.add(fieldDeclaration);
+//			}
+//		}
+//		
+//		return fieldDeclarations;
+//	}
+	
 	public static TypeDeclaration getTypeDeclaration(Type type) {
 		TypeDeclaration declaration = ecoreUtil.getContainerOfType(type, TypeDeclaration.class);
 		if (declaration == null) {
@@ -720,6 +742,11 @@ public class ExpressionModelDerivedFeatures {
 	}
 	
 	// Functions
+	
+	public static boolean hasRecordParameterDeclaration(FunctionDeclaration function) {
+		return function.getParameterDeclarations().stream()
+				.anyMatch(it -> isRecord(it));
+	}
 	
 	public static boolean isLambdaDeclaration(FunctionDeclaration function) {
 		return function instanceof LambdaDeclaration;
