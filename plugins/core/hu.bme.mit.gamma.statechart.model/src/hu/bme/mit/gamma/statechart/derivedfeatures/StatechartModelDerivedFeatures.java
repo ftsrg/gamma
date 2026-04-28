@@ -1379,6 +1379,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return null;
 	}
 	
+	public static Port getDeclaringPortOfUnfoldedFunction(Component component, FunctionDeclaration functionDeclaration) {
+		List<Port> ports = getAllPorts(component);
+		for (Port port : ports) {
+			if (hasUnfoldedFunctionDeclaration(port, functionDeclaration)) {
+				return port;
+			}
+		}
+		return null;
+	}
+	
 	public static List<FunctionDeclaration> getFunctionImplementations(Component component) {
 		List<FunctionDeclaration> functionImplementations = new ArrayList<FunctionDeclaration>();
 		
@@ -1442,6 +1452,12 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		List<FunctionDeclaration> functionDeclarations = getAllFunctionDeclarations(port);
 		return functionDeclarations.stream()
 				.anyMatch(it -> hasMatchingFunctionDeclaration(functionDeclaration, functionDeclarations));
+	}
+	
+	public static boolean hasUnfoldedFunctionDeclaration(Port port, FunctionDeclaration functionDeclaration) {
+		List<FunctionDeclaration> functionDeclarations = getAllFunctionDeclarations(port);
+		return functionDeclarations.stream()
+				.anyMatch(it -> hasMatchingUnfoldedFunctionDeclaration(functionDeclaration, functionDeclarations));
 	}
 	
 	public static List<FunctionDeclaration> getAllFunctionDeclarations(Interface _interface) {

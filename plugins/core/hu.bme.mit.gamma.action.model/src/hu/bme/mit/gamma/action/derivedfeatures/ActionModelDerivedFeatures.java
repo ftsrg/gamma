@@ -38,6 +38,7 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 
@@ -126,12 +127,29 @@ public class ActionModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static FunctionDeclaration getMatchingFunctionDeclaration(FunctionDeclaration functionDeclaration,
 				Iterable<? extends FunctionDeclaration> functionDefinitions) {
+		List<ParameterDeclaration> declarationParameters = functionDeclaration.getParameterDeclarations();
 		for (FunctionDeclaration functionDefinition : functionDefinitions) {
+			List<ParameterDeclaration> definitionParameters = functionDefinition.getParameterDeclarations();
 			boolean match = functionDeclaration.getName().equals(functionDefinition.getName()) &&
-					ecoreUtil.helperEquals(
-							functionDeclaration.getType(), functionDefinition.getType()) &&
-					ecoreUtil.helperEquals(
-							functionDeclaration.getParameterDeclarations(), functionDefinition.getParameterDeclarations());
+					ecoreUtil.helperEquals(functionDeclaration.getType(), functionDefinition.getType()) &&
+					ecoreUtil.helperEquals(declarationParameters.stream().map(it -> it.getType()).toList(), definitionParameters.stream().map(it -> it.getType()).toList());
+			if (match) {
+				return functionDefinition;
+			}
+		}
+		
+		return functionDeclaration; // Returning the original function (may have a definition)
+	}
+	
+	public static FunctionDeclaration getMatchingUnfoldedFunctionDeclaration(FunctionDeclaration functionDeclaration,
+			Iterable<? extends FunctionDeclaration> functionDefinitions) {
+		final boolean CHECK_RETURN_TYPE = false; //  Tuple vs. Record
+		List<ParameterDeclaration> declarationParameters = functionDeclaration.getParameterDeclarations();
+		for (FunctionDeclaration functionDefinition : functionDefinitions) {
+			List<ParameterDeclaration> definitionParameters = functionDefinition.getParameterDeclarations();
+			boolean match = functionDeclaration.getName().equals(functionDefinition.getName()) &&
+					!CHECK_RETURN_TYPE || ecoreUtil.helperEquals(complexTypeUtil.getNativeTypes(functionDeclaration.getType()), complexTypeUtil.getNativeTypes(functionDefinition.getType())) &&
+					ecoreUtil.helperEquals(complexTypeUtil.getNativeTypes(declarationParameters), complexTypeUtil.getNativeTypes(definitionParameters));
 			if (match) {
 				return functionDefinition;
 			}
@@ -143,8 +161,13 @@ public class ActionModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	public static boolean hasMatchingFunctionDeclaration(FunctionDeclaration functionDeclaration,
 			Collection<? extends FunctionDeclaration> functionDefinitions) {
 		FunctionDeclaration matchingFunctionDeclaration = getMatchingFunctionDeclaration(functionDeclaration, functionDefinitions);
-		return matchingFunctionDeclaration != null &&
-					functionDefinitions.contains(matchingFunctionDeclaration);
+		return functionDefinitions.contains(matchingFunctionDeclaration);
+	}
+	
+	public static boolean hasMatchingUnfoldedFunctionDeclaration(FunctionDeclaration functionDeclaration,
+			Collection<? extends FunctionDeclaration> functionDefinitions) {
+		FunctionDeclaration matchingFunctionDeclaration = getMatchingUnfoldedFunctionDeclaration(functionDeclaration, functionDefinitions);
+		return functionDefinitions.contains(matchingFunctionDeclaration);
 	}
 	
 	//

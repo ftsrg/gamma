@@ -79,6 +79,7 @@ import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.VoidTypeDefinition;
+import hu.bme.mit.gamma.expression.util.ComplexTypeUtil;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.expression.util.FieldHierarchy;
@@ -88,6 +89,7 @@ import hu.bme.mit.gamma.util.JavaUtil;
 
 public class ExpressionModelDerivedFeatures {
 	//
+	protected static final ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE;
 	protected static final ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	protected static final ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
 	protected static final LiteralExpressionCreator literalCreator = LiteralExpressionCreator.INSTANCE;
@@ -362,6 +364,11 @@ public class ExpressionModelDerivedFeatures {
 		return typeDefinition instanceof RecordTypeDefinition;
 	}
 	
+	public static boolean isTuple(Type type) {
+		TypeDefinition typeDefinition = getTypeDefinition(type);
+		return typeDefinition instanceof TupleTypeDefinition;
+	}
+	
 	public static RecordLiteralExpression getSortedRecordLiteral(RecordLiteralExpression literal) {
 		RecordLiteralExpression newLiteral = ecoreUtil.clone(literal);
 		
@@ -391,7 +398,7 @@ public class ExpressionModelDerivedFeatures {
 	
 	public static boolean isComplex(Type type) {
 		TypeDefinition typeDefinition = getTypeDefinition(type);
-		return isRecord(typeDefinition) || isArray(typeDefinition);
+		return isRecord(typeDefinition) || isArray(typeDefinition) || isTuple(typeDefinition);
 	}
 	
 	public static boolean isElseOrDefault(Expression expression) {
@@ -539,43 +546,8 @@ public class ExpressionModelDerivedFeatures {
 	}
 	
 	public static List<Declaration> getNativeDeclarations(TupleReferenceExpression tuple) {
-//		List<Declaration> declarations = new ArrayList<Declaration>();
-//		
-//		List<ReferenceExpression> references = tuple.getReferences();
-//		for (ReferenceExpression reference : references) {
-//			if (reference instanceof TupleReferenceExpression tupleReferenceExpression) {
-//				declarations.addAll(
-//						getNativeDeclarations(tupleReferenceExpression));
-//			}
-//			else if (reference instanceof RecordAccessExpression || reference instanceof ArrayAccessExpression) {
-//				throw new IllegalArgumentException("Not supported type: " + reference);
-//			}
-//			else {
-//				declarations.add(
-//						expressionUtil.getDeclaration(reference));
-//			}
-//		}
-//		
-//		return declarations;
 		return expressionUtil.getAccessedDeclarations(tuple);
 	}
-	
-//	public static List<FieldDeclaration> getAllNativeDeclarations(RecordTypeDefinition type) {
-//		List<FieldDeclaration> fieldDeclarations = new ArrayList<FieldDeclaration>();
-//		
-//		for (FieldDeclaration fieldDeclaration : type.getFieldDeclarations()) {
-//			Type fieldType = getTypeDefinition(fieldDeclaration);
-//			if (fieldType instanceof RecordTypeDefinition fieldRecordType) {
-//				fieldDeclarations.addAll(
-//						getAllNativeDeclarations(fieldRecordType));
-//			}
-//			else {
-//				fieldDeclarations.add(fieldDeclaration);
-//			}
-//		}
-//		
-//		return fieldDeclarations;
-//	}
 	
 	public static TypeDeclaration getTypeDeclaration(Type type) {
 		TypeDeclaration declaration = ecoreUtil.getContainerOfType(type, TypeDeclaration.class);

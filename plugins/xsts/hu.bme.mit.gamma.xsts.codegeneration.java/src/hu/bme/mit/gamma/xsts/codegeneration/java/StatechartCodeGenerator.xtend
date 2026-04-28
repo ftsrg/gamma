@@ -172,12 +172,11 @@ class StatechartCodeGenerator {
 				protected «function.type.serialize» «function.name»(«
 						FOR parameter : function.parameterDeclarations SEPARATOR ', '»«parameter.type.serialize» «parameter.name»«ENDFOR») {
 					«IF !XstsDerivedFeatures.hasDefinition(function)»
-						«val port = gammaStatechart.getDeclaringPort(function)»
+						«val port = gammaStatechart.getDeclaringPortOfUnfoldedFunction(function) /* XSTS functions have their types unfolded */»
 						«IF port !== null»
 							var listener = wrapper.get«port.name.toFirstUpper»().getRegisteredListeners().getFirst(); // Shall be one
-							«IF !function.isVoid»«function.type.serialize» result = «ENDIF»listener.«function.name»(«
-									FOR parameter : function.parameterDeclarations SEPARATOR ", "»«parameter.name»«ENDFOR»);
-							«IF !function.isVoid»return result«IF function.record».toList()«ENDIF»;«ENDIF»
+							«IF !function.isVoid»return «ENDIF»listener.«function.name»(«
+									FOR parameter : function.parameterDeclarations SEPARATOR ", "»«parameter.name»«ENDFOR»)«IF function.complex».toList()«ENDIF»;
 						«ELSE»
 							throw new UnsupportedOperationException();
 						«ENDIF»
