@@ -162,6 +162,8 @@ class SynchronousCompositeComponentCodeGenerator {
 					
 					«systemPort.delegateRaisingMethods» 
 					
+					«IF systemPort.provided»«systemPort.delegateInterfaceMethodCalls»«ENDIF»
+					
 					«systemPort.implementOutMethods»
 					
 					// Class for the setting of the boolean fields (events)
@@ -175,6 +177,8 @@ class SynchronousCompositeComponentCodeGenerator {
 								«ENDFOR»
 							}
 						«ENDFOR»
+						
+						«IF systemPort.required»«systemPort.delegateBoundInterfaceMethodCalls»«ENDIF»
 					}
 					
 					@Override

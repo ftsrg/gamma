@@ -42,7 +42,7 @@ class FunctionInliner {
 		this.actionTransformer = actionTransformer
 	}
 	
-	def execute(FunctionAccessExpression expression) {
+	def Action execute(FunctionAccessExpression expression) {
 		val procedure = expression.functionDeclaration as ProcedureDeclaration
 		val arguments = expression.arguments
 		val parameterDeclarations = procedure.parameterDeclarations

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,17 +10,22 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegeneration.java
 
+import hu.bme.mit.gamma.expression.model.NamedElement
+import hu.bme.mit.gamma.expression.model.ParametricElement
+import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.interface_.Interface
 import java.util.Collections
 import java.util.HashSet
 import java.util.Set
-import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 
 class EventDeclarationHandler {
-	
+	//	
 	protected final extension TypeTransformer typeTransformer
+	//
+	protected final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
+	//
 	
 	new(Trace trace) {
 		this.typeTransformer = new TypeTransformer(trace)
@@ -29,11 +34,13 @@ class EventDeclarationHandler {
 	/**
 	 * Returns the parameter type and name of the given event declaration, e.g., long value.
 	 */
-	def generateParameters(Event event) '''«FOR parameter : event.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType» «parameter.generateName»«ENDFOR»'''
+	def generateParameters(ParametricElement element) '''«FOR parameter : element.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType» «parameter.generateName»«ENDFOR»'''
+	def generateNativeParameters(ParametricElement element) '''«FOR parameter : element.parameterDeclarations SEPARATOR ", "»«val nativeTypes = parameter.nativeTypes»«FOR type : nativeTypes SEPARATOR ", "»«type.transformType» «parameter.generateName»_«nativeTypes.indexOf(type)»«ENDFOR»«ENDFOR»'''
 	
-	def generateArguments(Event event) '''«FOR parameter : event.parameterDeclarations SEPARATOR ", "»«parameter.generateName»«ENDFOR»'''
+	def generateArguments(ParametricElement element) '''«FOR parameter : element.parameterDeclarations SEPARATOR ", "»«parameter.generateName»«ENDFOR»'''
+	def generateNativeArguments(ParametricElement element) '''«FOR parameter : element.parameterDeclarations SEPARATOR ", "»«val nativeTypes = parameter.nativeTypes»«FOR type : nativeTypes SEPARATOR ", "»«parameter.generateName»_«nativeTypes.indexOf(type)»«ENDFOR»«ENDFOR»'''
 	
-	def generateName(ParameterDeclaration parameter) '''«parameter.name.toFirstLower»'''
+	def generateName(NamedElement element) '''«element.name.toFirstLower»'''
 	
 	/** 
 	 * Returns all events of a given interface whose direction is not oppositeDirection.

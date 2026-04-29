@@ -16,7 +16,7 @@ import hu.bme.mit.gamma.statechart.interface_.Interface
 import static extension hu.bme.mit.gamma.codegeneration.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
-class PortInterfaceGenerator {
+class PortInterfaceGenerator1 {
 
 	protected final String PACKAGE_NAME
 	//

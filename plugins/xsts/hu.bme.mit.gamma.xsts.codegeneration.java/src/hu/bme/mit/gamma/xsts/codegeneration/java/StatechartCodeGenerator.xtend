@@ -103,7 +103,7 @@ class StatechartCodeGenerator {
 			public void handleBeforeReset() {
 «««				Reference variables, e.g., enums, have to be set, as null is not a valid value, including regions: they have to be set to __Inactive__ explicitly on every reset
 				«FOR enumVariable : (xSts.retrieveEnumVariables
-						.reject[xSts.retrieveComponentParameters.toList.contains(it)])»
+						.reject[xSts.retrieveComponentParameters.contains(it)])»
 					this.«enumVariable.name» = «enumVariable.initialValue.serialize»;
 				«ENDFOR»
 				clearOutEvents();

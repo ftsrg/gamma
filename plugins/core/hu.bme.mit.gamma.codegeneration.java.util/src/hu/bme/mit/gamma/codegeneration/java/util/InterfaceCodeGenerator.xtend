@@ -119,8 +119,7 @@ class InterfaceCodeGenerator {
 		«FOR function : _interface.functionDeclarations»
 			«function.type.serialize» «function.name»(«FOR parameter : function.parameterDeclarations SEPARATOR ", "»«parameter.type.serialize» «parameter.name»«ENDFOR»);
 			«IF function.hasRecordParameterDeclaration»
-				«var i = 0»
-				«function.type.serialize» «function.name»(«FOR parameter : function.parameterDeclarations SEPARATOR ", "»«FOR type : parameter.nativeTypes SEPARATOR ", "»«type.serialize» «parameter.name»«i++»«ENDFOR»«ENDFOR»);
+				«function.type.serialize» «function.name»(«FOR parameter : function.parameterDeclarations SEPARATOR ", "»«val nativeTypes = parameter.nativeTypes»«FOR type : nativeTypes SEPARATOR ", "»«type.serialize» «parameter.name»_«nativeTypes.indexOf(type)»«ENDFOR»«ENDFOR»);
 			«ENDIF»
 		«ENDFOR»
 	'''
