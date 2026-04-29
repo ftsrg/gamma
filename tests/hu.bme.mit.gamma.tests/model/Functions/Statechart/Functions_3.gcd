@@ -6,7 +6,7 @@ statechart Functions_3 [
 	port Execute : requires Execute
 ] {
 	var _complexRecord : ComplexRecord
-	var _record : Record
+	var _record : Rec0rd
 	var _decimal : decimal
 	var _bool : boolean
 	region main {
@@ -20,7 +20,7 @@ statechart Functions_3 [
 	
 	transition from Initial to _A
 	
-	transition from _A to _BBB when Execute.^execute / addComplexRecord(#ComplexRecord{ a := 3.14, b := #Record{ a := false, b := 2 } });
+	transition from _A to _BBB when Execute.^execute / addComplexRecord(#ComplexRecord{ a := 3.14, b := #Rec0rd{ a := false, b := 2 } });
 	transition from _BBB to _J when Execute.^execute / _decimal := addComplexRecord(createComplexRecord(-1.2, 13, true));
 	transition from _J to _K when Execute.^execute / {
 		var _record : ComplexRecord := createComplexRecord(-2.1, -67, true);
@@ -60,8 +60,8 @@ statechart Functions_3 [
 		return value * factorialIf(value - 1);
 	}
 	
-	procedure createRecord(b : integer, a : boolean) : Record {
-		return #Record{ a := a, b := b };
+	procedure createRecord(b : integer, a : boolean) : Rec0rd {
+		return #Rec0rd{ a := a, b := b };
 	}
 	
 	procedure createComplexRecord(c : decimal, b : integer, a : boolean) : ComplexRecord {

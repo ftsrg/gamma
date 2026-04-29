@@ -6,8 +6,9 @@ statechart PortFunctions_1 [
 	port Execute : requires Execute
 	port FunctionExecute : provides FunctionExecute
 ] {
-	var value : int := 1
-	var rec : Record
+	var val : int := 1
+	var rec : Rec0rd
+	var cRec : ComplexRecord
 	region main {
 		initial Initial
 		state _A
@@ -19,17 +20,21 @@ statechart PortFunctions_1 [
 	
 	transition from Initial to _A
 	transition from _A to _B when Execute.^execute / {
+		cRec.b.b := 2;
 		raise FunctionExecute.^execute;
-		value := value + 1;
+		val := val + 1;
 	}
-	transition from _B to _C when Execute.^execute / raise FunctionExecute.^execute; rec.b := rec.b - 25;
+	transition from _B to _C when Execute.^execute / raise FunctionExecute.^execute; rec.b := rec.b - 25; cRec.b.b := rec.b - 25;
 	transition from _C to _D when Execute.^execute / raise FunctionExecute.^execute; rec.b := rec.b - 15;
 	
-	procedure setValue(x : integer) : void { value := x; }
-	lambda getValue : integer := value
+	procedure setValue(x : integer) : void { val := x; }
+	lambda getValue : integer := val
 	
-	procedure setRecord(r : Record) : void { rec := r; }
-	lambda getRecord : Record := rec
+	procedure setRecord(r : Rec0rd) : void { rec := r; }
+	lambda getRecord : Rec0rd := rec
+	
+	procedure setComplexRecord(r : ComplexRecord) : void { cRec := r; }
+	lambda getComplexRecord : ComplexRecord := cRec
 	
 //	lambda factorial(value : integer) : integer := (value <= 1) ? 1 : value * factorial(value - 2)
 }

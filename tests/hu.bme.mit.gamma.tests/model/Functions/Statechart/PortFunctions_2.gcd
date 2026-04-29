@@ -7,7 +7,7 @@ statechart PortFunctions_2 [
 ] {
 	var _int : integer := 2
 	var _bool : boolean
-	var rec : Record := #Record{a := true, b := 5}
+	var rec : Rec0rd := #Rec0rd{a := true, b := 5}
 	region main {
 		initial Initial
 		state _X
@@ -21,12 +21,14 @@ statechart PortFunctions_2 [
 	transition from _X to _Y when FunctionExecute.^execute / {
 		var a : integer := _int;
 		if (getValue() < 1000) {
-			setValue(_int + 69);
+			var c : ComplexRecord := getComplexRecord();
+			setValue(_int + 69 + c.b.b);
 			_bool := true;
+			setComplexRecord(#ComplexRecord{a := -1.2, b:= #Rec0rd{a := true, b := c.b.b + 13}});
 		}
 		_int := _int + factorial(4) / a;
 	}
-	transition from _Y to _Z when FunctionExecute.^execute / _int := getValue(); setRecord(#Record{a := false, b := 10});
+	transition from _Y to _Z when FunctionExecute.^execute / _int := getValue(); setRecord(#Rec0rd{a := false, b := 10});
 	transition from _Z to _A when FunctionExecute.^execute / _int := getValue(); rec := getRecord(); rec.b := rec.b + 1;
 	
 }

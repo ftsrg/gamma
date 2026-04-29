@@ -5,7 +5,7 @@ import "Interfaces/Interfaces.gcd"
 statechart Functions_2 [
 	port Execute : requires Execute
 ] {
-	var _record : Record
+	var _record : Rec0rd
 	var _int : integer
 	var _bool : boolean
 	region main {
@@ -19,7 +19,7 @@ statechart Functions_2 [
 	
 	transition from Initial to _A
 	
-	transition from _A to _BB when Execute.^execute / addRecord(#Record{ b := -3, a := true });
+	transition from _A to _BB when Execute.^execute / addRecord(#Rec0rd{ b := -3, a := true });
 	transition from _BB to _H when Execute.^execute / _int := addRecord(createRecord(11, false));
 	transition from _H to _I when Execute.^execute / {
 		_record := createRecord(67, true);
@@ -29,7 +29,7 @@ statechart Functions_2 [
 	
 	lambda factorialLambda(val : integer) : integer := (val <= 1) ? 1 : val * factorialLambda(val - 1)
 	
-	procedure addRecord(rec : Record) : integer {
+	procedure addRecord(rec : Rec0rd) : integer {
 		_record.a := _record.a xor rec.a;
 		choice {
 			branch [rec.b < 10] {
@@ -59,8 +59,8 @@ statechart Functions_2 [
 		return value * factorialIf(value - 1);
 	}
 	
-	procedure createRecord(b : integer, a : boolean) : Record {
-		return #Record{ a := a, b := b };
+	procedure createRecord(b : integer, a : boolean) : Rec0rd {
+		return #Rec0rd{ a := a, b := b };
 	}
 	
 }

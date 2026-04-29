@@ -1,5 +1,18 @@
-import "PortFunctionsSystem.gcd"
-import "PortFunctionsSystem3.gcd"
+import "Statechart/PortFunctions_1"
+import "Statechart/PortFunctions_2"
+
+import "PortFunctionsSystem"
+import "PortFunctionsSystem3"
+
+code {
+	component : PortFunctions_1
+	language : java
+}
+
+code {
+	component : PortFunctions_2
+	language : java
+}
 
 analysis {
 	component : PortFunctionsSystem
@@ -12,6 +25,12 @@ verification {
 	language : Imandra
 	property-file : ".PortFunctionsSystem.gpd"
 	optimize-traces : true
+	test-language : java
+}
+
+code {
+	component : PortFunctionsSystem
+	language : java
 }
 
 analysis {
@@ -25,4 +44,10 @@ verification {
 	language : Imandra
 	property-file : ".PortFunctionsSystem3.gpd"
 	optimize-traces : true
+	test-language : java
+}
+
+code {
+	component : PortFunctionsSystem3
+	language : java
 }
