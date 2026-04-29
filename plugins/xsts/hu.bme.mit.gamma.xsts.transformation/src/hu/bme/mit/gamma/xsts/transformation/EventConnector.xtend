@@ -195,7 +195,8 @@ class EventConnector {
 	//
 	
 	def void connectInterfaceFunctionsThroughChannels(XSTS xSts, CompositeComponent component) {
-		val xStsFunctionDeclarations = xSts.functionDeclarations
+		val xStsFunctionDeclarations = newArrayList
+		xStsFunctionDeclarations += xSts.functionDeclarations
 		val xStsFunctionCalls = xSts.getAllContentsOfType(FunctionAccessExpression)
 		
 		val channels = component.channels // component.selfAndAllComponents.filter(CompositeComponent).map[it.channels].flatten

@@ -364,6 +364,15 @@ public class ExpressionModelDerivedFeatures {
 		return typeDefinition instanceof RecordTypeDefinition;
 	}
 	
+	public static boolean isCompositeRecord(Type type) {
+		TypeDefinition typeDefinition = getTypeDefinition(type);
+		if (typeDefinition instanceof RecordTypeDefinition recordType) {
+			return recordType.getFieldDeclarations().stream()
+					.anyMatch(it -> isRecord(it));
+		}
+		return false;
+	}
+	
 	public static boolean isTuple(Type type) {
 		TypeDefinition typeDefinition = getTypeDefinition(type);
 		return typeDefinition instanceof TupleTypeDefinition;

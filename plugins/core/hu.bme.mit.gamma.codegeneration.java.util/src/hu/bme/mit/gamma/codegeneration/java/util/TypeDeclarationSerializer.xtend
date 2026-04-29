@@ -58,16 +58,18 @@ class TypeDeclarationSerializer {
 				«ENDFOR»
 			}
 			
+			«IF type.compositeRecord»@SuppressWarnings("unchecked")«ENDIF»
 			public «name»(List<Object> elements) {
 				«var i = 0»
 				«FOR field : type.fieldDeclarations»
 					«val fieldType = field.typeDefinition»
-					«IF fieldType instanceof RecordTypeDefinition»
-						«val size = fieldType.nativeTypes.size»
-						this.«field.name» = new «fieldType.typeDeclaration.name»(elements.subList(«i», «i += size»));
-					«ELSE»
-						this.«field.name» = («field.type.serialize») elements.get(«i++»);
-					«ENDIF»
+					«val element = '''elements.get(«i++»)'''»
+					this.«field.name» = «
+						IF field.record
+							»new «fieldType.typeDeclaration.name»((List<Object>) «element»);«
+						ELSE
+							»(«field.type.serialize») «element»;«
+						ENDIF»
 				«ENDFOR»
 			}
 			

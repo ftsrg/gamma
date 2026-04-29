@@ -190,7 +190,7 @@ class StatechartCodeGenerator {
 			«ENDFOR»
 			«IF containsTuples»
 				«val listName = "flattenedList"»
-				List<Object> «Namings.FLATTEN_LIST_METHOD_NAME»(List<?> list) {
+				private List<Object> «Namings.FLATTEN_LIST_METHOD_NAME»(List<?> list) {
 					List<Object> «listName» = new ArrayList<Object>();
 					
 					for (Object object : list) {
