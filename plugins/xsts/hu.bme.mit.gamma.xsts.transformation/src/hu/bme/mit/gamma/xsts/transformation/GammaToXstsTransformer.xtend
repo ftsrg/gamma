@@ -159,6 +159,9 @@ class GammaToXstsTransformer {
 		val lowlevelPackage = gammaToLowlevelTransformer.transform(_package)
 		// Serializing the xSTS
 		val xSts = gammaComponent.transform(lowlevelPackage) // Transforming the Gamma component
+		if (componentTransformer.inlineFunctions) {
+			xSts.functionDeclarations.clear
+		}
 		
 		// Adding metadata
 		if (gammaComponent.synchronous) {

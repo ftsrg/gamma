@@ -228,8 +228,6 @@ class EventConnector {
 								logger.info('''Changing interface function reference «xStsFunctionDeclarationName» to «xStsFunctionDefinitionName»''')
 							}
 						}
-						
-						xStsFunctionDeclaration.remove
 					}
 				}
 			}

@@ -131,12 +131,17 @@ class SynchronousCompositeComponentCodeGenerator {
 			private void init() {
 				// Registration of simple channels
 				«FOR channelMatch : SimpleChannels.Matcher.on(engine).getAllMatches(component, null, null, null)»
-					«channelMatch.providedPort.instance.name».get«channelMatch.providedPort.port.name.toFirstUpper»().registerListener(«channelMatch.requiredPort.instance.name».get«channelMatch.requiredPort.port.name.toFirstUpper»());
-					«channelMatch.requiredPort.instance.name».get«channelMatch.requiredPort.port.name.toFirstUpper»().registerListener(«channelMatch.providedPort.instance.name».get«channelMatch.providedPort.port.name.toFirstUpper»());
+					«val providedPort = channelMatch.providedPort»
+					«val requiredPort = channelMatch.requiredPort»
+					«providedPort.instance.name».get«providedPort.port.name.toFirstUpper»().registerListener(«requiredPort.instance.name».get«requiredPort.port.name.toFirstUpper»());
+					«requiredPort.instance.name».get«requiredPort.port.name.toFirstUpper»().registerListener(«providedPort.instance.name».get«providedPort.port.name.toFirstUpper»());
 				«ENDFOR»
 				// Registration of broadcast channels
 				«FOR channelMatch : BroadcastChannels.Matcher.on(engine).getAllMatches(component, null, null, null)»
-					«channelMatch.providedPort.instance.name».get«channelMatch.providedPort.port.name.toFirstUpper»().registerListener(«channelMatch.requiredPort.instance.name».get«channelMatch.requiredPort.port.name.toFirstUpper»());
+					«val providedPort = channelMatch.providedPort»
+					«val requiredPort = channelMatch.requiredPort»
+					«providedPort.instance.name».get«providedPort.port.name.toFirstUpper»().registerListener(«requiredPort.instance.name».get«requiredPort.port.name.toFirstUpper»());
+					«IF providedPort.port.hasFunctionDeclarations»«requiredPort.instance.name».get«requiredPort.port.name.toFirstUpper»().registerListener(«providedPort.instance.name».get«providedPort.port.name.toFirstUpper»()); // Needed for potential function calls«ENDIF»
 				«ENDFOR»
 				«component.createInternalPortHandlingSettingCode»
 			}

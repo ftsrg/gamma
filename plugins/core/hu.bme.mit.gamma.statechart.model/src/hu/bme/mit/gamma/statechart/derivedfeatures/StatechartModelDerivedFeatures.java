@@ -1450,6 +1450,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return List.of();
 	}
 	
+	public static boolean hasFunctionDeclarations(Port port) {
+		List<FunctionDeclaration> functionDeclarations = getAllFunctionDeclarations(port);
+		return !functionDeclarations.isEmpty();
+	}
+	
 	public static List<FunctionDeclaration> getAllFunctionDeclarations(Port port) {
 		Interface interface_ = getInterface(port);
 		return getAllFunctionDeclarations(interface_);
