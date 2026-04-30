@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.expression.language.validation;
 
 import java.util.Collection;
-import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
@@ -108,12 +107,14 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	
 	@Check
 	public void checkNameUniqueness(EObject element) {
-		List<NamedElement> namedElements = ecoreUtil.getContentsOfType(element, NamedElement.class);
-		if (!namedElements.isEmpty()) { // checkNameUniqueness(EObject ) would do this - this way it may be faster
-			handleValidationResultMessage(expressionModelValidator.checkNameUniqueness(namedElements));
-		}
+		Iterable<? extends NamedElement> namedElements = getNamedElementsForCheck(element);
+		handleValidationResultMessage(expressionModelValidator.checkNameUniqueness(namedElements));
 	}
-
+	
+	protected Collection<? extends NamedElement> getNamedElementsForCheck(EObject element) {
+		return ecoreUtil.getContentsOfType(element, NamedElement.class);
+	}
+	
 	@Check
 	public void checkTypeDeclaration(TypeDeclaration typeDeclaration) {
 		handleValidationResultMessage(expressionModelValidator.checkTypeDeclaration(typeDeclaration));

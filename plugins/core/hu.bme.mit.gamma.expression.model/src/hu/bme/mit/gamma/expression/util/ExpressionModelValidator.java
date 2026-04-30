@@ -127,8 +127,9 @@ public class ExpressionModelValidator {
 		return checkNameUniqueness(ecoreUtil.getContentsOfType(root, NamedElement.class));
 	}
 	
-	public Collection<ValidationResultMessage> checkNameUniqueness(List<? extends NamedElement> elements) {
+	public Collection<ValidationResultMessage> checkNameUniqueness(Iterable<? extends NamedElement> elements) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
 		Set<String> names = new HashSet<String>();
 		for (NamedElement element : elements) {
 			String name = element.getName();
@@ -141,6 +142,7 @@ public class ExpressionModelValidator {
 				names.add(name);
 			}
 		}
+		
 		return validationResultMessages;
 	}
 	
