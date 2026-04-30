@@ -12,6 +12,7 @@ interface FunctionExecute extends Execute {
 	lambda getRecord : Rec0rd
 	
 	procedure setComplexRecord(r : ComplexRecord) : void
+	procedure setComplexRecord2(a : decimal, b : boolean, c : int) : void
 	lambda getComplexRecord : ComplexRecord
 	
 	lambda factorial(value : integer) : integer := (value <= 1) ? 1 : value * factorial(value - 1)

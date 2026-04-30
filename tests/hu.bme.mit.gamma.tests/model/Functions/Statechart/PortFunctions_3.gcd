@@ -1,0 +1,41 @@
+package functions
+
+import "Interfaces/Interfaces.gcd"
+
+statechart PortFunctions_3 [
+	port FunctionExecute : requires FunctionExecute
+] {
+	var _int : integer := 2
+	var _bool : boolean
+	var rec : Rec0rd := #Rec0rd{a := true, b := 5}
+	var cRec : ComplexRecord
+	region main {
+		initial Initial
+		state _X
+		
+		state _Y
+		state _Z
+		state _A
+	}
+	
+	transition from Initial to _X
+	transition from _X to _Y when FunctionExecute.^execute / {
+		var a : integer := _int;
+		var c : ComplexRecord := getComplexRecord();
+		if (getValue() + 2 < 99) {
+			var c : ComplexRecord := getComplexRecord();
+			setValue(_int + 69 + c.b.b);
+			_bool := true;
+			setComplexRecord2(1.43 + c.a + c.b.b - rec.b, true, 69 - _int);
+		}
+		elseif (!c.b.a and a < -123) {
+			_bool := _bool xor true;
+			cRec.a := cRec.a + 1.56;
+		}
+		_int := _int + factorial(4) / a;
+		cRec := getComplexRecord();
+	}
+	transition from _Y to _Z when FunctionExecute.^execute / _int := getValue(); setRecord(#Rec0rd{a := false, b := 10});
+	transition from _Z to _A when FunctionExecute.^execute / _int := getValue(); rec := getRecord(); rec.b := rec.b + 1;
+	
+}

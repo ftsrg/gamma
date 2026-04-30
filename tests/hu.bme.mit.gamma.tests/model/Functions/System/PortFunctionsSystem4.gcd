@@ -1,0 +1,19 @@
+package portfunctionssystem2
+
+import "Interfaces/Interfaces.gcd"
+
+import "PortFunctionsSystem1.gcd"
+import "PortFunctionsSystem2.gcd"
+import "Statechart/PortFunctions_3.gcd"
+
+cascade PortFunctionsSystem4 [
+	port Execute : requires Execute
+] {
+	component _1 : PortFunctionsSystem1
+	component _2 : PortFunctionsSystem2
+	component _3 : PortFunctions_3
+	
+	bind Execute -> _1.Execute
+	
+	channel [_1.FunctionExecute] -o)- [_2.FunctionExecute, _3.FunctionExecute]
+}

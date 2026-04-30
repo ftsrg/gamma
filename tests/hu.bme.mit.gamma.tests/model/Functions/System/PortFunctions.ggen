@@ -1,8 +1,10 @@
 import "Statechart/PortFunctions_1"
 import "Statechart/PortFunctions_2"
+import "Statechart/PortFunctions_3"
 
 import "PortFunctionsSystem"
 import "PortFunctionsSystem3"
+import "PortFunctionsSystem4"
 
 code {
 	component : PortFunctions_1
@@ -11,6 +13,11 @@ code {
 
 code {
 	component : PortFunctions_2
+	language : java
+}
+
+code {
+	component : PortFunctions_3
 	language : java
 }
 
@@ -49,5 +56,24 @@ verification {
 
 code {
 	component : PortFunctionsSystem3
+	language : java
+}
+
+analysis {
+	component : PortFunctionsSystem4
+	language : IML
+	state-coverage
+}
+
+verification {
+	file : "PortFunctionsSystem4"
+	language : Imandra
+	property-file : ".PortFunctionsSystem4.gpd"
+	optimize-traces : true
+	test-language : java
+}
+
+code {
+	component : PortFunctionsSystem4
 	language : java
 }

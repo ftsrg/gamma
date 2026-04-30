@@ -34,6 +34,7 @@ statechart PortFunctions_1 [
 	lambda getRecord : Rec0rd := rec
 	
 	procedure setComplexRecord(r : ComplexRecord) : void { cRec := r; }
+	procedure setComplexRecord2(a : decimal, b : boolean, c : int) : void { cRec.a := a; cRec.b.a := b; cRec.b.b := c; }
 	lambda getComplexRecord : ComplexRecord := cRec
 	
 //	lambda factorial(value : integer) : integer := (value <= 1) ? 1 : value * factorial(value - 2)
