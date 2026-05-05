@@ -247,7 +247,7 @@ class UnfoldingTraceability {
 		val newInstances = newArrayList
 		if (includedOriginalInstances.empty) {
 			// If it is empty, it means all simple instances must be covered
-			newInstances += newType.allSimpleInstances
+			newInstances += newType.allSynchronousSimpleInstances
 		}
 		// The semantics is defined here: including has priority over excluding
 		newInstances -= excludedOriginalInstances.getNewSimpleInstances(newType)
@@ -266,7 +266,7 @@ class UnfoldingTraceability {
 	}
 	
 	def getNewSimpleInstances(ComponentInstanceReferenceExpression originalInstance, Component newType) {
-		val newInstances = newType.allSimpleInstances
+		val newInstances = newType.allSynchronousSimpleInstances
 		val acceptedNewInstances = newArrayList
 		// This instance can be a composite instance, thus more than one new instance can be here
 		val lastInstance = originalInstance.lastInstance

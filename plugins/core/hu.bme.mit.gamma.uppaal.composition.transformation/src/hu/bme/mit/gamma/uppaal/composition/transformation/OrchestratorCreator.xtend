@@ -320,7 +320,8 @@ class OrchestratorCreator {
 			it.createAssignmentExpression(edge_Update, isStableVar, true)
 		]
 		// Optimization
-		val statecharts = compositeComponent.allSimpleInstances.map[it.type].filter(StatechartDefinition)
+		val statecharts = compositeComponent.allSimpleInstances
+				.map[it.derivedType].filter(StatechartDefinition)
 		val variables = statecharts.map[it.variableDeclarations].flatten.toSet
 		val resetableVariables = variables.filter[it.resettable].toList
 		val transientVariables = variables.filter[it.transient].toList

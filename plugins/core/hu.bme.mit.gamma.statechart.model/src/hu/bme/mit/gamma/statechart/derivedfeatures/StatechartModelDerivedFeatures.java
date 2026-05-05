@@ -877,17 +877,22 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return instances;
 	}
 	
-	public static List<SynchronousComponentInstance> getAllSimpleInstances(ComponentInstance instance) {
+	public static List<ComponentInstance> getAllSimpleInstances(ComponentInstance instance) {
 		Component type = getDerivedType(instance);
 		return getAllSimpleInstances(type);
 	}
 	
-	public static List<SynchronousComponentInstance> getAllSimpleInstances(Component component) {
-		List<SynchronousComponentInstance> simpleInstances = new ArrayList<SynchronousComponentInstance>();
+	public static List<ComponentInstance> getAllSimpleInstances(Component component) {
+		List<ComponentInstance> simpleInstances = new ArrayList<ComponentInstance>();
 		if (component instanceof AbstractAsynchronousCompositeComponent asynchronousCompositeComponent) {
 			for (AsynchronousComponentInstance instance : asynchronousCompositeComponent.getComponents()) {
-				simpleInstances.addAll(
+				if (isStatechart(instance)) {
+					simpleInstances.add(instance);
+				}
+				else {
+					simpleInstances.addAll(
 						getAllSimpleInstances(instance));
+				}
 			}
 		}
 		else if (component instanceof AsynchronousAdapter asynchronousAdapter) {
@@ -912,6 +917,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			}
 		}
 		return simpleInstances;
+	}
+	
+	public static List<SynchronousComponentInstance> getAllSynchronousSimpleInstances(Component component) {
+		return javaUtil.filterIntoList(
+				getAllSimpleInstances(component), SynchronousComponentInstance.class);
 	}
 	
 	public static List<AsynchronousComponentInstance> getAllAsynchronousSimpleInstances(Component component) {
@@ -1108,7 +1118,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static Collection<StatechartDefinition> getAllContainedStatecharts(Component component) {
 		List<StatechartDefinition> statecharts = new ArrayList<StatechartDefinition>();
-		for (SynchronousComponentInstance instance : getAllSimpleInstances(component)) {
+		for (ComponentInstance instance : getAllSimpleInstances(component)) {
 			statecharts.add(
 					getStatechart(instance));
 		}
@@ -1653,9 +1663,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static List<MessageQueue> getFunctioningMessageQueues(AsynchronousAdapter adapter) {
-		return adapter.getMessageQueues().stream()
-				.filter(it -> isFunctioning(it))
-				.toList();
+		List<MessageQueue> queues = new ArrayList<MessageQueue>(
+				adapter.getMessageQueues());
+		queues.removeIf(it -> !isFunctioning(it));
+		return queues;
 	}
 	
 	public static List<MessageQueue> getFunctioningMessageQueuesInPriorityOrder(

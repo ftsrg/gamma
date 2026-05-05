@@ -111,7 +111,7 @@ class TestGeneratorUtil {
 		val name = declaration.name
 		if (name.startsWith(AnnotationNamings.PREFIX) &&
 				name.endsWith(AnnotationNamings.POSTFIX) ||
-				component.allSimpleInstances.map[it.type].filter(StatechartDefinition)
+				component.allSimpleInstances.map[it.derivedType].filter(StatechartDefinition)
 						.map[it.transitions].flatten.exists[it.id == name] /*Transition id*/) {
 			return false
 		}

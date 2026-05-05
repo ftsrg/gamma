@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.transformation.util.annotations
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Port
@@ -57,11 +58,11 @@ class ModelAnnotatorPropertyGenerator {
 		// Unstable state coverage
 		val testedComponentsForUnstableStates = getIncludedSynchronousInstances(
 				annotableElements.testedComponentsForUnstableStates, newTopComponent)
-				.map[it.type].filter(StatechartDefinition).map[it.allStates].flatten
+					.map[it.type].filter(StatechartDefinition).map[it.allStates].flatten
 		// Trap state coverage
 		val testedComponentsForTrapStates = getIncludedSynchronousInstances(
 				annotableElements.testedComponentsForTrapStates, newTopComponent)
-				.map[it.type].filter(StatechartDefinition).map[it.allStates].flatten
+					.map[it.type].filter(StatechartDefinition).map[it.allStates].flatten
 		// Deadlock state coverage
 		val testedComponentsForDeadlockStates = getIncludedSynchronousInstances(
 				annotableElements.testedComponentsForDeadlockStates, newTopComponent)
@@ -223,10 +224,10 @@ class ModelAnnotatorPropertyGenerator {
 		return ports
 	}
 	
-	protected def List<Port> getPorts(List<SynchronousComponentInstance> instances) {
+	protected def List<Port> getPorts(List<? extends ComponentInstance> instances) {
 		val ports = newArrayList
 		for (instance : instances) {
-			val type = instance.getType
+			val type = instance.derivedType
 			ports += type.allPorts
 		}
 		return ports
@@ -241,7 +242,7 @@ class ModelAnnotatorPropertyGenerator {
 		var includedStates = traceability.getNewSimpleInstanceStates(
 			stateReferences.include, component).toList
 		if (includedStates.empty) {
-			includedStates = component.allSimpleInstances.map[it.type]
+			includedStates = component.allSimpleInstances.map[it.derivedType]
 				.filter(StatechartDefinition).map[it.allStates].flatten.toList
 		}
 		val excludedStates = traceability.getNewSimpleInstanceStates(
@@ -259,7 +260,7 @@ class ModelAnnotatorPropertyGenerator {
 		var includedTransitions = traceability.getNewSimpleInstanceTransitions(
 			transitionReferences.include, component).toList
 		if (includedTransitions.empty) {
-			includedTransitions = component.allSimpleInstances.map[it.type]
+			includedTransitions = component.allSimpleInstances.map[it.derivedType]
 				.filter(StatechartDefinition).map[it.transitions].flatten.toList
 		}
 		val excludedTransitions = traceability.getNewSimpleInstanceTransitions(
@@ -286,7 +287,7 @@ class ModelAnnotatorPropertyGenerator {
 		if (includedInstances.empty && includedVariables.empty) {
 			// If both includes are empty, then we include all the new instances
 			val newSimpleInstances = component.allSimpleInstances
-			variables += newSimpleInstances.map[it.type].filter(StatechartDefinition)
+			variables += newSimpleInstances.map[it.derivedType].filter(StatechartDefinition)
 				.map[it.variableDeclarations].flatten
 		}
 		// The semantics is defined here: including has priority over excluding
@@ -297,10 +298,10 @@ class ModelAnnotatorPropertyGenerator {
 		return variables
 	}
 	
-	protected def getVariables(List<SynchronousComponentInstance> instances) {
+	protected def getVariables(List<? extends ComponentInstance> instances) {
 		val variables = newArrayList
 		for (instance : instances) {
-			val type = instance.getType
+			val type = instance.derivedType
 			if (type instanceof StatechartDefinition) {
 				variables += type.variableDeclarations
 			}

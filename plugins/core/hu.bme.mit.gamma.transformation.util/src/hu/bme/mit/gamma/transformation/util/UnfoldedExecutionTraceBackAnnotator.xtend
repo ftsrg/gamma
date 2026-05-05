@@ -452,7 +452,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 					else {
 						// Sender of 'interaction' coverage
 						val newComponent = trace.component
-						for (senderInstance : newComponent.allSimpleInstances) {
+						for (senderInstance : newComponent.allSynchronousSimpleInstances) {
 							val senderStatechart = senderInstance.getStatechart
 							
 							val allStates = senderStatechart.allStates

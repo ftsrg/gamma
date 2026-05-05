@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -94,7 +94,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 				if (instanceType === null) {
 					val simpleSyncInstances = component.allSimpleInstances
 					for (simpleInstance : simpleSyncInstances) {
-						regions += ecoreUtil.getAllContentsOfType(simpleInstance.type, Region)
+						regions += ecoreUtil.getAllContentsOfType(simpleInstance.derivedType, Region)
 					}
 				}
 				else {
@@ -112,7 +112,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 					if (instanceType === null) {
 						val simpleSyncInstances = component.allSimpleInstances
 						for (simpleInstance : simpleSyncInstances) {
-							states += ecoreUtil.getAllContentsOfType(simpleInstance.type, State)
+							states += ecoreUtil.getAllContentsOfType(simpleInstance.derivedType, State)
 						}
 					}
 					else {

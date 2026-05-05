@@ -85,7 +85,7 @@ class DefaultCompositionToUppaalTransformer {
 	private def getCoverableInstances(Component component, ElementCoverage expected, Collection<ElementCoverage> received) {
 		val components = newHashSet
 		if (received.contains(expected)) {
-			components += component.allSimpleInstances
+			components += component.allSynchronousSimpleInstances
 		}
 		return components
 	}
