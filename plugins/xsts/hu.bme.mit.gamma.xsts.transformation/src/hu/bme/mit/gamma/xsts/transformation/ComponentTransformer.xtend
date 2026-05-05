@@ -858,6 +858,13 @@ class ComponentTransformer {
 		xStsDeletableSlaveQueues.changeAssignmentsAndReadingAssignmentsToEmptyActions(xSts)
 		xStsDeletableSlaveQueues.forEach[it.deleteDeclaration] // Variable groups
 		
+		logger.info("Connecting interface functions through channels in " + name)
+		xSts.connectInterfaceFunctionsThroughChannels(component)
+		
+		if (inlineFunctions && component.top) {
+			xSts.inlineFunctionCalls
+		}
+		
 		return xSts
 	}
 	
