@@ -6,6 +6,8 @@ import "PortFunctionsSystem"
 import "PortFunctionsSystem3"
 import "PortFunctionsSystem4"
 
+import "AsyncPortFunctionsSystem"
+
 code {
 	component : PortFunctions_1
 	language : java
@@ -76,4 +78,10 @@ verification {
 code {
 	component : PortFunctionsSystem4
 	language : java
+}
+
+analysis {
+	component : PortFunctionsSystem
+	language : IML
+	state-coverage
 }
