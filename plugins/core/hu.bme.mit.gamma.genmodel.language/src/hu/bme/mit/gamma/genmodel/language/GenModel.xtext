@@ -263,8 +263,8 @@ TrapStateCoverage returns TrapStateCoverage:
 	'}')?
 ;
 
-DeadlockStateCoverage returns TrapStateCoverage:
-	{TrapStateCoverage} 'trap-state-coverage' ('{' 
+DeadlockStateCoverage returns DeadlockStateCoverage:
+	{DeadlockStateCoverage} 'deadlock-state-coverage' ('{' 
 		('include' ':' '[' include+=ComponentInstanceReferenceExpression (',' include+=ComponentInstanceReferenceExpression)* ']')?
 		('exclude' ':' '[' exclude+=ComponentInstanceReferenceExpression (',' exclude+=ComponentInstanceReferenceExpression)* ']')?
 	'}')?
