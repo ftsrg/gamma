@@ -68,7 +68,13 @@ class XstsToUppaalTransformer {
 		
 		val stableLocation = initializingAction.transformAction(initialLocation)
 		stableLocation.name = stableLocationName
-		stableLocation.locationTimeKind = LocationKind.NORMAL
+		if (!xSts.timed) {
+			// To counter trivial CEX for A<> properties - timing does not matter anyway
+			stableLocation.locationTimeKind = LocationKind.URGENT
+		}
+		else {
+			stableLocation.locationTimeKind = LocationKind.NORMAL
+		}
 		
 		val environmentFinishLocation = template.createLocation
 		environmentFinishLocation.name = environmentFinishLocationName
