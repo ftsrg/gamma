@@ -409,6 +409,14 @@ class GammaEcoreUtil {
 		return EcoreUtil.getRootContainer(object)
 	}
 	
+	def EObject getContainerOrSelf(EObject object) {
+		val container = object.eContainer
+		if (container === null) {
+			return object
+		}
+		return container
+	}
+	
 	def <T extends EObject> T getContainerOfType(EObject object, Class<T> type) {
 		val container = object.eContainer
 		if (container === null) {

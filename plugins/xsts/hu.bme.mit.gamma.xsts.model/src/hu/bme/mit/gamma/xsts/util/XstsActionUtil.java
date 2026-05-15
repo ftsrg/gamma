@@ -38,11 +38,11 @@ import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
+import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
-import hu.bme.mit.gamma.expression.model.TupleLiteralExpression;
 import hu.bme.mit.gamma.expression.model.TupleReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
@@ -242,12 +242,19 @@ public class XstsActionUtil extends ExpressionUtil {
 		return wrap(emptyAction);
 	}
 	
+	public void inlineTupleAssignmentActions(EObject object) {
+		for (TupleReferenceExpression reference :
+				ecoreUtil.getSelfAndAllContentsOfType(object, TupleReferenceExpression.class)) {
+			inlineTupleAssignmentAction(reference);
+		}
+	}
+	
 	public void inlineTupleAssignmentAction(Expression expression) {
 		EObject container = expression.eContainer();
 		if (container instanceof AssignmentAction assignmentAction) {
 			ReferenceExpression _lhs = assignmentAction.getLhs();
 			Expression _rhs = assignmentAction.getRhs();
-			if (_lhs instanceof TupleReferenceExpression lhs && _rhs instanceof TupleLiteralExpression rhs) {
+			if (_lhs instanceof TupleReferenceExpression lhs && _rhs instanceof MultiaryExpression rhs) {
 				List<ReferenceExpression> references = lhs.getReferences();
 				List<Expression> operands = rhs.getOperands();
 				int size = references.size();
@@ -261,6 +268,7 @@ public class XstsActionUtil extends ExpressionUtil {
 					
 					AssignmentAction elementAssignmentAction = createAssignmentAction(referenceExpression, operand);
 					prependToAction(elementAssignmentAction, assignmentAction);
+					inlineTupleAssignmentAction(operand); // Recursion
 				}
 				
 				ecoreUtil.remove(assignmentAction);
