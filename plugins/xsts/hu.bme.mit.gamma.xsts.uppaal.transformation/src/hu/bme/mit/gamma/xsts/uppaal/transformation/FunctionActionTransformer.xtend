@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.uppaal.transformation
 
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration
+import hu.bme.mit.gamma.expression.model.LambdaDeclaration
 import hu.bme.mit.gamma.uppaal.util.AssignmentExpressionCreator
 import hu.bme.mit.gamma.uppaal.util.NtaBuilder
 import hu.bme.mit.gamma.uppaal.util.TypeTransformer
@@ -22,6 +24,8 @@ import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.OpaqueAction
+import hu.bme.mit.gamma.xsts.model.ProcedureDeclaration
+import hu.bme.mit.gamma.xsts.model.ReturnAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.transformation.util.MessageQueueUtil
@@ -58,7 +62,7 @@ class FunctionActionTransformer {
 		this.traceability = traceability
 		this.nta = ntaBuilder.nta
 		this.variableTransformer = new VariableTransformer(ntaBuilder, traceability)
-		this.expressionTransformer = new ExpressionTransformer(traceability)
+		this.expressionTransformer = new ExpressionTransformer(traceability, ntaBuilder)
 		this.assignmentExpressionCreator = new AssignmentExpressionCreator(ntaBuilder)
 		this.typeTransformer = new TypeTransformer(nta)
 	}
@@ -90,6 +94,11 @@ class FunctionActionTransformer {
 	
 	protected def dispatch Statement transformAction(OpaqueAction action) {
 		return '''/* «action.action» */'''.toString.createLiteralExpression.createStatement
+	}
+	
+	protected def dispatch Statement transformAction(ReturnAction action) {
+		val uppaalExpression = action.expression.transform
+		return uppaalExpression.createReturnStatement
 	}
 	
 	protected def dispatch Statement transformAction(AssumeAction action) {
@@ -189,6 +198,50 @@ class FunctionActionTransformer {
 		uppaalLoop.statement = uppaalAction
 		
 		return uppaalLoop
+	}
+	
+	//
+	
+	def void transformAndSaveFunctionDeclaration(FunctionDeclaration functionDeclaration) {
+		val uppaalFunction = functionDeclaration.transformFunctionDeclaration
+		nta.globalDeclarations.declaration += uppaalFunction
+	}
+	
+	protected def transformFunctionDeclaration(FunctionDeclaration functionDeclaration) {
+		val type = functionDeclaration.type
+		val uppaalType = type.transformType
+		
+		val name = functionDeclaration.name
+		
+		val uppaalFunction = uppaalType.createFunction(name, null)
+		
+		val parameters = functionDeclaration.parameterDeclarations
+		for (parameter : parameters) {
+			val uppaalParameterVariable = parameter.transformParameter
+			val uppaalParameter = uppaalParameterVariable.createParameter
+			
+			uppaalFunction.parameter += uppaalParameter
+			traceability.put(parameter, uppaalParameterVariable)
+		}
+		
+		val uppaalAction = 
+		if (functionDeclaration instanceof ProcedureDeclaration) {
+			val body = functionDeclaration.body
+			body.transformAction
+		}
+		else if (functionDeclaration instanceof LambdaDeclaration) {
+			val body = functionDeclaration.expression
+			body.transform.createReturnStatement
+		}
+		else {
+			throw new IllegalArgumentException("Not known function: " + functionDeclaration)
+		}
+		uppaalFunction.block = uppaalAction.createBlock
+		
+		val uppaalFunctionDeclaration = uppaalFunction.createFunctionDeclaration
+		traceability.put(functionDeclaration, uppaalFunctionDeclaration)
+		
+		return uppaalFunctionDeclaration
 	}
 	
 }

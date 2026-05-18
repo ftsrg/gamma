@@ -214,8 +214,12 @@ enum Scheduler returns Scheduler:
 ;
 
 enum AnalysisLanguage returns AnalysisLanguage:
-	UPPAAL = "UPPAAL" | THETA = "Theta" | THETA = "XSTS" | XSTS_UPPAAL = "XSTS-UPPAAL" |
-		PROMELA = "Promela" | PROMELA = "Spin" | NUXMV = "SMV" | NUXMV = "nuXmv" | OCRA = "OCRA" |
+	UPPAAL = "UPPAAL" | UPPAAL = "DUPPAAL" |
+		THETA = "Theta" | THETA = "XSTS" |
+		XSTS_UPPAAL = "XTA" | XSTS_UPPAAL = "XUPPAAL" | XSTS_UPPAAL = "XSTS-UPPAAL" |
+		PROMELA = "Promela" | PROMELA = "Spin" |
+		NUXMV = "SMV" | NUXMV = "nuXmv" |
+		OCRA = "OCRA" |
 		IML = "IML" | IML = "Imandra"
 ;
 
