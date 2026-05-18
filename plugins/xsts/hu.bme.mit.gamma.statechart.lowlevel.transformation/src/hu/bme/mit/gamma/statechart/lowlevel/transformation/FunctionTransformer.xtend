@@ -47,7 +47,7 @@ class FunctionTransformer {
 	
 	new(Trace trace, boolean addReturnGuards) {
 		this.trace = trace
-		this.actionTransformer = new ActionTransformer(trace, false, addReturnGuards, 0, TimeUnit.NANOSECOND)
+		this.actionTransformer = new ActionTransformer(trace, false, addReturnGuards, TimeUnit.NANOSECOND)
 		this.expressionTransformer = actionTransformer.expressionTransformer
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
 		this.typeTransformer = new TypeTransformer(this.trace)

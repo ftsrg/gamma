@@ -62,16 +62,16 @@ class ActionTransformer {
 	protected final boolean FUNCTION_INLINING
 	
 	new(Trace trace) {
-		this(trace, true, true, 7, null)
+		this(trace, true, true, null)
 	}
 	
-	new(Trace trace, boolean functionInlining, boolean addReturnGuards, int maxRecursionDepth, TimeUnit baseTimeUnit) {
+	new(Trace trace, boolean functionInlining, boolean addReturnGuards, TimeUnit baseTimeUnit) {
 		this.trace = trace
 		this.FUNCTION_INLINING = functionInlining
 		this.expressionTransformer = new ExpressionTransformer(this.trace,
-				functionInlining, addReturnGuards, maxRecursionDepth, baseTimeUnit)
+				functionInlining, addReturnGuards, baseTimeUnit)
 		this.preconditionTransformer = new ExpressionPreconditionTransformer(
-				this.trace, this, functionInlining, addReturnGuards, maxRecursionDepth)
+				this.trace, this, functionInlining, addReturnGuards)
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
 	}
 	

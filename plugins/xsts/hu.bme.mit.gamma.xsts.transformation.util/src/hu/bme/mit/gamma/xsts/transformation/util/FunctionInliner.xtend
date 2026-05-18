@@ -34,7 +34,7 @@ class FunctionInliner {
 	public static final FunctionInliner INSTANCE =  new FunctionInliner
 	protected new() {}
 	//
-	protected int currentRecursionDepth = 7 // TODO
+	protected int currentRecursionDepth = Configuration.MAX_RECURSION_DEPTH
 	//
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
@@ -61,8 +61,8 @@ class FunctionInliner {
 			checkState(returnExpression !== null, expression.functionDeclaration.name)
 			returnExpression.replace(expression)
 		}
-		actionContainer.containerOrSelf
-				.inlineTupleAssignmentActions
+		val actionContainer2 = actionContainer.containerOrSelf
+		actionContainer2.inlineTupleAssignmentActions
 		
 		// Recursion here (not in execute due to containment hierarchy)
 		val functionAccessExpressions = newArrayList

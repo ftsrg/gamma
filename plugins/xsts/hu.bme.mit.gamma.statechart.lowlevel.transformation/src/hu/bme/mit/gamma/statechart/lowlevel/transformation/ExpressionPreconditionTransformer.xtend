@@ -30,6 +30,7 @@ import hu.bme.mit.gamma.expression.model.VoidTypeDefinition
 import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.transformation.util.Configuration
 import java.util.List
 
 import static extension hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures.*
@@ -52,16 +53,14 @@ class ExpressionPreconditionTransformer {
 	// Transformation parameters
 	protected final boolean FUNCTION_INLINING
 	protected final boolean ADD_RETURN_GUARDS
-	protected final int MAX_RECURSION_DEPTH
 	
-	protected int currentRecursionDepth
+	protected int currentRecursionDepth = Configuration.MAX_RECURSION_DEPTH
 	
 	new(Trace trace, ActionTransformer actionTransformer) {
-		this(trace, actionTransformer, true, true, 7)
+		this(trace, actionTransformer, true, true)
 	}
 	
-	new(Trace trace, ActionTransformer actionTransformer,
-			boolean functionInlining, boolean addReturnGuards, int maxRecursionDepth) {
+	new(Trace trace, ActionTransformer actionTransformer, boolean functionInlining, boolean addReturnGuards) {
 		this.trace = trace
 		this.actionTransformer = actionTransformer
 		this.expressionTransformer = actionTransformer.expressionTransformer
@@ -70,8 +69,6 @@ class ExpressionPreconditionTransformer {
 		this.functionInliner = new FunctionInliner(trace, actionTransformer)
 		this.FUNCTION_INLINING = functionInlining
 		this.ADD_RETURN_GUARDS = addReturnGuards
-		this.MAX_RECURSION_DEPTH = maxRecursionDepth
-		this.currentRecursionDepth = MAX_RECURSION_DEPTH
 	}
 	
 	def dispatch List<Action> transformPrecondition(Expression expression) {

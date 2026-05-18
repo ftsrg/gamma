@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -94,7 +94,7 @@ public class CommandHandler extends AbstractHandler {
 		
 		final boolean inlineFunctions = !StatechartModelDerivedFeatures.callsRecursiveFunctions(gammaStatechart);
 		final boolean addReturnGuards = false; // Checked only if 'inlineFunctions' == true
-		GammaToLowlevelTransformer transformer = new GammaToLowlevelTransformer(inlineFunctions, addReturnGuards, 10, TimeUnit.NANOSECOND); // Explicitly for code generation
+		GammaToLowlevelTransformer transformer = new GammaToLowlevelTransformer(inlineFunctions, addReturnGuards, TimeUnit.NANOSECOND); // Explicitly for code generation
 		// Transforming only a single statechart
 		hu.bme.mit.gamma.statechart.lowlevel.model.Package lowlevelPackage = transformer.transformAndWrap(gammaStatechart);
 		ecoreUtil.normalSave(lowlevelPackage, modelFolderUri, fileNameWithoutExtenstion + ".lgsm");

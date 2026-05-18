@@ -52,6 +52,7 @@ import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.transformation.util.Configuration
 import java.util.List
 import java.util.logging.Logger
 
@@ -78,30 +79,27 @@ class ExpressionTransformer {
 	protected final Trace trace
 	protected final boolean FUNCTION_INLINING
 	protected final boolean ADD_RETURN_GUARDS
-	protected final int MAX_RECURSION_DEPTH
 	protected final TimeUnit BASE_TIME_UNIT
 	
-	protected int currentRecursionDepth // For lambdas
+	protected int currentRecursionDepth = Configuration.MAX_RECURSION_DEPTH
 	
 	new() {
 		this(new Trace) // For ad-hoc expression transformations
 	}
 	
 	new(Trace trace) {
-		this(trace, true, true, 7, null)
+		this(trace, true, true, null)
 	}
 	
-	new(Trace trace, boolean functionInlining, boolean addReturnGuards, int maxRecursionDepth) {
-		this(trace, functionInlining, addReturnGuards, maxRecursionDepth, null)
+	new(Trace trace, boolean functionInlining, boolean addReturnGuards) {
+		this(trace, functionInlining, addReturnGuards, null)
 	}
 	
-	new(Trace trace, boolean functionInlining, boolean addReturnGuards, int maxRecursionDepth, TimeUnit baseTimeUnit) {
+	new(Trace trace, boolean functionInlining, boolean addReturnGuards, TimeUnit baseTimeUnit) {
 		this.trace = trace
 		this.FUNCTION_INLINING = functionInlining
-		this.MAX_RECURSION_DEPTH = maxRecursionDepth
 		this.BASE_TIME_UNIT = baseTimeUnit
 		this.ADD_RETURN_GUARDS = addReturnGuards
-		this.currentRecursionDepth = maxRecursionDepth
 		this.typeTransformer = new TypeTransformer(trace)
 	}
 	
