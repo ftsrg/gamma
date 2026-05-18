@@ -724,10 +724,13 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			InitialStateSetting initialStateSetting = transformInitialStateSetting(
 					transformation.getInitialStateSetting());
 			
+			boolean inlineFunctions = true;
+			
 			Gamma2XstsUppaalTransformerSerializer transformer = new Gamma2XstsUppaalTransformerSerializer(
 					component, reference.getArguments(),
 					targetFolderUri, fileName,
 					minSchedulingConstraint, maxSchedulingConstraint,
+					inlineFunctions,
 					transformation.isOptimize(),
 					TransitionMerging.HIERARCHICAL,
 					transformation.getPropertyPackage(),

@@ -55,10 +55,6 @@ class XstsToUppaalTransformer {
 		// If the XSTS transformation extracts guards into local variables:
 		// if the guard contains clock variables (referencing native clocks), they should be reinlined
 		
-		for (function : xSts.functionDeclarations) {
-			function.transformAndSaveFunctionDeclaration
-		}
-		
 		resetCommittedLocationName
 		val initialLocation = templateName.createTemplateWithInitLoc(initialLocationName)
 		initialLocation.locationTimeKind = LocationKind.COMMITED
@@ -69,6 +65,10 @@ class XstsToUppaalTransformer {
 		val mergedAction = xSts.mergedAction
 		
 		xSts.transformVariables
+		
+		for (function : xSts.functionDeclarations) {
+			function.transformAndSaveFunctionDeclaration
+		}
 		
 		val stableLocation = initializingAction.transformAction(initialLocation)
 		stableLocation.name = stableLocationName

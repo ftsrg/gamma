@@ -20,6 +20,7 @@ import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.FunctionCallAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
@@ -94,6 +95,12 @@ class FunctionActionTransformer {
 	
 	protected def dispatch Statement transformAction(OpaqueAction action) {
 		return '''/* «action.action» */'''.toString.createLiteralExpression.createStatement
+	}
+	
+	protected def dispatch Statement transformAction(FunctionCallAction action) {
+		val functionCall = action.functionCallExpression
+		val uppaalFunctionCall = functionCall.transform
+		return uppaalFunctionCall.createStatement
 	}
 	
 	protected def dispatch Statement transformAction(ReturnAction action) {
@@ -208,12 +215,17 @@ class FunctionActionTransformer {
 	}
 	
 	protected def transformFunctionDeclaration(FunctionDeclaration functionDeclaration) {
+		localVariables.clear
+		
 		val type = functionDeclaration.type
 		val uppaalType = type.transformType
 		
 		val name = functionDeclaration.name
 		
 		val uppaalFunction = uppaalType.createFunction(name, null)
+		
+		val uppaalFunctionDeclaration = uppaalFunction.createFunctionDeclaration
+		traceability.put(functionDeclaration, uppaalFunctionDeclaration)
 		
 		val parameters = functionDeclaration.parameterDeclarations
 		for (parameter : parameters) {
@@ -236,10 +248,10 @@ class FunctionActionTransformer {
 		else {
 			throw new IllegalArgumentException("Not known function: " + functionDeclaration)
 		}
-		uppaalFunction.block = uppaalAction.createBlock
+		val uppaalBlock = uppaalAction.createBlock
+		uppaalBlock.declarations = localVariables.createLocalDeclarations
+		uppaalFunction.block = uppaalBlock
 		
-		val uppaalFunctionDeclaration = uppaalFunction.createFunctionDeclaration
-		traceability.put(functionDeclaration, uppaalFunctionDeclaration)
 		
 		return uppaalFunctionDeclaration
 	}

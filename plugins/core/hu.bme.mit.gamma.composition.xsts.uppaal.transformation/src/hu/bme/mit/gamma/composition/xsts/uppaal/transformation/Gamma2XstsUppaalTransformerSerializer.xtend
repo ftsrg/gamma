@@ -16,8 +16,6 @@ import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
 import hu.bme.mit.gamma.transformation.util.annotations.AnnotatablePreprocessableElements
-import hu.bme.mit.gamma.transformation.util.annotations.DataflowCoverageCriterion
-import hu.bme.mit.gamma.transformation.util.annotations.InteractionCoverageCriterion
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.transformation.InitialStateSetting
@@ -35,6 +33,7 @@ class Gamma2XstsUppaalTransformerSerializer {
 	protected final Long minSchedulingConstraint
 	protected final Long maxSchedulingConstraint
 	// Configuration
+	protected final boolean inlineFunctions
 	protected final boolean optimize
 	protected final TransitionMerging transitionMerging
 	// Slicing
@@ -61,7 +60,7 @@ class Gamma2XstsUppaalTransformerSerializer {
 			String targetFolderUri, String fileName,
 			Long schedulingConstraint) {
 		this(component, arguments, targetFolderUri, fileName, schedulingConstraint, schedulingConstraint,
-			true, TransitionMerging.HIERARCHICAL,
+			true, true, TransitionMerging.HIERARCHICAL,
 			null, new AnnotatablePreprocessableElements,
 			null, null)
 	}
@@ -69,6 +68,7 @@ class Gamma2XstsUppaalTransformerSerializer {
 	new(Component component, List<? extends Expression> arguments,
 			String targetFolderUri, String fileName,
 			Long minSchedulingConstraint, Long maxSchedulingConstraint,
+			boolean inlineFunctions,
 			boolean optimize,
 			TransitionMerging transitionMerging,
 			PropertyPackage slicingProperties,
@@ -81,6 +81,7 @@ class Gamma2XstsUppaalTransformerSerializer {
 		this.minSchedulingConstraint = minSchedulingConstraint
 		this.maxSchedulingConstraint = maxSchedulingConstraint
 		//
+		this.inlineFunctions = inlineFunctions
 		this.optimize = optimize
 		this.transitionMerging = transitionMerging
 		//
@@ -96,6 +97,7 @@ class Gamma2XstsUppaalTransformerSerializer {
 		val xStsTransformer = new Gamma2XstsTransformerSerializer(component,
 			arguments, targetFolderUri,
 			fileName, minSchedulingConstraint, maxSchedulingConstraint,
+			inlineFunctions,
 			optimize, false,
 			false, true,
 			transitionMerging,
