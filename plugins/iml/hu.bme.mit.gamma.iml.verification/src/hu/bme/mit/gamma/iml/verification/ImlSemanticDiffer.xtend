@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024-2025 Contributors to the Gamma project
+ * Copyright (c) 2024-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -42,6 +42,8 @@ abstract class ImlSemanticDiffer {
 	protected static final String DIFF_FUNCTION_NAME = "trans"
 	protected static final String NEW_DIFF_FUNCTION_NAME = DIFF_FUNCTION_NAME + 2
 	//
+	protected static final String R = "r"
+	protected static final String T = "t"
 	protected static final String INVARIANT_DELIM = " " + ImlApiHelper.CONSTRAINT_DELIM + System.lineSeparator
 	//
 	protected final boolean printDiff
@@ -350,7 +352,7 @@ abstract class ImlSemanticDiffer {
 		}
 		
 		private def void parseFieldIds(String src) {
-			val S = "type nonrec t = {"
+			val S = '''type nonrec «T» = {'''
 			
 			val firstIndex = src.indexOf(S) + S.length
 			val lastIndex = src.indexOf("}", firstIndex)
@@ -457,7 +459,7 @@ abstract class ImlSemanticDiffer {
 		
 		protected def serializeModules(Map<String, ? extends Iterable<String>> modules) '''
 			«FOR name : modules.keySet»
-				module «name» = struct type t = «FOR literal : modules.get(name) SEPARATOR ' | '»«literal»«ENDFOR» end
+				module «name» = struct type «T» = «FOR literal : modules.get(name) SEPARATOR ' | '»«literal»«ENDFOR» end
 			«ENDFOR»
 		'''
 		
@@ -579,12 +581,12 @@ abstract class ImlSemanticDiffer {
 			
 			return base.replaceLast("r", '''
 				«C»
-				let r = { r with
+				let «R» = { «R» with
 					«FOR input : inputs SEPARATOR ";"»
 						«input»
 					«ENDFOR»
 				} in
-				r
+				«R»
 			''')
 		}
 		
@@ -630,7 +632,7 @@ abstract class ImlSemanticDiffer {
 		//
 		new(String constraints, String invariant) {
 			this.constraints = constraints.trimLine.sort // We use this as key in one of the subclasses; must be sorted: 'canonical' representation
-			this.invariant = invariant.trimLine.changeTopmostSemicolons
+			this.invariant = invariant.trimLine.removeRWith.changeTopmostSemicolons
 		}
 		
 		def getConstraints() {
@@ -661,6 +663,10 @@ abstract class ImlSemanticDiffer {
 		
 		protected def trimLine(String line) {
 			return line.trim.replaceAll("\\s+", " ")
+		}
+		
+		protected def removeRWith(String line) {
+			return line.replace('''«R» with ''', "")
 		}
 		
 		// Needed for invariant parsing
