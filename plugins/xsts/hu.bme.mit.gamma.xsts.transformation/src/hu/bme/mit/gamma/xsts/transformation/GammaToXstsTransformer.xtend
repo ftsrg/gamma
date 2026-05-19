@@ -101,18 +101,18 @@ class GammaToXstsTransformer {
 			boolean unfoldMessageQueues, boolean optimizeEnvironmentalMessageQueues,
 			TransitionMerging transitionMerging,
 			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
-		this(schedulingConstraint, schedulingConstraint, true, false,
+		this(schedulingConstraint, schedulingConstraint, true, false, false,
 			transformOrthogonalActions, optimize, optimizeOneCapacityArrays, unfoldMessageQueues,
 			optimizeEnvironmentalMessageQueues, transitionMerging, initialState, initialStateSetting)
 	}
 	
 	new(Long minSchedulingConstraint, Long maxSchedulingConstraint,
-			boolean inlineLowlevelFunctions, boolean inlineXStsFunctions,
+			boolean inlineLowlevelFunctions, boolean inlineXStsFunctions, boolean addReturnGuards,
 			boolean transformOrthogonalActions,	boolean optimize, boolean optimizeOneCapacityArrays,
 			boolean unfoldMessageQueues, boolean optimizeEnvironmentalMessageQueues,
 			TransitionMerging transitionMerging,
 			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
-		this.gammaToLowlevelTransformer = new GammaToLowlevelTransformer(inlineLowlevelFunctions)
+		this.gammaToLowlevelTransformer = new GammaToLowlevelTransformer(inlineLowlevelFunctions, addReturnGuards, null)
 		this.componentTransformer = new ComponentTransformer(gammaToLowlevelTransformer,
 				inlineXStsFunctions, transformOrthogonalActions, optimize,
 				optimizeEnvironmentalMessageQueues, transitionMerging)
@@ -135,7 +135,7 @@ class GammaToXstsTransformer {
 		return _package.preprocessAndExecute(
 				topComponentArguments, targetFolderUri, fileName).serializeXsts
 	}
-
+	
 	def preprocessAndExecute(Package _package,
 			String targetFolderUri, String fileName) {
 		val component = modelPreprocessor.preprocess(

@@ -100,7 +100,7 @@ class Gamma2XstsImlTransformerSerializer {
 		val xStsTransformer = new Gamma2XstsTransformerSerializer(component,
 			arguments, targetFolderUri,
 			fileName, minSchedulingConstraint, maxSchedulingConstraint,
-			inlineFunctions,
+			inlineFunctions, true, // Return guards needed for IML functions
 			optimize,
 			true, // Optimize one-capacity arrays into standalone variables
 			false, // Flatten message queues into standalone variables

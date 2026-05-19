@@ -29,7 +29,7 @@ class GammaToLowlevelTransformer {
 	}
 	
 	new(boolean functionInlining) {
-		this(functionInlining, true, null)
+		this(functionInlining, false, null)
 	}
 	
 	new(TimeUnit baseTimeUnit) {

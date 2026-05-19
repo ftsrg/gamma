@@ -41,6 +41,7 @@ class Gamma2XstsTransformerSerializer {
 	// Configuration
 	protected final boolean inlineLowlevelFunctions
 	protected final boolean inlineXStsFunctions
+	protected final boolean addReturnGuards
 	protected final boolean optimize
 	protected final boolean optimizeArray
 	protected final boolean optimizeMessageQueues
@@ -88,7 +89,7 @@ class Gamma2XstsTransformerSerializer {
 			AnnotatablePreprocessableElements annotatableElements,
 			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
 		this(component, arguments, targetFolderUri, fileName, minSchedulingConstraint, maxSchedulingConstraint,
-			true,
+			true, false,
 			optimize, optimizeArray, optimizeMessageQueues, optimizeEnvironmentalMessageQueues, transitionMerging,
 			slicingProperties, annotatableElements, initialState, initialStateSetting)
 	}
@@ -96,7 +97,7 @@ class Gamma2XstsTransformerSerializer {
 	new(Component component, List<? extends Expression> arguments,
 			String targetFolderUri, String fileName,
 			Long minSchedulingConstraint, Long maxSchedulingConstraint,
-			boolean inlineFunctions,
+			boolean inlineFunctions, boolean addReturnGuards,
 			boolean optimize, boolean optimizeArray,
 			boolean optimizeMessageQueues, boolean optimizeEnvironmentalMessageQueues,
 			TransitionMerging transitionMerging,
@@ -112,6 +113,7 @@ class Gamma2XstsTransformerSerializer {
 		//
 		this.inlineLowlevelFunctions = inlineFunctions && !component.hasInterfaceFunctionDeclarationsInStatecharts
 		this.inlineXStsFunctions = inlineFunctions && !inlineLowlevelFunctions
+		this.addReturnGuards = addReturnGuards
 		this.optimize = optimize
 		this.optimizeArray = optimizeArray
 		this.optimizeMessageQueues = optimizeMessageQueues
@@ -141,7 +143,7 @@ class Gamma2XstsTransformerSerializer {
 		slicerAnnotatorAndPropertyGenerator.execute
 		val gammaToXSTSTransformer = new GammaToXstsTransformer(
 			minSchedulingConstraint, maxSchedulingConstraint,
-			inlineLowlevelFunctions, inlineXStsFunctions,
+			inlineLowlevelFunctions, inlineXStsFunctions, addReturnGuards,
 			true, true, optimizeArray,
 			optimizeMessageQueues, optimizeEnvironmentalMessageQueues,
 			transitionMerging, initialState, initialStateSetting)
