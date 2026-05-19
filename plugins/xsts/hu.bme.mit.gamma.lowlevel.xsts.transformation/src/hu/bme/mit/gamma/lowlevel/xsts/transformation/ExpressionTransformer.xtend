@@ -26,6 +26,7 @@ import hu.bme.mit.gamma.expression.model.NullaryExpression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
+import hu.bme.mit.gamma.expression.model.TupleTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
@@ -163,6 +164,13 @@ class ExpressionTransformer {
 	
 	def dispatch Type transformType(Type type) {
 		return type.clone
+	}
+	
+	def dispatch Type transformType(TupleTypeDefinition type) {
+		val newTuple = type.clone
+		newTuple.types.clear
+		newTuple.types += type.types.map[it.transformType]
+		return newTuple
 	}
 	
 	def dispatch Type transformType(TypeReference type) {
