@@ -895,10 +895,13 @@ abstract class ImlSemanticDiffer {
 	
 		def print(Map<String, ? extends Entry<String, String>> diffs) {
 			println("Semantic diff:")
-			val S = "  "
+			val I = " > "
+			val O = " < "
 			
 			val invert = false // If true, the same invariants are not duplicated for different constraints
 			if (invert) {
+				val S = "  "
+				val _2S = S + S
 				val C = "- "
 				val semDiffs = newLinkedHashMap
 				for (entries : diffs.entrySet) {
@@ -923,30 +926,30 @@ abstract class ImlSemanticDiffer {
 					}
 				}
 				
-				for (invariant : semDiffs.keySet) {
-					val constraint = semDiffs.get(invariant)
+				for (invariant : semDiffs.keySet.map[it.trim]) {
+					val constraint = semDiffs.get(invariant).trim
 					
 					println(S + "Constraints:")
-					println(S + constraint.replace(System.lineSeparator, System.lineSeparator + S))
-					println(S + invariant.replace(System.lineSeparator, System.lineSeparator + S))
+					println(_2S + constraint)
+					println(_2S + invariant)
 					println
 				}
 				
 				return
 			}
 			
-			for (constraint : diffs.keySet) {
+			for (constraint : diffs.keySet.map[it.trim]) {
 				val value = diffs.get(constraint)
 				
-				val invariant1 = value.key
-				val invariant2 = value.value
+				val invariant1 = value.key.trim
+				val invariant2 = value.value.trim
 				
-				println(S + "Constraint:")
-				println(S + S + constraint.replace(System.lineSeparator, System.lineSeparator + S + S))
-				println(S + "Original invariant:")
-				println(S + S + invariant1)
-				println(S + "New invariant:")
-				println(S + S + invariant2)
+				println(I + "Constraint:")
+				println(constraint)
+				println(O + "Original invariant:")
+				println(invariant1)
+				println(O + "New invariant:")
+				println(invariant2)
 				println
 			}
 		}
