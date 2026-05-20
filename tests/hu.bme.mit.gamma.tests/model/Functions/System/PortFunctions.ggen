@@ -2,11 +2,16 @@ import "Statechart/PortFunctions_1"
 import "Statechart/PortFunctions_2"
 import "Statechart/PortFunctions_3"
 
+import "Statechart/AsyncPortFunctions_1"
+import "Statechart/AsyncPortFunctions_2"
+import "Statechart/AsyncPortFunctions_3"
+
 import "PortFunctionsSystem"
 import "PortFunctionsSystem3"
 import "PortFunctionsSystem4"
 
 import "AsyncPortFunctionsSystem"
+import "AsyncPortFunctionsSystem4"
 
 code {
 	component : PortFunctions_1
@@ -80,8 +85,55 @@ code {
 	language : java
 }
 
+code {
+	component : AsyncPortFunctions_1
+	language : java
+}
+
+code {
+	component : AsyncPortFunctions_2
+	language : java
+}
+
+code {
+	component : AsyncPortFunctions_3
+	language : java
+}
+
 analysis {
-	component : PortFunctionsSystem
-	language : IML
+	component : AsyncPortFunctionsSystem
+	language : Imandra
 	state-coverage
+}
+
+verification {
+	file : "AsyncPortFunctionsSystem"
+	language : Imandra
+	property-file : ".AsyncPortFunctionsSystem.gpd"
+	optimize-traces : true
+	test-language : java
+}
+
+code {
+	component : AsyncPortFunctionsSystem
+	language : java
+}
+
+analysis {
+	component : AsyncPortFunctionsSystem4
+	language : Imandra
+	state-coverage
+}
+
+verification {
+	file : "AsyncPortFunctionsSystem4"
+	language : Imandra
+	property-file : ".AsyncPortFunctionsSystem4.gpd"
+	optimize-traces : true
+	test-language : java
+}
+
+code {
+	component : AsyncPortFunctionsSystem4
+	language : java
 }
