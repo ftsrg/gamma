@@ -1,0 +1,17 @@
+package portvariablessystem
+
+import "Interfaces/Interfaces.gcd"
+
+import "Statecharts/Variables_1.gcd"
+import "Statecharts/Variables_2.gcd"
+
+cascade PortVariablesSystem [
+	port Execute : requires Execute
+] {
+	component _1 : Variables_1
+	component _2 : Variables_2
+	
+	bind Execute -> _1.Execute
+	
+	channel [_1.VariableExecute] -o)- [_2.VariableExecute]
+}

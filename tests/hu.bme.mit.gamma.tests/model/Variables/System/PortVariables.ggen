@@ -1,0 +1,33 @@
+import "Statecharts/Variables_1"
+import "Statecharts/Variables_2"
+
+import "PortVariablesSystem"
+
+code {
+	component : Variables_1
+	language : java
+}
+
+code {
+	component : Variables_2
+	language : java
+}
+
+analysis {
+	component : PortVariablesSystem
+	language : XUPPAAL
+	state-coverage
+}
+
+verification {
+	file : "PortVariablesSystem"
+	language : XUPPAAL
+	property-file : ".PortVariablesSystem.gpd"
+	optimize-traces : true
+	test-language : java
+}
+
+code {
+	component : PortVariablesSystem
+	language : java
+}

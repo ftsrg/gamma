@@ -1,0 +1,20 @@
+package variables
+
+import "Interfaces/Interfaces.gcd"
+
+statechart Variables_2 [
+	port VariableExecute : requires VariableExecute
+] {
+	var myInt : integer := 5
+	region main {
+		initial Initial
+		state _A
+		state _B
+		state _C
+	}
+	
+	transition from Initial to _A
+	transition from _A to _B when VariableExecute.^execute / myInt := _int + -2;
+	transition from _B to _C when VariableExecute.^execute / _int := myInt + -4;
+	
+}
