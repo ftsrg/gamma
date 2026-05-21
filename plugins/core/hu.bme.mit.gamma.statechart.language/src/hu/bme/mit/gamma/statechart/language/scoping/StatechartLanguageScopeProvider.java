@@ -106,8 +106,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					reference == ContractModelPackage.Literals.SCENARIO_CONTRACT_ANNOTATION__MONITORED_COMPONENT) {
 				Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(context);
 				Set<Component> allComponents = StatechartModelDerivedFeatures.getAllComponents(parentPackage);
-				// If we want to merge adaptive scenario and behavior descriptions,
-				// it makes sense to monitor the parent statechart
+				// If we want to merge adaptive scenario and behavior descriptions, it makes sense to monitor the parent statechart
 				// StatechartDefinition parentStatechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
 				// allComponents.remove(parentStatechart);
 				return Scopes.scopeFor(allComponents);
@@ -376,9 +375,13 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					IScope parentScope = super.getScope(context, reference); // Parameters and constants
 					if (element instanceof StatechartDefinition statechart) {
 						Collection<Declaration> declarations = new ArrayList<Declaration>();
-						declarations.addAll(statechart.getVariableDeclarations());
-						declarations.addAll(statechart.getFunctionDeclarations());
+						declarations.addAll(
+								statechart.getVariableDeclarations());
+						declarations.addAll(
+								statechart.getFunctionDeclarations());
 						
+						declarations.addAll(
+								StatechartModelDerivedFeatures.getAllInterfaceVariableDeclarations(statechart));
 						declarations.addAll(
 								StatechartModelDerivedFeatures.getAllInterfaceFunctionDeclarations(statechart));
 						

@@ -190,6 +190,7 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference interface.ecore#//Interface/eventDeclarations"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference interface.ecore#//Interface/invariants"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference interface.ecore#//Interface/functionDeclarations"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference interface.ecore#//Interface/variableDeclarations"/>
     </genClasses>
     <genClasses ecoreClass="interface.ecore#//EventDeclaration">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute interface.ecore#//EventDeclaration/direction"/>

@@ -50,6 +50,7 @@ import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
+import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
@@ -1493,6 +1494,41 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				_interface.getFunctionDeclarations());
 		
 		return functionDeclarations;
+	}
+	
+	public static List<VariableDeclaration> getAllVariableDeclarations(StatechartDefinition statechart) {
+		List<VariableDeclaration> variableDeclarations = new ArrayList<VariableDeclaration>(
+				statechart.getVariableDeclarations());
+		variableDeclarations.addAll(
+				getAllInterfaceVariableDeclarations(statechart));
+		
+		return variableDeclarations;
+	}
+	
+	public static List<VariableDeclaration> getAllInterfaceVariableDeclarations(Component component) {
+		List<Port> ports = getAllPorts(component);
+		return getAllVariableDeclarations(ports);
+	}
+	
+	public static List<VariableDeclaration> getAllVariableDeclarations(Iterable<? extends Port> ports) {
+		List<VariableDeclaration> variableDeclarations = new ArrayList<VariableDeclaration>();
+		for (Port port : ports) {
+			variableDeclarations.addAll(
+					getAllVariableDeclarations(port));
+		}
+		return variableDeclarations;
+	}
+	
+	public static List<VariableDeclaration> getAllVariableDeclarations(Port port) {
+		List<VariableDeclaration> variableDeclarations = new ArrayList<VariableDeclaration>();
+		
+		List<Interface> interfaces = getAllInterfaces(port);
+		for (Interface interface_ : interfaces) {
+			variableDeclarations.addAll(
+					interface_.getVariableDeclarations());
+		}
+		
+		return variableDeclarations;
 	}
 	
 	public static boolean isTopInPackage(Component component) {
