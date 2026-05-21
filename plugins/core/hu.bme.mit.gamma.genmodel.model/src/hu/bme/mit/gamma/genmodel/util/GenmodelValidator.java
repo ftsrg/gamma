@@ -208,6 +208,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 				"A single formal language must be specified",
 					new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__ANALYSIS_LANGUAGES)));
+			return validationResultMessages;
 		}
 		AnalysisLanguage language = languages.getFirst();
 		File resourceFile = ecoreUtil.getFile(verification.eResource());

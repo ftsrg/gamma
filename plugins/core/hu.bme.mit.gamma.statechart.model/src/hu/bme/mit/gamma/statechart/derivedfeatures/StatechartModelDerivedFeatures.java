@@ -1136,8 +1136,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static List<Interface> getAllParents(Interface _interface) {
 		List<Interface> interfaces = new ArrayList<Interface>();
 		for (Interface parent : _interface.getParents()) {
-			interfaces.addAll(
-					getAllParents(parent));
+			if (_interface != parent) {
+				interfaces.addAll(
+						getAllParents(parent));
+			}
 		}
 		interfaces.addAll(
 				_interface.getParents());
@@ -1505,8 +1507,22 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return variableDeclarations;
 	}
 	
+	public static List<VariableDeclaration> getAllProvidedVariableDeclarations(StatechartDefinition statechart) {
+		List<VariableDeclaration> variableDeclarations = new ArrayList<VariableDeclaration>(
+				statechart.getVariableDeclarations());
+		variableDeclarations.addAll(
+				getAllProvidedInterfaceVariableDeclarations(statechart));
+		
+		return variableDeclarations;
+	}
+	
 	public static List<VariableDeclaration> getAllInterfaceVariableDeclarations(Component component) {
 		List<Port> ports = getAllPorts(component);
+		return getAllVariableDeclarations(ports);
+	}
+	
+	public static List<VariableDeclaration> getAllProvidedInterfaceVariableDeclarations(Component component) {
+		List<Port> ports = getAllProvidedPorts(component);
 		return getAllVariableDeclarations(ports);
 	}
 	
