@@ -861,6 +861,9 @@ class ComponentTransformer {
 		logger.info("Connecting interface functions through channels in " + name)
 		xSts.connectInterfaceFunctionsThroughChannels(component)
 		
+		logger.info("Connecting interface variables through channels in " + name)
+		xSts.connectInterfaceVariablesThroughChannels(component)
+		
 		if (inlineFunctions && component.top) {
 			xSts.inlineFunctionCalls
 		}
@@ -1338,6 +1341,9 @@ class ComponentTransformer {
 		
 		logger.info("Connecting interface functions through channels in " + name)
 		xSts.connectInterfaceFunctionsThroughChannels(component)
+		
+		logger.info("Connecting interface variables through channels in " + name)
+		xSts.connectInterfaceVariablesThroughChannels(component)
 		
 		if (inlineFunctions && component.topSynchronous) {
 			xSts.inlineFunctionCalls

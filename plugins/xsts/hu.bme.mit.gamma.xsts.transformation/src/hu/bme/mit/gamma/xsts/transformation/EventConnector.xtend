@@ -234,4 +234,43 @@ class EventConnector {
 		}
 	}
 	
+	def void connectInterfaceVariablesThroughChannels(XSTS xSts, CompositeComponent component) {
+		val xStsVariableDeclarations = newArrayList
+		xStsVariableDeclarations += xSts.variableDeclarations
+		val xStsVariableReferences = xSts.getAllContentsOfType(DirectReferenceExpression)
+		
+		val channels = component.channels // component.selfAndAllComponents.filter(CompositeComponent).map[it.channels].flatten
+		for (channel : channels) {
+			val providedInstancePort = channel.providedPort
+			val providedPort = providedInstancePort.port
+			val providedSimplePort = providedPort.allBoundSimplePorts.onlyElement
+			val providedInstance = providedSimplePort.containingComponentInstance
+			
+			val requiredInstancePorts = channel.requiredPorts
+			for (requiredInstancePort : requiredInstancePorts) {
+				val requiredPort = requiredInstancePort.port
+				for (requiredSimplePort : requiredPort.allBoundSimplePorts) {
+					val requiredInstance = requiredSimplePort.containingComponentInstance
+					val requiredVariables = requiredInstancePort.port.allVariableDeclarations
+					for (requiredVariable : requiredVariables) {
+						val xStsVariableDeclarationName = requiredVariable.getCustomizedName(requiredInstance)
+						val xStsVariableDeclaration = xStsVariableDeclarations.findFirst[it.name == xStsVariableDeclarationName]
+						
+						val xStsVariableDefinitionName = requiredVariable.getCustomizedName(providedInstance)
+						val xStsVariableDefinition = xStsVariableDeclarations.findFirst[it.name == xStsVariableDefinitionName]
+						
+						for (xStsVariableReference : xStsVariableReferences) {
+							if (xStsVariableReference.declaration === xStsVariableDeclaration) {
+								xStsVariableReference.declaration = xStsVariableDefinition
+								logger.info('''Changing interface variable reference «xStsVariableDeclarationName» to «xStsVariableDefinitionName»''')
+							}
+						}
+						
+						xStsVariableDeclaration.delete
+					}
+				}
+			}
+		}
+	}
+	
 }
