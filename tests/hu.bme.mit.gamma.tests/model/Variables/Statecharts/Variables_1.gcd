@@ -15,7 +15,7 @@ statechart Variables_1 [
 	}
 	
 	transition from Initial to _A
-	transition from _A to _B when Execute.^execute / raise VariableExecute.^execute; myInt := _int + 2;
-	transition from _B to _C when Execute.^execute / raise VariableExecute.^execute; _int := myInt + 4;
+	transition from _A to _B when Execute.^execute / raise VariableExecute.^execute; myInt := _int + 27; _int2 := _int2 + 1;
+	transition from _B to _C when Execute.^execute / raise VariableExecute.^execute; _int := myInt + 48; _int2 := _int2 + 1;
 	
 }

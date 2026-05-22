@@ -6,6 +6,7 @@ statechart Variables_2 [
 	port VariableExecute : requires VariableExecute
 ] {
 	var myInt : integer := 5
+	var myInt2 : integer := 0
 	region main {
 		initial Initial
 		state _A
@@ -14,7 +15,7 @@ statechart Variables_2 [
 	}
 	
 	transition from Initial to _A
-	transition from _A to _B when VariableExecute.^execute / myInt := _int + -2;
-	transition from _B to _C when VariableExecute.^execute / _int := myInt + -4;
+	transition from _A to _B when VariableExecute.^execute / _int := myInt + -84; _int2 := _int2 + 2; myInt2 := _int2;
+	transition from _B to _C when VariableExecute.^execute / myInt := _int + -72; _int2 := _int2 + 2; myInt2 := _int2;
 	
 }

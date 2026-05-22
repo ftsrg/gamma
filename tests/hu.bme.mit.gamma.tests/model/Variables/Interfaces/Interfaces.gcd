@@ -6,6 +6,7 @@ interface Execute {
 
 interface VariableExecute extends Execute {
 	var _int : integer
+	var _int2 : integer
 }
 
 type Rec0rd : record {
