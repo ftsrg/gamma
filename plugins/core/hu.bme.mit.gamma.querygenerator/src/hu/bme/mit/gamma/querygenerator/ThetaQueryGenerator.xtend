@@ -311,7 +311,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		for (match : instanceVariables) {
 			val names = getTargetVariableNames(match.variable, match.instance)
 			if (names.contains(targetVariableName)) {
-				return new Pair(match.variable, match.instance)
+				return match.variable -> match.instance
 			}
 		}
 		throw new IllegalArgumentException("Not known id")
