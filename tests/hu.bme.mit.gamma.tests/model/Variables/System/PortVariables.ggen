@@ -1,7 +1,10 @@
 import "Statecharts/Variables_1"
 import "Statecharts/Variables_2"
+import "Statecharts/AsyncVariables_1"
+import "Statecharts/AsyncVariables_2"
 
 import "PortVariablesSystem"
+import "AsyncPortVariablesSystem"
 
 code {
 	component : Variables_1
@@ -29,5 +32,36 @@ verification {
 
 code {
 	component : PortVariablesSystem
+	language : java
+}
+
+//
+
+code {
+	component : AsyncVariables_1
+	language : java
+}
+
+code {
+	component : AsyncVariables_2
+	language : java
+}
+
+analysis {
+	component : AsyncPortVariablesSystem
+	language : XUPPAAL
+	state-coverage
+}
+
+verification {
+	file : "AsyncPortVariablesSystem"
+	language : XUPPAAL
+	property-file : ".AsyncPortVariablesSystem.gpd"
+	optimize-traces : true
+	test-language : java
+}
+
+code {
+	component : AsyncPortVariablesSystem
 	language : java
 }

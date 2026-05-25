@@ -2,7 +2,8 @@ package variables
 
 import "Interfaces/Interfaces.gcd"
 
-statechart Variables_1 [
+@Asynchronous
+statechart AsyncVariables_1 [
 	port Execute : requires Execute
 	port VariableExecute : provides VariableExecute
 ] {

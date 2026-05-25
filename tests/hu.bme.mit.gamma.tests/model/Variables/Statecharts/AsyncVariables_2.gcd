@@ -2,7 +2,8 @@ package variables
 
 import "Interfaces/Interfaces.gcd"
 
-statechart Variables_2 [
+@Asynchronous
+statechart AsyncVariables_2 [
 	port VariableExecute : requires VariableExecute
 ] {
 	var myInt : integer := 5

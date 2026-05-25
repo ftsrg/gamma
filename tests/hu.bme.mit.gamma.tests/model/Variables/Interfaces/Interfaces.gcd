@@ -5,8 +5,8 @@ interface Execute {
 }
 
 interface VariableExecute extends Execute {
-	var _int : integer
-	var _int2 : integer
+	var portInt : integer := -5
+	var otherPortInt : integer
 }
 
 type Rec0rd : record {
