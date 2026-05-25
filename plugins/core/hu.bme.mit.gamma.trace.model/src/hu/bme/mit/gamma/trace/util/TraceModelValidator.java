@@ -153,7 +153,7 @@ public class TraceModelValidator extends StatechartModelValidator {
 		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
 		if (type instanceof StatechartDefinition statechartDefinition) {
 			VariableDeclaration variable = variableReference.getVariableDeclaration();
-			List<VariableDeclaration> variables = statechartDefinition.getVariableDeclarations();
+			List<VariableDeclaration> variables = StatechartModelDerivedFeatures.getAllProvidedVariableDeclarations(statechartDefinition);
 			if (!variables.contains(variable)) {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.ERROR, 

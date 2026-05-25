@@ -133,8 +133,12 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			if (instanceType === null) {
 				return IScope.NULLSCOPE
 			}
-			val variables = ecoreUtil.getAllContentsOfType(instanceType, VariableDeclaration)
+			
+			val variables = newLinkedHashSet
+			variables += ecoreUtil.getAllContentsOfType(instanceType, VariableDeclaration)
+			variables += instanceType.allInterfaceVariableDeclarations
 			variables.removeIf[it.local]
+			
 			return Scopes.scopeFor(variables)
 		}
 		if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
@@ -147,6 +151,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			
 			return Scopes.scopeFor(declarations)
 		}
+		
 		super.getScope(context, reference)
 	}
 
