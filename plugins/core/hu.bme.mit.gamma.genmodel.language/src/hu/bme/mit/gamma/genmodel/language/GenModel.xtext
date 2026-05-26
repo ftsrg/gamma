@@ -220,7 +220,8 @@ enum AnalysisLanguage returns AnalysisLanguage:
 		PROMELA = "Promela" | PROMELA = "Spin" |
 		NUXMV = "SMV" | NUXMV = "nuXmv" |
 		OCRA = "OCRA" |
-		IML = "IML" | IML = "Imandra"
+		IML = "IML" | IML = "Imandra" |
+		SMART = "smart" | SMART_ALL = "smart-all"
 ;
 
 Coverage returns Coverage:

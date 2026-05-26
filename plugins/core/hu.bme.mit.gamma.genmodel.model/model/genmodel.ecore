@@ -99,6 +99,8 @@
     <eLiterals name="NUXMV" value="4" literal="NUXMV"/>
     <eLiterals name="OCRA" value="5" literal="OCRA"/>
     <eLiterals name="IML" value="6"/>
+    <eLiterals name="SMART" value="8" literal="SMART"/>
+    <eLiterals name="SMART_ALL" value="9" literal="SMART_ALL"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="YakinduCompilation" abstract="true"
       eSuperTypes="#//Task">
