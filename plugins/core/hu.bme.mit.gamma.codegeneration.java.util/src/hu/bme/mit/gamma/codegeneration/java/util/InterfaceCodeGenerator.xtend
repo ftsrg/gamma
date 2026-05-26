@@ -62,15 +62,21 @@ class InterfaceCodeGenerator {
 			
 			interface Listener {
 				
-				interface Provided«IF !_interface.parents.empty» extends «FOR parent : _interface.parents
-							SEPARATOR ', '»«parent.implementationName».Listener.Provided«ENDFOR»«ENDIF» {
+				interface Provided extends «_interface.variableBindingInterfaceName»«FOR parent : _interface.parents
+							», «parent.implementationName».Listener.Provided«ENDFOR» {
 					«_interface.createListenerInterface(EventDirection.OUT)»
 				}
 				
-				interface Required«IF !_interface.parents.empty» extends «FOR parent : _interface.parents
-							SEPARATOR ', '»«parent.implementationName».Listener.Required«ENDFOR»«ENDIF» {
+				interface Required extends «_interface.variableBindingInterfaceName»«FOR parent : _interface.parents
+											», «parent.implementationName».Listener.Required«ENDFOR» {
 					«_interface.createFunctionDeclarations»
 					«_interface.createListenerInterface(EventDirection.IN)»
+				}
+				
+				interface «_interface.variableBindingInterfaceName» {
+					«FOR variable : _interface.variableDeclarations»
+						public void set«variable.name.toFirstUpper»(«variable.type.serialize» «variable.name»);
+					«ENDFOR»
 				}
 				
 			}

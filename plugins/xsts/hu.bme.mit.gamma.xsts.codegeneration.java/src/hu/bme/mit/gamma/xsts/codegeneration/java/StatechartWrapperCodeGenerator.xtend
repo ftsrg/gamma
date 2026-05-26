@@ -181,6 +181,12 @@ class StatechartWrapperCodeGenerator {
 							«function.serializeFunction»
 						«ENDFOR»
 					«ENDIF»
+					«FOR boundVariable : port.allVariableDeclarations»
+						@Override
+						public void set«boundVariable.name.toFirstUpper»(«boundVariable.type.serialize» «boundVariable.name») {
+							«CLASS_NAME.toFirstLower».set«boundVariable.name.toFirstUpper»(«boundVariable.name»);
+						}
+					«ENDFOR»
 					@Override
 					public void registerListener(«port.interfaceRealization.interface.name.toFirstUpper»Interface.Listener.«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpper» listener) {
 						listeners.add(listener);
@@ -251,9 +257,14 @@ class StatechartWrapperCodeGenerator {
 				«FOR port : gammaStatechart.ports»
 					«FOR event : port.outputEvents»
 						if («port.name.toFirstLower».isRaised«event.name.toFirstUpper»()) {
-							for («port.interfaceRealization.interface.name.toFirstUpper»Interface.Listener.«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpper» listener : «port.name.toFirstLower».getRegisteredListeners()) {
+							for (var listener : «port.name.toFirstLower».getRegisteredListeners()) {
 								listener.raise«event.name.toFirstUpper»(«FOR parameter : event.parameterDeclarations SEPARATOR ", "»«CLASS_NAME.toFirstLower.accessOut(port, parameter)»«ENDFOR»);
 							}
+						}
+					«ENDFOR»
+					«FOR boundVariable : port.allVariableDeclarations»
+						for (var listener : «port.name.toFirstLower».getRegisteredListeners()) {
+							listener.set«boundVariable.name.toFirstUpper»(get«boundVariable.name.toFirstUpper»()); // Bound variable
 						}
 					«ENDFOR»
 				«ENDFOR»
