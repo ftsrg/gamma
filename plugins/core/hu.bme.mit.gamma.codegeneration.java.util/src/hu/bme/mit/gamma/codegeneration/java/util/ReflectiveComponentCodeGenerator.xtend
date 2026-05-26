@@ -245,7 +245,7 @@ class ReflectiveComponentCodeGenerator {
 	
 	protected def generateVariableGetters(Component component) '''
 		public String[] getVariables() {
-			return new String[] { «IF component instanceof StatechartDefinition»«FOR variable : component.variableDeclarations SEPARATOR ", "»"«variable.name»"«ENDFOR»«ENDIF» };
+			return new String[] { «IF component instanceof StatechartDefinition»«FOR variable : component.allVariableDeclarations SEPARATOR ", "»"«variable.name»"«ENDFOR»«ENDIF» };
 		}
 	'''
 	
@@ -255,7 +255,7 @@ class ReflectiveComponentCodeGenerator {
 		public Object getValue(String variable) {
 			switch (variable) {
 				«IF component instanceof StatechartDefinition»
-					«FOR variable : component.variableDeclarations.filter[!it.transient]»
+					«FOR variable : component.allVariableDeclarations.filter[!it.transient]»
 						case "«variable.name»":
 							return «Namings.REFLECTIVE_WRAPPED_COMPONENT».get«variable.name.toFirstUpper»();
 					«ENDFOR»
