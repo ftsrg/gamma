@@ -59,4 +59,8 @@ class ImlVerification extends AbstractVerification {
 		return ImlPropertySerializer.INSTANCE
 	}
 	
+	override getBackendName() {
+		return "Imandra"
+	}
+
 }

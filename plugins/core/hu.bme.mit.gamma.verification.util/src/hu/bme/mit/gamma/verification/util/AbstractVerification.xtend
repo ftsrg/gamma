@@ -45,6 +45,8 @@ abstract class AbstractVerification {
 		return createVerifier.unavailableBackendMessage
 	}
 	
+	abstract def String getBackendName()
+	
 	//
 	
 	def Result execute(File modelFile, File queryFile) {

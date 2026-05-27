@@ -112,9 +112,11 @@ public class GenmodelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static AnalysisLanguage getAnalysisLanguage(String name) {
 		switch (name.toUpperCase()) {
+			case "DUPPAAL":
 			case "UPPAAL": {
 				return AnalysisLanguage.UPPAAL;
 			}
+			case "XUPPAAL":
 			case "XSTS_UPPAAL":
 			case "XTA": {
 				return AnalysisLanguage.XSTS_UPPAAL;

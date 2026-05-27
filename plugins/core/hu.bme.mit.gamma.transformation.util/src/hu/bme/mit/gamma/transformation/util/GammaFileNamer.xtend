@@ -115,7 +115,7 @@ class GammaFileNamer {
 	def String getFileExtension(String analysisLanguage) {
 		val name = analysisLanguage.toUpperCase
 		switch (name) {
-			case "UPPAAL", case "XSTS_UPPAAL": {
+			case "XTA", case name.contains("UPPAAL"): {
 				return UPPAAL_MODEL_EXTENSION
 			}
 			case "THETA", case "XSTS": {

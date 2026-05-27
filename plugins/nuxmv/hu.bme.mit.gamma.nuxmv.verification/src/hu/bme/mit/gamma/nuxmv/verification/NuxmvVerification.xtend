@@ -72,4 +72,8 @@ class NuxmvVerification extends AbstractVerification {
 		return NuxmvPropertySerializer.INSTANCE
 	}
 	
+	override getBackendName() {
+		return "nuXmv"
+	}
+
 }

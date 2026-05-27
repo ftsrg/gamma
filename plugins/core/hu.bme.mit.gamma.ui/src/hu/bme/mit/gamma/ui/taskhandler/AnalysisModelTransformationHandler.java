@@ -153,6 +153,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 	}
 	
 	private void setAnalysisModelTransformation(AnalysisModelTransformation analysisModelTransformation) {
+		setSmartAnalysisLanguages(analysisModelTransformation.getLanguages());
+		
 		List<String> fileNames = analysisModelTransformation.getFileName();
 		checkArgument(fileNames.size() <= 1);
 		if (fileNames.isEmpty()) {

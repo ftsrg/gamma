@@ -562,6 +562,8 @@ public class VerificationHandler extends TaskHandler {
 	}
 	
 	private void setVerification(Verification verification) {
+		setSmartAnalysisLanguages(verification.getAnalysisLanguages());
+		
 		List<String> traceFileNames = verification.getFileName2();
 		if (!traceFileNames.isEmpty()) {
 			this.traceFileName = traceFileNames.get(0);
@@ -602,7 +604,8 @@ public class VerificationHandler extends TaskHandler {
 		for (int i = 0; i < fileNames.size(); i++) {
 			String fileName = fileNames.get(i);
 			if (!fileUtil.hasExtension(fileName)) {
-				AnalysisLanguage language = verification.getAnalysisLanguages().getFirst();
+				List<AnalysisLanguage> analysisLanguages = verification.getAnalysisLanguages();
+				AnalysisLanguage language = analysisLanguages.getFirst();
 				String newFileName = fileUtil.changeExtension(fileName,
 						fileNamer.getFileExtension(language));
 				logger.info("Setting file extension: " + newFileName);
