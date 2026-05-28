@@ -16,7 +16,8 @@ statechart AsyncVariables_2 [
 	}
 	
 	transition from Initial to _A
-	transition from _A to _B when VariableExecute.^execute / portInt := myInt + -84; otherPortInt := otherPortInt + 2; localOtherPortInt := otherPortInt;
-	transition from _B to _C when VariableExecute.^execute / myInt := portInt + -72; otherPortInt := otherPortInt - -2; localOtherPortInt := otherPortInt;
-	
+	transition from _A to _B when VariableExecute.^execute / portInt := myInt + -84 + portRecord.b.b; portRecord.a := 12.3;
+			otherPortInt := otherPortInt + 2; localOtherPortInt := otherPortInt;
+	transition from _B to _C when VariableExecute.^execute / myInt := portInt + -72; otherPortInt := otherPortInt - -2;
+			portRecord.b.a := not portRecord.b.a; portRecord.a := portRecord.a + 12.3; portRecord.b.b := -portRecord.b.b; localOtherPortInt := otherPortInt;
 }

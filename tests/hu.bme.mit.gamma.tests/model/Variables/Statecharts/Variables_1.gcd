@@ -15,7 +15,8 @@ statechart Variables_1 [
 	}
 	
 	transition from Initial to _A
-	transition from _A to _B when Execute.^execute / raise VariableExecute.^execute; myInt := portInt + 27; otherPortInt := otherPortInt + 1;
-	transition from _B to _C when Execute.^execute / raise VariableExecute.^execute; portInt := myInt + 49; otherPortInt := otherPortInt - -1;
-	
+	transition from _A to _B when Execute.^execute / raise VariableExecute.^execute;
+			myInt := portInt + 27; portRecord.b.b := myInt; otherPortInt := otherPortInt + 1;
+	transition from _B to _C when Execute.^execute / raise VariableExecute.^execute; portRecord.a := portRecord.a + 3.2;
+			portInt := myInt + 49; portRecord.a := portRecord.a * 3; otherPortInt := otherPortInt - -1;
 }

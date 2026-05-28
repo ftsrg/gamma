@@ -19,13 +19,13 @@ code {
 
 analysis {
 	component : PortVariablesSystem
-	language : XUPPAAL
+	language : IML
 	state-coverage
 }
 
 verification {
 	file : "PortVariablesSystem"
-	language : XUPPAAL
+	language : IML
 	property-file : ".PortVariablesSystem.gpd"
 	optimize-traces : true
 	test-language : java
@@ -40,13 +40,13 @@ code {
 
 analysis {
 	component : SyncPortVariablesSystem
-	language : XUPPAAL
+	language : IML
 	state-coverage
 }
 
 verification {
 	file : "SyncPortVariablesSystem"
-	language : XUPPAAL
+	language : IML
 	property-file : ".SyncPortVariablesSystem.gpd"
 	optimize-traces : true
 	test-language : java
@@ -71,13 +71,13 @@ code {
 
 analysis {
 	component : AsyncPortVariablesSystem
-	language : XUPPAAL
+	language : IML
 	state-coverage
 }
 
 verification {
 	file : "AsyncPortVariablesSystem"
-	language : XUPPAAL
+	language : IML
 	property-file : ".AsyncPortVariablesSystem.gpd"
 	optimize-traces : true
 	test-language : java

@@ -7,6 +7,7 @@ interface Execute {
 interface VariableExecute extends Execute {
 	var portInt : integer := -5
 	var otherPortInt : integer
+	var portRecord : ComplexRecord
 }
 
 type Rec0rd : record {
