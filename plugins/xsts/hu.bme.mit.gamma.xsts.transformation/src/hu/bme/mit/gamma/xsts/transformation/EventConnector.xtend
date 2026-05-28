@@ -253,20 +253,31 @@ class EventConnector {
 					val requiredInstance = requiredSimplePort.containingComponentInstance
 					val requiredVariables = requiredInstancePort.port.allVariableDeclarations
 					for (requiredVariable : requiredVariables) {
-						val xStsVariableDeclarationName = requiredVariable.getCustomizedName(requiredInstance)
-						val xStsVariableDeclaration = xStsVariableDeclarations.findFirst[it.name == xStsVariableDeclarationName]
-						
-						val xStsVariableDefinitionName = requiredVariable.getCustomizedName(providedInstance)
-						val xStsVariableDefinition = xStsVariableDeclarations.findFirst[it.name == xStsVariableDefinitionName]
-						
-						for (xStsVariableReference : xStsVariableReferences) {
-							if (xStsVariableReference.declaration === xStsVariableDeclaration) {
-								xStsVariableReference.declaration = xStsVariableDefinition
-								logger.info('''Changing interface variable reference «xStsVariableDeclarationName» to «xStsVariableDefinitionName»''')
+						val xStsVariableDeclarationNames = requiredVariable.customizeNames(requiredInstance)
+						val xStsVariableDefinitionNames = requiredVariable.customizeNames(providedInstance)
+						for (var i = 0; i < xStsVariableDeclarationNames.size; i++) {
+							val xStsVariableDeclarationName = xStsVariableDeclarationNames.get(i)
+							val xStsVariableDeclaration = xStsVariableDeclarations.findFirst[it.name == xStsVariableDeclarationName]
+							if (xStsVariableDeclaration !== null) {
+								val xStsVariableDefinitionName = xStsVariableDefinitionNames.get(i)
+								val xStsVariableDefinition = xStsVariableDeclarations.findFirst[it.name == xStsVariableDefinitionName]
+							
+								if (xStsVariableDefinition === null) {
+									// Definition has been removed due to optimization; declaration will serve as definition
+									xStsVariableDeclaration.name = xStsVariableDefinitionName
+								}
+								else {
+									for (xStsVariableReference : xStsVariableReferences) {
+										if (xStsVariableReference.declaration === xStsVariableDeclaration) {
+											xStsVariableReference.declaration = xStsVariableDefinition
+											logger.info('''Changing interface variable reference «xStsVariableDeclarationName» to «xStsVariableDefinitionName»''')
+										}
+									}
+									
+									xStsVariableDeclaration.delete
+								}
 							}
 						}
-						
-						xStsVariableDeclaration.delete
 					}
 				}
 			}
