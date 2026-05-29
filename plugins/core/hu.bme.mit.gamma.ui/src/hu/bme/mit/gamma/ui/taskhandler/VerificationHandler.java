@@ -171,54 +171,72 @@ public class VerificationHandler extends TaskHandler {
 	//
 	
 	public void execute(Verification verification) throws IOException, InterruptedException {
+		List<AnalysisLanguage> languages = verification.getAnalysisLanguages();
+		if (languages.contains(AnalysisLanguage.SMART_ALL)) {
+			languages.clear();
+			List<AnalysisLanguage> smartAnalysisLanguages = getAllSmartAnalysisLanguages();
+			for (AnalysisLanguage analysisLanguage : smartAnalysisLanguages) {
+				Verification verification2 = ecoreUtil.clone(verification);
+				verification2.getAnalysisLanguages().add(analysisLanguage);
+				
+				executeOnce(verification2);
+			}
+			
+			return;
+		}
+		
+		// Default mode (non smart-all)
+		executeOnce(verification);
+	}
+	
+	protected void executeOnce(Verification verification) throws IOException, InterruptedException {
 		// Setting target folder
 		setProjectLocation(verification); // Before the target folder
 		setTargetFolder(verification);
 		//
 		setVerification(verification);
-		Set<AnalysisLanguage> languagesSet = new LinkedHashSet<AnalysisLanguage>(
-				verification.getAnalysisLanguages());
-		checkArgument(languagesSet.size() == 1);
+		List<AnalysisLanguage> languagesSet = verification.getAnalysisLanguages();
+		int size = languagesSet.size();
+		checkArgument(size == 1, size);
 		List<String> verificationArguments = verification.getVerificationArguments();
 		
 		boolean distinguishStringFormulas = false;
 		
 		AbstractVerification verificationTask = null;
 		propertySerializer = null;
-		for (AnalysisLanguage analysisLanguage : languagesSet) {
-			switch (analysisLanguage) {
-				case UPPAAL:
-					verificationTask = UppaalVerification.INSTANCE;
-					propertySerializer = UppaalPropertySerializer.INSTANCE;
-					break;
-				case THETA:
-					verificationTask = ThetaVerification.INSTANCE;
-					propertySerializer = ThetaPropertySerializer.INSTANCE;
-					distinguishStringFormulas = true;
-					break;
-				case XSTS_UPPAAL:
-					verificationTask = XstsUppaalVerification.INSTANCE;
-					propertySerializer = XstsUppaalPropertySerializer.INSTANCE;
-					break;
-				case PROMELA:
-					verificationTask = PromelaVerification.INSTANCE;
-					propertySerializer = PromelaPropertySerializer.INSTANCE;
-					break;
-				case NUXMV:
-					verificationTask = NuxmvVerification.INSTANCE;
-					propertySerializer = NuxmvPropertySerializer.INSTANCE;
-					break;
-				case IML:
-					verificationTask = ImlVerification.INSTANCE;
-					propertySerializer = ImlPropertySerializer.INSTANCE;
-					break;
-				case OCRA:
-					verificationTask = OcraVerification.INSTANCE;
-					propertySerializer = OcraPropertySerializer.INSTANCE;
-					break;
-				default:
-					throw new IllegalArgumentException(analysisLanguage + " is not supported");
-			}
+		AnalysisLanguage analysisLanguage = languagesSet.getFirst();
+		switch (analysisLanguage) {
+			case UPPAAL:
+				verificationTask = UppaalVerification.INSTANCE;
+				propertySerializer = UppaalPropertySerializer.INSTANCE;
+				break;
+			case THETA:
+				verificationTask = ThetaVerification.INSTANCE;
+				propertySerializer = ThetaPropertySerializer.INSTANCE;
+				distinguishStringFormulas = true;
+				break;
+			case XSTS_UPPAAL:
+				verificationTask = XstsUppaalVerification.INSTANCE;
+				propertySerializer = XstsUppaalPropertySerializer.INSTANCE;
+				break;
+			case PROMELA:
+				verificationTask = PromelaVerification.INSTANCE;
+				propertySerializer = PromelaPropertySerializer.INSTANCE;
+				break;
+			case NUXMV:
+				verificationTask = NuxmvVerification.INSTANCE;
+				propertySerializer = NuxmvPropertySerializer.INSTANCE;
+				break;
+			case IML:
+				verificationTask = ImlVerification.INSTANCE;
+				propertySerializer = ImlPropertySerializer.INSTANCE;
+				break;
+			case OCRA:
+				verificationTask = OcraVerification.INSTANCE;
+				propertySerializer = OcraPropertySerializer.INSTANCE;
+				break;
+			default:
+				throw new IllegalArgumentException(analysisLanguage + " is not supported");
 		}
 		String filePath = verification.getFileName().get(0);
 		File modelFile = new File(filePath);
