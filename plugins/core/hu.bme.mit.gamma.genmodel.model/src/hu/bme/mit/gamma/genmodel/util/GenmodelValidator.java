@@ -219,11 +219,19 @@ public class GenmodelValidator extends ExpressionModelValidator {
 					new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME)));
 		}
 		for (String modelFile : modelFiles) {
-			if (!fileUtil.isValidRelativeFile(resourceFile, modelFile)) {
-				String adjustedModelFile = fileUtil.changeExtension(modelFile, fileNamer.getFileExtension(language));
+			int index = modelFiles.indexOf(modelFile);
+			if (language == AnalysisLanguage.SMART || language == AnalysisLanguage.SMART_ALL) {
+				if (fileUtil.hasExtension(modelFile)) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+						"Do not add the extension of the file for smart verification: " + modelFile,
+							new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, index)));
+				}
+			}
+			else if (!fileUtil.isValidRelativeFile(resourceFile, modelFile)) {
+				String fileExtension = fileNamer.getFileExtension(language);
+				String adjustedModelFile = fileUtil.changeExtension(modelFile, fileExtension);
 				if (fileUtil.hasExtension(modelFile) ||
 						!fileUtil.isValidRelativeFile(resourceFile, adjustedModelFile)) { 
-					int index = modelFiles.indexOf(modelFile);
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 						"This is not a valid relative path to a model file: " + modelFile,
 							new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, index)));

@@ -133,6 +133,9 @@ class GammaFileNamer {
 			case "IMANDRA", case "IML": {
 				return IML_MODEL_EXTENSION
 			}
+			case "SMART", case "SMART-ALL": {
+				return ""
+			}
 			default:
 				throw new IllegalArgumentException("Not known language: " + analysisLanguage)
 		}
