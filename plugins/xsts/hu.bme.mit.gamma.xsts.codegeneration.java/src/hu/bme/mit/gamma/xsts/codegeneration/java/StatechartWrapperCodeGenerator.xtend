@@ -184,7 +184,7 @@ class StatechartWrapperCodeGenerator {
 					«FOR boundVariable : port.allVariableDeclarations»
 						@Override
 						public void set«boundVariable.name.toFirstUpper»(«boundVariable.type.serialize» «boundVariable.name») {
-							«CLASS_NAME.toFirstLower».set«boundVariable.name.toFirstUpper»(«boundVariable.name»);
+							«CLASS_NAME.toFirstLower.writeIn(boundVariable)»
 						}
 					«ENDFOR»
 					@Override

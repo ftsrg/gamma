@@ -118,6 +118,19 @@ class ValueDeclarationAccessor {
 	private def String access(IndexHierarchy indexes) '''«FOR index : indexes.indexes»[«index»]«ENDFOR»'''
 	
 	// Write
+	
+	def writeIn(String id, VariableDeclaration declaration) {
+		val valueId = declaration.name
+		val type = declaration.typeDefinition
+		val names = declaration.customizeNames
+		val accesses = type.accessIn(valueId)
+		checkState(names.size == accesses.size)
+		return '''
+			«FOR i : 0 ..< names.size»
+				«id».set«names.get(i).toFirstUpper»(«accesses.get(i)»);
+			«ENDFOR»
+		'''
+	}
 
 	def writeIn(String id, Port port, ParameterDeclaration declaration, String valueId) {
 		val type = declaration.typeDefinition
@@ -129,7 +142,7 @@ class ValueDeclarationAccessor {
 				«id».set«names.get(i).toFirstUpper»(«accesses.get(i)»);
 			«ENDFOR»
 		'''
-	}	
+	}
 	
 	def List<String> accessIn(TypeDefinition type, String valueId) {
 		if (type.native) {
