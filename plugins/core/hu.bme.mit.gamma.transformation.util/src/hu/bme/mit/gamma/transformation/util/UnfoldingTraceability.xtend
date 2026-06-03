@@ -537,7 +537,7 @@ class UnfoldingTraceability {
 	
 	def getOriginalVariable(ComponentInstance originalInstance, VariableDeclaration newVariable) {
 		val originalType = originalInstance.getStatechart
-		for (originalVariable : originalType.variableDeclarations) {
+		for (originalVariable : originalType.allVariableDeclarations) {
 			if (originalVariable.nameEquals(newVariable)) {
 				return originalVariable // Variable names must be unique
 			}
