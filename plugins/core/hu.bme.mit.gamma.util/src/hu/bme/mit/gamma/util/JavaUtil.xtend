@@ -311,6 +311,19 @@ class JavaUtil {
 		return pairs
 	}
 	
+	def <T> List<Entry<T, T>> zip(Iterable<? extends T> a, Iterable<? extends T> b) {
+		val it_1 = a.iterator
+		val it_2 = b.iterator
+		
+		val pairs = <Entry<T, T>>newArrayList
+		
+		while (it_1.hasNext && it_2.hasNext) {
+		    pairs += Map.entry(it_1.next, it_2.next)
+		}
+		
+		return pairs
+	}
+	
 	//
 	
 	def String getCommonPrefix(String a, String b) {
