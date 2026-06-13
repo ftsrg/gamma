@@ -2216,6 +2216,24 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return portBindings;
 	}
 	
+	public static List<Port> getAllBoundPorts(Port port) {
+		List<Port> ports = new ArrayList<Port>();
+		ports.add(port);
+		
+		Component component = getContainingComponent(port);
+		if (component instanceof StatechartDefinition ||
+				component instanceof AsynchronousAdapter) {
+			return ports;
+		}
+		for (PortBinding portBinding : getPortBindings(port)) {
+			Port instancePort = portBinding.getInstancePortReference().getPort();
+			ports.addAll(
+					getAllBoundPorts(instancePort));
+		}
+		
+		return ports;
+	}
+	
 	public static List<Port> getAllBoundSimplePorts(Component component) {
 		List<Port> simplePorts = new ArrayList<Port>();
 		for (Port port : getAllPorts(component)) {

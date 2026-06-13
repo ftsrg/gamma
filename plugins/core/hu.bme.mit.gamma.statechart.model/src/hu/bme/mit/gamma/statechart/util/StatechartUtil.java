@@ -641,6 +641,10 @@ public class StatechartUtil extends ActionUtil {
 		return _package;
 	}
 	
+	public Port createPort(Interface _interface, String name) {
+		return createPort(_interface, RealizationMode.PROVIDED, name);
+	}
+	
 	public Port createPort(Interface _interface, RealizationMode mode, String name) {
 		Port port = interfaceFactory.createPort();
 		port.setName(name);

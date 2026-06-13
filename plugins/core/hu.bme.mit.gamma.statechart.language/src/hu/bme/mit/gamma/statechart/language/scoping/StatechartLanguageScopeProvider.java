@@ -455,8 +455,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 	}
 
 	protected IScope handleComponentInstanceElementReferences(EObject context, EReference reference, Component component) {
-		boolean _equals = Objects.equal(reference, CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE);
-		if (_equals) {
+		if (Objects.equal(reference, CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE)) {
 			ComponentInstanceReferenceExpression instanceContainer = this.ecoreUtil
 					.getSelfOrContainerOfType(context, ComponentInstanceReferenceExpression.class);
 			ComponentInstanceReferenceExpression _parent = null;
