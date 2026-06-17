@@ -38,7 +38,7 @@ Note that if you use a Mac or Linux-based OS, you probably have to launch the Ga
 ### Dependencies
 
 ##### Recommended Eclipse version and bundle:
-* Eclipse IDE 2025-06, Eclipse IDE for Java and DSL Developers bundle. Note that Yakindu (see below) will not work with the _2023-12_ or newer Eclipse releases due to compatibility reasons.
+* Eclipse IDE 2026-06, Eclipse IDE for Java and DSL Developers bundle. Note that Yakindu (see below) will not work with the _2023-12_ or newer Eclipse releases due to compatibility reasons.
 
 ##### 3rd-party Eclipse components (should be installed separately):
 * VIATRA 2.9.1 (https://www.eclipse.org/viatra/),
@@ -52,7 +52,7 @@ Note that if you use a Mac or Linux-based OS, you probably have to launch the Ga
 
 ### Installation
 
-* Install an Eclipse instance (e.g., Eclipse IDE for Java and DSL Developers) with EMF, Xtext and Java 17.
+* Install an Eclipse instance (e.g., Eclipse IDE for Java and DSL Developers) with EMF, Xtext and Java 21 (Java is now included in the Eclipse release).
 * Install the required 3rd-party Eclipse components. Detailed instructions can be found in the [`plugins/README.md`](plugins/README.md) file.
     * Alternatively you can use the provided Eclipse Oomph Installer to install the 3rd-party Eclipse components found [here](eclipse-environment/README.md). 
 * Exit Eclipse and extract the [Gamma zip file](https://inf.mit.bme.hu/sites/default/files/gamma/2_13_0/gamma-tool-2.13.0.zip) containing the `dropins/plugins` folder (with the Gamma JAR files) into the root folder of Eclipse. This will create the plugins directory in the `dropins` folder of your root Eclipse folder, which should contain all JAR files of Gamma. (If not, make sure you copy all the JAR files contained in the Gamma zip file in the plugins directory of the `dropins` folder of the root folder of Eclipse.)
