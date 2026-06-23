@@ -1485,6 +1485,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				.anyMatch(it -> hasMatchingUnfoldedFunctionDeclaration(functionDeclaration, functionDeclarations));
 	}
 	
+	public static boolean hasFunctionDeclarations(Interface _interface) {
+		List<FunctionDeclaration> functionDeclarations = getAllFunctionDeclarations(_interface);
+		return !functionDeclarations.isEmpty();
+	}
+	
 	public static List<FunctionDeclaration> getAllFunctionDeclarations(Interface _interface) {
 		List<FunctionDeclaration> functionDeclarations = new ArrayList<FunctionDeclaration>();
 		
