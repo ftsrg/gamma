@@ -164,8 +164,8 @@ public class ExpressionUtil {
 			// Also below branch...
 		}
 		if (expression instanceof AccessExpression access) {
-			return getAccessReference(
-					access.getOperand());
+			Expression operand = access.getOperand();
+			return getAccessReference(operand);
 		}
 		if (expression instanceof TupleReferenceExpression tuple) {
 			return tuple;
