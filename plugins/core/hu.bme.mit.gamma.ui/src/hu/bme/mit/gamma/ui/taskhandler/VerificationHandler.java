@@ -120,6 +120,7 @@ public class VerificationHandler extends TaskHandler {
 	
 	protected final List<ExecutionTrace> traces = new ArrayList<ExecutionTrace>();
 	protected final List<Result> optimizedResults = new ArrayList<Result>();
+	protected final List<VerificationResult> optimizedVerificationResults = new ArrayList<VerificationResult>();
 	protected final VerificationPostprocessor verificationPostprocessor;
 	
 	//
@@ -365,7 +366,7 @@ public class VerificationHandler extends TaskHandler {
 			
 			// Checking if some of the unchecked properties are already covered
 			if (isOptimize) {
-				removeCoveredProperties(trace, formulaQueue);
+				removeCoveredProperties(trace, formulaQueue); //  TODO
 			}
 		}
 		if (isOptimize) {
@@ -401,7 +402,9 @@ public class VerificationHandler extends TaskHandler {
 			retrievedTraces.addAll(backAnnotatedTraces);
 		}
 		
-		for (VerificationResult result : derivedVerificationResults) {
+		Set<VerificationResult> serializableResults = new LinkedHashSet<VerificationResult>(derivedVerificationResults);
+		serializableResults.addAll(optimizedVerificationResults);
+		for (VerificationResult result : serializableResults) {
 			serializer.serialize(targetFolderUri, traceFileName, result);
 		}
 		
@@ -535,10 +538,17 @@ public class VerificationHandler extends TaskHandler {
 		
 		// Registering optimized properties
 		for (StateFormula coveredProperty : allCoveredProperties) {
-			ThreeStateBoolean value = ThreeStateBoolean.of(
-					PropertyModelDerivedFeatures.getBooleanResultIfTraceExists(coveredProperty));
+			boolean result = PropertyModelDerivedFeatures.getBooleanResultIfTraceExists(coveredProperty);
+			ThreeStateBoolean value = ThreeStateBoolean.of(result);
+			
 			Result optimizedResult = new Result(coveredProperty, value, null);
 			optimizedResults.add(optimizedResult);
+			
+			File modelFile = ecoreUtil.getFile(trace.getComponent());
+			String modelPath = ecoreUtil.getPlatformUri(modelFile).toPlatformString(true);
+			String serializedProperty = propertySerializer.serialize(coveredProperty);
+			VerificationResult optimizedVerificationResult = new VerificationResult(modelPath, serializedProperty, value);
+			optimizedVerificationResults.add(optimizedVerificationResult);
 		}
 	}
 	
