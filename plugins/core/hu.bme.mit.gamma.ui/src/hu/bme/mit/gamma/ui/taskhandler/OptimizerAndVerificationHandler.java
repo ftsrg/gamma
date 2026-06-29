@@ -244,11 +244,8 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			
 			XstsOptimizer xStsOptimizer = XstsOptimizer.INSTANCE;
 			xStsOptimizer.optimizeXSts(xSts); // To remove null/empty actions
+			
 			// Serialize XSTS
-			if (analysisLanguages.contains(AnalysisLanguage.THETA)) {
-				String xStsString = xStsSerializer.serializeXsts(xSts);
-				fileUtil.saveString(analysisFile, xStsString);
-			}
 			if (analysisLanguages.contains(AnalysisLanguage.XSTS_UPPAAL)) {
 				XstsToUppaalTransformer transformer = new XstsToUppaalTransformer(xSts);
 				NTA nta = transformer.execute();
@@ -292,7 +289,10 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 						analysisFile.toString(), GammaFileNamer.XSTS_XTEXT_EXTENSION);
 				fileUtil.saveString(xStsFile, xStsString);
 			}
-			//
+			if (analysisLanguages.contains(AnalysisLanguage.THETA)) { // Last: to overwrite potential intermediate XSTS files
+				String xStsString = xStsSerializer.serializeXsts(xSts);
+				fileUtil.saveString(analysisFile, xStsString);
+			}
 			
 			verificationHandler.execute(verification);
 			

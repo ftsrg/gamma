@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -28,6 +28,8 @@ import java.util.regex.Pattern
 
 abstract class AbstractVerification {
 	//
+	protected ThreadRacer<Result> threadRacer = null
+	//
 	protected final FileUtil fileUtil = FileUtil.INSTANCE
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
@@ -43,6 +45,10 @@ abstract class AbstractVerification {
 	
 	def getUnavailableBackendMessage() {
 		return createVerifier.unavailableBackendMessage
+	}
+	
+	def void cancel() {
+		threadRacer?.shutdown
 	}
 	
 	abstract def String getBackendName()
@@ -82,13 +88,12 @@ abstract class AbstractVerification {
 		//
 		val isBackendAvailable = isBackendAvailable
 		val level = (isBackendAvailable) ? Level.INFO : Level.SEVERE
-		logger.log(level, "The selected verification back-end is " + ((!isBackendAvailable) ? "un" : "") + "available")
+		logger.log(level, "The selected verification back-end is " + (!isBackendAvailable ? "un" : "") + "available")
 		// Racer callable(s)
 		val callables = modelFile.loadModelAndCreateVerificationCallables(queryFile, arguments, timeout, unit)
-		// Racer, but for only one thread
-		val racer = new ThreadRacer<Result>(callables, timeout, unit)
-		//
-		var result = racer.execute
+		threadRacer = new ThreadRacer<Result>(callables, timeout, unit)
+		val result = threadRacer.execute
+		
 		// Handle in case of timeout
 		return result.handleNull
 	}

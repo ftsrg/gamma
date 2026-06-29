@@ -89,6 +89,8 @@ import hu.bme.mit.gamma.ui.taskhandler.VerificationHandler.ExecutionTraceSeriali
 import hu.bme.mit.gamma.uppaal.verification.UppaalVerification;
 import hu.bme.mit.gamma.uppaal.verification.XstsUppaalVerification;
 import hu.bme.mit.gamma.util.FileUtil;
+import hu.bme.mit.gamma.util.InterruptableCallable;
+import hu.bme.mit.gamma.util.ThreadRacer;
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean;
 import hu.bme.mit.gamma.verification.util.AbstractVerification;
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result;
@@ -112,15 +114,16 @@ public class VerificationHandler extends TaskHandler {
 	protected TimeSpecification timeout = null;
 	
 	//
-	
+
+	protected AbstractVerification verificationTask = null;
 	protected PropertySerializer propertySerializer = null;
+	protected final VerificationPostprocessor verificationPostprocessor;
 	
 	//
 	
 	protected final List<ExecutionTrace> traces = new ArrayList<ExecutionTrace>();
 	protected final List<Result> optimizedResults = new ArrayList<Result>();
 	protected final List<VerificationResult> optimizedVerificationResults = new ArrayList<VerificationResult>();
-	protected final VerificationPostprocessor verificationPostprocessor;
 	
 	//
 	
@@ -172,6 +175,7 @@ public class VerificationHandler extends TaskHandler {
 	
 	public void execute(Verification verification) throws IOException, InterruptedException {
 		List<AnalysisLanguage> languages = verification.getAnalysisLanguages();
+		
 		if (languages.contains(AnalysisLanguage.SMART_ALL)) {
 			languages.clear();
 			List<AnalysisLanguage> smartAnalysisLanguages = getAllSmartAnalysisLanguages();
@@ -184,8 +188,35 @@ public class VerificationHandler extends TaskHandler {
 			
 			return;
 		}
+		else if (languages.size() > 1) {
+			List<InterruptableCallable<Object>> verificationCalls = new ArrayList<InterruptableCallable<Object>>();
+			for (AnalysisLanguage analysisLanguage : languages) {
+				Verification verification2 = ecoreUtil.clone(verification);
+				verification2.getAnalysisLanguages().clear();
+				verification2.getAnalysisLanguages().add(analysisLanguage);
+				
+				VerificationHandler verificationHandler2 = new VerificationHandler(file, serializeTraces, verificationPostprocessor);
+				// TODO for each property
+				InterruptableCallable<Object> verificationCall = new InterruptableCallable<Object>() {
+					public Object call() throws Exception {
+						verificationHandler2.executeOnce(verification2);
+						logger.info(analysisLanguage + " has won");
+						return new Object(); // Dummy
+					}
+					public void cancel() {
+						verificationHandler2.cancel();
+						logger.info(analysisLanguage + " has been canceled");
+					}
+				};
+				verificationCalls.add(verificationCall);
+			}
+			ThreadRacer<Object> threadRacer = new ThreadRacer<Object>(verificationCalls);
+			threadRacer.execute();
+			
+			return;
+		}
 		
-		// Default mode (non smart-all)
+		// Default mode (single language, non smart-all)
 		executeOnce(verification);
 	}
 	
@@ -202,7 +233,7 @@ public class VerificationHandler extends TaskHandler {
 		
 		boolean distinguishStringFormulas = false;
 		
-		AbstractVerification verificationTask = null;
+		verificationTask = null;
 		propertySerializer = null;
 		AnalysisLanguage analysisLanguage = languagesSet.getFirst();
 		switch (analysisLanguage) {
@@ -270,7 +301,7 @@ public class VerificationHandler extends TaskHandler {
 			if (StatechartModelDerivedFeatures.needsWrapping(component)) {
 				propertyUtil.extendFormulasWithWrapperInstance(propertyPackage);
 			}
-			//
+			
 			for (CommentableStateFormula formula : propertyPackage.getFormulas()) {
 				StateFormula stateFormula = formula.getFormula();
 				//
@@ -279,7 +310,7 @@ public class VerificationHandler extends TaskHandler {
 				String serializedFormula = propertySerializer.serialize(stateFormula);
 				formulas.put(serializedFormula, stateFormula);
 			}
-			//
+			
 			if (StatechartModelDerivedFeatures.needsWrapping(component)) {
 				propertyUtil.removeFirstInstanceFromFormulas(propertyPackage);
 			}
@@ -365,7 +396,7 @@ public class VerificationHandler extends TaskHandler {
 			
 			// Checking if some of the unchecked properties are already covered
 			if (isOptimize) {
-				removeCoveredProperties(trace, formulaQueue); //  TODO
+				removeCoveredProperties(trace, formulaQueue);
 			}
 		}
 		if (isOptimize) {
@@ -400,10 +431,10 @@ public class VerificationHandler extends TaskHandler {
 			retrievedTraces.clear();
 			retrievedTraces.addAll(backAnnotatedTraces);
 		}
-		
+		// TODO lock if needed
 		Set<VerificationResult> serializableResults = new LinkedHashSet<VerificationResult>(derivedVerificationResults);
 		serializableResults.addAll(optimizedVerificationResults);
-		for (VerificationResult result : serializableResults) {
+		for (VerificationResult result : serializableResults) { // TODO extract
 			serializer.serialize(targetFolderUri, traceFileName, result);
 		}
 		
@@ -552,6 +583,12 @@ public class VerificationHandler extends TaskHandler {
 	}
 	
 	//
+	
+	public void cancel() {
+		if (verificationTask != null) {
+			verificationTask.cancel();
+		}
+	}
 	
 	protected Result execute(AbstractVerification verificationTask, File modelFile,
 			File queryFile, List<ExecutionTrace> retrievedTraces, boolean isOptimize) throws InterruptedException {

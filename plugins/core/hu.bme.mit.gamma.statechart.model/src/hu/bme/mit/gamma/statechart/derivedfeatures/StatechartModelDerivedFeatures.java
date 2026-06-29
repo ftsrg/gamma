@@ -3235,6 +3235,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		if (state == null) {
 			return "";
 		}
+		
 		Region parentRegion = getParentRegion(state);
 		State parentState = null;
 		EObject regionContainer = parentRegion.eContainer();
@@ -3249,7 +3250,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 					parentRegionName.substring(1); // toFirstLowerCase
 			return parentRegionName + "_" + stateName;
 		}
-		return getFullContainmentHierarchy(parentState) + "_" + parentRegionName + "_" + stateName;
+		
+		String parentHierarchy = getFullContainmentHierarchy(parentState);
+		return parentHierarchy + "_" + parentRegionName + "_" + stateName;
 	}
 	
 	public static String getFullRegionPathName(Region lowestRegion) {
