@@ -28,7 +28,6 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
@@ -523,7 +522,7 @@ public class VerificationHandler extends TaskHandler {
 			List<StateFormula> stateFormulas = formulas.stream()
 					.map(it -> it.getValue())
 					.filter(it -> it != null)
-					.collect(Collectors.toList()); // Not null state formulas
+					.toList(); // Not null state formulas
 			CoveredPropertyReducer reducer = new CoveredPropertyReducer(stateFormulas, trace);
 			List<StateFormula> coveredProperties = reducer.execute();
 			

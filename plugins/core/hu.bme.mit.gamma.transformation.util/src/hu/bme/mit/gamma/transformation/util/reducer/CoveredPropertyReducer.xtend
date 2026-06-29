@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -25,7 +25,6 @@ import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.transformation.util.UnfoldingTraceability
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
-import java.util.logging.Level
 import java.util.logging.Logger
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
@@ -56,16 +55,17 @@ class CoveredPropertyReducer {
 	}
 	
 	def execute() {
-		val unnecessaryFormulas = newArrayList
+		val coveredFormulas = newArrayList
+		
 		for (formula : formulas) {
 			val egLessFormula = formula.egLessFormula
 			if (egLessFormula !== null) {
 				if (egLessFormula instanceof AtomicFormula) {
-					var isUnnecessary = false
-					for (var i = 0; i < traces.size && !isUnnecessary; i++)  {
+					var isCovered = false
+					for (var i = 0; i < traces.size && !isCovered; i++)  {
 						val trace = traces.get(i)
 						val steps = trace.steps
-						for (var j = 0; j < steps.size && !isUnnecessary; j++) {
+						for (var j = 0; j < steps.size && !isCovered; j++) {
 							// New formula is cloned for each step
 							val clonedFormula = egLessFormula.clone
 							val step = steps.get(j)
@@ -80,15 +80,16 @@ class CoveredPropertyReducer {
 							val expression = clonedFormula.expression
 							val evaluation = expression.definitelyTrueExpression
 							if (evaluation) {
-								isUnnecessary = true
-								unnecessaryFormulas += formula
+								isCovered = true
+								coveredFormulas += formula
 							}
 						}
 					}
 				}
 			}
 		}
-		return unnecessaryFormulas
+		
+		return coveredFormulas
 	}
 	
 	protected def dispatch evaluate(ComponentInstanceEventParameterReferenceExpression expression, Step step) {
@@ -102,16 +103,18 @@ class CoveredPropertyReducer {
 			val rasiedEvent = raiseEventAct.event
 			val arguments = raiseEventAct.arguments
 			
-			if (topComponentPort.helperEquals(raisedPort) && event.helperEquals(rasiedEvent)) {
-				return arguments.get(parameterIndex).clone
+			if (topComponentPort.name == raisedPort.name && event.name == rasiedEvent.name) {
+				val argument = arguments.get(parameterIndex)
+				return argument.clone
 			}
 		}
-		// EventParameterReferenceExpressions too
+		// EventParameterReferenceExpressions, too
 		for (eventParameterReference : step.eventParameterReferences) {
 			val referencedPort = eventParameterReference.port
 			val referencedEvent = eventParameterReference.event
 			
-			if (topComponentPort.helperEquals(referencedPort) && event.helperEquals(referencedEvent)) {
+			if (topComponentPort.name == referencedPort.name &&
+					event.name == referencedEvent.name) {
 				val value = eventParameterReference.otherOperandIfContainedByEquality
 				if (value === null) {
 					return expression.clone // Cannot evaluate it, returning the unknown reference
@@ -131,10 +134,11 @@ class CoveredPropertyReducer {
 			val raisedPort = raiseEventAct.port
 			val rasiedEvent = raiseEventAct.event
 			
-			if (topComponentPort.helperEquals(raisedPort) && event.helperEquals(rasiedEvent)) {
+			if (topComponentPort.name == raisedPort.name && event.name == rasiedEvent.name) {
 				return createTrueExpression
 			}
 		}
+		
 		return createFalseExpression
 	}
 	
@@ -143,13 +147,15 @@ class CoveredPropertyReducer {
 		val state = expression.state
 		
 		for (stateConfiguration : step.instanceStateConfigurations) {
-			val stateInstance = stateConfiguration.instance.lastInstance // Only one expected
-			val stateVariable = stateConfiguration.state
+			val stepInstance = stateConfiguration.instance.lastInstance // Only one expected
+			val stepState = stateConfiguration.state
 			
-			if (traceability.contains(instance, stateInstance) && state.helperEquals(stateVariable)) {
+			if (traceability.contains(instance, stepInstance) &&
+					state.fullContainmentHierarchy == stepState.fullContainmentHierarchy) {
 				return createTrueExpression
 			}
 		}
+		
 		return createFalseExpression
 	}
 	
@@ -158,10 +164,11 @@ class CoveredPropertyReducer {
 		val variable = expression.variableDeclaration
 		
 		for (variableReference : step.instanceVariableStates) {
-			val stateInstance = variableReference.instance.lastInstance // Only one expected
-			val stateVariable = variableReference.variableDeclaration
+			val stepInstance = variableReference.instance.lastInstance // Only one expected
+			val stepVariable = variableReference.variableDeclaration
 			
-			if (traceability.contains(instance, stateInstance) && variable.helperEquals(stateVariable)) {
+			if (traceability.contains(instance, stepInstance) &&
+					variable.name == stepVariable.name) {
 				val value = variableReference.otherOperandIfContainedByEquality
 				if (value === null) {
 					return expression.clone // Cannot evaluate it, returning the unknown reference
@@ -172,12 +179,11 @@ class CoveredPropertyReducer {
 		val isInjected = variable.injected
 		if (isInjected) { // Not correct in every sense (e.g., resettable variables), but we do not distinguish between different values here
 			// This can happen if we run model checking as optimize&verify
-			logger.log(Level.WARNING, '''Not found variable for injected variable: «variable.name»''')
+			logger.warning('''Not found variable for injected variable: «variable.name»''')
 			return variable.defaultExpression
 		}
 		throw new IllegalStateException('''Not found variable: «variable.name»''')
-		// Maybe Theta did not return the necessary variables, that is why they cannot be found in the trace
-		// (This is a known Theta-bug). On the other hand, UPPAAL always returns all variables
+		// Maybe the backend did not return the necessary variables, that is why they cannot be found in the trace
 	}
 		
 }
