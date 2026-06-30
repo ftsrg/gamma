@@ -114,19 +114,13 @@ public class VerificationHandler extends TaskHandler {
 	
 	protected TimeSpecification timeout = null;
 	
-	//
-
 	protected AbstractVerification verificationTask = null;
 	protected PropertySerializer propertySerializer = null;
 	protected final VerificationPostprocessor verificationPostprocessor;
 	
-	//
-	
 	protected final List<ExecutionTrace> traces = new ArrayList<ExecutionTrace>();
 	protected final List<Result> optimizedResults = new ArrayList<Result>();
 	protected final List<VerificationResult> optimizedVerificationResults = new ArrayList<VerificationResult>();
-	
-	//
 	
 	protected final TraceUtil traceUtil = TraceUtil.INSTANCE;
 	protected final PropertyUtil propertyUtil = PropertyUtil.INSTANCE;
@@ -195,29 +189,45 @@ public class VerificationHandler extends TaskHandler {
 			return;
 		}
 		else if (languages.size() > 1) {
-			List<InterruptableCallable<Object>> verificationCalls = new ArrayList<InterruptableCallable<Object>>();
-			for (AnalysisLanguage analysisLanguage : languages) {
-				Verification verification2 = ecoreUtil.clone(verification);
-				verification2.getAnalysisLanguages().clear();
-				verification2.getAnalysisLanguages().add(analysisLanguage);
-				
-				VerificationHandler verificationHandler2 = new VerificationHandler(file, serializeTraces, true, verificationPostprocessor);
-				// TODO for each property
-				InterruptableCallable<Object> verificationCall = new InterruptableCallable<Object>() {
-					public Object call() throws Exception {
-						verificationHandler2.executeOnce(verification2);
-						logger.info(analysisLanguage + " has won");
-						return this; // Dummy
-					}
-					public void cancel() {
-						verificationHandler2.cancel();
-						logger.info(analysisLanguage + " has been canceled");
-					}
-				};
-				verificationCalls.add(verificationCall);
+			if (verification.isOptimize()) {
+				// TODO
 			}
-			ThreadRacer<Object> threadRacer = new ThreadRacer<Object>(verificationCalls);
-			threadRacer.execute();
+			for (PropertyPackage propertyPackage : verification.getPropertyPackages()) {
+				PropertyPackage propertyPackage2 = ecoreUtil.clone(propertyPackage);
+				List<CommentableStateFormula> formulas2 = propertyPackage2.getFormulas();
+				List<CommentableStateFormula> allFormulas = new ArrayList<CommentableStateFormula>(formulas2);
+				for (CommentableStateFormula formula : allFormulas) {
+					List<InterruptableCallable<Object>> verificationCalls = new ArrayList<InterruptableCallable<Object>>();
+					
+					formulas2.clear();
+					formulas2.add(formula);
+					
+					for (AnalysisLanguage analysisLanguage : languages) {
+						Verification verification2 = ecoreUtil.clone(verification);
+						verification2.getAnalysisLanguages().clear();
+						verification2.getAnalysisLanguages().add(analysisLanguage);
+						verification2.getPropertyPackages().clear();
+						verification2.getPropertyPackages().add(propertyPackage2);
+						
+						VerificationHandler verificationHandler2 = new VerificationHandler(file, serializeTraces, true, verificationPostprocessor);
+						InterruptableCallable<Object> verificationCall = new InterruptableCallable<Object>() {
+							public Object call() throws Exception {
+								verificationHandler2.executeOnce(verification2);
+								logger.info(analysisLanguage + " has won");
+								return verificationHandler2; // Dummy
+							}
+							public void cancel() {
+								verificationHandler2.cancel();
+								logger.info(analysisLanguage + " has been canceled");
+							}
+						};
+						verificationCalls.add(verificationCall);
+					}
+					
+					ThreadRacer<Object> threadRacer = new ThreadRacer<Object>(verificationCalls);
+					threadRacer.execute();
+				}
+			}
 			
 			return;
 		}
@@ -363,7 +373,7 @@ public class VerificationHandler extends TaskHandler {
 			
 			// Saving the string
 			File file = modelFile;
-			String fileName = fileNamer.getHiddenSerializedPropertyFileName(file.getName());
+			String fileName = fileNamer.getHiddenSerializedPropertyFileName(file.getName() + "-" + verificationTask.getBackendName());
 			String queryFilePath = file.getParentFile().toString() + File.separator + fileName;
 			File queryFile = new File(queryFilePath);
 			fileUtil.saveString(queryFile, serializedFormula);
@@ -447,13 +457,11 @@ public class VerificationHandler extends TaskHandler {
 		Set<Result> allResults = new LinkedHashSet<Result>(results);
 		allResults.addAll(optimizedResults);
 		
-		if (!Thread.interrupted()) {
-			if (lockSerialization) {
-				lockAndDoSerialization(allVerificationResults, allResults);
-			}
-			else {
-				doSerialization(allVerificationResults, allResults);
-			}
+		if (lockSerialization) {
+			lockAndDoSerialization(allVerificationResults, allResults);
+		}
+		else {
+			doSerialization(allVerificationResults, allResults);
 		}
 	}
 	
@@ -468,14 +476,16 @@ public class VerificationHandler extends TaskHandler {
 	private void doSerialization(
 				Collection<? extends VerificationResult> allVerificationResults,
 				Collection<? extends Result> allResults) throws IOException {
-		serializer.serialize(targetFolderUri, traceFileName, allVerificationResults);
-		
-		if (serializeTraces) { // After 'traces.add...'
-			serializeTraces(programmingLanguage);
-		}
-		
-		if (verificationPostprocessor != null) {
-			verificationPostprocessor.execute(allResults);
+		if (!Thread.interrupted()) {
+			serializer.serialize(targetFolderUri, traceFileName, allVerificationResults);
+			
+			if (serializeTraces) { // After 'traces.add...'
+				serializeTraces(programmingLanguage);
+			}
+			
+			if (verificationPostprocessor != null) {
+				verificationPostprocessor.execute(allResults);
+			}
 		}
 	}
 	

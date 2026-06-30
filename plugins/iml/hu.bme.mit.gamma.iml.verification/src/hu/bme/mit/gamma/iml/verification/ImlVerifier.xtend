@@ -139,4 +139,8 @@ class ImlVerifier extends AbstractVerifier {
 				"'https://github.com/ftsrg/gamma/tree/dev/plugins/iml#setup'"
 	}
 	
+	override protected getAnalysisLanguage() {
+		return "IML"
+	}
+	
 }

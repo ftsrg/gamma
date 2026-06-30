@@ -16,11 +16,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.ecore.EObject;
@@ -111,8 +109,13 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		//
 		ModelReference modelReference = transformation.getModel();
 		setAnalysisModelTransformation(transformation);
-		Set<AnalysisLanguage> languagesSet = new LinkedHashSet<AnalysisLanguage>(
-				transformation.getLanguages()); // To retain order
+		List<AnalysisLanguage> languagesSet = transformation.getLanguages();
+		AnalysisLanguage theta = AnalysisLanguage.THETA;
+		if (languagesSet.contains(theta)) {
+			languagesSet.remove(theta);
+			languagesSet.add(theta); // Final pass as Theta is the only backend with native XSTS input
+		}
+		
 		for (AnalysisLanguage analysisLanguage : languagesSet) {
 			AnalysisModelTransformer transformer;
 			switch (analysisLanguage) {
@@ -139,7 +142,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				case NUXMV:
 					transformer = new Gamma2XstsNuxmvTransformer();
 					break;
-				case OCRA: // Keep in mind that OCRA is not a model checker though
+				case OCRA: // OCRA is not a model checker, though
 					transformer = new Gamma2OcraTransformer();
 					break;
 				case IML:
@@ -172,20 +175,20 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 	
 	public String getFileName(String plainFileName, AnalysisLanguage analysisLanguage) {
 		switch (analysisLanguage) {
-		case THETA:
-			return fileNamer.getXtextXStsFileName(plainFileName);
-		case UPPAAL:
-			return fileNamer.getXmlUppaalFileName(plainFileName);
-		case XSTS_UPPAAL:
-			return fileNamer.getXmlUppaalFileName(plainFileName);
-		case PROMELA:
-			return fileNamer.getPmlPromelaFileName(plainFileName);
-		case NUXMV:
-			return fileNamer.getSmvNuxmvFileName(plainFileName);
-		case IML:
-			return fileNamer.getImlImandraFileName(plainFileName);
-		default:
-			throw new IllegalArgumentException("Not known language " + analysisLanguage);
+			case THETA:
+				return fileNamer.getXtextXStsFileName(plainFileName);
+			case UPPAAL:
+				return fileNamer.getXmlUppaalFileName(plainFileName);
+			case XSTS_UPPAAL:
+				return fileNamer.getXmlUppaalFileName(plainFileName);
+			case PROMELA:
+				return fileNamer.getPmlPromelaFileName(plainFileName);
+			case NUXMV:
+				return fileNamer.getSmvNuxmvFileName(plainFileName);
+			case IML:
+				return fileNamer.getImlImandraFileName(plainFileName);
+			default:
+				throw new IllegalArgumentException("Not known language " + analysisLanguage);
 		}
 	}
 	

@@ -29,5 +29,9 @@ class OcraVerifier extends AbstractVerifier {
 	override protected getUnavailableBackendMessage() {
 		throw new UnsupportedOperationException("TODO: auto-generated method stub")
 	}
-		
-}	
+	
+	override protected getAnalysisLanguage() {
+		return "OCRA"
+	}
+	
+}
