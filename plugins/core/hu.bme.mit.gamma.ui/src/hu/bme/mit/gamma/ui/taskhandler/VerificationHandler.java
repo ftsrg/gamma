@@ -101,8 +101,9 @@ import hu.bme.mit.gamma.xsts.util.XstsActionUtil;
 
 public class VerificationHandler extends TaskHandler {
 
-	protected boolean serializeTraces; // Denotes whether traces are serialized
+	protected final boolean serializeTraces; // Denotes whether traces are serialized
 	protected boolean serializeTest; // Denotes whether test code is generated
+	protected final boolean lockSerialization; // For thread racing
 	protected String testFolderUri;
 	// targetFolderUri is traceFolderUri 
 	protected String packageName; // Set in setVerification
@@ -147,10 +148,15 @@ public class VerificationHandler extends TaskHandler {
 		this(file, true, verificationPostprocessor);
 	}
 	
-	public VerificationHandler(IFile file, boolean serializeTraces,
+	public VerificationHandler(IFile file, boolean serializeTraces, VerificationPostprocessor verificationPostprocessor) {
+		this(file, serializeTraces, false, verificationPostprocessor);
+	}
+	
+	public VerificationHandler(IFile file, boolean serializeTraces, boolean lockSerialization,
 			VerificationPostprocessor verificationPostprocessor) {
 		super(file);
 		this.serializeTraces = serializeTraces;
+		this.lockSerialization = lockSerialization;
 		this.verificationPostprocessor = verificationPostprocessor;
 	}
 	
@@ -195,13 +201,13 @@ public class VerificationHandler extends TaskHandler {
 				verification2.getAnalysisLanguages().clear();
 				verification2.getAnalysisLanguages().add(analysisLanguage);
 				
-				VerificationHandler verificationHandler2 = new VerificationHandler(file, serializeTraces, verificationPostprocessor);
+				VerificationHandler verificationHandler2 = new VerificationHandler(file, serializeTraces, true, verificationPostprocessor);
 				// TODO for each property
 				InterruptableCallable<Object> verificationCall = new InterruptableCallable<Object>() {
 					public Object call() throws Exception {
 						verificationHandler2.executeOnce(verification2);
 						logger.info(analysisLanguage + " has won");
-						return new Object(); // Dummy
+						return this; // Dummy
 					}
 					public void cancel() {
 						verificationHandler2.cancel();
@@ -286,7 +292,7 @@ public class VerificationHandler extends TaskHandler {
 		boolean isOptimize = verification.isOptimize();
 		
 		// Retrieved verification results and traces
-		List<Result> verificationResults = new ArrayList<Result>();
+		List<Result> results = new ArrayList<Result>();
 		List<ExecutionTrace> retrievedTraces = new ArrayList<ExecutionTrace>(); // Derivable from verificationResults
 		List<VerificationResult> derivedVerificationResults = new ArrayList<VerificationResult>();
 		
@@ -374,7 +380,7 @@ public class VerificationHandler extends TaskHandler {
 			result = result.clone(
 					formulas.get(serializedFormula));
 			
-			verificationResults.add(result);
+			results.add(result);
 			ExecutionTrace trace = result.getTrace();
 			ThreeStateBoolean verificationResult = result.getResult();
 			
@@ -402,7 +408,7 @@ public class VerificationHandler extends TaskHandler {
 		if (isOptimize) {
 			// Optimization again on the retrieved tests (front to back and vice versa)
 			Collection<ExecutionTrace> removedTraces = traceUtil.removeCoveredExecutionTraces(retrievedTraces);
-			verificationResults.removeIf(it -> removedTraces.contains(it.getTrace()));
+			results.removeIf(it -> removedTraces.contains(it.getTrace()));
 		}
 		
 		// Back-annotation
@@ -419,11 +425,11 @@ public class VerificationHandler extends TaskHandler {
 				backAnnotatedTraces.add(orignalTrace);
 				
 				// Changing in the results list
-				for (int i = 0; i < verificationResults.size(); i++) {
-					Result result = verificationResults.get(i);
+				for (int i = 0; i < results.size(); i++) {
+					Result result = results.get(i);
 					if (result.getTrace() == trace) {
 						Result newResult = result.clone(orignalTrace);
-						verificationResults.set(i, newResult);
+						results.set(i, newResult);
 					}
 				}
 			}
@@ -431,23 +437,44 @@ public class VerificationHandler extends TaskHandler {
 			retrievedTraces.clear();
 			retrievedTraces.addAll(backAnnotatedTraces);
 		}
-		// TODO lock if needed
-		Set<VerificationResult> serializableResults = new LinkedHashSet<VerificationResult>(derivedVerificationResults);
-		serializableResults.addAll(optimizedVerificationResults);
-		for (VerificationResult result : serializableResults) { // TODO extract
-			serializer.serialize(targetFolderUri, traceFileName, result);
-		}
+		
+		// Serialization
+		Set<VerificationResult> allVerificationResults = new LinkedHashSet<VerificationResult>(derivedVerificationResults);
+		allVerificationResults.addAll(optimizedVerificationResults);
 		
 		traces.addAll(retrievedTraces);
+		
+		Set<Result> allResults = new LinkedHashSet<Result>(results);
+		allResults.addAll(optimizedResults);
+		
+		if (!Thread.interrupted()) {
+			if (lockSerialization) {
+				lockAndDoSerialization(allVerificationResults, allResults);
+			}
+			else {
+				doSerialization(allVerificationResults, allResults);
+			}
+		}
+	}
+	
+	private void lockAndDoSerialization(
+				Collection<? extends VerificationResult> allVerificationResults,
+				Collection<? extends Result> allResults) throws IOException {
+		synchronized (serializer) {
+			doSerialization(allVerificationResults, allResults);
+		}
+	}
+	
+	private void doSerialization(
+				Collection<? extends VerificationResult> allVerificationResults,
+				Collection<? extends Result> allResults) throws IOException {
+		serializer.serialize(targetFolderUri, traceFileName, allVerificationResults);
 		
 		if (serializeTraces) { // After 'traces.add...'
 			serializeTraces(programmingLanguage);
 		}
 		
 		if (verificationPostprocessor != null) {
-			List<Result> allResults = new ArrayList<Result>(verificationResults);
-			allResults.addAll(optimizedResults);
-			
 			verificationPostprocessor.execute(allResults);
 		}
 	}
@@ -844,6 +871,13 @@ public class VerificationHandler extends TaskHandler {
 			}
 			
 			return null;
+		}
+		
+		public void serialize(String resultFolderUri, String resultFileName,
+				Collection<? extends VerificationResult> results) throws IOException {
+			for (VerificationResult result : results) {
+				serialize(resultFolderUri, resultFileName, result);
+			}
 		}
 		
 		public void serialize(String resultFolderUri, String resultFileName,

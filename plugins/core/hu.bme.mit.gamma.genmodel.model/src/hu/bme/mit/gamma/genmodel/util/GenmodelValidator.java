@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -204,9 +204,10 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkTasks(Verification verification) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		List<AnalysisLanguage> languages = verification.getAnalysisLanguages();
-		if (languages.size() != 1) {
+		int languagesSize = languages.size();
+		if (languagesSize < 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-				"A single formal language must be specified",
+				"At least one formal language must be specified",
 					new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__ANALYSIS_LANGUAGES)));
 			return validationResultMessages;
 		}
@@ -220,10 +221,11 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		}
 		for (String modelFile : modelFiles) {
 			int index = modelFiles.indexOf(modelFile);
-			if (language == AnalysisLanguage.SMART || language == AnalysisLanguage.SMART_ALL) {
+			if (language == AnalysisLanguage.SMART || language == AnalysisLanguage.SMART_ALL ||
+						1 < languagesSize) {
 				if (fileUtil.hasExtension(modelFile)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Do not add the extension of the file for smart verification: " + modelFile,
+						"Do not add the extension of the file for smart or multi-thread verification: " + modelFile,
 							new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, index)));
 				}
 			}
