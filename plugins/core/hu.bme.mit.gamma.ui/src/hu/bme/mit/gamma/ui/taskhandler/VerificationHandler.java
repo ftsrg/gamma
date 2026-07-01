@@ -40,6 +40,7 @@ import com.google.gson.GsonBuilder;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.GenmodelModelFactory;
 import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
@@ -171,12 +172,34 @@ public class VerificationHandler extends TaskHandler {
 		return verificationInstance.getUnavailableBackendMessage();
 	}
 	
+	public Entry<InterruptableCallable<VerificationHandler>, Verification> wrap(
+			Verification verification, AnalysisLanguage analysisLanguage) {
+		Verification verification2 = ecoreUtil.clone(verification);
+		verification2.getAnalysisLanguages().clear();
+		verification2.getAnalysisLanguages().add(analysisLanguage);
+		
+		VerificationHandler verificationHandler2 = new VerificationHandler(file, serializeTraces, true, verificationPostprocessor);
+		InterruptableCallable<VerificationHandler> verificationCall = new InterruptableCallable<VerificationHandler>() {
+			public VerificationHandler call() throws Exception {
+				verificationHandler2.executeOnce(verification2);
+				logger.info(analysisLanguage + " has won");
+				return verificationHandler2; // Dummy
+			}
+			public void cancel() {
+				verificationHandler2.cancel();
+				logger.info(analysisLanguage + " has been canceled");
+			}
+		};
+		
+		return Map.entry(verificationCall, verification2);
+	}
+	
 	//
 	
 	public void execute(Verification verification) throws IOException, InterruptedException {
 		List<AnalysisLanguage> languages = verification.getAnalysisLanguages();
 		
-		if (languages.contains(AnalysisLanguage.SMART_ALL)) {
+		if (languages.contains(AnalysisLanguage.SMART_ALL)) { // TODO jointly
 			languages.clear();
 			List<AnalysisLanguage> smartAnalysisLanguages = getAllSmartAnalysisLanguages();
 			for (AnalysisLanguage analysisLanguage : smartAnalysisLanguages) {
@@ -189,46 +212,51 @@ public class VerificationHandler extends TaskHandler {
 			return;
 		}
 		else if (languages.size() > 1) {
-			if (verification.isOptimize()) {
-				// TODO
+			if (verification.isOptimize() || GenmodelDerivedFeatures.getFormulaCount(verification) <= 1) {
+				// All properties jointly
+				List<InterruptableCallable<VerificationHandler>> verificationCalls = new ArrayList<InterruptableCallable<VerificationHandler>>();
+				for (AnalysisLanguage analysisLanguage : languages) {
+					Entry<InterruptableCallable<VerificationHandler>, Verification> entry = wrap(verification, analysisLanguage);
+					InterruptableCallable<VerificationHandler> verificationCall = entry.getKey();
+					verificationCalls.add(verificationCall);
+				}
+				ThreadRacer<VerificationHandler> threadRacer = new ThreadRacer<VerificationHandler>(verificationCalls);
+				VerificationHandler winnerHandler = threadRacer.execute();
+				// TODO result serialization and trace handling
+				traces.addAll(
+						winnerHandler.getTraces());
 			}
-			for (PropertyPackage propertyPackage : verification.getPropertyPackages()) {
-				PropertyPackage propertyPackage2 = ecoreUtil.clone(propertyPackage);
-				List<CommentableStateFormula> formulas2 = propertyPackage2.getFormulas();
-				List<CommentableStateFormula> allFormulas = new ArrayList<CommentableStateFormula>(formulas2);
-				for (CommentableStateFormula formula : allFormulas) {
-					List<InterruptableCallable<Object>> verificationCalls = new ArrayList<InterruptableCallable<Object>>();
-					
-					formulas2.clear();
-					formulas2.add(formula);
-					
-					for (AnalysisLanguage analysisLanguage : languages) {
-						Verification verification2 = ecoreUtil.clone(verification);
-						verification2.getAnalysisLanguages().clear();
-						verification2.getAnalysisLanguages().add(analysisLanguage);
-						verification2.getPropertyPackages().clear();
-						verification2.getPropertyPackages().add(propertyPackage2);
+			else {
+				// Property by property
+				for (PropertyPackage propertyPackage : verification.getPropertyPackages()) {
+					PropertyPackage propertyPackage2 = ecoreUtil.clone(propertyPackage);
+					List<CommentableStateFormula> formulas2 = propertyPackage2.getFormulas();
+					List<CommentableStateFormula> allFormulas = new ArrayList<CommentableStateFormula>(formulas2);
+					for (CommentableStateFormula formula : allFormulas) {
+						List<InterruptableCallable<VerificationHandler>> verificationCalls = new ArrayList<InterruptableCallable<VerificationHandler>>();
 						
-						VerificationHandler verificationHandler2 = new VerificationHandler(file, serializeTraces, true, verificationPostprocessor);
-						InterruptableCallable<Object> verificationCall = new InterruptableCallable<Object>() {
-							public Object call() throws Exception {
-								verificationHandler2.executeOnce(verification2);
-								logger.info(analysisLanguage + " has won");
-								return verificationHandler2; // Dummy
-							}
-							public void cancel() {
-								verificationHandler2.cancel();
-								logger.info(analysisLanguage + " has been canceled");
-							}
-						};
-						verificationCalls.add(verificationCall);
+						formulas2.clear();
+						formulas2.add(formula);
+						
+						for (AnalysisLanguage analysisLanguage : languages) {
+							Entry<InterruptableCallable<VerificationHandler>, Verification> entry = wrap(verification, analysisLanguage);
+							InterruptableCallable<VerificationHandler> verificationCall = entry.getKey();
+							Verification verification2 = entry.getValue();
+							
+							verification2.getPropertyPackages().clear();
+							verification2.getPropertyPackages().add(propertyPackage2);
+							
+							verificationCalls.add(verificationCall);
+						}
+						
+						ThreadRacer<VerificationHandler> threadRacer = new ThreadRacer<VerificationHandler>(verificationCalls);
+						VerificationHandler winnerHandler = threadRacer.execute();
+						traces.addAll(
+								winnerHandler.getTraces());
 					}
-					
-					ThreadRacer<Object> threadRacer = new ThreadRacer<Object>(verificationCalls);
-					threadRacer.execute();
 				}
 			}
-			
+
 			return;
 		}
 		
@@ -237,11 +265,8 @@ public class VerificationHandler extends TaskHandler {
 	}
 	
 	protected void executeOnce(Verification verification) throws IOException, InterruptedException {
-		// Setting target folder
-		setProjectLocation(verification); // Before the target folder
-		setTargetFolder(verification);
-		//
-		setVerification(verification);
+		setAll(verification);
+		
 		List<AnalysisLanguage> languagesSet = verification.getAnalysisLanguages();
 		int size = languagesSet.size();
 		checkArgument(size == 1, size);
@@ -373,7 +398,8 @@ public class VerificationHandler extends TaskHandler {
 			
 			// Saving the string
 			File file = modelFile;
-			String fileName = fileNamer.getHiddenSerializedPropertyFileName(file.getName() + "-" + verificationTask.getBackendName());
+			String fileName = fileNamer.getHiddenSerializedPropertyFileName(
+					fileUtil.getExtensionlessName(file) + "-" + verificationTask.getBackendName());
 			String queryFilePath = file.getParentFile().toString() + File.separator + fileName;
 			File queryFile = new File(queryFilePath);
 			fileUtil.saveString(queryFile, serializedFormula);
@@ -662,6 +688,14 @@ public class VerificationHandler extends TaskHandler {
 		return result;
 	}
 	
+	protected void setAll(Verification verification) {
+		// Setting target folder
+		setProjectLocation(verification); // Before the target folder
+		setTargetFolder(verification);
+		//
+		setVerification(verification);
+	}
+	
 	private void setVerification(Verification verification) {
 		setSmartAnalysisLanguages(verification.getAnalysisLanguages());
 		
@@ -759,6 +793,16 @@ public class VerificationHandler extends TaskHandler {
 	public void optimizeTraces() {
 		// Optimization again on the retrieved tests (front to back and vice versa)
 		traceUtil.removeCoveredExecutionTraces(traces);
+	}
+	
+	public void serializeTraces() throws IOException {
+		serializeTraces(programmingLanguage);
+	}
+	
+	public void serializeTraces(Collection<ProgrammingLanguage> programmingLanguages) throws IOException {
+		for (ProgrammingLanguage programmingLanguage : programmingLanguages) {
+			serializeTraces(programmingLanguage);
+		}
 	}
 	
 	public void serializeTraces(ProgrammingLanguage programmingLanguage) throws IOException {

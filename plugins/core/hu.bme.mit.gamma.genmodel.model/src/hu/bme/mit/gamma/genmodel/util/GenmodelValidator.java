@@ -262,6 +262,11 @@ public class GenmodelValidator extends ExpressionModelValidator {
 					"derivation of the analysis model ('file' setting is not used in the analysis task)",
 						new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__BACK_ANNOTATE_TO_ORIGINAL)));
 		}
+		if (verification.isOptimizeModel()) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO,
+				"After the first execution, this setting shall be 'true' unless the analysis model is regenerated",
+					new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__OPTIMIZE_MODEL)));
+		}
 		
 		return validationResultMessages;
 	}

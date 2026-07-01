@@ -106,6 +106,11 @@ public class GenmodelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return verification.isOptimizeModel();
 	}
 	
+	public static int getFormulaCount(Verification verification) {
+		return verification.getPropertyPackages().stream().map(it -> it.getFormulas().size())
+				.reduce(0, (a, b) -> a + b);
+	}
+	
 	public static boolean isNegativeContractGeneration(StatechartContractGeneration statechartGeneration) {
 		return statechartGeneration.getTestType() == TestAutomatonType.NEGATIVE;
 	}

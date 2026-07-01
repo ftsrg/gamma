@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -30,7 +30,6 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
-import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer.StaticSingleAssignmentTransformer;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer.StaticSingleAssignmentTransformer.SsaType;
@@ -118,7 +117,6 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			if (!fileUtil.hasExtension(analysisFilePath) ) {
 				String fileExtension = fileNamer.getFileExtension(analysisLanguage);
 				analysisFilePath = fileUtil.changeExtension(analysisFilePath, fileExtension);
-				fileNames.set(0, analysisFilePath);
 			}
 			try {
 				analysisFile = super.exporeRelativeFile(verification, analysisFilePath);
@@ -175,7 +173,6 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 		propertyPackages.add(mainPropertyPackage);
 		// As such, it is unnecessary to optimize the generated trace(s)
 		boolean isOptimize = verification.isOptimize();
-//		verification.setOptimize(false); // Now one by one optimization is also supported
 		
 		// State slicing preparation
 		Map<State, Collection<State>> reachableStates = new HashMap<State, Collection<State>>();
@@ -246,24 +243,27 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			xStsOptimizer.optimizeXSts(xSts); // To remove null/empty actions
 			
 			// Serialize XSTS
+			String analysisFileString = analysisFile.toString();
+			String xStsFile = fileUtil.changeExtension(
+					analysisFileString, GammaFileNamer.XSTS_XTEXT_EXTENSION);
+			String xStsString = xStsSerializer.serializeXsts(xSts);
+			fileUtil.saveString(xStsFile, xStsString);
 			if (analysisLanguages.contains(AnalysisLanguage.XSTS_UPPAAL)) {
 				XstsToUppaalTransformer transformer = new XstsToUppaalTransformer(xSts);
 				NTA nta = transformer.execute();
-				UppaalModelSerializer.saveToXML(nta, analysisFile);
-				
-				String xStsString = xStsSerializer.serializeXsts(xSts);
-				String xStsFile = fileUtil.changeExtension(
-						analysisFile.toString(), GammaFileNamer.XSTS_XTEXT_EXTENSION);
-				fileUtil.saveString(xStsFile, xStsString);
+				String analysisFilePath2 = fileUtil.changeExtension(
+						analysisFileString, GammaFileNamer.UPPAAL_MODEL_EXTENSION);
+				File analysisFile2 = new File(analysisFilePath2);
+				UppaalModelSerializer.saveToXML(nta, analysisFile2);
+			}
+			if (analysisLanguages.contains(AnalysisLanguage.THETA)) {
+				// No op
 			}
 			if (analysisLanguages.contains(AnalysisLanguage.PROMELA)) {
 				String promelaString = promelaSerializer.serializePromela(xSts);
-				fileUtil.saveString(analysisFile, promelaString);
-				
-				String xStsString = xStsSerializer.serializeXsts(xSts);
-				String xStsFile = fileUtil.changeExtension(
-						analysisFile.toString(), GammaFileNamer.XSTS_XTEXT_EXTENSION);
-				fileUtil.saveString(xStsFile, xStsString);
+				String analysisFilePath2 = fileUtil.changeExtension(
+						analysisFileString, GammaFileNamer.PROMELA_MODEL_EXTENSION);
+				fileUtil.saveString(analysisFilePath2, promelaString);
 			}
 			if (analysisLanguages.contains(AnalysisLanguage.NUXMV)) {
 				// SSE
@@ -271,27 +271,22 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 						new StaticSingleAssignmentTransformer(xSts, SsaType.OUT_TRANS);
 				sseTransformer.execute();
 				// SMV
+				String analysisFileName = fileUtil.changeExtension(
+						analysisFile.getName(), GammaFileNamer.NUXMV_MODEL_EXTENSION);
 				XstsToNuxmvTransformer nuxmvTransformer = new XstsToNuxmvTransformer(xSts,
-					analysisFile.getParentFile().toString(), analysisFile.getName());
+					analysisFile.getParentFile().toString(), analysisFileName);
 				nuxmvTransformer.execute();
 				// XSTS
-				String xStsString = xStsSerializer.serializeXsts(xSts, true);
-				String xStsFile = fileUtil.changeExtension(
-						analysisFile.toString(), GammaFileNamer.XSTS_XTEXT_EXTENSION);
-				fileUtil.saveString(xStsFile, xStsString);
+				if (analysisLanguages.size() == 1) {
+					xStsString = xStsSerializer.serializeXsts(xSts);
+					fileUtil.saveString(xStsFile, xStsString);
+				}
 			}
 			if (analysisLanguages.contains(AnalysisLanguage.IML)) {
 				String imlString = imlSerializer.serializeIml(xSts, isFormulaInvariant); // Optimized non-det mapping for invariant properties
-				fileUtil.saveString(analysisFile, imlString);
-				
-				String xStsString = xStsSerializer.serializeXsts(xSts);
-				String xStsFile = fileUtil.changeExtension(
-						analysisFile.toString(), GammaFileNamer.XSTS_XTEXT_EXTENSION);
-				fileUtil.saveString(xStsFile, xStsString);
-			}
-			if (analysisLanguages.contains(AnalysisLanguage.THETA)) { // Last: to overwrite potential intermediate XSTS files
-				String xStsString = xStsSerializer.serializeXsts(xSts);
-				fileUtil.saveString(analysisFile, xStsString);
+				String analysisFilePath2 = fileUtil.changeExtension(
+						analysisFileString, GammaFileNamer.IML_MODEL_EXTENSION);
+				fileUtil.saveString(analysisFilePath2, imlString);
 			}
 			
 			verificationHandler.execute(verification);
@@ -308,9 +303,11 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			verificationHandler.optimizeTraces();
 		}
     
-		ProgrammingLanguage programmingLanguage = verificationHandler.getProgrammingLanguage();
 		if (serializeTraces) {
-			verificationHandler.serializeTraces(programmingLanguage); // Serialization in one pass
+			if (1 < analysisLanguages.size()) {
+				verificationHandler.setAll(verification); // Setting paths for serialization
+			}
+			verificationHandler.serializeTraces(); // Serialization in one pass
 		}
     
 		// Reinstate original state
