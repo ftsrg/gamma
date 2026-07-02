@@ -58,12 +58,13 @@ import hu.bme.mit.gamma.xsts.uppaal.transformation.XstsToUppaalTransformer;
 import uppaal.NTA;
 
 public class OptimizerAndVerificationHandler extends TaskHandler {
-	//
+	
+	protected final boolean serializeResults; // Denotes whether JSON results are serialized
 	protected final boolean serializeTraces; // Denotes whether traces are serialized
 
 	protected final VerificationPostprocessor verificationPostprocessor;
 	protected VerificationHandler verificationHandler = null;
-	//
+	
 	protected final SystemReducer xStsReducer = SystemReducer.INSTANCE;
 	protected final ActionSerializer xStsSerializer = ActionSerializer.INSTANCE;
 	protected final hu.bme.mit.gamma.xsts.promela.transformation.serializer.ModelSerializer promelaSerializer =
@@ -73,6 +74,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 	protected final hu.bme.mit.gamma.xsts.iml.transformation.serialization.ModelSerializer imlSerializer =
 			hu.bme.mit.gamma.xsts.iml.transformation.serialization.ModelSerializer.INSTANCE;
 	protected final VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE;
+	
 	//
 	
 	public OptimizerAndVerificationHandler(IFile file) {
@@ -80,16 +82,17 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 	}
 	
 	public OptimizerAndVerificationHandler(IFile file, boolean serializeTraces) {
-		this(file, serializeTraces, null);
+		this(file, true,  serializeTraces, null);
 	}
 	
 	public OptimizerAndVerificationHandler(IFile file, VerificationPostprocessor verificationPostprocessor) {
-		this(file, true, verificationPostprocessor);
+		this(file, true, true, verificationPostprocessor);
 	}
 	
-	public OptimizerAndVerificationHandler(IFile file, boolean serializeTraces,
+	public OptimizerAndVerificationHandler(IFile file, boolean serializeResults, boolean serializeTraces,
 			VerificationPostprocessor verificationPostprocessor) {
 		super(file);
+		this.serializeResults = serializeResults;
 		this.serializeTraces = serializeTraces;
 		this.verificationPostprocessor = verificationPostprocessor;
 	}
@@ -187,9 +190,9 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 		}
 		//
 		
-		// A single one to store the traces and support later optimization - false: no trace serialization
-		verificationHandler = new VerificationHandler(file, false, verificationPostprocessor);
-		//
+		// A single one to store the traces and support later optimization: no result/trace serialization
+		verificationHandler = new VerificationHandler(file, false, false, null);
+		
 		int i = 0; // Only for logging
 		while (!formulas.isEmpty()) {
 			CommentableStateFormula formula = formulas.poll();
@@ -298,18 +301,17 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			logger.info("The verification of property " + ++i + " finished; " + formulas.size() + " remaining");
 		}
 		
+		// Traces have not been serialized yet, doing it now
 		if (isOptimize) {
-			// Traces have not been serialized yet, doing it now
 			verificationHandler.optimizeTraces();
 		}
-    
-		if (serializeTraces) {
-			if (1 < analysisLanguages.size()) {
-				verificationHandler.setAll(verification); // Setting paths for serialization
-			}
-			verificationHandler.serializeTraces(); // Serialization in one pass
+		if (serializeResults || serializeTraces) {
+			VerificationHandler serializerHandler = new VerificationHandler(file, serializeResults, serializeTraces, verificationPostprocessor);
+			serializerHandler.setAll(verification);
+			serializerHandler.addAllResults(verificationHandler);
+			serializerHandler.doSetSerialization();
 		}
-    
+		
 		// Reinstate original state
 		propertyPackages.clear();
 		propertyPackages.addAll(savedPropertyPackages);

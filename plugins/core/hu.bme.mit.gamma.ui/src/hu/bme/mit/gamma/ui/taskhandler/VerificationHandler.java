@@ -101,10 +101,10 @@ import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil;
 
 public class VerificationHandler extends TaskHandler {
-
+	
+	protected final boolean serializeResults; // Denotes whether JSON results are serialized
 	protected final boolean serializeTraces; // Denotes whether traces are serialized
 	protected boolean serializeTest; // Denotes whether test code is generated
-	protected final boolean lockSerialization; // For thread racing
 	protected String testFolderUri;
 	// targetFolderUri is traceFolderUri 
 	protected String packageName; // Set in setVerification
@@ -120,8 +120,10 @@ public class VerificationHandler extends TaskHandler {
 	protected final VerificationPostprocessor verificationPostprocessor;
 	
 	protected final List<ExecutionTrace> traces = new ArrayList<ExecutionTrace>();
-	protected final List<Result> optimizedResults = new ArrayList<Result>();
-	protected final List<VerificationResult> optimizedVerificationResults = new ArrayList<VerificationResult>();
+	protected final Set<Result> optimizedResults = new LinkedHashSet<Result>();
+	protected final Set<VerificationResult> optimizedVerificationResults = new LinkedHashSet<VerificationResult>();
+	protected final Set<Result> allResults = new LinkedHashSet<Result>();
+	protected final Set<VerificationResult> allVerificationResults = new LinkedHashSet<VerificationResult>();
 	
 	protected final TraceUtil traceUtil = TraceUtil.INSTANCE;
 	protected final PropertyUtil propertyUtil = PropertyUtil.INSTANCE;
@@ -144,14 +146,14 @@ public class VerificationHandler extends TaskHandler {
 	}
 	
 	public VerificationHandler(IFile file, boolean serializeTraces, VerificationPostprocessor verificationPostprocessor) {
-		this(file, serializeTraces, false, verificationPostprocessor);
+		this(file, true, serializeTraces, verificationPostprocessor);
 	}
 	
-	public VerificationHandler(IFile file, boolean serializeTraces, boolean lockSerialization,
+	public VerificationHandler(IFile file, boolean serializeResults, boolean serializeTraces,
 			VerificationPostprocessor verificationPostprocessor) {
 		super(file);
+		this.serializeResults = serializeResults;
 		this.serializeTraces = serializeTraces;
-		this.lockSerialization = lockSerialization;
 		this.verificationPostprocessor = verificationPostprocessor;
 	}
 	
@@ -178,7 +180,7 @@ public class VerificationHandler extends TaskHandler {
 		verification2.getAnalysisLanguages().clear();
 		verification2.getAnalysisLanguages().add(analysisLanguage);
 		
-		VerificationHandler verificationHandler2 = new VerificationHandler(file, serializeTraces, true, verificationPostprocessor);
+		VerificationHandler verificationHandler2 = new VerificationHandler(file, false, false, null);
 		InterruptableCallable<VerificationHandler> verificationCall = new InterruptableCallable<VerificationHandler>() {
 			public VerificationHandler call() throws Exception {
 				verificationHandler2.executeOnce(verification2);
@@ -222,9 +224,8 @@ public class VerificationHandler extends TaskHandler {
 				}
 				ThreadRacer<VerificationHandler> threadRacer = new ThreadRacer<VerificationHandler>(verificationCalls);
 				VerificationHandler winnerHandler = threadRacer.execute();
-				// TODO result serialization and trace handling
-				traces.addAll(
-						winnerHandler.getTraces());
+				
+				addAllResults(winnerHandler);
 			}
 			else {
 				// Property by property
@@ -251,12 +252,14 @@ public class VerificationHandler extends TaskHandler {
 						
 						ThreadRacer<VerificationHandler> threadRacer = new ThreadRacer<VerificationHandler>(verificationCalls);
 						VerificationHandler winnerHandler = threadRacer.execute();
-						traces.addAll(
-								winnerHandler.getTraces());
+						
+						addAllResults(winnerHandler);
 					}
 				}
 			}
-
+			
+			setAll(verification);
+			doSetSerialization();
 			return;
 		}
 		
@@ -475,43 +478,26 @@ public class VerificationHandler extends TaskHandler {
 		}
 		
 		// Serialization
-		Set<VerificationResult> allVerificationResults = new LinkedHashSet<VerificationResult>(derivedVerificationResults);
+		allVerificationResults.addAll(derivedVerificationResults);
 		allVerificationResults.addAll(optimizedVerificationResults);
 		
 		traces.addAll(retrievedTraces);
 		
-		Set<Result> allResults = new LinkedHashSet<Result>(results);
+		allResults.addAll(results);
 		allResults.addAll(optimizedResults);
 		
-		if (lockSerialization) {
-			lockAndDoSerialization(allVerificationResults, allResults);
-		}
-		else {
-			doSerialization(allVerificationResults, allResults);
-		}
+		doSetSerialization();
 	}
 	
-	private void lockAndDoSerialization(
-				Collection<? extends VerificationResult> allVerificationResults,
-				Collection<? extends Result> allResults) throws IOException {
-		synchronized (serializer) {
-			doSerialization(allVerificationResults, allResults);
+	protected void doSetSerialization() throws IOException {
+		if (serializeResults) {
+			serializeResults();
 		}
-	}
-	
-	private void doSerialization(
-				Collection<? extends VerificationResult> allVerificationResults,
-				Collection<? extends Result> allResults) throws IOException {
-		if (!Thread.interrupted()) {
-			serializer.serialize(targetFolderUri, traceFileName, allVerificationResults);
-			
-			if (serializeTraces) { // After 'traces.add...'
-				serializeTraces(programmingLanguage);
-			}
-			
-			if (verificationPostprocessor != null) {
-				verificationPostprocessor.execute(allResults);
-			}
+		if (serializeTraces) {
+			serializeTraces();
+		}
+		if (verificationPostprocessor != null) {
+			verificationPostprocessor.execute(allResults);
 		}
 	}
 	
@@ -697,7 +683,8 @@ public class VerificationHandler extends TaskHandler {
 	}
 	
 	private void setVerification(Verification verification) {
-		setSmartAnalysisLanguages(verification.getAnalysisLanguages());
+		List<AnalysisLanguage> analysisLanguages = verification.getAnalysisLanguages();
+		setSmartAnalysisLanguages(analysisLanguages);
 		
 		List<String> traceFileNames = verification.getFileName2();
 		if (!traceFileNames.isEmpty()) {
@@ -739,7 +726,6 @@ public class VerificationHandler extends TaskHandler {
 		for (int i = 0; i < fileNames.size(); i++) {
 			String fileName = fileNames.get(i);
 			if (!fileUtil.hasExtension(fileName)) {
-				List<AnalysisLanguage> analysisLanguages = verification.getAnalysisLanguages();
 				AnalysisLanguage language = analysisLanguages.getFirst();
 				String newFileName = fileUtil.changeExtension(fileName,
 						fileNamer.getFileExtension(language));
@@ -748,6 +734,9 @@ public class VerificationHandler extends TaskHandler {
 			}
 		}
 		fileNames.replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
+		if (1 < analysisLanguages.size()) {
+			fileNames.replaceAll(it -> fileUtil.getExtensionlessName(it));
+		}
 		// Setting the query paths
 		verification.getQueryFiles().replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
 		// Setting the timeout
@@ -755,8 +744,7 @@ public class VerificationHandler extends TaskHandler {
 	}
 	
 	protected AbstractVerification getVerification(Verification verification) {
-		Set<AnalysisLanguage> languagesSet = new LinkedHashSet<AnalysisLanguage>(
-				verification.getAnalysisLanguages());
+		Collection<AnalysisLanguage> languagesSet = verification.getAnalysisLanguages();
 		AnalysisLanguage analysisLanguage = javaUtil.getLastElement(languagesSet);
 		return getVerification(analysisLanguage);
 	}
@@ -782,6 +770,12 @@ public class VerificationHandler extends TaskHandler {
 	
 	//
 	
+	protected void addAllResults(VerificationHandler verificationHandler) {
+		traces.addAll(verificationHandler.traces);
+		allVerificationResults.addAll(verificationHandler.allVerificationResults);
+		allResults.addAll(verificationHandler.allResults);
+	}
+	
 	public List<ExecutionTrace> getTraces() {
 		return traces;
 	}
@@ -795,14 +789,12 @@ public class VerificationHandler extends TaskHandler {
 		traceUtil.removeCoveredExecutionTraces(traces);
 	}
 	
-	public void serializeTraces() throws IOException {
-		serializeTraces(programmingLanguage);
+	public void serializeResults() throws IOException {
+		serializer.serialize(targetFolderUri, traceFileName, allVerificationResults);
 	}
 	
-	public void serializeTraces(Collection<ProgrammingLanguage> programmingLanguages) throws IOException {
-		for (ProgrammingLanguage programmingLanguage : programmingLanguages) {
-			serializeTraces(programmingLanguage);
-		}
+	public void serializeTraces() throws IOException {
+		serializeTraces(programmingLanguage);
 	}
 	
 	public void serializeTraces(ProgrammingLanguage programmingLanguage) throws IOException {
