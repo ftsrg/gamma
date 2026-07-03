@@ -280,7 +280,7 @@ ReferenceExpression returns Expression: // So it can be overriden
 ;
 
 DirectReferenceExpression returns DirectReferenceExpression:
-	declaration=[ValueDeclaration]
+	('::' parent=[NamedElement] '::')? declaration=[ValueDeclaration]
 ;
 
 LiteralExpression returns Expression:

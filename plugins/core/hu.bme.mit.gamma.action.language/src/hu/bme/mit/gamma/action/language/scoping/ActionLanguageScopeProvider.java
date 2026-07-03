@@ -76,6 +76,7 @@ public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProv
 			}
 			return parentScope;
 		}
+		
 		return super.getScope(context, reference);
 	}
 	

@@ -16,12 +16,17 @@ import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
+import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
+import org.eclipse.xtext.scoping.impl.FilteringScope;
 import org.eclipse.xtext.scoping.impl.SimpleScope;
+
+import com.google.common.base.Predicate;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
@@ -29,6 +34,7 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.ExpressionPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
+import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
@@ -76,8 +82,10 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 		if (context instanceof ExpressionPackage expressionPackage &&
 				reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			Collection<Declaration> declarations = new ArrayList<Declaration>();
-			declarations.addAll(expressionPackage.getConstantDeclarations());
-			declarations.addAll(expressionPackage.getFunctionDeclarations());
+			declarations.addAll(
+					expressionPackage.getConstantDeclarations());
+			declarations.addAll(
+					expressionPackage.getFunctionDeclarations());
 			// Parameter declarations could be added too, but what for?
 			return Scopes.scopeFor(declarations);
 		} // Order is important, as ExpressionPackage is a ParametricElement
@@ -89,7 +97,8 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 		}
 		if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			// Right now, this might not be necessary as parametric elements are contained directly by packages
-			return getParentScope(context, reference);
+			IScope parentScope_ = getParentScope(context, reference);
+			return wrapDirectReferenceScope(parentScope_, context);
 		}
 		if (reference == ExpressionModelPackage.Literals.TYPE_REFERENCE__REFERENCE) {
 			// Util override is crucial because of this
@@ -111,6 +120,7 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 				}
 			}
 		}
+		
 		return super.getScope(context, reference);
 	}
 	
@@ -134,6 +144,28 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 			parentScope = new SimpleScope(parentScope, scope.getAllElements());
 		}
 		return parentScope;
+	}
+	
+	protected IScope wrapDirectReferenceScope(IScope scope, EObject context) {
+		if (context instanceof DirectReferenceExpression reference) {
+			NamedElement parent = reference.getParent();
+			if (parent == null) {
+				return scope;
+			}
+			
+			Predicate<IEObjectDescription> filter = new Predicate<IEObjectDescription>() {
+				public boolean apply(IEObjectDescription input) {
+					EObject object = input.getEObjectOrProxy();
+					NamedElement container = ecoreUtil.getContainerOfType(object, NamedElement.class);
+					return container == parent;
+				}
+			};
+			
+			FilteringScope filteringScope = new FilteringScope(scope, filter);
+			return filteringScope;
+		}
+		
+		return scope;
 	}
 	
 }

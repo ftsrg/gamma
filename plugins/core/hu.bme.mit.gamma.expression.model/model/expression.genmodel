@@ -143,6 +143,7 @@
     </genClasses>
     <genClasses ecoreClass="expression.ecore#//ReferenceExpression"/>
     <genClasses ecoreClass="expression.ecore#//DirectReferenceExpression">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference expression.ecore#//DirectReferenceExpression/parent"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference expression.ecore#//DirectReferenceExpression/declaration"/>
     </genClasses>
     <genClasses ecoreClass="expression.ecore#//TupleReferenceExpression">

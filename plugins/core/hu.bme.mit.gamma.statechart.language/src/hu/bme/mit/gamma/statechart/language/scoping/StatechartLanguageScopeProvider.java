@@ -35,6 +35,7 @@ import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
+import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
@@ -361,12 +362,31 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 						.forEach(it -> events.addAll(StatechartModelDerivedFeatures.getInputEvents(it)));
 				return Scopes.scopeFor(events);
 			}
+			if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__PARENT) {
+				IScope scope = super.getScope(context, reference);
+				
+				Package package_ = ecoreUtil.getSelfOrContainerOfType(context, Package.class);
+				List<Package> imports = package_.getImports();
+				if (imports.isEmpty()) {
+					return scope;
+				}
+				
+				Collection<NamedElement> importedElements = new ArrayList<NamedElement>();
+				for (Package import_ : imports) {
+					List<NamedElement> importedNamedElements = ecoreUtil.getSelfAndAllContentsOfType(import_, NamedElement.class);
+					importedElements.addAll(importedNamedElements);
+				}
+				IScope parentScope = Scopes.scopeFor(importedElements);
+				
+				return embedScopes(List.of(parentScope, scope));
+			}
 			if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 				// 1. Local declarations
 				Action actionContainer = ecoreUtil.getSelfOrContainerOfType(context, Action.class);
 				if (actionContainer != null) {
-					return super.getScope(actionContainer, reference);
 					// Super takes care of the parent scopes
+					IScope scope = super.getScope(actionContainer, reference);
+					return wrapDirectReferenceScope(scope, context);
 				}
 				// 2. Variable declarations < parameter declarations < constant declarations - function declarations
 				IScope scope = IScope.NULLSCOPE;
@@ -401,11 +421,12 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				// 4. Interface declarations
 				if (context instanceof Interface _interface) {
 					Collection<Declaration> declarations = new ArrayList<Declaration>();
-					declarations.addAll(_interface.getFunctionDeclarations());
+					declarations.addAll(
+							_interface.getFunctionDeclarations());
 					scope = Scopes.scopeFor(declarations);
 				}
 				
-				return scope;
+				return wrapDirectReferenceScope(scope, context);
 			}
 		} catch (NullPointerException e) {
 			// Nullptr exception is thrown if the scope turns out to be empty
@@ -413,7 +434,8 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			return super.getScope(context, reference);
 		} catch (Exception e) {
 			e.printStackTrace();
-		} 
+		}
+		
 		return super.getScope(context, reference);
 	}
 	
