@@ -68,6 +68,7 @@ import hu.bme.mit.gamma.expression.model.LessExpression;
 import hu.bme.mit.gamma.expression.model.LiteralExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.MultiplyExpression;
+import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.NullaryExpression;
 import hu.bme.mit.gamma.expression.model.OpaqueExpression;
@@ -1582,10 +1583,15 @@ public class ExpressionUtil {
 	}
 	
 	public DirectReferenceExpression createReferenceExpression(Declaration declaration) {
+		return createReferenceExpression(declaration, null);
+	}
+	
+	public DirectReferenceExpression createReferenceExpression(Declaration declaration, NamedElement parent) {
 		if (declaration == null) {
 			throw new IllegalArgumentException("Declaration is null");
 		}
 		DirectReferenceExpression reference = factory.createDirectReferenceExpression();
+		reference.setParent(parent);
 		reference.setDeclaration(declaration);
 		return reference;
 	}
