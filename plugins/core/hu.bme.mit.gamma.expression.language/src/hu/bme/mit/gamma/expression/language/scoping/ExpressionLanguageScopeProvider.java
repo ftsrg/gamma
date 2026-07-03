@@ -146,6 +146,8 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 		return parentScope;
 	}
 	
+	//
+	
 	protected IScope wrapDirectReferenceScope(IScope scope, EObject context) {
 		if (context instanceof DirectReferenceExpression reference) {
 			NamedElement parent = reference.getParent();
@@ -153,11 +155,12 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 				return scope;
 			}
 			
+			EObject setParent = checkParent(parent);
 			Predicate<IEObjectDescription> filter = new Predicate<IEObjectDescription>() {
 				public boolean apply(IEObjectDescription input) {
 					EObject object = input.getEObjectOrProxy();
 					NamedElement container = ecoreUtil.getContainerOfType(object, NamedElement.class);
-					return container == parent;
+					return container == setParent || container == parent;
 				}
 			};
 			
@@ -166,6 +169,33 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 		}
 		
 		return scope;
+	}
+	
+	protected EObject checkParent(NamedElement parent) {
+		EObject setParent = getSelfOrFirstSubelementWithNamedElements(parent);
+		if (setParent == null) {
+			return parent;
+		}
+		return setParent;
+	}
+	
+	protected EObject getSelfOrFirstSubelementWithNamedElements(EObject context) {
+		List<EObject> contents = context.eContents();
+		if (contents.stream().anyMatch(it ->  it instanceof NamedElement)) {
+			return context;
+		}
+		
+		List<EObject> subelements = new ArrayList<EObject>(contents);
+		subelements.addAll(
+				context.eCrossReferences());
+		for (EObject object : subelements) {
+			EObject content = getSelfOrFirstSubelementWithNamedElements(object);
+			if (content != null) {
+				return content;
+			}
+		}
+		
+		return null;
 	}
 	
 }
