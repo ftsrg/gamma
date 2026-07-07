@@ -20,9 +20,11 @@ import hu.bme.mit.gamma.expression.model.AccessExpression
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.TupleTypeDefinition
@@ -31,6 +33,7 @@ import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.transformation.util.Configuration
+import hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings
 import java.util.List
 
 import static extension hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures.*
@@ -145,6 +148,20 @@ class ExpressionPreconditionTransformer {
 			
 			val lowlevelFunction = trace.get(function)
 			val lowlevelType = lowlevelFunction.typeDefinition
+			
+			// Port functions
+			val accessReference = expression.accessReference as DirectReferenceExpression
+			val parent = accessReference.parent
+			if (parent !== null) {
+				val container = lowlevelFunction.eContainer
+				val newName = LowlevelNamings.getName(function, parent)
+				if (!container.eContents.filter(FunctionDeclaration).exists[it.name == newName]) {
+					val lowlevelPortFunction = lowlevelFunction.clone
+					lowlevelPortFunction.name = newName
+					
+					lowlevelFunction.appendTo(lowlevelPortFunction)
+				}
+			}
 			
 			val isTuple = lowlevelType instanceof TupleTypeDefinition
 			val hasSideEffect = !lowlevelFunction.pure

@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.expression.model.EquivalenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.InequalityExpression
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression
@@ -53,6 +54,7 @@ import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.transformation.util.Configuration
+import hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings
 import java.util.List
 import java.util.logging.Logger
 
@@ -395,8 +397,14 @@ class ExpressionTransformer {
 					val extension functionTransformer = new FunctionTransformer(trace, ADD_RETURN_GUARDS)
 					function.transformAndStoreFunction
 				}
+				val access = expression.accessReference as DirectReferenceExpression
+				val parent = access.parent
 				
-				val lowlevelFunction = trace.get(function)
+				var lowlevelFunction = trace.get(function)
+				if (parent !== null) {
+					val container = lowlevelFunction.eContainer
+					lowlevelFunction = container.eContents.filter(FunctionDeclaration).findFirst[it.name == LowlevelNamings.getName(function, parent)]
+				}
 				val lowlevelArguments = arguments.map[it.transformExpression].flatten.toList
 				val lowlevelCall = lowlevelFunction.createFunctionAccessExpression(lowlevelArguments)
 				result += lowlevelCall

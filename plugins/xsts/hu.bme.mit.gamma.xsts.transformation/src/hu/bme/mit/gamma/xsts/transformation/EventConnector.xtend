@@ -215,15 +215,21 @@ class EventConnector {
 					val requiredInstance = requiredSimplePort.containingComponentInstance
 					val requiredFunctions = requiredInstancePort.port.allFunctionDeclarations
 					for (requiredFunction : requiredFunctions) {
+						val xStsPortFunctionDeclarationName = requiredFunction.getCustomizedName(requiredSimplePort, requiredInstance)
+						var xStsFunctionDeclaration = xStsFunctionDeclarations.findFirst[it.name == xStsPortFunctionDeclarationName]
 						val xStsFunctionDeclarationName = requiredFunction.getCustomizedName(requiredInstance)
-						val xStsFunctionDeclaration = xStsFunctionDeclarations.findFirst[it.name == xStsFunctionDeclarationName]
+						if (xStsFunctionDeclaration === null) {
+							xStsFunctionDeclaration = xStsFunctionDeclarations.findFirst[it.name == xStsFunctionDeclarationName]
+						}
 						
 						val functionDefinition = requiredFunction.getMatchingFunctionDeclaration(providedFunctions)
 						val xStsFunctionDefinitionName = functionDefinition.getCustomizedName(providedInstance)
 						val xStsFunctionDefinition = xStsFunctionDeclarations.findFirst[it.name == xStsFunctionDefinitionName]
 						
 						for (xStsFunctionCall : xStsFunctionCalls) {
-							if (xStsFunctionCall.declaration === xStsFunctionDeclaration) {
+							val xStsCalledFunction = xStsFunctionCall.declaration
+							println(xStsCalledFunction)
+							if (xStsCalledFunction === xStsFunctionDeclaration) {
 								xStsFunctionCall.operand = xStsFunctionDefinition.createReferenceExpression
 								logger.info('''Changing interface function reference «xStsFunctionDeclarationName» to «xStsFunctionDefinitionName»''')
 							}
