@@ -1,0 +1,20 @@
+package portfunctionssystem
+
+import "Interfaces/Interfaces.gcd"
+
+import "Statechart/PortFunctions_1.gcd"
+import "Statechart/PortFunctions_4.gcd"
+
+cascade PortFunctionsSystem5 [
+	port Execute : requires Execute
+] {
+	component _11 : PortFunctions_1
+	component _12 : PortFunctions_1
+	component _4 : PortFunctions_4
+	
+	bind Execute -> _11.Execute
+	bind Execute -> _12.Execute
+	
+	channel [_11.FunctionExecute] -o)- [_4.FunctionExecute_1]
+	channel [_12.FunctionExecute] -o)- [_4.FunctionExecute_2]
+}

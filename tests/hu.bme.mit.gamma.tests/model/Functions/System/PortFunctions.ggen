@@ -9,131 +9,138 @@ import "Statechart/AsyncPortFunctions_3"
 import "PortFunctionsSystem"
 import "PortFunctionsSystem3"
 import "PortFunctionsSystem4"
+import "PortFunctionsSystem5"
 
 import "AsyncPortFunctionsSystem"
 import "AsyncPortFunctionsSystem4"
 
-code {
-	component : PortFunctions_1
-	language : java
-}
-
-code {
-	component : PortFunctions_2
-	language : java
-}
-
-code {
-	component : PortFunctions_3
-	language : java
-}
+//code {
+//	component : PortFunctions_1
+//	language : java
+//}
+//
+//code {
+//	component : PortFunctions_2
+//	language : java
+//}
+//
+//code {
+//	component : PortFunctions_3
+//	language : java
+//}
+//
+//analysis {
+//	component : PortFunctionsSystem
+//	language : IML
+//	state-coverage
+//}
+//
+//verification {
+//	file : "PortFunctionsSystem"
+//	language : Imandra
+//	property-file : ".PortFunctionsSystem.gpd"
+//	optimize-traces : true
+//	test-language : java
+//}
+//
+//code {
+//	component : PortFunctionsSystem
+//	language : java
+//}
+//
+//analysis {
+//	component : PortFunctionsSystem3
+//	language : IML
+//	state-coverage
+//}
+//
+//verification {
+//	file : "PortFunctionsSystem3"
+//	language : Imandra
+//	property-file : ".PortFunctionsSystem3.gpd"
+//	optimize-traces : true
+//	test-language : java
+//}
+//
+//code {
+//	component : PortFunctionsSystem3
+//	language : java
+//}
+//
+//analysis {
+//	component : PortFunctionsSystem4
+//	language : IML
+//	state-coverage
+//}
+//
+//verification {
+//	file : "PortFunctionsSystem4"
+//	language : Imandra
+//	property-file : ".PortFunctionsSystem4.gpd"
+//	optimize-traces : true
+//	test-language : java
+//}
+//
+//code {
+//	component : PortFunctionsSystem4
+//	language : java
+//}
+//
+//code {
+//	component : AsyncPortFunctions_1
+//	language : java
+//}
+//
+//code {
+//	component : AsyncPortFunctions_2
+//	language : java
+//}
+//
+//code {
+//	component : AsyncPortFunctions_3
+//	language : java
+//}
+//
+//analysis {
+//	component : AsyncPortFunctionsSystem
+//	language : Imandra
+//	state-coverage
+//}
+//
+//verification {
+//	file : "AsyncPortFunctionsSystem"
+//	language : Imandra
+//	property-file : ".AsyncPortFunctionsSystem.gpd"
+//	optimize-traces : true
+//	test-language : java
+//}
+//
+//code {
+//	component : AsyncPortFunctionsSystem
+//	language : java
+//}
+//
+//analysis {
+//	component : AsyncPortFunctionsSystem4
+//	language : Imandra
+//	state-coverage
+//}
+//
+//verification {
+//	file : "AsyncPortFunctionsSystem4"
+//	language : Imandra
+//	property-file : ".AsyncPortFunctionsSystem4.gpd"
+//	optimize-traces : true
+//	test-language : java
+//}
+//
+//code {
+//	component : AsyncPortFunctionsSystem4
+//	language : java
+//}
 
 analysis {
-	component : PortFunctionsSystem
-	language : IML
+	component : PortFunctionsSystem5
+	language : XSTS
 	state-coverage
-}
-
-verification {
-	file : "PortFunctionsSystem"
-	language : Imandra
-	property-file : ".PortFunctionsSystem.gpd"
-	optimize-traces : true
-	test-language : java
-}
-
-code {
-	component : PortFunctionsSystem
-	language : java
-}
-
-analysis {
-	component : PortFunctionsSystem3
-	language : IML
-	state-coverage
-}
-
-verification {
-	file : "PortFunctionsSystem3"
-	language : Imandra
-	property-file : ".PortFunctionsSystem3.gpd"
-	optimize-traces : true
-	test-language : java
-}
-
-code {
-	component : PortFunctionsSystem3
-	language : java
-}
-
-analysis {
-	component : PortFunctionsSystem4
-	language : IML
-	state-coverage
-}
-
-verification {
-	file : "PortFunctionsSystem4"
-	language : Imandra
-	property-file : ".PortFunctionsSystem4.gpd"
-	optimize-traces : true
-	test-language : java
-}
-
-code {
-	component : PortFunctionsSystem4
-	language : java
-}
-
-code {
-	component : AsyncPortFunctions_1
-	language : java
-}
-
-code {
-	component : AsyncPortFunctions_2
-	language : java
-}
-
-code {
-	component : AsyncPortFunctions_3
-	language : java
-}
-
-analysis {
-	component : AsyncPortFunctionsSystem
-	language : Imandra
-	state-coverage
-}
-
-verification {
-	file : "AsyncPortFunctionsSystem"
-	language : Imandra
-	property-file : ".AsyncPortFunctionsSystem.gpd"
-	optimize-traces : true
-	test-language : java
-}
-
-code {
-	component : AsyncPortFunctionsSystem
-	language : java
-}
-
-analysis {
-	component : AsyncPortFunctionsSystem4
-	language : Imandra
-	state-coverage
-}
-
-verification {
-	file : "AsyncPortFunctionsSystem4"
-	language : Imandra
-	property-file : ".AsyncPortFunctionsSystem4.gpd"
-	optimize-traces : true
-	test-language : java
-}
-
-code {
-	component : AsyncPortFunctionsSystem4
-	language : java
 }
