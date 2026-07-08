@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -62,6 +62,7 @@ import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
+import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
@@ -285,7 +286,10 @@ public class ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkFunctionAccessExpression(FunctionAccessExpression functionAccessExpression) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		List<Expression> arguments = functionAccessExpression.getArguments();
-		Expression operand = functionAccessExpression.getOperand();
+		ReferenceExpression operand = null;
+		try {
+			operand = expressionUtil.getAccessReference(functionAccessExpression);
+		} catch (IllegalArgumentException e) {}
 		
 		if (!(operand instanceof DirectReferenceExpression)) {
 			validationResultMessages.add(
@@ -327,6 +331,7 @@ public class ExpressionModelValidator {
 			}
 			++i;
 		}
+		
 		return validationResultMessages;
 	}
 	
@@ -336,8 +341,7 @@ public class ExpressionModelValidator {
 
 		Declaration declaration = directReferenceExpression.getDeclaration();
 		if (declaration instanceof FunctionDeclaration) {
-			EObject eContainer = directReferenceExpression.eContainer();
-			if (!(eContainer instanceof FunctionAccessExpression)) {
+			if (!ecoreUtil.hasContainerOfType(directReferenceExpression, FunctionAccessExpression.class)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"No arguments are given in this function reference", 
 						new ReferenceInfo(ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION)));

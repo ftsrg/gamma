@@ -70,6 +70,7 @@ class Trace {
 	final Map<FunctionAccessExpression, List<VariableDeclaration>> returnVariableMappings = newHashMap
 	// Function - no inline
 	final Map<FunctionDeclaration, FunctionDeclaration> functionDeclMappings = newHashMap
+	final Map<Pair<Port, FunctionDeclaration>, FunctionDeclaration> portFunctionDeclMappings = newHashMap
 	final Map<Pair<ParameterDeclaration, FieldHierarchy>, ParameterDeclaration> parDeclMappings = newHashMap
 	
 	// Package
@@ -561,6 +562,22 @@ class Trace {
 	def get(FunctionDeclaration gammaFunction) {
 		checkNotNull(gammaFunction)
 		functionDeclMappings.get(gammaFunction)
+	}
+	
+	def put(Pair<Port, FunctionDeclaration> gammaFunction, FunctionDeclaration lowlevelFunction) {
+		checkNotNull(gammaFunction)
+		checkNotNull(lowlevelFunction)
+		portFunctionDeclMappings.put(gammaFunction, lowlevelFunction)
+	}
+
+	def isMapped_(Pair<Port, FunctionDeclaration> gammaFunction) {
+		checkNotNull(gammaFunction)
+		portFunctionDeclMappings.containsKey(gammaFunction)
+	}
+
+	def get_(Pair<Port, FunctionDeclaration> gammaFunction) {
+		checkNotNull(gammaFunction)
+		portFunctionDeclMappings.get(gammaFunction)
 	}
 	
 	// Function parameter values

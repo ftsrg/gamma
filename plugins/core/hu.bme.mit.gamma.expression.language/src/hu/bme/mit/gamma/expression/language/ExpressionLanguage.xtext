@@ -259,14 +259,14 @@ SignumExpression returns Expression:
 AccessExpression returns Expression:
 	PrimaryExpression(
 		{ArrayAccessExpression.operand=current} '[' index=Expression ']' |
-		{FunctionAccessExpression.operand=current} '(' ((arguments+=Expression)(',' arguments+=Expression)*)? ')' |
+		{FunctionAccessExpression.operand=current} '(' (arguments+=Expression (',' arguments+=Expression)*)? ')' |
 		{RecordAccessExpression.operand=current} '.' fieldReference=FieldReferenceExpression |
 		{SelectExpression.operand=current} '->' 'select'
 	)* 
 ;
 
 FieldReferenceExpression returns FieldReferenceExpression:
-		{FieldReferenceExpression} fieldDeclaration=[FieldDeclaration] 
+	{FieldReferenceExpression} fieldDeclaration=[FieldDeclaration] 
 ;
 
 PrimaryExpression returns Expression: 
@@ -280,7 +280,7 @@ ReferenceExpression returns Expression: // So it can be overriden
 ;
 
 DirectReferenceExpression returns DirectReferenceExpression:
-	('::' parent=[NamedElement] '::')? declaration=[ValueDeclaration]
+	declaration=[ValueDeclaration]
 ;
 
 LiteralExpression returns Expression:

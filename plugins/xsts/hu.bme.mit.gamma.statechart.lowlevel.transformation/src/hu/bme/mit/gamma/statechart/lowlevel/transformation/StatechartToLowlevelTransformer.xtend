@@ -11,10 +11,8 @@
 package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
 import hu.bme.mit.gamma.action.model.ActionModelFactory
-import hu.bme.mit.gamma.action.model.ProcedureDeclaration
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.expression.model.LambdaDeclaration
 import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.interface_.Event
@@ -320,30 +318,11 @@ class StatechartToLowlevelTransformer {
 		
 		// Interface function definitions
 		val functionDeclarations = statechart.functionDeclarations
-		for (port : statechart.allProvidedPorts) {
-			for (interfacefunctionDeclaration : port.allFunctionDeclarations) {
-				val functionDefinition = interfacefunctionDeclaration.getMatchingFunctionDeclaration(functionDeclarations)
-				if (!trace.isMapped(functionDefinition)) {
-					val extension functionTransformer = new FunctionTransformer(trace, ADD_RETURN_GUARDS)
-					functionDefinition.transformAndStoreFunction
-				}
-				
-				// Port function signature creation & delegation to implementation - actually, not needed for tracing
-				val lowlevelFunctionDefinition = trace.get(functionDefinition)
-				val lowlevelFunctionDeclaration = lowlevelFunctionDefinition.clone
-				functionDeclarations += lowlevelFunctionDeclaration
-				val name = interfacefunctionDeclaration.getName(port)
-				lowlevelFunctionDeclaration.name = name
-				val lowlevelBody = lowlevelFunctionDefinition.createFunctionAccessExpression(
-						lowlevelFunctionDeclaration.parameterDeclarations.map[it.createReferenceExpression])
-				if (lowlevelFunctionDeclaration instanceof ProcedureDeclaration) {
-					val lowlevelActions = lowlevelFunctionDeclaration.body.actions
-					lowlevelActions.clear
-					lowlevelActions += lowlevelBody.createExpressionStatement
-				}
-				else if (lowlevelFunctionDeclaration instanceof LambdaDeclaration) {
-					lowlevelFunctionDeclaration.expression = lowlevelBody
-				}
+		for (interfacefunctionDeclaration : statechart.allProvidedInterfaceFunctionDeclarations) {
+			val functionDefinition = interfacefunctionDeclaration.getMatchingFunctionDeclaration(functionDeclarations)
+			if (!trace.isMapped(functionDefinition)) {
+				val extension functionTransformer = new FunctionTransformer(trace, ADD_RETURN_GUARDS)
+				functionDefinition.transformAndStoreFunction
 			}
 		}
 		

@@ -25,7 +25,7 @@ FunctionDeclaration returns ConstraintModel::FunctionDeclaration:
 ;
 
 ProcedureDeclaration returns ActionModel::ProcedureDeclaration:
-	'procedure' name=ID ('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')? ':' type=Type
+	'procedure' name=ID ('(' (parameterDeclarations+=ParameterDeclaration (',' parameterDeclarations+=ParameterDeclaration)*)? ')')? ':' type=Type
 	(body=Block)?
 ;
 
@@ -163,7 +163,7 @@ AssertionStatement returns ActionModel::AssertionStatement:
 	'assert' '(' assertion=Expression ')'
 ;
 
-//Lvalue expression rules based on the constraint model
+// Lvalue expression rules based on the constraint model
 
 AssignableAccessExpression returns ConstraintModel::ReferenceExpression:
 	AssignablePrimaryExpression(
@@ -178,5 +178,5 @@ AssignablePrimaryExpression returns ConstraintModel::ReferenceExpression:
 ;
 
 AssignableDirectReferenceExpression returns ConstraintModel::ReferenceExpression:
-		{ConstraintModel::DirectReferenceExpression} declaration=[ConstraintModel::ValueDeclaration]
+	DirectReferenceExpression
 ;

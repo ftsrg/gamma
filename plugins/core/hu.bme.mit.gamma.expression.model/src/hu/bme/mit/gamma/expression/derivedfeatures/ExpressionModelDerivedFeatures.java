@@ -90,7 +90,7 @@ import hu.bme.mit.gamma.util.JavaUtil;
 public class ExpressionModelDerivedFeatures {
 	//
 	protected static final ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE;
-	protected static final ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
+	protected static ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	protected static final ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
 	protected static final LiteralExpressionCreator literalCreator = LiteralExpressionCreator.INSTANCE;
 	protected static final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;

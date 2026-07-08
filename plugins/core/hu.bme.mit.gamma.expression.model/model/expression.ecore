@@ -177,8 +177,10 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ReferenceExpression" abstract="true"
       eSuperTypes="#//NullaryExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="AbstractDirectReferenceExpression" eSuperTypes="#//ReferenceExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="declaration" eType="#//Declaration"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="DirectReferenceExpression" eSuperTypes="#//ReferenceExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="parent" eType="#//NamedElement"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="declaration" eType="#//Declaration"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TupleReferenceExpression" eSuperTypes="#//ReferenceExpression">

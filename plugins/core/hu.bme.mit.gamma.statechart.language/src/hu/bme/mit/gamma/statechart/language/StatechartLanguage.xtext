@@ -668,10 +668,12 @@ enum Persistency returns InterfaceModel::Persistency:
 	PERSISTENT = 'persistent' | TRANSIENT = 'transient'
 ;
 
-// Overriding it for the sake of EventParameterReferenceExpression
+// Expressions (override)
+
 @Override 
-PrimaryExpression returns ExpressionModel::Expression: 
+ReferenceExpression returns ExpressionModel::Expression: 
 	super |
+	PortDeclarationReferenceExpression |
 	EventParameterReferenceExpression |
 	InterfaceParameterReferenceExpression |
 	TimeoutReferenceExpression |
@@ -687,11 +689,21 @@ EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenc
 	port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] '::' parameter=[ExpressionModel::ParameterDeclaration];
 
 InterfaceParameterReferenceExpression returns InterfaceModel::InterfaceParameterReferenceExpression:
-	//this is a placeholder for the language to be unambiguous
+	// this is a placeholder for the language to be unambiguous
 	'this' '.' event=[InterfaceModel::Event] '::' parameter=[ExpressionModel::ParameterDeclaration];
 	
 TimeoutReferenceExpression returns TimeoutReferenceExpression:
 	'time-elapsed' '(' timeout=[TimeoutDeclaration] ')'
+;
+
+PortDeclarationReferenceExpression returns InterfaceModel::PortDeclarationReferenceExpression:
+	'::' port=[InterfaceModel::Port] '::' reference=DirectReferenceExpression
+;
+
+@Override
+AssignableDirectReferenceExpression returns ExpressionModel::ReferenceExpression:
+	super |
+		PortDeclarationReferenceExpression
 ;
 
 // Action Language Extensions
@@ -781,5 +793,3 @@ CoordinationStatechartDefinition returns CoordinationStatechartDefinition:
 			functionDeclarations+=FunctionDeclaration*
 	'}'
 ;
-
-//

@@ -230,6 +230,16 @@
     </genClasses>
     <genClasses image="false" ecoreClass="interface.ecore#//Trigger"/>
     <genClasses image="false" ecoreClass="interface.ecore#//EventReference"/>
+    <genClasses ecoreClass="interface.ecore#//PortReferenceExpression">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference interface.ecore#//PortReferenceExpression/port"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="interface.ecore#//EventReferenceExpression">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference interface.ecore#//EventReferenceExpression/event"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="interface.ecore#//ParameterReferenceExpression"/>
+    <genClasses ecoreClass="interface.ecore#//PortDeclarationReferenceExpression">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference interface.ecore#//PortDeclarationReferenceExpression/reference"/>
+    </genClasses>
     <genClasses ecoreClass="interface.ecore#//AnyTrigger"/>
     <genClasses ecoreClass="interface.ecore#//EventTrigger">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference interface.ecore#//EventTrigger/eventReference"/>

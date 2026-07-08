@@ -16,17 +16,12 @@ import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
-import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
-import org.eclipse.xtext.scoping.impl.FilteringScope;
 import org.eclipse.xtext.scoping.impl.SimpleScope;
-
-import com.google.common.base.Predicate;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.Declaration;
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
@@ -149,24 +144,24 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 	//
 	
 	protected IScope wrapDirectReferenceScope(IScope scope, EObject context) {
-		if (context instanceof DirectReferenceExpression reference) {
-			NamedElement parent = reference.getParent();
-			if (parent == null) {
-				return scope;
-			}
-			
-			EObject setParent = checkParent(parent);
-			Predicate<IEObjectDescription> filter = new Predicate<IEObjectDescription>() {
-				public boolean apply(IEObjectDescription input) {
-					EObject object = input.getEObjectOrProxy();
-					NamedElement container = ecoreUtil.getContainerOfType(object, NamedElement.class);
-					return container == setParent || container == parent;
-				}
-			};
-			
-			FilteringScope filteringScope = new FilteringScope(scope, filter);
-			return filteringScope;
-		}
+//		if (context instanceof DirectReferenceExpression reference) {
+//			NamedElement parent = reference.getParent();
+//			if (parent == null) {
+//				return scope;
+//			}
+//			
+//			EObject setParent = checkParent(parent);
+//			Predicate<IEObjectDescription> filter = new Predicate<IEObjectDescription>() {
+//				public boolean apply(IEObjectDescription input) {
+//					EObject object = input.getEObjectOrProxy();
+//					NamedElement container = ecoreUtil.getContainerOfType(object, NamedElement.class);
+//					return container == setParent || container == parent;
+//				}
+//			};
+//			
+//			FilteringScope filteringScope = new FilteringScope(scope, filter);
+//			return filteringScope;
+//		}
 		
 		return scope;
 	}

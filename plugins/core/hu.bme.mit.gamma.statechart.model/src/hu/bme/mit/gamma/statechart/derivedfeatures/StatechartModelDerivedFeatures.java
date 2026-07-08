@@ -36,6 +36,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures;
 import hu.bme.mit.gamma.action.model.AbstractAssignmentStatement;
 import hu.bme.mit.gamma.action.model.Action;
+import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
@@ -97,6 +98,7 @@ import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.PackageAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.Persistency;
 import hu.bme.mit.gamma.statechart.interface_.Port;
+import hu.bme.mit.gamma.statechart.interface_.PortDeclarationReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.interface_.SimpleTrigger;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
@@ -147,6 +149,10 @@ import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	protected static final StatechartUtil statechartUtil = StatechartUtil.INSTANCE;
+	
+	static { // TODO Remove when abstract DRE-s are introduced
+		expressionUtil = statechartUtil;
+	}
 	
 	//
 	
@@ -404,6 +410,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			default:
 				throw new IllegalArgumentException("Not known realization mode: " + realizationMode);
 		}
+	}
+	
+	public static boolean hasPortDeclarationReference(AccessExpression expression) {
+		Expression operand = expression.getOperand();
+		return operand instanceof PortDeclarationReferenceExpression;
+	}
+	
+	public static PortDeclarationReferenceExpression getPortDeclarationReference(AccessExpression expression) {
+		Expression operand = expression.getOperand();
+		return (PortDeclarationReferenceExpression) operand;
 	}
 	
 	public static boolean isInterfaceFunctionDeclaration(FunctionDeclaration functionDeclaration) {

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.util;
 
+import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.Type;
@@ -22,6 +23,7 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceE
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.EventReference;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceParameterReferenceExpression;
+import hu.bme.mit.gamma.statechart.interface_.PortDeclarationReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.TimeoutReferenceExpression;
@@ -37,13 +39,18 @@ public class ExpressionTypeDeterminator extends ExpressionTypeDeterminator2 {
 		if (expression instanceof StateReferenceExpression) {
 			return factory.createBooleanTypeDefinition();
 		}
+		else if (expression instanceof EventReference) {
+			return factory.createBooleanTypeDefinition();
+		}
 		else if (expression instanceof EventParameterReferenceExpression referenceExpression) {
 			ParameterDeclaration parameter = referenceExpression.getParameter();
 			Type type = parameter.getType();
 			return ecoreUtil.clone(type);
 		}
-		else if (expression instanceof EventReference) {
-			return factory.createBooleanTypeDefinition();
+		else if (expression instanceof PortDeclarationReferenceExpression referenceExpression) {
+			Declaration declaration = referenceExpression.getReference().getDeclaration();
+			Type type = declaration.getType();
+			return ecoreUtil.clone(type);
 		}
 		else if (expression instanceof InterfaceParameterReferenceExpression referenceExpression) {
 			ParameterDeclaration parameter = referenceExpression.getParameter();
@@ -72,6 +79,7 @@ public class ExpressionTypeDeterminator extends ExpressionTypeDeterminator2 {
 		else if (expression instanceof ComponentInstanceElementReferenceExpression) {
 			return factory.createBooleanTypeDefinition();
 		}
+		
 		return super.getType(expression);
 	}
 	

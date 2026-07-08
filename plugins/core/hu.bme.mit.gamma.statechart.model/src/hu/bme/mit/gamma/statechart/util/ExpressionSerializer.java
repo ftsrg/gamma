@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpr
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
+import hu.bme.mit.gamma.statechart.interface_.PortDeclarationReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
@@ -111,6 +112,10 @@ public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.Expre
 				+ expression.getParameter().getName();
 	}
 	
+	protected String _serialize(PortDeclarationReferenceExpression expression) {
+		return "::" + expression.getPort().getName() + "::" + expression.getReference().getDeclaration().getName();
+	}
+	
 	protected String _serialize(StateReferenceExpression expression) {
 		return "in-state(" + expression.getRegion().getName() + "."
 				+ expression.getState().getName() + ")";
@@ -187,6 +192,9 @@ public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.Expre
 		}
 		if (expression instanceof EventParameterReferenceExpression eventParameterReferenceExpression) {
 			return _serialize(eventParameterReferenceExpression);
+		}
+		if (expression instanceof PortDeclarationReferenceExpression portDeclarationReferenceExpression) {
+			return _serialize(portDeclarationReferenceExpression);
 		}
 		if (expression instanceof StateReferenceExpression reference) {
 			return _serialize(reference);

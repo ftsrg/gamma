@@ -81,6 +81,7 @@ import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Port;
+import hu.bme.mit.gamma.statechart.interface_.PortDeclarationReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
@@ -126,6 +127,9 @@ public class StatechartUtil extends ActionUtil {
 		if (expression instanceof EventParameterReferenceExpression reference) {
 			return reference.getParameter();
 		}
+		if (expression instanceof PortDeclarationReferenceExpression reference) {
+			return reference.getReference().getDeclaration();
+		}
 		return super.getDeclaration(expression);
 	}
 	
@@ -133,6 +137,10 @@ public class StatechartUtil extends ActionUtil {
 	public ReferenceExpression getAccessReference(Expression expression) {
 		if (expression instanceof EventParameterReferenceExpression reference) {
 			return reference;
+		}
+		if (expression instanceof PortDeclarationReferenceExpression reference) {
+			DirectReferenceExpression _reference = reference.getReference();
+			return _reference;
 		}
 		return super.getAccessReference(expression);
 	}
@@ -142,6 +150,9 @@ public class StatechartUtil extends ActionUtil {
 		ReferenceExpression referenceExpression = getAccessReference(expression);
 		if (referenceExpression instanceof EventParameterReferenceExpression reference) {
 			return reference.getParameter();
+		}
+		if (expression instanceof PortDeclarationReferenceExpression reference) {
+			return reference.getReference().getDeclaration();
 		}
 		return super.getAccessedDeclaration(referenceExpression);
 	}
