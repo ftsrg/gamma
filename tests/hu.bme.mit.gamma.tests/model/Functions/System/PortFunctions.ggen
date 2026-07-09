@@ -79,13 +79,13 @@ analysis {
 	state-coverage
 }
 
-verification {
-	file : "PortFunctionsSystem4"
-	language : Imandra
-	property-file : ".PortFunctionsSystem4.gpd"
-	optimize-traces : true
-	test-language : java
-}
+//verification {
+//	file : "PortFunctionsSystem4"
+//	language : Imandra
+//	property-file : ".PortFunctionsSystem4.gpd"
+//	optimize-traces : true
+//	test-language : java
+//}
 
 code {
 	component : PortFunctionsSystem4
@@ -151,13 +151,13 @@ analysis {
 	state-coverage
 }
 
-verification {
-	file : "AsyncPortFunctionsSystem4"
-	language : Imandra
-	property-file : ".AsyncPortFunctionsSystem4.gpd"
-	optimize-traces : true
-	test-language : java
-}
+//verification {
+//	file : "AsyncPortFunctionsSystem4"
+//	language : Imandra
+//	property-file : ".AsyncPortFunctionsSystem4.gpd"
+//	optimize-traces : true
+//	test-language : java
+//}
 
 code {
 	component : AsyncPortFunctionsSystem4

@@ -213,24 +213,23 @@ class EventConnector {
 				val requiredPort = requiredInstancePort.port
 				for (requiredSimplePort : requiredPort.allBoundSimplePorts) {
 					val requiredInstance = requiredSimplePort.containingComponentInstance
-					val requiredFunctions = requiredInstancePort.port.allFunctionDeclarations
+					val requiredFunctions = requiredSimplePort.allFunctionDeclarations
 					for (requiredFunction : requiredFunctions) {
-						val xStsPortFunctionDeclarationName = requiredFunction.getCustomizedName(requiredSimplePort, requiredInstance)
-						val xStsPortFunctionDeclaration = xStsFunctionDeclarations.findFirst[it.name == xStsPortFunctionDeclarationName]
-						val xStsFunctionDeclarationName = requiredFunction.getCustomizedName(requiredInstance)
-						val xStsFunctionDeclaration = xStsFunctionDeclarations.findFirst[it.name == xStsFunctionDeclarationName]
-						
 						val functionDefinition = requiredFunction.getMatchingFunctionDeclaration(providedFunctions)
-						val xStsFunctionDefinitionName = functionDefinition.getCustomizedName(providedInstance)
-						val xStsFunctionDefinition = xStsFunctionDeclarations.findFirst[it.name == xStsFunctionDefinitionName]
 						
-						for (xStsFunctionCall : xStsFunctionCalls) {
-							val xStsCalledFunction = xStsFunctionCall.declaration
+						val xStsPortFunctionDeclarationName = requiredFunction.getCustomizedName(requiredSimplePort, requiredInstance)
+						val xStsPortFunctionDeclarations = xStsFunctionDeclarations.filter[it.name == xStsPortFunctionDeclarationName]
+						for (xStsPortFunctionDeclaration : xStsPortFunctionDeclarations) {
+							val xStsFunctionDefinitionName = functionDefinition.getCustomizedName(providedInstance)
+							val xStsFunctionDefinition = xStsFunctionDeclarations.findFirst[it.name == xStsFunctionDefinitionName]
 							
-							if (xStsCalledFunction === xStsPortFunctionDeclaration ||
-									xStsCalledFunction === xStsFunctionDeclaration) {
-								xStsFunctionCall.operand = xStsFunctionDefinition.createReferenceExpression
-								logger.info('''Changing interface function reference «xStsFunctionDeclarationName» to «xStsFunctionDefinitionName»''')
+							for (xStsFunctionCall : xStsFunctionCalls) {
+								val xStsCalledFunction = xStsFunctionCall.functionDeclaration
+								
+								if (xStsCalledFunction === xStsPortFunctionDeclaration) {
+									xStsFunctionCall.operand = xStsFunctionDefinition.createReferenceExpression
+									logger.info('''Changing interface function reference «xStsPortFunctionDeclarationName» to «xStsFunctionDefinitionName»''')
+								}
 							}
 						}
 					}
@@ -262,8 +261,8 @@ class EventConnector {
 						val xStsVariableDefinitionNames = variable.customizeNames(providedSimplePort, providedInstance)
 						for (var i = 0; i < xStsVariableDeclarationNames.size; i++) {
 							val xStsVariableDeclarationName = xStsVariableDeclarationNames.get(i)
-							val xStsVariableDeclaration = xStsVariableDeclarations.findFirst[it.name == xStsVariableDeclarationName]
-							if (xStsVariableDeclaration !== null) {
+							val _xStsVariableDeclarations = xStsVariableDeclarations.filter[it.name == xStsVariableDeclarationName]
+							for (xStsVariableDeclaration : _xStsVariableDeclarations) {
 								val xStsVariableDefinitionName = xStsVariableDefinitionNames.get(i)
 								val xStsVariableDefinition = xStsVariableDeclarations.findFirst[it.name == xStsVariableDefinitionName]
 								

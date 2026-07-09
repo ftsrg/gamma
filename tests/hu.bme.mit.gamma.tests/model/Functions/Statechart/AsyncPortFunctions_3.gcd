@@ -22,21 +22,21 @@ statechart AsyncPortFunctions_3 [
 	transition from Initial to _X
 	transition from _X to _Y when FunctionExecute.^execute / {
 		var a : integer := _int;
-		var c : ComplexRecord := getComplexRecord();
-		if (getValue() + 2 < 99) {
-			var c : ComplexRecord := getComplexRecord();
-			setValue(_int + 69 + c.b.b);
+		var c : ComplexRecord := ::FunctionExecute::getComplexRecord();
+		if (::FunctionExecute::getValue() + 2 < 99) {
+			var c : ComplexRecord := ::FunctionExecute::getComplexRecord();
+			::FunctionExecute::setValue(_int + 69 + c.b.b);
 			_bool := true;
-			setComplexRecord2(1.43 + c.a + c.b.b - rec.b, true, 69 - _int);
+			::FunctionExecute::setComplexRecord2(1.43 + c.a + c.b.b - rec.b, true, 69 - _int);
 		}
 		elseif (!c.b.a and a < -123) {
 			_bool := _bool xor true;
 			cRec.a := cRec.a + 1.56;
 		}
-		_int := _int + factorial(4) / a;
-		cRec := getComplexRecord();
+		_int := _int + ::FunctionExecute::factorial(4) / a;
+		cRec := ::FunctionExecute::getComplexRecord();
 	}
-	transition from _Y to _Z when FunctionExecute.^execute / _int := getValue(); setRecord(#Rec0rd{a := false, b := 10});
-	transition from _Z to _A when FunctionExecute.^execute / _int := getValue(); rec := getRecord(); rec.b := rec.b + 1;
+	transition from _Y to _Z when FunctionExecute.^execute / _int := ::FunctionExecute::getValue(); ::FunctionExecute::setRecord(#Rec0rd{a := false, b := 10});
+	transition from _Z to _A when FunctionExecute.^execute / _int := ::FunctionExecute::getValue(); rec := ::FunctionExecute::getRecord(); rec.b := rec.b + 1;
 	
 }
