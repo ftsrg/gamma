@@ -413,10 +413,10 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 						declarations.addAll(
 								statechart.getFunctionDeclarations());
 						
-						declarations.addAll(
-								StatechartModelDerivedFeatures.getAllInterfaceVariableDeclarations(statechart));
-						declarations.addAll(
-								StatechartModelDerivedFeatures.getAllInterfaceFunctionDeclarations(statechart));
+//						declarations.addAll(
+//								StatechartModelDerivedFeatures.getAllInterfaceVariableDeclarations(statechart));
+//						declarations.addAll(
+//								StatechartModelDerivedFeatures.getAllInterfaceFunctionDeclarations(statechart));
 						
 						scope = Scopes.scopeFor(declarations, parentScope);
 					}
