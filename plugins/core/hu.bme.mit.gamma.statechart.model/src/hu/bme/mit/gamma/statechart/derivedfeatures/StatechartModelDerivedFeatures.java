@@ -422,9 +422,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return (PortDeclarationReferenceExpression) operand;
 	}
 	
-	public static boolean isInterfaceFunctionDeclaration(FunctionDeclaration functionDeclaration) {
-		EObject container = functionDeclaration.eContainer();
+	public static boolean isInterfaceDeclaration(Declaration declaration) {
+		EObject container = declaration.eContainer();
 		return container instanceof Interface;
+	}
+	
+	public static boolean isInterfaceFunctionDeclaration(FunctionDeclaration functionDeclaration) {
+		return isInterfaceDeclaration(functionDeclaration);
 	}
 	
 	// For unfolded composite components

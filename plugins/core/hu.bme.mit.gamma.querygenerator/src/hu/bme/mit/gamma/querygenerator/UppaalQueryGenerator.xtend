@@ -83,6 +83,10 @@ class UppaalQueryGenerator extends AbstractQueryGenerator {
 		return #[getVariableName(variable, instance)]
 	}
 	
+	override protected getTargetVariableNames(VariableDeclaration variable, Port port, SynchronousComponentInstance instance) {
+		throw new UnsupportedOperationException("TODO: auto-generated method stub")
+	}
+	
 	override protected getTargetOutEventName(Event event, Port port,
 			SynchronousComponentInstance instance) {
 		return getOutEventName(event, port, instance)

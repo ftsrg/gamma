@@ -123,6 +123,10 @@ class Namings {
 	static def List<String> customizeNames(VariableDeclaration variable, ComponentInstanceReferenceExpression instance) { customizeNames(variable, instance.FQN) }
 	static def List<String> customizeNames(VariableDeclaration variable, String instance) { getNames(variable).map[it.variableName + "_" + instance] }
 	
+	static def List<String> customizeNames(VariableDeclaration variable, NamedElement container, ComponentInstance instance) { customizeNames(variable, container, instance.name) }
+	static def List<String> customizeNames(VariableDeclaration variable, NamedElement container, ComponentInstanceReferenceExpression instance) { customizeNames(variable, container, instance.FQN) }
+	static def List<String> customizeNames(VariableDeclaration variable, NamedElement container, String instance) { getNames(variable, container).map[it.variableName + "_" + instance] }
+	
 	// Region customization
 	
 	static def String customizeRegionTypeName(Region region) '''«region.regionName.regionTypeName.customizeRegionTypeName(region.containingStatechart.name)»'''

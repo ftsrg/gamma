@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
+import hu.bme.mit.gamma.expression.model.AbstractDirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.AddExpression;
 import hu.bme.mit.gamma.expression.model.AndExpression;
@@ -115,6 +116,9 @@ public class ExpressionUtil {
 	// The following methods are worth extending in subclasses
 	
 	public Declaration getDeclaration(Expression expression) {
+		if (expression instanceof AbstractDirectReferenceExpression reference) {
+			return reference.getDeclaration();
+		}
 		if (expression instanceof DirectReferenceExpression reference) {
 			return reference.getDeclaration();
 		}
@@ -146,6 +150,9 @@ public class ExpressionUtil {
 	}
 	
 	public ReferenceExpression getAccessReference(Expression expression) {
+		if (expression instanceof AbstractDirectReferenceExpression reference) {
+			return reference;
+		}
 		if (expression instanceof DirectReferenceExpression reference) {
 			return reference;
 		}
@@ -176,6 +183,9 @@ public class ExpressionUtil {
 	
 	public Declaration getAccessedDeclaration(Expression expression) {
 		ReferenceExpression reference = getAccessReference(expression);
+		if (reference instanceof AbstractDirectReferenceExpression directReference) {
+			return directReference.getDeclaration();
+		}
 		if (reference instanceof DirectReferenceExpression directReference) {
 			return directReference.getDeclaration();
 		}

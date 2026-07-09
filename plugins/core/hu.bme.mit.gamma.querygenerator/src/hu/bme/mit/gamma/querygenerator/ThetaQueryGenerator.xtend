@@ -79,6 +79,10 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		return variable.customizeNames(instance)
 	}
 	
+	override protected getTargetVariableNames(VariableDeclaration variable, Port port, SynchronousComponentInstance instance) {
+		return variable.customizeNames(port, instance)
+	}
+	
 	override protected getTargetOutEventName(Event event, Port port, SynchronousComponentInstance instance) {
 		return event.customizeOutputName(port, instance)
 	}
@@ -309,9 +313,24 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	
 	def getSourceVariable(String targetVariableName) {
 		for (match : instanceVariables) {
-			val names = getTargetVariableNames(match.variable, match.instance)
-			if (names.contains(targetVariableName)) {
-				return match.variable -> match.instance
+			val variable = match.variable
+			val instance = match.instance
+			if (variable.interfaceDeclaration) {
+				val statechart = instance.getStatechart
+				for (port : statechart.allPorts) {
+					if (port.allVariableDeclarations.contains(variable)) {
+						val names = variable.getTargetVariableNames(port, instance)
+						if (names.contains(targetVariableName)) {
+							return variable -> instance
+						}
+					}
+				}
+			}
+			else {
+				val names = variable.getTargetVariableNames(instance)
+				if (names.contains(targetVariableName)) {
+					return variable -> instance
+				}
 			}
 		}
 		throw new IllegalArgumentException("Not known id")
@@ -321,10 +340,24 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	def getSourceVariableFieldHierarchy(String targetVariableName) {
 		for (match : instanceVariables) {
 			val variable = match.variable
+			val instance = match.instance
 			val type = variable.typeDefinition
-			val names = getTargetVariableNames(match.variable, match.instance)
-			if (names.contains(targetVariableName)) {
-				return type.getSourceFieldHierarchy(names, targetVariableName)
+			if (variable.interfaceDeclaration) {
+				val statechart = instance.getStatechart
+				for (port : statechart.allPorts) {
+					if (port.allVariableDeclarations.contains(variable)) {
+						val names = variable.getTargetVariableNames(port, instance)
+						if (names.contains(targetVariableName)) {
+							return type.getSourceFieldHierarchy(names, targetVariableName)
+						}
+					}
+				}
+			}
+			else {
+				val names = variable.getTargetVariableNames(instance)
+				if (names.contains(targetVariableName)) {
+					return type.getSourceFieldHierarchy(names, targetVariableName)
+				}
 			}
 		}
 		throw new IllegalArgumentException("Not known id")

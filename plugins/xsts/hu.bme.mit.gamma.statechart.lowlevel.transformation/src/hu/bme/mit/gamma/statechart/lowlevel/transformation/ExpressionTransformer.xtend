@@ -38,6 +38,7 @@ import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.EventReference
+import hu.bme.mit.gamma.statechart.interface_.PortDeclarationReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
@@ -52,6 +53,7 @@ import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.Triple
 import hu.bme.mit.gamma.xsts.transformation.util.Configuration
 import java.util.List
 import java.util.logging.Logger
@@ -250,6 +252,10 @@ class ExpressionTransformer {
 	def dispatch List<Expression> transformExpression(EventParameterReferenceExpression expression) {
 		return expression.transformReferenceExpression
 	}
+	
+	def dispatch List<Expression> transformExpression(PortDeclarationReferenceExpression expression) {
+		return expression.transformReferenceExpression
+	}
 		
 	def dispatch List<Expression> transformExpression(RecordAccessExpression expression) {
 		return expression.transformReferenceExpression
@@ -297,8 +303,17 @@ class ExpressionTransformer {
 				lowlevelVariables += trace.getAllPar(declaration -> fieldAccess)
 			}
 			else {
-				// Normal value
-				lowlevelVariables += trace.getAll(declaration -> fieldAccess)
+				val container = reference.eContainer
+				if (container instanceof PortDeclarationReferenceExpression) {
+					// Port declaration
+					val port = container.port
+					val record_ = new Triple(port, declaration, fieldAccess)
+					lowlevelVariables += trace.getAll(record_)
+				}
+				else {
+					// Normal value
+					lowlevelVariables += trace.getAll(declaration -> fieldAccess)
+				}
 			}
 		}
 		else if (reference instanceof EventParameterReferenceExpression) {

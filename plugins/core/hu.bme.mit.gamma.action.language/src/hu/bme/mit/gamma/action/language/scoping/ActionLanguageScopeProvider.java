@@ -37,6 +37,7 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
+import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
@@ -104,6 +105,12 @@ public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProv
 			Expression accessedExpression = reference.getOperand();
 			return getFieldDeclarations(accessedExpression);
 		}
+		
+		try {
+			ReferenceExpression reference = util.getAccessReference(operand);
+			return getFieldDeclarations(reference);
+		} catch (IllegalArgumentException e) {}
+		
 		return Collections.emptyList();
 	}
 	

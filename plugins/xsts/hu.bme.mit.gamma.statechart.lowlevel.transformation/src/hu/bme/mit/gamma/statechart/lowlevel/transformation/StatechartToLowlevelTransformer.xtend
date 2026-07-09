@@ -267,8 +267,7 @@ class StatechartToLowlevelTransformer {
 			lowlevelStatechart.variableDeclarations += lowlevelParameterDeclaration
 			lowlevelStatechart.parameterDeclarations += lowlevelParameterDeclaration
 		}
-		for (variableDeclaration : statechart.variableDeclarations +
-					statechart.allInterfaceVariableDeclarations) {
+		for (variableDeclaration : statechart.variableDeclarations) {
 			lowlevelStatechart.variableDeclarations += variableDeclaration.transform
 		}
 		for (timeoutDeclaration : statechart.timeoutDeclarations) {
@@ -286,6 +285,9 @@ class StatechartToLowlevelTransformer {
 					// Tracing
 					lowlevelStatechart.internalEventDeclarations += lowlevelEventDeclarations
 				}
+			}
+			for (variableDeclaration : port.allVariableDeclarations) {
+				lowlevelStatechart.variableDeclarations += variableDeclaration.transform(port)
 			}
 		}
 		for (region : statechart.regions) {

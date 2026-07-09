@@ -65,6 +65,9 @@ class LowlevelNamings {
 	static def List<String> getNames(VariableDeclaration variable) {
 		return variable.namePostfixes.map['''«variable.getName»«it»''']
 	}
+	static def List<String> getNames(VariableDeclaration variable, NamedElement container) {
+		return variable.namePostfixes.map['''«variable.getName(container)»«it»''']
+	}
 	
 	static def List<String> getNames(ConstantDeclaration variable) {
 		return variable.namePostfixes.map['''«variable.getName»«it»''']

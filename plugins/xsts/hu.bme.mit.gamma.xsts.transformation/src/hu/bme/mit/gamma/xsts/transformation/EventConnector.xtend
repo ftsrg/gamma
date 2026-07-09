@@ -256,24 +256,25 @@ class EventConnector {
 				val requiredPort = requiredInstancePort.port
 				for (requiredSimplePort : requiredPort.allBoundSimplePorts) {
 					val requiredInstance = requiredSimplePort.containingComponentInstance
-					val requiredVariables = requiredInstancePort.port.allVariableDeclarations
-					for (requiredVariable : requiredVariables) {
-						val xStsVariableDeclarationNames = requiredVariable.customizeNames(requiredInstance)
-						val xStsVariableDefinitionNames = requiredVariable.customizeNames(providedInstance)
+					val variables = requiredSimplePort.allVariableDeclarations
+					for (variable : variables) {
+						val xStsVariableDeclarationNames = variable.customizeNames(requiredSimplePort, requiredInstance)
+						val xStsVariableDefinitionNames = variable.customizeNames(providedSimplePort, providedInstance)
 						for (var i = 0; i < xStsVariableDeclarationNames.size; i++) {
 							val xStsVariableDeclarationName = xStsVariableDeclarationNames.get(i)
 							val xStsVariableDeclaration = xStsVariableDeclarations.findFirst[it.name == xStsVariableDeclarationName]
 							if (xStsVariableDeclaration !== null) {
 								val xStsVariableDefinitionName = xStsVariableDefinitionNames.get(i)
 								val xStsVariableDefinition = xStsVariableDeclarations.findFirst[it.name == xStsVariableDefinitionName]
-							
+								
 								if (xStsVariableDefinition === null) {
 									// Definition has been removed due to optimization; declaration will serve as definition
 									xStsVariableDeclaration.name = xStsVariableDefinitionName
 								}
 								else {
 									for (xStsVariableReference : xStsVariableReferences) {
-										if (xStsVariableReference.declaration === xStsVariableDeclaration) {
+										val xStsReferencedVariable = xStsVariableReference.declaration
+										if (xStsReferencedVariable === xStsVariableDeclaration) {
 											xStsVariableReference.declaration = xStsVariableDefinition
 											logger.info('''Changing interface variable reference «xStsVariableDeclarationName» to «xStsVariableDefinitionName»''')
 										}
