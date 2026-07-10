@@ -47,6 +47,10 @@ class ValueDeclarationAccessor {
 		return objectId.access(declaration, declaration.customizeNames)
 	}
 	
+	def access(String objectId, VariableDeclaration declaration, Port port) {
+		return objectId.access(declaration, declaration.customizeNames(port))
+	}
+	
 	def accessOut(String objectId, Port port, ParameterDeclaration declaration) {
 		return objectId.access(declaration, declaration.customizeOutNames(port))
 	}
@@ -120,9 +124,13 @@ class ValueDeclarationAccessor {
 	// Write
 	
 	def writeIn(String id, VariableDeclaration declaration) {
+		return id.writeIn(declaration, null)
+	}
+	
+	def writeIn(String id, VariableDeclaration declaration, Port port) {
 		val valueId = declaration.name
 		val type = declaration.typeDefinition
-		val names = declaration.customizeNames
+		val names = (port === null) ? declaration.customizeNames : declaration.customizeNames(port)
 		val accesses = type.accessIn(valueId)
 		checkState(names.size == accesses.size)
 		return '''

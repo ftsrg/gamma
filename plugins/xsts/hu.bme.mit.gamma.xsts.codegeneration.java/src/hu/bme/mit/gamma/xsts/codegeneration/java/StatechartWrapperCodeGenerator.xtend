@@ -184,7 +184,7 @@ class StatechartWrapperCodeGenerator {
 					«FOR boundVariable : port.allVariableDeclarations»
 						@Override
 						public void set«boundVariable.name.toFirstUpper»(«boundVariable.type.serialize» «boundVariable.name») {
-							«CLASS_NAME.toFirstLower.writeIn(boundVariable)»
+							«CLASS_NAME.toFirstLower.writeIn(boundVariable, port)»
 						}
 					«ENDFOR»
 					@Override
@@ -264,7 +264,7 @@ class StatechartWrapperCodeGenerator {
 					«ENDFOR»
 					«FOR boundVariable : port.allVariableDeclarations»
 						for (var listener : «port.name.toFirstLower».getRegisteredListeners()) {
-							listener.set«boundVariable.name.toFirstUpper»(get«boundVariable.name.toFirstUpper»()); // Bound variable
+							listener.set«boundVariable.name.toFirstUpper»(get«port.name.toFirstUpper»_«boundVariable.name»()); // Bound variable
 						}
 					«ENDFOR»
 				«ENDFOR»
@@ -284,13 +284,20 @@ class StatechartWrapperCodeGenerator {
 				return false;
 			}
 			
-			«FOR plainVariable : gammaStatechart.allVariableDeclarations
+			«FOR plainVariable : gammaStatechart.variableDeclarations
 					.filter[!it.transient] SEPARATOR System.lineSeparator»
 				public «plainVariable.type.serialize» get«plainVariable.name.toFirstUpper»() {
 					return «CLASS_NAME.toFirstLower.access(plainVariable)»;
 				}
 			«ENDFOR»
 			
+			«FOR portVariable : gammaStatechart.allPortVariableDeclarations SEPARATOR System.lineSeparator»
+				«val port = portVariable.key»
+				«val variable = portVariable.value»
+				public «variable.type.serialize» get«port.name.toFirstUpper»_«variable.name»() {
+					return «CLASS_NAME.toFirstLower.access(variable, port)»;
+				}
+			«ENDFOR»
 			«gammaStatechart.createInternalPortHandlingSetters»
 			
 			«gammaStatechart.createInternalEventHandlingCode»

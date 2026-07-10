@@ -1546,6 +1546,21 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return getAllVariableDeclarations(ports);
 	}
 	
+	public static List<Entry<Port, VariableDeclaration>> getAllPortVariableDeclarations(Component component) {
+		List<Entry<Port, VariableDeclaration>> variables = new ArrayList<Entry<Port, VariableDeclaration>>();
+		
+		List<Port> ports = getAllPorts(component);
+		for (Port port : ports) {
+			List<VariableDeclaration> variableDeclarations = getAllVariableDeclarations(port);
+			for (VariableDeclaration variableDeclaration : variableDeclarations) {
+				Entry<Port, VariableDeclaration> entry = Map.entry(port, variableDeclaration);
+				variables.add(entry);
+			}
+		}
+		
+		return variables;
+	}
+	
 	public static List<VariableDeclaration> getAllVariableDeclarations(Iterable<? extends Port> ports) {
 		List<VariableDeclaration> variableDeclarations = new ArrayList<VariableDeclaration>();
 		for (Port port : ports) {

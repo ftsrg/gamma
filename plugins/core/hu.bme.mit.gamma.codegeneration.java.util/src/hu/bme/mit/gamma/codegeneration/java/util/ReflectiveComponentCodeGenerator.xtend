@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -243,9 +243,20 @@ class ReflectiveComponentCodeGenerator {
 		}
 	'''
 	
+	private def getVariableNames(Component component) {
+		val names = newArrayList
+		
+		if (component instanceof StatechartDefinition) {
+			names += component.variableDeclarations.filter[!it.transient].map[it.name]
+			names += component.allPortVariableDeclarations.filter[!it.value.transient].map[it.key.name + "_" + it.value.name]
+		}
+		
+		return names
+	}
+	
 	protected def generateVariableGetters(Component component) '''
 		public String[] getVariables() {
-			return new String[] { «IF component instanceof StatechartDefinition»«FOR variable : component.allVariableDeclarations SEPARATOR ", "»"«variable.name»"«ENDFOR»«ENDIF» };
+			return new String[] { «FOR name : component.variableNames SEPARATOR ", "»"«name»"«ENDFOR» };
 		}
 	'''
 	
@@ -254,12 +265,10 @@ class ReflectiveComponentCodeGenerator {
 	protected def generateVariableValueGetters(Component component) '''
 		public Object getValue(String variable) {
 			switch (variable) {
-				«IF component instanceof StatechartDefinition»
-					«FOR variable : component.allVariableDeclarations.filter[!it.transient]»
-						case "«variable.name»":
-							return «Namings.REFLECTIVE_WRAPPED_COMPONENT».get«variable.name.toFirstUpper»();
-					«ENDFOR»
-				«ENDIF»
+				«FOR name : component.variableNames»
+					case "«name»":
+						return «Namings.REFLECTIVE_WRAPPED_COMPONENT».get«name.toFirstUpper»();
+				«ENDFOR»
 			}
 			throw new IllegalArgumentException("Not known variable: " + variable);
 		}

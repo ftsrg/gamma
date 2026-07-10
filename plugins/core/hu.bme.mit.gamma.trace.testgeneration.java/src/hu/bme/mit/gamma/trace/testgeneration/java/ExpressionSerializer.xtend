@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -69,7 +69,7 @@ class ExpressionSerializer extends hu.bme.mit.gamma.codegeneration.java.util.Exp
 		val parameter = assert.parameter
 		'''«testInstanceName».getEventParameterValues("«assert.port.name»", "«assert.event.name»")[«parameter.index»]'''
 	}
-
+	
 	def dispatch String serialize(ComponentInstanceStateReferenceExpression assert) {
 		val instance = assert.instance
 		'''«instance.serializeInstanceReference».isStateActive("«assert.state.parentRegion.name»", "«assert.state.name»")'''
@@ -77,8 +77,15 @@ class ExpressionSerializer extends hu.bme.mit.gamma.codegeneration.java.util.Exp
 	
 	def dispatch String serialize(ComponentInstanceVariableReferenceExpression assert) {
 		val instance = assert.instance
+		val type = instance.componentInstance.derivedType
 		val variable = assert.variableDeclaration
-		'''«instance.serializeInstanceReference».getValue("«variable.name»")'''
+		
+		val portVariables = type.allPortVariableDeclarations
+		val portVariable = portVariables.findFirst[it.value === variable] // TODO no info on which port...
+		val name = (portVariable !== null) ?
+				portVariable.key.name + "_" + portVariable.value.name : 
+				variable.name
+		return '''«instance.serializeInstanceReference».getValue("«name»")'''
 	}
 	
 	//
