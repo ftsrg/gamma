@@ -46,6 +46,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
@@ -98,6 +99,7 @@ import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Persistency;
 import hu.bme.mit.gamma.statechart.interface_.Port;
+import hu.bme.mit.gamma.statechart.interface_.PortDeclarationReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.interface_.SimpleTrigger;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
@@ -2374,7 +2376,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 
 	public Collection<ValidationResultMessage> checkStatechartInvariants(StatechartDefinition statechart) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-
+		
 		List<Expression> invariants = statechart.getInvariants();
 		for (Expression invariant : invariants) {
 			if (!typeDeterminator.isBoolean(invariant)) {
@@ -2385,13 +2387,13 @@ public class StatechartModelValidator extends ActionModelValidator {
 							new ReferenceInfo(StatechartModelPackage.Literals.STATECHART_DEFINITION__INVARIANTS, index)));
 			}
 		}
-
+		
 		return validationResultMessages;
 	}
 	
 	public Collection<ValidationResultMessage> checkPortInvariants(Port port) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-
+		
 		List<Expression> invariants = port.getInvariants();
 		for (Expression invariant : invariants) {
 			if (!typeDeterminator.isBoolean(invariant)) {
@@ -2402,13 +2404,13 @@ public class StatechartModelValidator extends ActionModelValidator {
 							new ReferenceInfo(InterfaceModelPackage.Literals.PORT__INVARIANTS, index)));
 			}
 		}
-
+		
 		return validationResultMessages;
 	}
 	
 	public Collection<ValidationResultMessage> checkInterfaceInvariants(Interface gammaInterface) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-
+		
 		List<Expression> invariants = gammaInterface.getInvariants();
 		for (Expression invariant : invariants) {
 			if (!typeDeterminator.isBoolean(invariant)) {
@@ -2436,6 +2438,24 @@ public class StatechartModelValidator extends ActionModelValidator {
 								"The following function declaration has no definition: " + interfaceFunctionDeclaration.getName(),
 									new ReferenceInfo(InterfaceModelPackage.Literals.PORT__INTERFACE_REALIZATION, port)));
 				}
+			}
+		}
+		
+		return validationResultMessages;
+	}
+	
+	@Override
+	public Collection<ValidationResultMessage> checkFunctionAccessExpression(FunctionAccessExpression functionAccessExpression) {
+		Collection<ValidationResultMessage> validationResultMessages = super.checkFunctionAccessExpression(functionAccessExpression);
+		
+		ReferenceExpression reference = statechartUtil.getAccessReference(functionAccessExpression);
+		if (reference instanceof PortDeclarationReferenceExpression portDeclarationReferenceExpression) {
+			Port port = portDeclarationReferenceExpression.getPort();
+			if (StatechartModelDerivedFeatures.isProvided(port)) {
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR,
+						"Functions cannot be referenced on provided ports; reference the implementation instead",
+							new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND)));
 			}
 		}
 		

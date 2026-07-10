@@ -20,6 +20,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
+import hu.bme.mit.gamma.expression.model.AbstractDirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
@@ -291,7 +292,7 @@ public class ExpressionModelValidator {
 			operand = expressionUtil.getAccessReference(functionAccessExpression);
 		} catch (IllegalArgumentException e) {}
 		
-		if (!(operand instanceof DirectReferenceExpression)) {
+		if (!(operand instanceof DirectReferenceExpression || operand instanceof AbstractDirectReferenceExpression)) {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.ERROR,
 					"The referenced object is not a valid function declaration", 
@@ -299,8 +300,7 @@ public class ExpressionModelValidator {
 			return validationResultMessages;
 		}
 		
-		DirectReferenceExpression operandAsReference = (DirectReferenceExpression) operand;
-		Declaration declaration = operandAsReference.getDeclaration();
+		Declaration declaration = expressionUtil.getAccessedDeclaration(functionAccessExpression);
 		if (!(declaration instanceof FunctionDeclaration)) {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.ERROR,
@@ -318,11 +318,12 @@ public class ExpressionModelValidator {
 					new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)));
 			return validationResultMessages;
 		}
-		// check if the types of the arguments are the types of the parameters
+		// Check if the types of the arguments are the types of the parameters
 		int i = 0;
 		for (Expression arg : arguments) {
 			Type argumentType = typeDeterminator.getType(arg);
-			if (!typeDeterminator.equals(parameters.get(i).getType(), argumentType)) {
+			ParameterDeclaration parameter = parameters.get(i);
+			if (!typeDeterminator.equals(parameter.getType(), argumentType)) {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.ERROR,
 						"The types of the arguments and the types of the declared function parameters do not match", 
