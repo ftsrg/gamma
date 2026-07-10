@@ -697,7 +697,7 @@ TimeoutReferenceExpression returns TimeoutReferenceExpression:
 ;
 
 PortDeclarationReferenceExpression returns InterfaceModel::PortDeclarationReferenceExpression:
-	'::' port=[InterfaceModel::Port] '::' reference=DirectReferenceExpression
+	'::' port=[InterfaceModel::Port] '::' declaration=[ExpressionModel::ValueDeclaration]
 ;
 
 @Override

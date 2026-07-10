@@ -25,6 +25,7 @@ import hu.bme.mit.gamma.action.model.Block;
 import hu.bme.mit.gamma.action.model.ForStatement;
 import hu.bme.mit.gamma.action.util.ActionUtil;
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
+import hu.bme.mit.gamma.expression.model.AbstractDirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
@@ -34,10 +35,10 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FieldReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.ParameterReferenceExpression;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
-import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
@@ -82,6 +83,14 @@ public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProv
 	}
 	
 	protected List<FieldDeclaration> getFieldDeclarations(Expression operand) {
+		if (operand instanceof AbstractDirectReferenceExpression reference) {
+			Declaration declaration = reference.getDeclaration();
+			return getFieldDeclarations(declaration);
+		}
+		if (operand instanceof ParameterReferenceExpression reference) {
+			Declaration declaration = reference.getParameter();
+			return getFieldDeclarations(declaration);
+		}
 		if (operand instanceof DirectReferenceExpression reference) {
 			Declaration declaration = reference.getDeclaration();
 			return getFieldDeclarations(declaration);
@@ -105,11 +114,6 @@ public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProv
 			Expression accessedExpression = reference.getOperand();
 			return getFieldDeclarations(accessedExpression);
 		}
-		
-		try {
-			ReferenceExpression reference = util.getAccessReference(operand);
-			return getFieldDeclarations(reference);
-		} catch (IllegalArgumentException e) {}
 		
 		return Collections.emptyList();
 	}

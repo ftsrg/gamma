@@ -303,18 +303,15 @@ class ExpressionTransformer {
 				lowlevelVariables += trace.getAllPar(declaration -> fieldAccess)
 			}
 			else {
-				val container = reference.eContainer
-				if (container instanceof PortDeclarationReferenceExpression) {
-					// Port declaration
-					val port = container.port
-					val record_ = new Triple(port, declaration, fieldAccess)
-					lowlevelVariables += trace.getAll(record_)
-				}
-				else {
-					// Normal value
-					lowlevelVariables += trace.getAll(declaration -> fieldAccess)
-				}
+				// Normal value
+				lowlevelVariables += trace.getAll(declaration -> fieldAccess)
 			}
+		}
+		else if (reference instanceof PortDeclarationReferenceExpression) {
+			val port = reference.port
+			val declaration = reference.declaration as ValueDeclaration
+			val record_ = new Triple(port, declaration, fieldAccess)
+			lowlevelVariables += trace.getAll(record_)
 		}
 		else if (reference instanceof EventParameterReferenceExpression) {
 			val port = reference.port

@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
+import hu.bme.mit.gamma.expression.model.AbstractDirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.AddExpression;
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
@@ -51,6 +52,8 @@ import hu.bme.mit.gamma.expression.model.ModExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.MultiplyExpression;
 import hu.bme.mit.gamma.expression.model.OpaqueExpression;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.ParameterReferenceExpression;
 import hu.bme.mit.gamma.expression.model.PredicateExpression;
 import hu.bme.mit.gamma.expression.model.QuantifierExpression;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
@@ -133,6 +136,16 @@ public class ExpressionTypeDeterminator2 {
 					BigInteger.valueOf(operands.size()));
 			arrayTypeDefinition.setSize(size);
 			return arrayTypeDefinition;
+		}
+		if (expression instanceof ParameterReferenceExpression referenceExpression) {
+			ParameterDeclaration parameter = referenceExpression.getParameter();
+			Type type = parameter.getType();
+			return ecoreUtil.clone(type);
+		}
+		if (expression instanceof AbstractDirectReferenceExpression referenceExpression) {
+			Declaration declaration = referenceExpression.getDeclaration();
+			Type type = declaration.getType();
+			return ecoreUtil.clone(type);
 		}
 		if (expression instanceof DirectReferenceExpression referenceExpression) {
 			Declaration declaration = referenceExpression.getDeclaration();

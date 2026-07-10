@@ -693,7 +693,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 					validationResultMessages.add(
 						new ValidationResultMessage(ValidationResult.WARNING,
 							"None of the corresponding transitions are triggered by this specific port-event combination", 
-								new ReferenceInfo(InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT)));
+								new ReferenceInfo(InterfaceModelPackage.Literals.EVENT_REFERENCE_EXPRESSION__EVENT)));
 				}
 			}
 		}

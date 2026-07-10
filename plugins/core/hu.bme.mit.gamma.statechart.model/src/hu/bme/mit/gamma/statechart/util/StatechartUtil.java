@@ -81,7 +81,6 @@ import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Port;
-import hu.bme.mit.gamma.statechart.interface_.PortDeclarationReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
@@ -115,47 +114,12 @@ public class StatechartUtil extends ActionUtil {
 	public static final StatechartUtil INSTANCE = new StatechartUtil();
 	protected StatechartUtil() {}
 	//
-
+	
 	protected InterfaceModelFactory interfaceFactory = InterfaceModelFactory.eINSTANCE;
 	protected StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE;
 	protected CompositeModelFactory compositeFactory = CompositeModelFactory.eINSTANCE;
 	
 	// Extending super methods
-	
-	@Override
-	public Declaration getDeclaration(Expression expression) {
-		if (expression instanceof EventParameterReferenceExpression reference) {
-			return reference.getParameter();
-		}
-		if (expression instanceof PortDeclarationReferenceExpression reference) {
-			return reference.getReference().getDeclaration();
-		}
-		return super.getDeclaration(expression);
-	}
-	
-	@Override
-	public ReferenceExpression getAccessReference(Expression expression) {
-		if (expression instanceof EventParameterReferenceExpression reference) {
-			return reference;
-		}
-		if (expression instanceof PortDeclarationReferenceExpression reference) {
-			DirectReferenceExpression _reference = reference.getReference();
-			return _reference;
-		}
-		return super.getAccessReference(expression);
-	}
-	
-	@Override
-	public Declaration getAccessedDeclaration(Expression expression) {
-		ReferenceExpression referenceExpression = getAccessReference(expression);
-		if (referenceExpression instanceof EventParameterReferenceExpression reference) {
-			return reference.getParameter();
-		}
-		if (expression instanceof PortDeclarationReferenceExpression reference) {
-			return reference.getReference().getDeclaration();
-		}
-		return super.getAccessedDeclaration(referenceExpression);
-	}
 	
 	@Override
 	public Collection<TypeDeclaration> getTypeDeclarations(EObject context) {

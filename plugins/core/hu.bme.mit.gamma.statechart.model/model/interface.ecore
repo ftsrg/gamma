@@ -36,12 +36,6 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="priority" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBigInteger"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="persistency" eType="#//Persistency"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="EventParameterReferenceExpression" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="#//Port"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="#//Event"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="parameter" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParameterDeclaration"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EventSource" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="Port" eSuperTypes="#//EventSource">
     <eStructuralFeatures xsi:type="ecore:EReference" name="interfaceRealization" lowerBound="1"
@@ -92,14 +86,9 @@
       eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="#//Event"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ParameterReferenceExpression" abstract="true"
-      eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="EventParameterReferenceExpression" eSuperTypes="#//PortReferenceExpression #//EventReferenceExpression ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParameterReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="PortDeclarationReferenceExpression"
-      eSuperTypes="#//PortReferenceExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="reference" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//DirectReferenceExpression"
-        containment="true"/>
-  </eClassifiers>
+      eSuperTypes="#//PortReferenceExpression ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//AbstractDirectReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="AnyTrigger" eSuperTypes="#//SimpleTrigger"/>
   <eClassifiers xsi:type="ecore:EClass" name="EventTrigger" eSuperTypes="#//SimpleTrigger">
     <eStructuralFeatures xsi:type="ecore:EReference" name="eventReference" lowerBound="1"
@@ -129,9 +118,5 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InterfaceParameterReferenceExpression"
-      eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="#//Event"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="parameter" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParameterDeclaration"/>
-  </eClassifiers>
+      eSuperTypes="#//EventReferenceExpression ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParameterReferenceExpression"/>
 </ecore:EPackage>

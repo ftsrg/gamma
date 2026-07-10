@@ -279,6 +279,10 @@ ReferenceExpression returns Expression: // So it can be overriden
 	DirectReferenceExpression
 ;
 
+AbstractDirectReferenceExpression returns AbstractDirectReferenceExpression:
+	declaration=[ValueDeclaration]
+;
+
 DirectReferenceExpression returns DirectReferenceExpression:
 	declaration=[ValueDeclaration]
 ;

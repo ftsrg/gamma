@@ -229,19 +229,19 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			 * contains invalid characters: '.' (0x2e) */
 			// Valueof
 			if (context instanceof EventParameterReferenceExpression &&
-					reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PORT) {
+					reference == InterfaceModelPackage.Literals.PORT_REFERENCE_EXPRESSION__PORT) {
 				Component component = StatechartModelDerivedFeatures.getContainingComponent(context);				
 				return Scopes.scopeFor(component.getPorts());
 			}
 			if (context instanceof EventParameterReferenceExpression expression &&
-					reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT) {
+					reference == InterfaceModelPackage.Literals.EVENT_REFERENCE_EXPRESSION__EVENT) {
 				Port port = expression.getPort();
 				checkState(port != null);
 				return Scopes.scopeFor(
 						StatechartModelDerivedFeatures.getInputEvents(port));
 			}
 			if (context instanceof EventParameterReferenceExpression expression &&
-					reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PARAMETER) {
+					reference == ExpressionModelPackage.Literals.PARAMETER_REFERENCE_EXPRESSION__PARAMETER) {
 				checkState(expression.getPort() != null);
 				Event event = expression.getEvent();
 				List<ParameterDeclaration> parameterDeclarations = event.getParameterDeclarations();
@@ -259,13 +259,13 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				return Scopes.scopeFor(states);
 			}
 			if (context instanceof InterfaceParameterReferenceExpression interfaceParameterReferenceExpression) {
-				if (reference == InterfaceModelPackage.Literals.INTERFACE_PARAMETER_REFERENCE_EXPRESSION__PARAMETER) {
+				if (reference == ExpressionModelPackage.Literals.PARAMETER_REFERENCE_EXPRESSION__PARAMETER) {
 					Event event = interfaceParameterReferenceExpression.getEvent();					
 					checkState(event != null);
 					return Scopes.scopeFor(
 							event.getParameterDeclarations());
 				}
-				else if (reference == InterfaceModelPackage.Literals.INTERFACE_PARAMETER_REFERENCE_EXPRESSION__EVENT) {
+				else if (reference == InterfaceModelPackage.Literals.EVENT_REFERENCE_EXPRESSION__EVENT) {
 					Interface _interface = StatechartModelDerivedFeatures.getContainingInterface(interfaceParameterReferenceExpression);	
 					return Scopes.scopeFor(
 							StatechartModelDerivedFeatures.getAllEvents(_interface));
@@ -381,7 +381,8 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 //				
 //				return embedScopes(List.of(parentScope, scope));
 //			}
-			if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+			if (reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION ||
+					reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 				// 0. Interface declarations
 				PortReferenceExpression portReferenceExpression = ecoreUtil.getSelfOrContainerOfType(context, PortReferenceExpression.class);
 				if (portReferenceExpression != null) {

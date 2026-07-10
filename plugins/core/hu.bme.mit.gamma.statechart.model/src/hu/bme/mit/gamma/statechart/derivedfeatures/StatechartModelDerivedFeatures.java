@@ -147,13 +147,8 @@ import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 
 public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
-	
+	//
 	protected static final StatechartUtil statechartUtil = StatechartUtil.INSTANCE;
-	
-	static { // TODO Remove when abstract DRE-s are introduced
-		expressionUtil = statechartUtil;
-	}
-	
 	//
 	
 	public static Set<TypeDeclaration> getReferencedTypedDeclarations(Package _package) {

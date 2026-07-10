@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -113,7 +113,7 @@ public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.Expre
 	}
 	
 	protected String _serialize(PortDeclarationReferenceExpression expression) {
-		return "::" + expression.getPort().getName() + "::" + expression.getReference().getDeclaration().getName();
+		return "::" + expression.getPort().getName() + "::" + expression.getDeclaration().getName();
 	}
 	
 	protected String _serialize(StateReferenceExpression expression) {

@@ -74,6 +74,7 @@ import hu.bme.mit.gamma.expression.model.NullaryExpression;
 import hu.bme.mit.gamma.expression.model.OpaqueExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ParameterDeclarationAnnotation;
+import hu.bme.mit.gamma.expression.model.ParameterReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
@@ -119,6 +120,9 @@ public class ExpressionUtil {
 		if (expression instanceof AbstractDirectReferenceExpression reference) {
 			return reference.getDeclaration();
 		}
+		if (expression instanceof ParameterReferenceExpression reference) {
+			return reference.getParameter();
+		}
 		if (expression instanceof DirectReferenceExpression reference) {
 			return reference.getDeclaration();
 		}
@@ -153,6 +157,9 @@ public class ExpressionUtil {
 		if (expression instanceof AbstractDirectReferenceExpression reference) {
 			return reference;
 		}
+		if (expression instanceof ParameterReferenceExpression reference) {
+			return reference;
+		}
 		if (expression instanceof DirectReferenceExpression reference) {
 			return reference;
 		}
@@ -185,6 +192,9 @@ public class ExpressionUtil {
 		ReferenceExpression reference = getAccessReference(expression);
 		if (reference instanceof AbstractDirectReferenceExpression directReference) {
 			return directReference.getDeclaration();
+		}
+		if (reference instanceof ParameterReferenceExpression directReference) {
+			return directReference.getParameter();
 		}
 		if (reference instanceof DirectReferenceExpression directReference) {
 			return directReference.getDeclaration();
