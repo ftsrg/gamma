@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.codegeneration.java.util.TypeDeclarationSerializer
 import hu.bme.mit.gamma.codegeneration.java.util.TypeSerializer
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration
 import hu.bme.mit.gamma.expression.model.TupleTypeDefinition
+import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -41,6 +42,7 @@ class StatechartCodeGenerator {
 	final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
 	
 	// Depending on the xSTS form
 	final extension ActionSerializer actionSerializer
@@ -69,7 +71,7 @@ class StatechartCodeGenerator {
 		
 		public class «CLASS_NAME» {
 			
-			«FOR typeDeclaration : xSts.privateTypeDeclarations»
+			«FOR typeDeclaration : privateTypeDeclarations»
 				«typeDeclaration.serialize»
 			«ENDFOR»
 «««			Not timeout variables
@@ -168,25 +170,39 @@ class StatechartCodeGenerator {
 				«ENDFOR»
 			}
 			
-			«FOR function : xSts.functionDeclarations»
+			«FOR function : xSts.functionDeclarations.filter[XstsDerivedFeatures.hasDefinition(it)]»
 				protected «function.type.serialize» «function.name»(«
 						FOR parameter : function.parameterDeclarations SEPARATOR ', '»«parameter.type.serialize» «parameter.name»«ENDFOR») {
-					«IF !XstsDerivedFeatures.hasDefinition(function)»
-						«val port = gammaStatechart.getDeclaringPortOfUnfoldedFunction(function) /* XSTS functions have their types unfolded */»
-						«IF port !== null»
-							var listener = wrapper.get«port.name.toFirstUpper»().getRegisteredListeners().getFirst(); // Shall be one
-							«IF !function.isVoid»return «ENDIF»listener.«function.name»(«
-									FOR parameter : function.parameterDeclarations SEPARATOR ", "»«parameter.name»«ENDFOR»)«IF function.complex».toList()«ENDIF»;
-						«ELSE»
-							throw new UnsupportedOperationException();
-						«ENDIF»
-					«ELSEIF function instanceof LambdaDeclaration»
+					«IF function instanceof LambdaDeclaration»
 						return «function.expression.serialize»;
 					«ELSEIF function instanceof ProcedureDeclaration»
 						«function.body.serialize»
 					«ENDIF»
 				}
 				
+			«ENDFOR»
+			«FOR port : gammaStatechart.allPorts.filter[it.required]»
+				«FOR function : port.allFunctionDeclarations»
+					«val xStsFunctionName = port.name + "_" + function.name»
+					«IF xStsFunctionName.defined»
+					«ELSE»
+					protected «IF function.complex»List<Object>«ELSE»«function.type.serialize»«ENDIF» «xStsFunctionName»(«
+							FOR parameter : function.parameterDeclarations SEPARATOR ', '»«
+							var i = 0»«
+							FOR nativeType : parameter.nativeTypes SEPARATOR ", "»«
+								nativeType.serialize» «parameter.name»_«i++»«ENDFOR»«ENDFOR») {
+						var listeners = wrapper.get«port.name.toFirstUpper»().getRegisteredListeners();
+						var listener = listeners.getFirst(); // Shall be one
+						«IF !function.isVoid»return «ENDIF»«
+								IF xStsFunctionName.defined»«xStsFunctionName»«ELSE»listener.«function.name»«ENDIF»(«
+								FOR parameter : function.parameterDeclarations SEPARATOR ", "»«
+							var i = 0»«
+							FOR nativeType : parameter.nativeTypes SEPARATOR ", "»«
+								parameter.name»_«i++»«ENDFOR»«ENDFOR»)«IF function.complex».toList()«ENDIF»;
+					}
+					«ENDIF»
+					
+				«ENDFOR»
 			«ENDFOR»
 			«IF containsTuples»
 				«val listName = "flattenedList"»
@@ -222,7 +238,12 @@ class StatechartCodeGenerator {
 		}
 	'''
 	
-	private def getPrivateTypeDeclarations(XSTS xSts) {
+	private def isDefined(String functionName) {
+		return xSts.functionDeclarations.filter[XstsDerivedFeatures.hasDefinition(it)]
+				.exists[it.name == functionName]
+	}
+	
+	private def getPrivateTypeDeclarations() {
 		val privateTypeDeclarations = newArrayList
 		privateTypeDeclarations += xSts.typeDeclarations
 		privateTypeDeclarations -= xSts.publicTypeDeclarations

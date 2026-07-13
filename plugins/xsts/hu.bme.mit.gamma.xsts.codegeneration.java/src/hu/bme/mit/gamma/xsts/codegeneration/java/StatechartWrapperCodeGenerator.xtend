@@ -335,9 +335,9 @@ class StatechartWrapperCodeGenerator {
 			«var i = 0»
 			«var j = i»
 			@Override
-			public «function.type.serialize» «function.name»(«FOR parameter : function.parameterDeclarations SEPARATOR ", "»«FOR nativeType : parameter.type.nativeTypes SEPARATOR ", "»«nativeType.serialize» «parameter.name»«i++»«ENDFOR»«ENDFOR») {
+			public «function.type.serialize» «function.name»(«FOR parameter : function.parameterDeclarations SEPARATOR ", "»«FOR nativeType : parameter.type.nativeTypes SEPARATOR ", "»«nativeType.serialize» «parameter.name»_«i++»«ENDFOR»«ENDFOR») {
 				«val functionCall_ = '''«CLASS_NAME.toFirstLower».«function.name»(«
-						FOR parameter : function.parameterDeclarations SEPARATOR ", "»«FOR nativeType : parameter.type.nativeTypes SEPARATOR ", "»«parameter.name»«j++»«ENDFOR»«ENDFOR»)'''»
+						FOR parameter : function.parameterDeclarations SEPARATOR ", "»«FOR nativeType : parameter.type.nativeTypes SEPARATOR ", "»«parameter.name»_«j++»«ENDFOR»«ENDFOR»)'''»
 				«IF function.isVoid»
 					«functionCall_»;
 				«ELSE»
