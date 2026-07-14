@@ -81,6 +81,7 @@ import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Port;
+import hu.bme.mit.gamma.statechart.interface_.PortDeclarationReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
@@ -1193,6 +1194,13 @@ public class StatechartUtil extends ActionUtil {
 		raiseEventAction.setEvent(event);
 		raiseEventAction.getArguments().addAll(arguments);
 		return raiseEventAction;
+	}
+	
+	public PortDeclarationReferenceExpression createPortDeclarationReferenceExpression(Port port, Declaration declaraion) {
+		PortDeclarationReferenceExpression portDeclarationReferenceExpression = interfaceFactory.createPortDeclarationReferenceExpression();
+		portDeclarationReferenceExpression.setPort(port);
+		portDeclarationReferenceExpression.setDeclaration(declaraion);
+		return portDeclarationReferenceExpression;
 	}
 	
 	public StateReferenceExpression createStateReference(State state) {
