@@ -362,17 +362,11 @@
     <genClasses image="false" ecoreClass="statechart.ecore#//EntryState"/>
     <genClasses ecoreClass="statechart.ecore#//ShallowHistoryState"/>
     <genClasses ecoreClass="statechart.ecore#//DeepHistoryState"/>
-    <genClasses ecoreClass="statechart.ecore#//AnyPortEventReference">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statechart.ecore#//AnyPortEventReference/port"/>
-    </genClasses>
+    <genClasses ecoreClass="statechart.ecore#//AnyPortEventReference"/>
     <genClasses ecoreClass="statechart.ecore#//EventAnyPortReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statechart.ecore#//EventAnyPortReference/interface"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statechart.ecore#//EventAnyPortReference/event"/>
     </genClasses>
-    <genClasses ecoreClass="statechart.ecore#//PortEventReference">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statechart.ecore#//PortEventReference/event"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statechart.ecore#//PortEventReference/port"/>
-    </genClasses>
+    <genClasses ecoreClass="statechart.ecore#//PortEventReference"/>
     <genClasses ecoreClass="statechart.ecore#//ClockTickReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statechart.ecore#//ClockTickReference/clock"/>
     </genClasses>

@@ -815,7 +815,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 					validationResultMessages.add(
 						new ValidationResultMessage(ValidationResult.ERROR, 
 							"This event is not an in event",
-								new ReferenceInfo(StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__EVENT)));
+								new ReferenceInfo(InterfaceModelPackage.Literals.EVENT_REFERENCE_EXPRESSION__EVENT)));
 				}
 			}
 		}
@@ -2220,7 +2220,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.ERROR, 
 					"There are no events coming in through this port", 
-						new ReferenceInfo(StatechartModelPackage.Literals.ANY_PORT_EVENT_REFERENCE__PORT)));
+						new ReferenceInfo(InterfaceModelPackage.Literals.PORT_REFERENCE_EXPRESSION__PORT)));
 		}
 		return validationResultMessages;
 	}

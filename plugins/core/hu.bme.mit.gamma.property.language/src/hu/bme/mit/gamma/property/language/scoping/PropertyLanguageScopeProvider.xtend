@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,7 +12,7 @@ package hu.bme.mit.gamma.property.language.scoping
 
 import hu.bme.mit.gamma.property.model.PropertyModelPackage
 import hu.bme.mit.gamma.property.model.PropertyPackage
-import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.scoping.Scopes
@@ -39,7 +39,7 @@ class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvide
 			return scope
 		}
 		
-		if (reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__PORT) {
+		if (reference == InterfaceModelPackage.Literals.PORT_REFERENCE_EXPRESSION__PORT) {
 			return Scopes.scopeFor(component.allPorts)
 		}
 		

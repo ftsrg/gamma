@@ -179,43 +179,6 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				}
 			}
 			//
-			if (reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__EVENT || 
-					reference == StatechartModelPackage.Literals.EVENT_ANY_PORT_REFERENCE__EVENT) {
-				// If the branch above does not work
-				Collection<Event> inputEvents = new ArrayList<Event>();
-				Collection<Event> allEvents = new ArrayList<Event>();
-				// Not only in events are returned as less-aware users tend to write out events on triggers
-				StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
-				List<Port> statechartPorts = statechart.getPorts();
-				
-				List<Port> ports = new ArrayList<Port>();
-				if (context instanceof PortEventReference portEventReference) {
-					ports.add(
-							portEventReference.getPort());
-				}
-				else if (context instanceof EventAnyPortReference eventAnyPortReference) {
-					Interface interface_ = eventAnyPortReference.getInterface();
-					if (interface_ != null) {
-						return Scopes.scopeFor(
-								StatechartModelDerivedFeatures.getAllEvents(interface_));
-					}
-					else {
-						ports.addAll(statechartPorts);
-					}
-				}
-				else {
-					ports.addAll(statechartPorts);
-				}
-				
-				for (Port port : ports) {
-					inputEvents.addAll(
-							StatechartModelDerivedFeatures.getInputEvents(port));
-					allEvents.addAll(
-							StatechartModelDerivedFeatures.getAllEvents(port));
-				}
-				return Scopes.scopeFor(inputEvents,
-						Scopes.scopeFor(allEvents));
-			}
 			if (context instanceof RaiseEventAction raiseEventAction && 
 					reference == StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT) {
 				Port port = raiseEventAction.getPort();
@@ -271,7 +234,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 							StatechartModelDerivedFeatures.getAllEvents(_interface));
 				}
 			}
-
+			
 			// Composite system
 
 			// Ports
@@ -337,8 +300,8 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			}
 			
 			// Asynchronous adapter-specific rules
-			if (context instanceof PortEventReference && reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__PORT ||
-				context instanceof AnyPortEventReference && reference == StatechartModelPackage.Literals.ANY_PORT_EVENT_REFERENCE__PORT) {
+			if (context instanceof PortEventReference && reference == InterfaceModelPackage.Literals.PORT_REFERENCE_EXPRESSION__PORT ||
+				context instanceof AnyPortEventReference && reference == InterfaceModelPackage.Literals.PORT_REFERENCE_EXPRESSION__PORT) {
 				AsynchronousAdapter wrapper = ecoreUtil.getContainerOfType(context, AsynchronousAdapter.class);
 				if (wrapper != null) {
 					// Derived feature "allPorts" does not work all the time
@@ -349,19 +312,54 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				}
 			}
 			if ((context instanceof MessageQueue || context instanceof ControlSpecification) &&
-					(reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__PORT ||
-					reference == StatechartModelPackage.Literals.ANY_PORT_EVENT_REFERENCE__PORT)) {
+					reference == InterfaceModelPackage.Literals.PORT_REFERENCE_EXPRESSION__PORT) {
 				AsynchronousAdapter wrapper = ecoreUtil.getContainerOfType(context, AsynchronousAdapter.class);
 				return Scopes.scopeFor(
 						StatechartModelDerivedFeatures.getAllPorts(wrapper));
 			}
 			if ((context instanceof MessageQueue || context instanceof ControlSpecification) &&
-					reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__EVENT) {
+					reference == InterfaceModelPackage.Literals.EVENT_REFERENCE_EXPRESSION__EVENT) {
 				AsynchronousAdapter wrapper = ecoreUtil.getContainerOfType(context, AsynchronousAdapter.class);
 				Collection<Event> events = new HashSet<Event>();
 				StatechartModelDerivedFeatures.getAllPorts(wrapper).stream()
 						.forEach(it -> events.addAll(StatechartModelDerivedFeatures.getInputEvents(it)));
 				return Scopes.scopeFor(events);
+			}
+			if (reference == InterfaceModelPackage.Literals.EVENT_REFERENCE_EXPRESSION__EVENT) {
+				// If the branch above does not work
+				Collection<Event> inputEvents = new ArrayList<Event>();
+				Collection<Event> allEvents = new ArrayList<Event>();
+				// Not only in events are returned as less-aware users tend to write out events on triggers
+				StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
+				List<Port> statechartPorts = statechart.getPorts();
+				
+				List<Port> ports = new ArrayList<Port>();
+				if (context instanceof PortEventReference portEventReference) {
+					ports.add(
+							portEventReference.getPort());
+				}
+				else if (context instanceof EventAnyPortReference eventAnyPortReference) {
+					Interface interface_ = eventAnyPortReference.getInterface();
+					if (interface_ != null) {
+						return Scopes.scopeFor(
+								StatechartModelDerivedFeatures.getAllEvents(interface_));
+					}
+					else {
+						ports.addAll(statechartPorts);
+					}
+				}
+				else {
+					ports.addAll(statechartPorts);
+				}
+				
+				for (Port port : ports) {
+					inputEvents.addAll(
+							StatechartModelDerivedFeatures.getInputEvents(port));
+					allEvents.addAll(
+							StatechartModelDerivedFeatures.getAllEvents(port));
+				}
+				return Scopes.scopeFor(inputEvents,
+						Scopes.scopeFor(allEvents));
 			}
 //			if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__PARENT) {
 //				IScope scope = super.getScope(context, reference);

@@ -105,17 +105,11 @@
   <eClassifiers xsi:type="ecore:EClass" name="EntryState" abstract="true" eSuperTypes="#//PseudoState"/>
   <eClassifiers xsi:type="ecore:EClass" name="ShallowHistoryState" eSuperTypes="#//EntryState"/>
   <eClassifiers xsi:type="ecore:EClass" name="DeepHistoryState" eSuperTypes="#//EntryState"/>
-  <eClassifiers xsi:type="ecore:EClass" name="AnyPortEventReference" eSuperTypes="interface.ecore#//EventReference">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="ecore:EClass interface.ecore#//Port"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="EventAnyPortReference" eSuperTypes="interface.ecore#//EventReference">
+  <eClassifiers xsi:type="ecore:EClass" name="AnyPortEventReference" eSuperTypes="interface.ecore#//EventReference interface.ecore#//PortReferenceExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="EventAnyPortReference" eSuperTypes="interface.ecore#//EventReference interface.ecore#//EventReferenceExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="interface" eType="ecore:EClass interface.ecore#//Interface"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="ecore:EClass interface.ecore#//Event"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="PortEventReference" eSuperTypes="interface.ecore#//EventReference">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="ecore:EClass interface.ecore#//Event"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="ecore:EClass interface.ecore#//Port"/>
-  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="PortEventReference" eSuperTypes="interface.ecore#//EventReference interface.ecore#//PortReferenceExpression interface.ecore#//EventReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="ClockTickReference" eSuperTypes="interface.ecore#//EventReference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="clock" lowerBound="1" eType="ecore:EClass interface.ecore#//Clock"/>
   </eClassifiers>
