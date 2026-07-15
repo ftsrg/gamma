@@ -19,7 +19,7 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceEx
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
-import hu.bme.mit.gamma.statechart.interface_.EventReference;
+import hu.bme.mit.gamma.statechart.interface_.OccurrenceReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.TimeoutReferenceExpression;
@@ -35,7 +35,7 @@ public class ExpressionTypeDeterminator extends ExpressionTypeDeterminator2 {
 		if (expression instanceof StateReferenceExpression) {
 			return factory.createBooleanTypeDefinition();
 		}
-		else if (expression instanceof EventReference) {
+		else if (expression instanceof OccurrenceReferenceExpression) {
 			return factory.createBooleanTypeDefinition();
 		}
 		else if (expression instanceof TimeoutReferenceExpression) {

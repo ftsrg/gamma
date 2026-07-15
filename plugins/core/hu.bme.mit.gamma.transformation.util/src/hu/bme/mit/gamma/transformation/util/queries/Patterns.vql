@@ -638,7 +638,7 @@ pattern queuesOfEvents(wrapper : AsynchronousAdapter, queue : MessageQueue, port
 	find eventsOfPorts(port, event);
 }
 
-pattern sourceOfEventPassings(queue : MessageQueue, sourceEventReference : EventReference) {
+pattern sourceOfEventPassings(queue : MessageQueue, sourceEventReference : OccurrenceReferenceExpression) {
 	MessageQueue.eventPassings(queue, eventPassing);
 	EventPassing.source(eventPassing, sourceEventReference);
 }
@@ -661,7 +661,7 @@ pattern queuePriorities(wrapper : AsynchronousAdapter, lowerPriotityQueue : Mess
 
 // Control specification
 
-private pattern runOnceControl(wrapper : AsynchronousAdapter, eventReference : EventReference) {
+private pattern runOnceControl(wrapper : AsynchronousAdapter, eventReference : OccurrenceReferenceExpression) {
 	AsynchronousAdapter.controlSpecifications(wrapper, controlSpecification);
 	ControlSpecification.trigger(controlSpecification, trigger);
 	ControlSpecification.controlFunction(controlSpecification, ControlFunction::RUN_ONCE);

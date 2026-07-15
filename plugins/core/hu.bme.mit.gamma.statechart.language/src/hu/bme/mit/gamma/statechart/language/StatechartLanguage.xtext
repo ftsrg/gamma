@@ -134,10 +134,10 @@ OpaqueTrigger returns OpaqueTrigger:
 ;
 
 EventTrigger returns InterfaceModel::EventTrigger:
-	eventReference=EventReference
+	eventReference=OccurrenceReferenceExpression
 ;
 
-EventReference returns InterfaceModel::EventReference:
+OccurrenceReferenceExpression returns InterfaceModel::OccurrenceReferenceExpression:
 	ClockTickReference | 
 	TimeoutEventReference |
 	AnyPortEventReference |
@@ -589,7 +589,7 @@ MessageQueue returns CompositeModel::MessageQueue:
 ;
 
 EventPassing returns CompositeModel::EventPassing:
-	source=EventReference ('->' target=EventReference)?
+	source=OccurrenceReferenceExpression ('->' target=OccurrenceReferenceExpression)?
 ;
 
 enum DiscardStrategy returns CompositeModel::DiscardStrategy:
@@ -677,7 +677,7 @@ ReferenceExpression returns ExpressionModel::Expression:
 	EventParameterReferenceExpression |
 	InterfaceParameterReferenceExpression |
 	TimeoutReferenceExpression |
-	( EventReference '::' ) | // Now these event references are not usable only in triggers
+	( OccurrenceReferenceExpression '::' ) | // Now these event references are not usable only in triggers
 	StateReferenceExpression
 ;
 

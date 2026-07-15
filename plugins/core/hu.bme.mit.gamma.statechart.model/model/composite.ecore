@@ -67,8 +67,8 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EventPassing">
     <eStructuralFeatures xsi:type="ecore:EReference" name="source" lowerBound="1"
-        eType="ecore:EClass interface.ecore#//EventReference" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="target" eType="ecore:EClass interface.ecore#//EventReference"
+        eType="ecore:EClass interface.ecore#//OccurrenceReferenceExpression" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="target" eType="ecore:EClass interface.ecore#//OccurrenceReferenceExpression"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SynchronousComponent" abstract="true"

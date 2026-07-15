@@ -74,11 +74,11 @@ import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
 import hu.bme.mit.gamma.statechart.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
-import hu.bme.mit.gamma.statechart.interface_.EventReference;
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
+import hu.bme.mit.gamma.statechart.interface_.OccurrenceReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.PortDeclarationReferenceExpression;
@@ -369,7 +369,7 @@ public class StatechartUtil extends ActionUtil {
 		}
 		else if (trigger instanceof EventTrigger) {
 			EventTrigger eventTrigger = (EventTrigger) trigger;
-			EventReference eventReference = eventTrigger.getEventReference();
+			OccurrenceReferenceExpression eventReference = eventTrigger.getEventReference();
 			if (eventReference instanceof AnyPortEventReference) {
 				AnyPortEventReference anyPortEventReference = (AnyPortEventReference) eventReference;
 				Port port = anyPortEventReference.getPort();
@@ -901,11 +901,11 @@ public class StatechartUtil extends ActionUtil {
 				createPortEventReference(port, event), null);
 	}
 	
-	public EventPassing createEventPassing(EventReference source) {
+	public EventPassing createEventPassing(OccurrenceReferenceExpression source) {
 		return createEventPassing(source, null);
 	}
 	
-	public EventPassing createEventPassing(EventReference source, EventReference target) {
+	public EventPassing createEventPassing(OccurrenceReferenceExpression source, OccurrenceReferenceExpression target) {
 		EventPassing eventPassing = compositeFactory.createEventPassing();
 
 		eventPassing.setSource(source);

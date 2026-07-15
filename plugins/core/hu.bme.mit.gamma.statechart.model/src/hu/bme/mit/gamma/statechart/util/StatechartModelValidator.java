@@ -91,11 +91,11 @@ import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
-import hu.bme.mit.gamma.statechart.interface_.EventReference;
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
+import hu.bme.mit.gamma.statechart.interface_.OccurrenceReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Persistency;
 import hu.bme.mit.gamma.statechart.interface_.Port;
@@ -364,7 +364,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		for (Trigger trigger : unwrappedContractTriggers) {
 			if (trigger instanceof EventTrigger _eventTrigger) {
 				EventTrigger eventTrigger = ecoreUtil.clone(_eventTrigger);
-				EventReference eventReference = eventTrigger.getEventReference();
+				OccurrenceReferenceExpression eventReference = eventTrigger.getEventReference();
 				if (eventReference instanceof PortEventReference portEventReference) {
 					Port contractPort = portEventReference.getPort();
 					// Port tracing
@@ -1312,7 +1312,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 			Expression siblingGuard = siblingTransition.getGuard();
 			boolean oneIsUnguarded = guard == null || siblingGuard == null;
 			if (potentialTrigger instanceof EventTrigger trigger) {
-				EventReference eventReference = trigger.getEventReference();
+				OccurrenceReferenceExpression eventReference = trigger.getEventReference();
 				if (eventReference instanceof PortEventReference portEventReference) {
 					if (isTransitionTriggeredByPortEvent(siblingTransition,
 							portEventReference.getPort(), portEventReference.getEvent())
@@ -1343,7 +1343,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 			return true;
 		}
 		if (trigger instanceof EventTrigger eventTrigger) {
-			EventReference eventReference = eventTrigger.getEventReference();
+			OccurrenceReferenceExpression eventReference = eventTrigger.getEventReference();
 			if (eventReference instanceof PortEventReference candidateEventReference) {
 				if (candidateEventReference.getPort() == port && candidateEventReference.getEvent() == event) {
 					return true;
@@ -1364,7 +1364,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 			return true;
 		}
 		if (trigger instanceof EventTrigger eventTrigger) {
-			EventReference eventReference = eventTrigger.getEventReference();
+			OccurrenceReferenceExpression eventReference = eventTrigger.getEventReference();
 			if (eventReference instanceof PortEventReference candidateEventReference) {
 				if (candidateEventReference.getPort() == port) {
 					return true;
@@ -1975,8 +1975,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Map<Port, Collection<Event>> containedEvents = new HashMap<Port, Collection<Event>>();
 		for (MessageQueue queue : wrapper.getMessageQueues()) {
-			List<EventReference> eventReferences = StatechartModelDerivedFeatures.getSourceEventReferences(queue);
-			for (EventReference eventReference : eventReferences) {
+			List<OccurrenceReferenceExpression> eventReferences = StatechartModelDerivedFeatures.getSourceEventReferences(queue);
+			for (OccurrenceReferenceExpression eventReference : eventReferences) {
 				int index = eventReferences.indexOf(eventReference);
 				if (eventReference instanceof PortEventReference portEventReference) {
 					Port containedPort = portEventReference.getPort();
@@ -2071,7 +2071,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		SimpleTrigger trigger = controlSpecification.getTrigger();
 		if (trigger instanceof EventTrigger eventTrigger) {
-			EventReference eventReference = eventTrigger.getEventReference();
+			OccurrenceReferenceExpression eventReference = eventTrigger.getEventReference();
 			// Checking out-events
 			if (eventReference instanceof PortEventReference portEventReference) {
 				Port containedPort = portEventReference.getPort();
@@ -2122,8 +2122,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 	public Collection<ValidationResultMessage> checkMessageQueue(MessageQueue queue) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
-		List<EventReference> eventReferences = StatechartModelDerivedFeatures.getSourceEventReferences(queue);
-		for (EventReference eventReference : eventReferences) {
+		List<OccurrenceReferenceExpression> eventReferences = StatechartModelDerivedFeatures.getSourceEventReferences(queue);
+		for (OccurrenceReferenceExpression eventReference : eventReferences) {
 			int index = eventReferences.indexOf(eventReference);
 			// Checking out-events
 			if (eventReference instanceof PortEventReference portEventReference) {
@@ -2165,7 +2165,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 				}
 			}
 			if (trigger instanceof EventTrigger eventTrigger) {
-				EventReference eventReference = eventTrigger.getEventReference();
+				OccurrenceReferenceExpression eventReference = eventTrigger.getEventReference();
 				if (eventReference instanceof AnyPortEventReference anyPortEventReference) {
 					Port port = anyPortEventReference.getPort();
 					Collection<Event> portEvents = StatechartModelDerivedFeatures.getInputEvents(port);
@@ -2227,9 +2227,9 @@ public class StatechartModelValidator extends ActionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkEventPassings(EventPassing eventPassing) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		EventReference target = eventPassing.getTarget();
+		OccurrenceReferenceExpression target = eventPassing.getTarget();
 		if (target != null) {
-			EventReference source = eventPassing.getSource();
+			OccurrenceReferenceExpression source = eventPassing.getSource();
 			if (source instanceof AnyPortEventReference sourceReference) {
 				Port sourcePort = sourceReference.getPort();
 				if (target instanceof AnyPortEventReference targetReference) {

@@ -168,7 +168,7 @@ pattern queuesOfEvents(queue : MessageQueue, port : Port, event : gif::Event) {
 	find eventsOfPorts(port, event);
 }
 
-pattern sourceOfEventPassings(queue : MessageQueue, sourceEventReference : EventReference) {
+pattern sourceOfEventPassings(queue : MessageQueue, sourceEventReference : OccurrenceReferenceExpression) {
 	MessageQueue.eventPassings(queue, eventPassing);
 	EventPassing.source(eventPassing, sourceEventReference);
 }

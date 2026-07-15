@@ -88,12 +88,12 @@ import hu.bme.mit.gamma.statechart.interface_.ComponentAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
 import hu.bme.mit.gamma.statechart.interface_.EventDirection;
-import hu.bme.mit.gamma.statechart.interface_.EventReference;
 import hu.bme.mit.gamma.statechart.interface_.EventSource;
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
+import hu.bme.mit.gamma.statechart.interface_.OccurrenceReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.PackageAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.Persistency;
@@ -1663,7 +1663,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				controlSpecifications.add(controlSpecification);
 			}
 			if (trigger instanceof EventTrigger eventTrigger) {
-				EventReference controlEventReference = eventTrigger.getEventReference();
+				OccurrenceReferenceExpression controlEventReference = eventTrigger.getEventReference();
 				if (eventReference instanceof Entry<?, ?>) { // Port-event
 					List<Entry<Port, Event>> inputEvents = getInputEvents(controlEventReference);
 					@SuppressWarnings("unchecked")
@@ -1809,7 +1809,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static List<Port> getStoredPorts(MessageQueue queue) {
 		Collection<Port> ports = new LinkedHashSet<Port>();
 		// To filter possible duplicates
-		for (EventReference eventReference : getSourceEventReferences(queue)) {
+		for (OccurrenceReferenceExpression eventReference : getSourceEventReferences(queue)) {
 			ports.addAll(
 					getInputEvents(eventReference).stream()
 					.map(it -> it.getKey())
@@ -1829,7 +1829,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static List<Entry<Port, Event>> getStoredEvents(MessageQueue queue) {
 		Collection<Entry<Port, Event>> events = new LinkedHashSet<Entry<Port, Event>>();
 		// To filter possible duplicates
-		for (EventReference eventReference : getSourceEventReferences(queue)) {
+		for (OccurrenceReferenceExpression eventReference : getSourceEventReferences(queue)) {
 			events.addAll(
 					getInputEvents(eventReference));
 		}
@@ -1839,21 +1839,21 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static List<Entry<Port, Event>> getTargetEvents(MessageQueue queue) {
 		Collection<Entry<Port, Event>> events = new LinkedHashSet<Entry<Port, Event>>();
 		// To filter possible duplicates
-		for (EventReference eventReference : getTargetEventReferences(queue)) {
+		for (OccurrenceReferenceExpression eventReference : getTargetEventReferences(queue)) {
 			events.addAll(
 					getInputEvents(eventReference));
 		}
 		return List.copyOf(events);
 	}
 	
-	public static List<EventReference> getSourceEventReferences(MessageQueue queue) {
+	public static List<OccurrenceReferenceExpression> getSourceEventReferences(MessageQueue queue) {
 		return queue.getEventPassings().stream()
 				.map(it -> it.getSource())
 				.filter(it -> it != null) // Can be null due to reductions
 				.toList();
 	}
 	
-	public static List<EventReference> getTargetEventReferences(MessageQueue queue) {
+	public static List<OccurrenceReferenceExpression> getTargetEventReferences(MessageQueue queue) {
 		return queue.getEventPassings().stream()
 				.map(it -> it.getTarget())
 				.filter(it -> it != null) // Can be null due to reductions
@@ -1862,7 +1862,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static EventPassing getEventPassing(MessageQueue queue, Object eventReference) {
 		for (EventPassing eventPassing : queue.getEventPassings()) {
-			EventReference source = eventPassing.getSource();
+			OccurrenceReferenceExpression source = eventPassing.getSource();
 			if (source != null) { // Can be null due to reductions
 				// Entry<Port, Event>
 				if (eventReference instanceof Entry<?, ?> portEvent) {
@@ -1917,20 +1917,20 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return isAcceptable;
 	}
 	
-	public static EventReference getTargetEventReference(MessageQueue queue, Object eventReference) {
+	public static OccurrenceReferenceExpression getTargetEventReference(MessageQueue queue, Object eventReference) {
 		EventPassing eventPassing = getEventPassing(queue, eventReference);
-		EventReference target = eventPassing.getTarget();
+		OccurrenceReferenceExpression target = eventPassing.getTarget();
 		if (target != null) {
 			return target;
 		}
 		else {
-			EventReference source = eventPassing.getSource();
+			OccurrenceReferenceExpression source = eventPassing.getSource();
 			return source;
 		}
 	}
 	
 	public static Entry<Port, Event> getTargetPortEvent(MessageQueue queue, Object eventReference) {
-		EventReference target = getTargetEventReference(queue, eventReference);
+		OccurrenceReferenceExpression target = getTargetEventReference(queue, eventReference);
 		if (target instanceof ClockTickReference) {
 			return null; // We cannot forward anything in this case
 		}
@@ -1958,12 +1958,12 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		throw new IllegalArgumentException("Not known target: " + eventReference);
 	}
 	
-	public static List<EventReference> getSourceAndTargetEventReferences(MessageQueue queue) {
-		List<EventReference> eventReferences = new ArrayList<EventReference>();
+	public static List<OccurrenceReferenceExpression> getSourceAndTargetEventReferences(MessageQueue queue) {
+		List<OccurrenceReferenceExpression> eventReferences = new ArrayList<OccurrenceReferenceExpression>();
 		for (EventPassing eventPassing : queue.getEventPassings()) {
-			EventReference source = eventPassing.getSource();
+			OccurrenceReferenceExpression source = eventPassing.getSource();
 			eventReferences.add(source);
-			EventReference target = eventPassing.getTarget();
+			OccurrenceReferenceExpression target = eventPassing.getTarget();
 			if (target != null) {
 				eventReferences.add(target);
 			}
@@ -1974,7 +1974,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static List<ClockTickReference> getClockTickReferences(MessageQueue queue) {
 		List<ClockTickReference> eventReferences = new ArrayList<ClockTickReference>();
 		for (EventPassing eventPassing : queue.getEventPassings()) {
-			EventReference source = eventPassing.getSource();
+			OccurrenceReferenceExpression source = eventPassing.getSource();
 			if (source instanceof ClockTickReference clockTickReference) {
 				eventReferences.add(clockTickReference);
 			}
@@ -2090,7 +2090,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static boolean isStoredInMessageQueue(Clock clock, MessageQueue queue) {
-		for (EventReference eventReference : getSourceEventReferences(queue)) {
+		for (OccurrenceReferenceExpression eventReference : getSourceEventReferences(queue)) {
 			if (eventReference instanceof ClockTickReference clockTickReference) {
 				if (clockTickReference.getClock() == clock) {
 					return true;
@@ -2123,7 +2123,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return evaluator.evaluateInteger(capacity) > 0;
 	}
 	
-	public static List<Entry<Port, Event>> getInputEvents(EventReference eventReference) {
+	public static List<Entry<Port, Event>> getInputEvents(OccurrenceReferenceExpression eventReference) {
 		List<Entry<Port, Event>> events = new ArrayList<Entry<Port, Event>>();
 		if (eventReference instanceof PortEventReference portEventReference) {
 			Port port = portEventReference.getPort();
@@ -2177,8 +2177,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		
 		Trigger trigger = transition.getTrigger();
 		if (trigger != null) {
-			List<EventReference> eventReferences = ecoreUtil.getSelfAndAllContentsOfType(trigger, EventReference.class);
-			for (EventReference eventReference : eventReferences) {
+			List<OccurrenceReferenceExpression> eventReferences = ecoreUtil.getSelfAndAllContentsOfType(
+					trigger, OccurrenceReferenceExpression.class);
+			for (OccurrenceReferenceExpression eventReference : eventReferences) {
 				events.addAll(
 						getInputEvents(eventReference));
 			}
@@ -2584,11 +2585,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static EventSource getEventSource(EventTrigger eventTrigger) {
-		EventReference eventReference = eventTrigger.getEventReference();
+		OccurrenceReferenceExpression eventReference = eventTrigger.getEventReference();
 		return getEventSource(eventReference);
 	}
 	
-	public static EventSource getEventSource(EventReference eventReference) {
+	public static EventSource getEventSource(OccurrenceReferenceExpression eventReference) {
 		if (eventReference instanceof PortEventReference portEventReference) {
 			return portEventReference.getPort();
 		}
@@ -3660,7 +3661,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<EventTrigger> unfoldIntoEventTriggers(Trigger trigger) {
 		if (trigger instanceof EventTrigger eventTrigger) {
-			EventReference eventReference = eventTrigger.getEventReference();
+			OccurrenceReferenceExpression eventReference = eventTrigger.getEventReference();
 			if (eventReference instanceof PortEventReference  || 
 					eventReference instanceof ClockTickReference ||
 					eventReference instanceof TimeoutEventReference) {

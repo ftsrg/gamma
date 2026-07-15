@@ -224,7 +224,7 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference interface.ecore#//Clock/timeSpecification"/>
     </genClasses>
     <genClasses image="false" ecoreClass="interface.ecore#//Trigger"/>
-    <genClasses image="false" ecoreClass="interface.ecore#//EventReference"/>
+    <genClasses image="false" ecoreClass="interface.ecore#//OccurrenceReferenceExpression"/>
     <genClasses ecoreClass="interface.ecore#//PortReferenceExpression">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference interface.ecore#//PortReferenceExpression/port"/>
     </genClasses>

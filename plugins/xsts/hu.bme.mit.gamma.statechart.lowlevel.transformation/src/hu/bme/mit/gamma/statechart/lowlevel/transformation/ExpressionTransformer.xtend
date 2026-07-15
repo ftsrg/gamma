@@ -37,7 +37,7 @@ import hu.bme.mit.gamma.expression.util.ArgumentInliner
 import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
-import hu.bme.mit.gamma.statechart.interface_.EventReference
+import hu.bme.mit.gamma.statechart.interface_.OccurrenceReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.PortDeclarationReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit
@@ -429,7 +429,7 @@ class ExpressionTransformer {
 		return result
 	}
 	
-	def dispatch List<Expression> transformExpression(EventReference expression) {
+	def dispatch List<Expression> transformExpression(OccurrenceReferenceExpression expression) {
 		return #[
 			transformEventReference(expression)
 		]
