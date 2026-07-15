@@ -33,7 +33,7 @@ class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvide
 	override getScope(EObject context, EReference reference) {
 		var IScope scope = null
 		try {
-			if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+			if (reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 				// imported
 				var _scope = IScope.NULLSCOPE;
 				val containingScenarioPackage = ecoreUtil.getContainerOfType(context, ScenarioPackage);

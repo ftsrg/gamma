@@ -345,7 +345,7 @@ public class ExpressionModelValidator {
 			if (!ecoreUtil.hasContainerOfType(directReferenceExpression, FunctionAccessExpression.class)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"No arguments are given in this function reference", 
-						new ReferenceInfo(ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION)));
+						new ReferenceInfo(ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION)));
 				
 			}
 		}

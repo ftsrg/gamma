@@ -63,7 +63,7 @@ public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProv
 		}
 		// Local declarations
 		if (context instanceof Action action &&
-				reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+				reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			IScope parentScope = getParentScope(context, reference);
 			EObject container = context.eContainer();
 			if (container instanceof Block block) {

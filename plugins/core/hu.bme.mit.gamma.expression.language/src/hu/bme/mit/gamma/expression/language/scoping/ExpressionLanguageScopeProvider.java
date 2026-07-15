@@ -75,7 +75,7 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 			return Scopes.scopeFor(fieldDeclarations);
 		}
 		if (context instanceof ExpressionPackage expressionPackage &&
-				reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+				reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			Collection<Declaration> declarations = new ArrayList<Declaration>();
 			declarations.addAll(
 					expressionPackage.getConstantDeclarations());
@@ -85,12 +85,12 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 			return Scopes.scopeFor(declarations);
 		} // Order is important, as ExpressionPackage is a ParametricElement
 		if (context instanceof ParametricElement parametricElement &&
-				reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+				reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			IScope parentScope = getParentScope(context, reference);
 			List<ParameterDeclaration> parameterDeclarations = parametricElement.getParameterDeclarations();
 			return Scopes.scopeFor(parameterDeclarations, parentScope);
 		}
-		if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+		if (reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			// Right now, this might not be necessary as parametric elements are contained directly by packages
 			IScope parentScope_ = getParentScope(context, reference);
 			return wrapDirectReferenceScope(parentScope_, context);

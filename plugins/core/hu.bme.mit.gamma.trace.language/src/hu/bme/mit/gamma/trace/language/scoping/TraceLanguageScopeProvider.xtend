@@ -147,7 +147,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			
 			return Scopes.scopeFor(variables)
 		}
-		if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+		if (reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			val executionTrace = ecoreUtil.getContainerOfType(context, ExecutionTrace)
 			val declarations = <Declaration>newLinkedHashSet
 			

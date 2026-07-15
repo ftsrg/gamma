@@ -181,9 +181,7 @@
       eSuperTypes="#//ReferenceExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="declaration" eType="#//Declaration"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="DirectReferenceExpression" eSuperTypes="#//ReferenceExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="declaration" eType="#//Declaration"/>
-  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="DirectReferenceExpression" eSuperTypes="#//AbstractDirectReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="ParameterReferenceExpression" abstract="true"
       eSuperTypes="#//ReferenceExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="parameter" lowerBound="1"

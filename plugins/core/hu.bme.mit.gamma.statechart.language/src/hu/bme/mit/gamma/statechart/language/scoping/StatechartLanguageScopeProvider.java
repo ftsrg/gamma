@@ -379,8 +379,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 //				
 //				return embedScopes(List.of(parentScope, scope));
 //			}
-			if (reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION ||
-					reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+			if (reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 				// 0. Interface declarations
 				PortReferenceExpression portReferenceExpression = ecoreUtil.getSelfOrContainerOfType(context, PortReferenceExpression.class);
 				if (portReferenceExpression != null) {

@@ -163,7 +163,7 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			return Scopes.scopeFor(genmodel.scenarioImports.flatMap[it.scenarios])
 		}
 		// Expression scoping
-		if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+		if (reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			val genmodel = ecoreUtil.getSelfOrContainerOfType(context, GenModel)
 			val imports = genmodel.packageImports
 			if (!imports.empty) {
