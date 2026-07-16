@@ -686,11 +686,11 @@ StateReferenceExpression returns StateReferenceExpression:
 ;
 
 EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenceExpression:
-	port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] '::' parameter=[ExpressionModel::ParameterDeclaration];
+	port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] '::' parameterDeclaration=[ExpressionModel::ParameterDeclaration];
 
 InterfaceParameterReferenceExpression returns InterfaceModel::InterfaceParameterReferenceExpression:
 	// this is a placeholder for the language to be unambiguous
-	'this' '.' event=[InterfaceModel::Event] '::' parameter=[ExpressionModel::ParameterDeclaration];
+	'this' '.' event=[InterfaceModel::Event] '::' parameterDeclaration=[ExpressionModel::ParameterDeclaration];
 	
 TimeoutReferenceExpression returns TimeoutReferenceExpression:
 	'time-elapsed' '(' timeout=[TimeoutDeclaration] ')'
@@ -735,8 +735,8 @@ DeactivateTimeoutAction returns DeactivateTimeoutAction:
 // Component instance element references for subgrammars
 
 ComponentInstanceStateExpression returns CompositeModel::ComponentInstanceElementReferenceExpression:
-	ComponentInstanceStateReferenceExpression | ComponentInstanceVariableReferenceExpression |
-		ComponentInstanceQueueSizeReferenceExpression |
+	ComponentInstanceStateReferenceExpression | ComponentInstancePortVariableReferenceExpression |
+		ComponentInstanceVariableReferenceExpression | ComponentInstanceQueueSizeReferenceExpression |
 		ComponentInstanceEventReferenceExpression | ComponentInstanceEventParameterReferenceExpression
 ;
 
@@ -746,6 +746,10 @@ ComponentInstanceStateReferenceExpression returns CompositeModel::ComponentInsta
 
 ComponentInstanceVariableReferenceExpression returns CompositeModel::ComponentInstanceVariableReferenceExpression:
 	'variable' instance=ComponentInstanceReferenceExpression '.' variableDeclaration=[ExpressionModel::VariableDeclaration]
+;
+
+ComponentInstancePortVariableReferenceExpression returns CompositeModel::ComponentInstancePortVariableReferenceExpression:
+	'port-variable' instance=ComponentInstanceReferenceExpression '::' port=[InterfaceModel::Port] '::' variableDeclaration=[ExpressionModel::VariableDeclaration]
 ;
 
 ComponentInstanceQueueSizeReferenceExpression returns CompositeModel::ComponentInstanceQueueSizeReferenceExpression:

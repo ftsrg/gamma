@@ -267,7 +267,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 			// Works if the interfaces/types are loaded into different resources
 			// even when resource set and URI type (absolute/platform) must match
 			it.event = originalTopComponent.getOriginalEvent(assert.event)
-			it.parameter = it.event.parameterDeclarations.get(assert.parameter.index)
+			it.parameterDeclaration = it.event.parameterDeclarations.get(assert.parameterDeclaration.index)
 		]
 	}
 	

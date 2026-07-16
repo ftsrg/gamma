@@ -60,10 +60,13 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 			if (literal == null) {
 				RecordAccessExpression access = ecoreUtil.getSelfOrContainerOfType(context, RecordAccessExpression.class);
 				Expression recordTypeExpression = access.getOperand();
-				TypeDefinition typeDefinition = typeDeterminator.getTypeDefinition(recordTypeExpression);
-				if (typeDefinition instanceof RecordTypeDefinition recordType) {
-					return Scopes.scopeFor(recordType.getFieldDeclarations());
-				}
+				try {
+					TypeDefinition typeDefinition = typeDeterminator.getTypeDefinition(recordTypeExpression);
+					if (typeDefinition instanceof RecordTypeDefinition recordType) {
+						return Scopes.scopeFor(recordType.getFieldDeclarations());
+					}
+				} catch (RuntimeException e) {} // Not fully constructed element
+				
 				return super.getScope(context, reference);
 			}
 			else {

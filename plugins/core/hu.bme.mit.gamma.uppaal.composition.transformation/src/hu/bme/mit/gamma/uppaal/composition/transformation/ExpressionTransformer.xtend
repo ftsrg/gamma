@@ -180,7 +180,7 @@ class ExpressionTransformer {
 	def dispatch void transform(EObject container, EReference reference, EventParameterReferenceExpression expression) {		
 		val gammaPort = expression.port
 		val gammaEvent = expression.event
-		val gammaParameter = expression.parameter
+		val gammaParameter = expression.parameterDeclaration
 		val parameterOwners = gammaPort.containingStatechart.referencingComponentInstances
 		checkState(parameterOwners.size == 1)
 		val uppaalParameterVariable = gammaEvent.getIsRaisedValueOfVariable(gammaPort, gammaParameter, parameterOwners.head) // Event parameter reference -> isRaised

@@ -620,7 +620,7 @@ class PropertyGenerator {
 		val transitionOrState = reference.containingTransitionOrState
 		val port = reference.port
 		val event = reference.event
-		val parameter = reference.parameter
+		val parameter = reference.parameterDeclaration
 		return '''«transitionOrState.id»::«port.name».«event.name»::«parameter.name»'''
 	}
 	

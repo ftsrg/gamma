@@ -391,7 +391,7 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 		for (eventReference : eventReferences) {
 			val port = eventReference.port
 			val event = eventReference.event
-			val parameter = eventReference.parameter
+			val parameter = eventReference.parameterDeclaration
 			val i = parameter.index
 			
 			val act = acts.filter[it.port == port && it.event == event].lastElement

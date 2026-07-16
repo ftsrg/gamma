@@ -22,10 +22,10 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
+import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.OpaqueExpression;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
-import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
@@ -127,8 +127,8 @@ public class TraceUtil extends StatechartUtil {
 						lhsVariableReference.getInstance());
 				ComponentInstance rhsInstance = StatechartModelDerivedFeatures.getLastInstance(
 						rhsVariableReference.getInstance());
-				VariableDeclaration lhsVariable = lhsVariableReference.getVariableDeclaration();
-				VariableDeclaration rhsVariable = rhsVariableReference.getVariableDeclaration();
+				Declaration lhsVariable = lhsVariableReference.getVariableDeclaration();
+				Declaration rhsVariable = rhsVariableReference.getVariableDeclaration();
 				String lhsName = lhsInstance.getName() + lhsVariable.getName();
 				String rhsName = rhsInstance.getName() + rhsVariable.getName();
 				return lhsName.compareTo(rhsName);

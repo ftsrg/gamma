@@ -131,7 +131,7 @@ class TraceGenUtil {
 					val arguments = act.arguments
 					val params = act.event.parameterDeclarations
 					for (var i = 0; i < params.size; i++) {
-						if (ref.parameter.name == params.get(i).name) {
+						if (ref.parameterDeclaration.name == params.get(i).name) {
 							val clone = arguments.get(i).clone
 							ecoreUtil.changeAndReplace(clone, ref, ref.eContainer)
 							foundMatch = true
@@ -147,7 +147,7 @@ class TraceGenUtil {
 					ref.port = component.getPort(ref.port.name)
 				}
 				ref.event = ref.port.getEvent(ref.event.name)
-				ref.parameter = ref.event.getEventParam(ref.parameter.name)
+				ref.parameterDeclaration = ref.event.getEventParam(ref.parameterDeclaration.name)
 			}
 		}
 	}

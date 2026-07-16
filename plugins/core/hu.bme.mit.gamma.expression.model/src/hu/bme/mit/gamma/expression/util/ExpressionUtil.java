@@ -121,10 +121,7 @@ public class ExpressionUtil {
 			return reference.getDeclaration();
 		}
 		if (expression instanceof ParameterReferenceExpression reference) {
-			return reference.getParameter();
-		}
-		if (expression instanceof DirectReferenceExpression reference) {
-			return reference.getDeclaration();
+			return reference.getParameterDeclaration();
 		}
 		if (expression instanceof RecordAccessExpression access) {
 			if (ExpressionModelDerivedFeatures.isRecordAccessEvaluable(access)) { // RecordLiteral
@@ -160,9 +157,6 @@ public class ExpressionUtil {
 		if (expression instanceof ParameterReferenceExpression reference) {
 			return reference;
 		}
-		if (expression instanceof DirectReferenceExpression reference) {
-			return reference;
-		}
 		if (expression instanceof ArrayAccessExpression access) {
 			if (ExpressionModelDerivedFeatures.isArrayAccessEvaluable(access)) { // ArrayLiteral
 				Expression evaluatedArrayAccess = evaluator.evaluateArrayAccess(access);
@@ -194,10 +188,7 @@ public class ExpressionUtil {
 			return directReference.getDeclaration();
 		}
 		if (reference instanceof ParameterReferenceExpression directReference) {
-			return directReference.getParameter();
-		}
-		if (reference instanceof DirectReferenceExpression directReference) {
-			return directReference.getDeclaration();
+			return directReference.getParameterDeclaration();
 		}
 		throw new IllegalArgumentException("Not supported element: " + expression);
 	}

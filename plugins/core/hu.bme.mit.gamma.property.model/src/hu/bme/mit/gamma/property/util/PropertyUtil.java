@@ -169,7 +169,7 @@ public class PropertyUtil extends StatechartUtil {
 		if (lastExpression instanceof EventParameterReferenceExpression reference) {
 			Port port = reference.getPort();
 			Event event = reference.getEvent();
-			ParameterDeclaration parameter = reference.getParameter();
+			ParameterDeclaration parameter = reference.getParameterDeclaration();
 			ComponentInstanceEventParameterReferenceExpression parameterReference =
 					createParameterReference(rootInstance, port, event, parameter);
 			return parameterReference;

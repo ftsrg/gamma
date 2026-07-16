@@ -283,7 +283,7 @@ class OriginalEnvironmentBehaviorCreator {
 				it.arguments += createEventParameterReferenceExpression => [
 					it.port = sourcePort
 					it.event = event
-					it.parameter = parameter
+					it.parameterDeclaration = parameter
 				]
 			}
 		]

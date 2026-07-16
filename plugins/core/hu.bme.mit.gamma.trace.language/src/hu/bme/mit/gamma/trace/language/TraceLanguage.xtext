@@ -123,12 +123,17 @@ ComponentSchedule returns ComponentSchedule:
 @Override
 ReferenceExpression returns ConstraintModel::Expression:
 	RaiseEventAct | EventParameterReferenceExpression |
-	ComponentInstanceStateReferenceExpression | ComponentInstanceVariableReferenceExpression |
+	ComponentInstanceStateReferenceExpression |
+	ComponentInstancePortVariableReferenceExpression | ComponentInstanceVariableReferenceExpression |
 	DirectReferenceExpression
 ;
 
 EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenceExpression:
-	'parameter' port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] '::' parameter=[ConstraintModel::ParameterDeclaration]
+	'parameter' port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] '::' parameterDeclaration=[ConstraintModel::ParameterDeclaration]
+;
+
+ComponentInstancePortVariableReferenceExpression returns CompositeModel::ComponentInstancePortVariableReferenceExpression:
+	'port-variable' (instance=ComponentInstanceReferenceExpression | 'self') '::' port=[InterfaceModel::Port] '::' variableDeclaration=[ConstraintModel::VariableDeclaration]
 ;
 
 ComponentInstanceVariableReferenceExpression returns CompositeModel::ComponentInstanceVariableReferenceExpression:

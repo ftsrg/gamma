@@ -468,7 +468,7 @@ public class StatechartUtil extends ActionUtil {
 			Port referredPort = parameterReference.getPort();
 			Event referredEvent = parameterReference.getEvent();
 			if (port == referredPort && event == referredEvent) {
-				ParameterDeclaration referredParameter = parameterReference.getParameter();
+				ParameterDeclaration referredParameter = parameterReference.getParameterDeclaration();
 				int index = ecoreUtil.getIndex(referredParameter);
 				Expression argument = arguments.get(index);
 				Expression clonedArgument = ecoreUtil.clone(argument);
@@ -1168,7 +1168,7 @@ public class StatechartUtil extends ActionUtil {
 		expression.setPort(port);
 		Event event = ecoreUtil.getContainerOfType(parameter, Event.class);
 		expression.setEvent(event);
-		expression.setParameter(parameter);
+		expression.setParameterDeclaration(parameter);
 		return expression;
 	}
 	

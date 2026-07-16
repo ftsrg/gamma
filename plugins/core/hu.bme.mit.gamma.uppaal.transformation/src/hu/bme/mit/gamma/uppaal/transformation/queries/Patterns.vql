@@ -361,13 +361,13 @@ private pattern parameterValue(rootExpression : EqualityExpression, port : Port,
 	EqualityExpression.leftOperand(rootExpression, lhs);
 	EventParameterReferenceExpression.port(lhs, port);
 	EventParameterReferenceExpression.event(lhs, event);
-	EventParameterReferenceExpression.parameter(lhs, parameter);
+	EventParameterReferenceExpression.parameterDeclaration(lhs, parameter);
 	EqualityExpression.rightOperand(rootExpression, valueExpression);
 } or {
 	EqualityExpression.rightOperand(rootExpression, rhs);
 	EventParameterReferenceExpression.port(rhs, port);
 	EventParameterReferenceExpression.event(rhs, event);
-	EventParameterReferenceExpression.parameter(rhs, parameter);
+	EventParameterReferenceExpression.parameterDeclaration(rhs, parameter);
 	EqualityExpression.leftOperand(rootExpression, valueExpression);
 }
 

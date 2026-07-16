@@ -66,7 +66,7 @@ class ScenarioLanguageScopeProvider extends AbstractScenarioLanguageScopeProvide
 				return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllEvents(port))
 			}
 			else if (context instanceof EventParameterReferenceExpression && reference ==
-					ExpressionModelPackage.Literals.PARAMETER_REFERENCE_EXPRESSION__PARAMETER) {
+					ExpressionModelPackage.Literals.PARAMETER_REFERENCE_EXPRESSION__PARAMETER_DECLARATION) {
 				val expression = context as EventParameterReferenceExpression
 				checkState(expression.port !== null)
 				val event = expression.event

@@ -4450,7 +4450,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 					.getSelfAndAllContentsOfType(interfaceInvariant, InterfaceParameterReferenceExpression.class);
 			for (InterfaceParameterReferenceExpression interfaceParameterReferenceExpression : interfaceParameterReferences) {
 				Expression portInvariant = statechartUtil.createEventParameterReference(port,
-						interfaceParameterReferenceExpression.getParameter());
+						interfaceParameterReferenceExpression.getParameterDeclaration());
 				ecoreUtil.replace(portInvariant, interfaceParameterReferenceExpression);
 			}
 		}

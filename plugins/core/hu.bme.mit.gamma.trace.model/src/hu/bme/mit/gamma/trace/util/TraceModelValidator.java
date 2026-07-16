@@ -17,7 +17,9 @@ import java.util.List;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
+import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
@@ -140,7 +142,7 @@ public class TraceModelValidator extends StatechartModelValidator {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.ERROR, 
 						"This is not a valid state in the specified statechart",
-							new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_STATE_REFERENCE_EXPRESSION__STATE)));
+							new ReferenceInfo(StatechartModelPackage.Literals.STATE_REFERENCE_EXPRESSION__STATE)));
 			}
 		}
 		return validationResultMessages;
@@ -152,13 +154,13 @@ public class TraceModelValidator extends StatechartModelValidator {
 		ComponentInstance instance = StatechartModelDerivedFeatures.getLastInstance(instanceReference);
 		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
 		if (type instanceof StatechartDefinition statechartDefinition) {
-			VariableDeclaration variable = variableReference.getVariableDeclaration();
+			Declaration variable = variableReference.getVariableDeclaration();
 			List<VariableDeclaration> variables = StatechartModelDerivedFeatures.getAllProvidedVariableDeclarations(statechartDefinition);
 			if (!variables.contains(variable)) {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.ERROR, 
 						"This is not a valid variable in the specified statechart",
-							new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_VARIABLE_REFERENCE_EXPRESSION__VARIABLE_DECLARATION)));
+							new ReferenceInfo(ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION)));
 			}
 		}
 		return validationResultMessages;

@@ -180,6 +180,10 @@ ComponentInstanceVariableReferenceExpression returns composite::ComponentInstanc
 	instance=ComponentInstanceReferenceExpression '.' variableDeclaration=[expression::VariableDeclaration]
 ;
 
+ComponentInstancePortVariableReferenceExpression returns composite::ComponentInstancePortVariableReferenceExpression:
+	instance=ComponentInstanceReferenceExpression '.' port=[interface::Port] '.' variableDeclaration=[expression::VariableDeclaration]
+;
+
 ComponentInstanceStateConfigurationReferenceExpression returns composite::ComponentInstanceStateReferenceExpression:
 	instance=ComponentInstanceReferenceExpression '.' region=[statechart::Region] '.' state=[statechart::State] 
 ;

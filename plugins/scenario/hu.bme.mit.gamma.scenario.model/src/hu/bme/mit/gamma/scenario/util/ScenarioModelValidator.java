@@ -456,7 +456,7 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 							validationResultMessages.add(
 								new ValidationResultMessage(ValidationResult.ERROR,
 									"This synchronous block does not contain any signal for the port and event of "
-										+ parameterReference.getParameter().getName(),
+										+ parameterReference.getParameterDeclaration().getName(),
 									new ReferenceInfo(parameterReference.eContainingFeature(), parameterReference.eContainer())));
 						}
 					}
@@ -482,7 +482,7 @@ public class ScenarioModelValidator extends ExpressionModelValidator {
 							validationResultMessages.add(
 								new ValidationResultMessage(ValidationResult.ERROR,
 									"The previous interaction is not a signal for the port and event of "
-										+ paramReference.getParameter().getName(),
+										+ paramReference.getParameterDeclaration().getName(),
 									new ReferenceInfo(paramReference.eContainingFeature(), paramReference.eContainer())));
 						}
 					}

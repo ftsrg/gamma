@@ -31,7 +31,6 @@ import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.DivExpression;
 import hu.bme.mit.gamma.expression.model.DivideExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
@@ -70,6 +69,7 @@ import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression;
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression;
+import hu.bme.mit.gamma.expression.model.VariableReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VoidTypeDefinition;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.util.JavaUtil;
@@ -137,20 +137,17 @@ public class ExpressionTypeDeterminator2 {
 			arrayTypeDefinition.setSize(size);
 			return arrayTypeDefinition;
 		}
-		if (expression instanceof ParameterReferenceExpression referenceExpression) {
-			ParameterDeclaration parameter = referenceExpression.getParameter();
-			Type type = parameter.getType();
-			return ecoreUtil.clone(type);
-		}
 		if (expression instanceof AbstractDirectReferenceExpression referenceExpression) {
 			Declaration declaration = referenceExpression.getDeclaration();
-			Type type = declaration.getType();
-			return ecoreUtil.clone(type);
+			return getType(declaration);
 		}
-		if (expression instanceof DirectReferenceExpression referenceExpression) {
-			Declaration declaration = referenceExpression.getDeclaration();
-			Type type = declaration.getType();
-			return ecoreUtil.clone(type);
+		if (expression instanceof ParameterReferenceExpression referenceExpression) {
+			ParameterDeclaration declaration = referenceExpression.getParameterDeclaration();
+			return getType(declaration);
+		}
+		if (expression instanceof VariableReferenceExpression referenceExpression) {
+			Declaration declaration = referenceExpression.getVariableDeclaration();
+			return getType(declaration);
 		}
 		if (expression instanceof ElseExpression) {
 			return factory.createBooleanTypeDefinition();
@@ -250,6 +247,11 @@ public class ExpressionTypeDeterminator2 {
 		//
 		
 		throw new IllegalArgumentException("Unknown type: " + expression);
+	}
+	
+	private Type getType(Declaration declaration) {
+		Type type = declaration.getType();
+		return ecoreUtil.clone(type);
 	}
 	
 	public TypeDefinition getTypeDefinition(Expression expression) {

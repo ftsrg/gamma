@@ -10,15 +10,14 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.util;
 
+import hu.bme.mit.gamma.expression.model.AbstractDirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
-import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.ParameterReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
-import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.expression.model.VariableReferenceExpression;
 import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeReferenceExpression;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.OccurrenceReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
@@ -44,15 +43,10 @@ public class ExpressionTypeDeterminator extends ExpressionTypeDeterminator2 {
 		else if (expression instanceof TimeSpecification) {
 			return factory.createIntegerTypeDefinition();
 		}
-		else if (expression instanceof ComponentInstanceVariableReferenceExpression reference) {
-			VariableDeclaration variable = reference.getVariableDeclaration();
-			Type declarationType = variable.getType();
-			return ecoreUtil.clone(declarationType);
-		}
-		else if (expression instanceof ComponentInstanceEventParameterReferenceExpression reference) {
-			ParameterDeclaration parameter = reference.getParameterDeclaration();
-			Type declarationType = parameter.getType();
-			return ecoreUtil.clone(declarationType);
+		else if (expression instanceof AbstractDirectReferenceExpression ||
+				expression instanceof ParameterReferenceExpression ||
+				expression instanceof VariableReferenceExpression) {
+			return super.getType(expression);
 		}
 		else if (expression instanceof ComponentInstanceQueueSizeReferenceExpression) {
 			return factory.createIntegerTypeDefinition();

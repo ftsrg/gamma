@@ -123,36 +123,21 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceStateReferenceExpression"
-      eSuperTypes="#//ComponentInstanceElementReferenceExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="region" lowerBound="1"
-        eType="ecore:EClass statechart.ecore#//Region"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="state" lowerBound="1" eType="ecore:EClass statechart.ecore#//State"/>
-  </eClassifiers>
+      eSuperTypes="#//ComponentInstanceElementReferenceExpression statechart.ecore#//StateReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceVariableReferenceExpression"
-      eSuperTypes="#//ComponentInstanceElementReferenceExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclaration" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
-  </eClassifiers>
+      eSuperTypes="#//ComponentInstanceElementReferenceExpression ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableReferenceExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstancePortVariableReferenceExpression"
+      eSuperTypes="#//ComponentInstanceElementReferenceExpression interface.ecore#//PortReferenceExpression ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceQueueSizeReferenceExpression"
       eSuperTypes="#//ComponentInstanceElementReferenceExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="queue" lowerBound="1" eType="#//MessageQueue"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentInstancePortReferenceExpression"
-      eSuperTypes="#//ComponentInstanceElementReferenceExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="ecore:EClass interface.ecore#//Port"/>
-  </eClassifiers>
+      eSuperTypes="#//ComponentInstanceElementReferenceExpression interface.ecore#//PortReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceEventReferenceExpression"
-      eSuperTypes="#//ComponentInstanceElementReferenceExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="ecore:EClass interface.ecore#//Port"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="ecore:EClass interface.ecore#//Event"/>
-  </eClassifiers>
+      eSuperTypes="#//ComponentInstanceElementReferenceExpression interface.ecore#//PortReferenceExpression interface.ecore#//EventReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceEventParameterReferenceExpression"
-      eSuperTypes="#//ComponentInstanceElementReferenceExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="ecore:EClass interface.ecore#//Port"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="ecore:EClass interface.ecore#//Event"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="parameterDeclaration" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParameterDeclaration"/>
-  </eClassifiers>
+      eSuperTypes="#//ComponentInstanceElementReferenceExpression interface.ecore#//PortReferenceExpression interface.ecore#//EventReferenceExpression ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParameterReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceTransitionReferenceExpression"
       eSuperTypes="#//ComponentInstanceElementReferenceExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="transitionId" lowerBound="1"

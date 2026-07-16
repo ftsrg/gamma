@@ -209,7 +209,7 @@ class AnnotationNamings {
 	def String getInteractionDefVariableName(Event event)
 		'''«PREFIX»def_«event.name»_«interactionDefId.increment(event)»«POSTFIX»'''
 	def String getInteractionUseVariableName(EventParameterReferenceExpression reference)
-		'''«PREFIX»use_«reference.port.name»_«reference.event.name»_«reference.parameter.name»_«interactionUseId.increment(reference)»«POSTFIX»'''
+		'''«PREFIX»use_«reference.port.name»_«reference.event.name»_«reference.parameterDeclaration.name»_«interactionUseId.increment(reference)»«POSTFIX»'''
 }
 
 ///

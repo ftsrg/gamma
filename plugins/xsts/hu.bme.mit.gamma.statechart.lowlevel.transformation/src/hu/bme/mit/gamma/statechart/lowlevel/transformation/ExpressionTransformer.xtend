@@ -316,7 +316,7 @@ class ExpressionTransformer {
 		else if (reference instanceof EventParameterReferenceExpression) {
 			val port = reference.port
 			val event = reference.event
-			val parameter = reference.parameter
+			val parameter = reference.parameterDeclaration
 			lowlevelVariables += trace.getAllInParameters(port, event, parameter -> fieldAccess)
 		}
 		
