@@ -169,6 +169,10 @@ class InterfaceCodeGenerator {
 			
 			Object getValue(String variable);
 			
+			default Object getValue(String port, String variable) {
+				return getValue(port + "_" + variable);
+			}
+			
 			default boolean checkVariableValue(String variable, Object expectedValue) {
 				return Objects.deepEquals(getValue(variable), expectedValue);
 			}

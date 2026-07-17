@@ -80,8 +80,7 @@ class ExpressionSerializer extends hu.bme.mit.gamma.codegeneration.java.util.Exp
 		val instance = assert.instance
 		val variable = assert.variableDeclaration
 		
-		val name = variable.name
-		return '''«instance.serializeInstanceReference».getValue("«name»")'''
+		return '''«instance.serializeInstanceReference».getValue("«variable.name»")'''
 	}
 	
 	def dispatch String serialize(ComponentInstancePortVariableReferenceExpression assert) {
@@ -89,8 +88,7 @@ class ExpressionSerializer extends hu.bme.mit.gamma.codegeneration.java.util.Exp
 		val port = assert.port
 		val variable = assert.variableDeclaration
 		
-		val name = port.name + "_" + variable.name
-		return '''«instance.serializeInstanceReference».getValue("«name»")'''
+		return '''«instance.serializeInstanceReference».getValue("«port.name»", "«variable.name»")'''
 	}
 	
 	//
