@@ -217,6 +217,9 @@ public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.Expre
 		if (expression instanceof ComponentInstanceVariableReferenceExpression reference) {
 			return _serialize(reference);
 		}
+		if (expression instanceof ComponentInstancePortVariableReferenceExpression reference) {
+			return _serialize(reference);
+		}
 		if (expression instanceof ComponentInstanceEventReferenceExpression reference) {
 			return _serialize(reference);
 		}

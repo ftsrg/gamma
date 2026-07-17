@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.UnaryExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
@@ -250,6 +251,24 @@ class UnfoldedExecutionTraceBackAnnotator {
 		
 		val variableState = statechartUtil.createVariableReference(
 				originalInstance, originalVariable)
+		if (originalVariable === null) {
+			dummyAsserts += variableState
+		}
+		
+		return variableState
+	}
+	
+	protected def dispatch Expression transformAssert(ComponentInstancePortVariableReferenceExpression assert) {
+		val instance = assert.instance.lastInstance as SynchronousComponentInstance
+		val port = assert.port
+		val variable = assert.variableDeclaration
+		val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
+		val originalPort = originalInstance.getOriginalPort(port)
+		val originalVariables = originalPort.allVariableDeclarations
+		val originalVariable = originalVariables.findFirst[it.name == variable.name]
+		
+		val variableState = statechartUtil.createPortVariableReference(
+				originalInstance, originalPort, originalVariable)
 		if (originalVariable === null) {
 			dummyAsserts += variableState
 		}
