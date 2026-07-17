@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.util.Triple
 import hu.bme.mit.gamma.xsts.transformation.util.Namings
 import java.util.List
 
@@ -150,6 +151,15 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	def isSourceVariable(String targetVariableName) {
 		try {
 			targetVariableName.getSourceVariable
+			return true
+		} catch (IllegalArgumentException e) {
+			return false
+		}
+	}
+	
+	def isSourcePortVariable(String targetVariableName) {
+		try {
+			targetVariableName.getSourcePortVariable
 			return true
 		} catch (IllegalArgumentException e) {
 			return false
@@ -330,6 +340,25 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 				val names = variable.getTargetVariableNames(instance)
 				if (names.contains(targetVariableName)) {
 					return variable -> instance
+				}
+			}
+		}
+		throw new IllegalArgumentException("Not known id")
+	}
+	
+	def getSourcePortVariable(String targetVariableName) {
+		for (match : instanceVariables) {
+			val variable = match.variable
+			val instance = match.instance
+			if (variable.interfaceDeclaration) {
+				val statechart = instance.getStatechart
+				for (port : statechart.allPorts) {
+					if (port.allVariableDeclarations.contains(variable)) {
+						val names = variable.getTargetVariableNames(port, instance)
+						if (names.contains(targetVariableName)) {
+							return new Triple(variable, port, instance)
+						}
+					}
 				}
 			}
 		}

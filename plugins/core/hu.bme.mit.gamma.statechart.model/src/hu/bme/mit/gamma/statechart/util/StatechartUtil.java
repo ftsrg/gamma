@@ -48,6 +48,7 @@ import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
@@ -1233,6 +1234,16 @@ public class StatechartUtil extends ActionUtil {
 		ComponentInstanceVariableReferenceExpression reference =
 				compositeFactory.createComponentInstanceVariableReferenceExpression();
 		reference.setInstance(instance);
+		reference.setVariableDeclaration(variable);
+		return reference;
+	}
+	
+	public ComponentInstancePortVariableReferenceExpression createPortVariableReference(ComponentInstanceReferenceExpression instance,
+			Port port, VariableDeclaration variable) {
+		ComponentInstancePortVariableReferenceExpression reference =
+				compositeFactory.createComponentInstancePortVariableReferenceExpression();
+		reference.setInstance(instance);
+		reference.setPort(port);
 		reference.setVariableDeclaration(variable);
 		return reference;
 	}

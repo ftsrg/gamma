@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.expression.model.GreaterExpression
 import hu.bme.mit.gamma.expression.model.LessEqualExpression
 import hu.bme.mit.gamma.expression.model.LessExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
@@ -77,14 +78,18 @@ class ExpressionSerializer extends hu.bme.mit.gamma.codegeneration.java.util.Exp
 	
 	def dispatch String serialize(ComponentInstanceVariableReferenceExpression assert) {
 		val instance = assert.instance
-		val type = instance.componentInstance.derivedType
 		val variable = assert.variableDeclaration
 		
-		val portVariables = type.allPortVariableDeclarations
-		val portVariable = portVariables.findFirst[it.value === variable] // TODO no info on which port...
-		val name = (portVariable !== null) ?
-				portVariable.key.name + "_" + portVariable.value.name : 
-				variable.name
+		val name = variable.name
+		return '''«instance.serializeInstanceReference».getValue("«name»")'''
+	}
+	
+	def dispatch String serialize(ComponentInstancePortVariableReferenceExpression assert) {
+		val instance = assert.instance
+		val port = assert.port
+		val variable = assert.variableDeclaration
+		
+		val name = port.name + "_" + variable.name
 		return '''«instance.serializeInstanceReference».getValue("«name»")'''
 	}
 	
