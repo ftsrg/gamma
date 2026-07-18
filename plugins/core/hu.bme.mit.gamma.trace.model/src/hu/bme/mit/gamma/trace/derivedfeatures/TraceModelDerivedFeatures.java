@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.OpaqueExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
+import hu.bme.mit.gamma.expression.model.VariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
@@ -39,6 +40,7 @@ import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.State;
+import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer;
 import hu.bme.mit.gamma.trace.model.Act;
 import hu.bme.mit.gamma.trace.model.Cycle;
@@ -213,14 +215,14 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 	
 	public static Expression getPrimaryAssert(Expression assertion) {
-		List<ComponentInstanceVariableReferenceExpression> variableReferences =
-				ecoreUtil.getSelfAndAllContentsOfType(assertion, ComponentInstanceVariableReferenceExpression.class);
+		List<VariableReferenceExpression> variableReferences =
+				ecoreUtil.getSelfAndAllContentsOfType(assertion, VariableReferenceExpression.class);
 		if (variableReferences.size() == 1) {
 			return variableReferences.get(0);
 		}
 		
-		List<ComponentInstanceStateReferenceExpression> stateReferences =
-				ecoreUtil.getSelfAndAllContentsOfType(assertion, ComponentInstanceStateReferenceExpression.class);
+		List<StateReferenceExpression> stateReferences =
+				ecoreUtil.getSelfAndAllContentsOfType(assertion, StateReferenceExpression.class);
 		if (stateReferences.size() == 1) {
 			return stateReferences.get(0);
 		}
