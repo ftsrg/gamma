@@ -361,24 +361,6 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				return Scopes.scopeFor(inputEvents,
 						Scopes.scopeFor(allEvents));
 			}
-//			if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__PARENT) {
-//				IScope scope = super.getScope(context, reference);
-//				
-//				Package package_ = ecoreUtil.getSelfOrContainerOfType(context, Package.class);
-//				List<Package> imports = package_.getImports();
-//				if (imports.isEmpty()) {
-//					return scope;
-//				}
-//				
-//				Collection<NamedElement> importedElements = new ArrayList<NamedElement>();
-//				for (Package import_ : imports) {
-//					List<NamedElement> importedNamedElements = ecoreUtil.getSelfAndAllContentsOfType(import_, NamedElement.class);
-//					importedElements.addAll(importedNamedElements);
-//				}
-//				IScope parentScope = Scopes.scopeFor(importedElements);
-//				
-//				return embedScopes(List.of(parentScope, scope));
-//			}
 			if (reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 				// 0. Interface declarations
 				PortReferenceExpression portReferenceExpression = ecoreUtil.getSelfOrContainerOfType(context, PortReferenceExpression.class);
@@ -411,6 +393,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 						declarations.addAll(
 								statechart.getFunctionDeclarations());
 						
+						// Direct references to port declarations
 //						declarations.addAll(
 //								StatechartModelDerivedFeatures.getAllInterfaceVariableDeclarations(statechart));
 //						declarations.addAll(
@@ -506,14 +489,14 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			
 			return Scopes.scopeFor(instances);
 		}
-		if (context instanceof ComponentInstanceElementReferenceExpression) {
-			ComponentInstance instance = StatechartModelDerivedFeatures.getLastInstance(((ComponentInstanceElementReferenceExpression) context).getInstance());
+		if (context instanceof ComponentInstanceElementReferenceExpression instanceElementReference) {
+			ComponentInstance instance = StatechartModelDerivedFeatures.getLastInstance(instanceElementReference.getInstance());
 			Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
 			if (type != null) {
-				if (type instanceof StatechartDefinition) {
+				if (type instanceof StatechartDefinition statechart) {
 					boolean _equals_1 = Objects.equal(reference, StatechartModelPackage.Literals.STATE_REFERENCE_EXPRESSION__REGION);
 					if (_equals_1) {
-						return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllRegions((CompositeElement) type));
+						return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllRegions(statechart));
 					}
 					boolean _equals_2 = Objects.equal(reference, StatechartModelPackage.Literals.STATE_REFERENCE_EXPRESSION__STATE);
 					if (_equals_2) {
@@ -523,22 +506,22 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					}
 					boolean _equals_3 = Objects.equal(reference, ExpressionModelPackage.Literals.VARIABLE_REFERENCE_EXPRESSION__VARIABLE_DECLARATION);
 					if (_equals_3) {
-						return Scopes.scopeFor(((StatechartDefinition) type).getVariableDeclarations());
+						return Scopes.scopeFor(statechart.getVariableDeclarations());
 					}
 					if (Objects.equal(reference, InterfaceModelPackage.Literals.PORT_REFERENCE_EXPRESSION__PORT)) {
-						return Scopes.scopeFor(((StatechartDefinition) type).getPorts());
+						return Scopes.scopeFor(statechart.getPorts());
 					}
 					if (Objects.equal(reference, InterfaceModelPackage.Literals.EVENT_REFERENCE_EXPRESSION__EVENT)) {
-						if (context instanceof ComponentInstanceEventReferenceExpression) {
-							Port port = ((ComponentInstanceEventReferenceExpression) context).getPort();
+						if (context instanceof ComponentInstanceEventReferenceExpression eventReference) {
+							Port port = eventReference.getPort();
 							boolean _eIsProxy = port.eIsProxy();
 							boolean _not = (!_eIsProxy);
 							if (_not) {
 								return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllEvents(port));
 							}
 						}
-						if (context instanceof ComponentInstanceEventParameterReferenceExpression) {
-							Port port_1 = ((ComponentInstanceEventParameterReferenceExpression) context).getPort();
+						if (context instanceof ComponentInstanceEventParameterReferenceExpression eventParameterReference) {
+							Port port_1 = eventParameterReference.getPort();
 							boolean _eIsProxy_1 = port_1.eIsProxy();
 							boolean _not_1 = !_eIsProxy_1;
 							if (_not_1) {
