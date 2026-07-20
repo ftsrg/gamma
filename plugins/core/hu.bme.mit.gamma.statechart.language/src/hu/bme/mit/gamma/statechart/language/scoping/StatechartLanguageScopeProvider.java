@@ -379,7 +379,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				if (actionContainer != null) {
 					// Super takes care of the parent scopes
 					IScope scope = super.getScope(actionContainer, reference);
-					return wrapDirectReferenceScope(scope, context);
+					return scope;
 				}
 				// 2. Variable declarations < parameter declarations < constant declarations - function declarations
 				IScope scope = IScope.NULLSCOPE;
@@ -420,7 +420,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					scope = Scopes.scopeFor(declarations);
 				}
 				
-				return wrapDirectReferenceScope(scope, context);
+				return scope;
 			}
 		} catch (NullPointerException e) {
 			// Nullptr exception is thrown if the scope turns out to be empty

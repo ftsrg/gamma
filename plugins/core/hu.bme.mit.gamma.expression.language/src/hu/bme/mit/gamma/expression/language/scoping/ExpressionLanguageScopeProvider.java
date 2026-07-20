@@ -96,7 +96,7 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 		if (reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			// Right now, this might not be necessary as parametric elements are contained directly by packages
 			IScope parentScope_ = getParentScope(context, reference);
-			return wrapDirectReferenceScope(parentScope_, context);
+			return parentScope_;
 		}
 		if (reference == ExpressionModelPackage.Literals.TYPE_REFERENCE__REFERENCE) {
 			// Util override is crucial because of this
@@ -145,29 +145,6 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 	}
 	
 	//
-	
-	protected IScope wrapDirectReferenceScope(IScope scope, EObject context) {
-//		if (context instanceof DirectReferenceExpression reference) {
-//			NamedElement parent = reference.getParent();
-//			if (parent == null) {
-//				return scope;
-//			}
-//			
-//			EObject setParent = checkParent(parent);
-//			Predicate<IEObjectDescription> filter = new Predicate<IEObjectDescription>() {
-//				public boolean apply(IEObjectDescription input) {
-//					EObject object = input.getEObjectOrProxy();
-//					NamedElement container = ecoreUtil.getContainerOfType(object, NamedElement.class);
-//					return container == setParent || container == parent;
-//				}
-//			};
-//			
-//			FilteringScope filteringScope = new FilteringScope(scope, filter);
-//			return filteringScope;
-//		}
-		
-		return scope;
-	}
 	
 	protected EObject checkParent(NamedElement parent) {
 		EObject setParent = getSelfOrFirstSubelementWithNamedElements(parent);
