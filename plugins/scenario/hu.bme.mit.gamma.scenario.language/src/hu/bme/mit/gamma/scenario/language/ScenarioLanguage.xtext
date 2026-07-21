@@ -117,7 +117,7 @@ PrimaryExpression returns ConstraintModel::Expression:
 	EventParameterReferenceExpression;
 
 EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenceExpression:
-	port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] '::' parameterDeclaration=[ConstraintModel::ParameterDeclaration];
+	port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] '::' declaration=[ConstraintModel::ParameterDeclaration];
 
 AlternativeCombinedFragmentDefinition returns ScenarioModel::AlternativeCombinedFragment:
 	'alternative' '{' fragments+=FragmentDefinition '}' ('or' '{' fragments+=FragmentDefinition '}')+;

@@ -84,8 +84,8 @@ public class AssertSorter implements Comparator<Expression> {
 						rhs instanceof VariableReferenceExpression rhsVariableReference &&
 						lhs.eClass().equals(rhs.eClass())) {
 					// Two instance variable: name
-					Declaration lhsVariable = lhsVariableReference.getVariableDeclaration();
-					Declaration rhsVariable = rhsVariableReference.getVariableDeclaration();
+					Declaration lhsVariable = lhsVariableReference.getDeclaration();
+					Declaration rhsVariable = rhsVariableReference.getDeclaration();
 					if (lhs instanceof PortReferenceExpression lhsPortReference &&
 							rhs instanceof PortReferenceExpression rhsPortReference) {
 						Port lhsPort = lhsPortReference.getPort();

@@ -35,6 +35,7 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.math.BigInteger
 import java.util.List
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class TraceGenUtil {
@@ -147,7 +148,7 @@ class TraceGenUtil {
 					ref.port = component.getPort(ref.port.name)
 				}
 				ref.event = ref.port.getEvent(ref.event.name)
-				ref.parameterDeclaration = ref.event.getEventParam(ref.parameterDeclaration.name)
+				ref.declaration = ref.event.getEventParam(ref.parameterDeclaration.name)
 			}
 		}
 	}

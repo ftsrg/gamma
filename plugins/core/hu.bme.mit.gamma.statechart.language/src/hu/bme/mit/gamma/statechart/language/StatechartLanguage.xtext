@@ -686,11 +686,11 @@ StateReferenceExpression returns StateReferenceExpression:
 ;
 
 EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenceExpression:
-	port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] '::' parameterDeclaration=[ExpressionModel::ParameterDeclaration];
+	port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] '::' declaration=[ExpressionModel::ParameterDeclaration];
 
 InterfaceParameterReferenceExpression returns InterfaceModel::InterfaceParameterReferenceExpression:
 	// this is a placeholder for the language to be unambiguous
-	'this' '.' event=[InterfaceModel::Event] '::' parameterDeclaration=[ExpressionModel::ParameterDeclaration];
+	'this' '.' event=[InterfaceModel::Event] '::' declaration=[ExpressionModel::ParameterDeclaration];
 	
 TimeoutReferenceExpression returns TimeoutReferenceExpression:
 	'time-elapsed' '(' timeout=[TimeoutDeclaration] ')'
@@ -745,11 +745,11 @@ ComponentInstanceStateReferenceExpression returns CompositeModel::ComponentInsta
 ;
 
 ComponentInstanceVariableReferenceExpression returns CompositeModel::ComponentInstanceVariableReferenceExpression:
-	'variable' instance=ComponentInstanceReferenceExpression '.' variableDeclaration=[ExpressionModel::VariableDeclaration]
+	'variable' instance=ComponentInstanceReferenceExpression '.' declaration=[ExpressionModel::VariableDeclaration]
 ;
 
 ComponentInstancePortVariableReferenceExpression returns CompositeModel::ComponentInstancePortVariableReferenceExpression:
-	'port-variable' instance=ComponentInstanceReferenceExpression '::' port=[InterfaceModel::Port] '::' variableDeclaration=[ExpressionModel::VariableDeclaration]
+	'port-variable' instance=ComponentInstanceReferenceExpression '::' port=[InterfaceModel::Port] '::' declaration=[ExpressionModel::VariableDeclaration]
 ;
 
 ComponentInstanceQueueSizeReferenceExpression returns CompositeModel::ComponentInstanceQueueSizeReferenceExpression:
@@ -762,7 +762,7 @@ ComponentInstanceEventReferenceExpression returns CompositeModel::ComponentInsta
 
 ComponentInstanceEventParameterReferenceExpression returns CompositeModel::ComponentInstanceEventParameterReferenceExpression:
 	'parameter' instance=ComponentInstanceReferenceExpression '.' port=[InterfaceModel::Port] '.'
-		event=[InterfaceModel::Event] '::' parameterDeclaration=[ExpressionModel::ParameterDeclaration]
+		event=[InterfaceModel::Event] '::' declaration=[ExpressionModel::ParameterDeclaration]
 ;
 
 ComponentInstanceReflectiveElementReferenceExpression returns CompositeModel::ComponentInstanceReflectiveElementReferenceExpression:

@@ -32,9 +32,7 @@ import com.google.common.collect.Lists;
 
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.expression.model.Declaration;
-import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
-import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
@@ -204,7 +202,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 						StatechartModelDerivedFeatures.getInputEvents(port));
 			}
 			if (context instanceof EventParameterReferenceExpression expression &&
-					reference == ExpressionModelPackage.Literals.PARAMETER_REFERENCE_EXPRESSION__PARAMETER_DECLARATION) {
+					reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 				checkState(expression.getPort() != null);
 				Event event = expression.getEvent();
 				List<ParameterDeclaration> parameterDeclarations = event.getParameterDeclarations();
@@ -222,7 +220,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				return Scopes.scopeFor(states);
 			}
 			if (context instanceof InterfaceParameterReferenceExpression interfaceParameterReferenceExpression) {
-				if (reference == ExpressionModelPackage.Literals.PARAMETER_REFERENCE_EXPRESSION__PARAMETER_DECLARATION) {
+				if (reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 					Event event = interfaceParameterReferenceExpression.getEvent();					
 					checkState(event != null);
 					return Scopes.scopeFor(
@@ -433,15 +431,6 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 		return super.getScope(context, reference);
 	}
 	
-	@Override
-	protected List<FieldDeclaration> getFieldDeclarations(Expression operand) {
-		if (operand instanceof EventParameterReferenceExpression reference) {
-			Declaration declaration = reference.getParameterDeclaration();
-			return super.getFieldDeclarations(declaration);
-		}
-		return super.getFieldDeclarations(operand);
-	}
-
 	//
 	
 	protected IScope handleTypeDeclarationAndComponentInstanceElementReferences(EObject context,
@@ -504,7 +493,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 						Region region = stateConfigurationReference.getRegion();
 						return Scopes.scopeFor(StatechartModelDerivedFeatures.getStates(region));
 					}
-					boolean _equals_3 = Objects.equal(reference, ExpressionModelPackage.Literals.VARIABLE_REFERENCE_EXPRESSION__VARIABLE_DECLARATION);
+					boolean _equals_3 = Objects.equal(reference, ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION);
 					if (_equals_3) {
 						return Scopes.scopeFor(statechart.getVariableDeclarations());
 					}
@@ -529,7 +518,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 							}
 						}
 					}
-					boolean _equals_4 = Objects.equal(reference, ExpressionModelPackage.Literals.PARAMETER_REFERENCE_EXPRESSION__PARAMETER_DECLARATION);
+					boolean _equals_4 = Objects.equal(reference, ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION);
 					if (_equals_4) {
 						ComponentInstanceEventParameterReferenceExpression eventParameterReference = (ComponentInstanceEventParameterReferenceExpression) context;
 						return Scopes.scopeFor(eventParameterReference.getEvent().getParameterDeclarations());

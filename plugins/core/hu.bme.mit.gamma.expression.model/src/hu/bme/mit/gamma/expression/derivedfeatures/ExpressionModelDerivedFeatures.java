@@ -60,6 +60,7 @@ import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.OpaqueExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ParameterDeclarationAnnotation;
+import hu.bme.mit.gamma.expression.model.ParameterReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
@@ -78,6 +79,7 @@ import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclarationAnnotation;
+import hu.bme.mit.gamma.expression.model.VariableReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VoidTypeDefinition;
 import hu.bme.mit.gamma.expression.util.ComplexTypeUtil;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
@@ -193,6 +195,14 @@ public class ExpressionModelDerivedFeatures {
 			return leftOperand;
 		}
 		return null;
+	}
+	
+	public static VariableDeclaration getVariableDeclaration(VariableReferenceExpression reference) {
+		return (VariableDeclaration) reference.getDeclaration();
+	}
+	
+	public static ParameterDeclaration getParameterDeclaration(ParameterReferenceExpression reference) {
+		return (ParameterDeclaration) reference.getDeclaration();
 	}
 	
 	public static boolean isInternal(ParameterDeclaration parameter) {

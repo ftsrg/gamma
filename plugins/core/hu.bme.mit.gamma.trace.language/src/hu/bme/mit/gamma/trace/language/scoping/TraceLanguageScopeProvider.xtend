@@ -71,7 +71,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			}
 		}
 		if (context instanceof EventParameterReferenceExpression &&
-				reference == ExpressionModelPackage.Literals.PARAMETER_REFERENCE_EXPRESSION__PARAMETER_DECLARATION) {
+				reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			val paramReference = context as EventParameterReferenceExpression
 			return Scopes.scopeFor(paramReference.event.parameterDeclarations)
 		}
@@ -134,7 +134,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			val ports = instanceType.allPorts
 			return Scopes.scopeFor(ports)
 		}
-		if (reference == ExpressionModelPackage.Literals.VARIABLE_REFERENCE_EXPRESSION__VARIABLE_DECLARATION) {
+		if (reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			if (instanceType === null) {
 				return IScope.NULLSCOPE
 			}

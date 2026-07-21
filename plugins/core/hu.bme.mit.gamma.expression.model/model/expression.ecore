@@ -183,15 +183,9 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="DirectReferenceExpression" eSuperTypes="#//AbstractDirectReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="ParameterReferenceExpression" abstract="true"
-      eSuperTypes="#//ReferenceExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="parameterDeclaration" lowerBound="1"
-        eType="#//ParameterDeclaration"/>
-  </eClassifiers>
+      eSuperTypes="#//AbstractDirectReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="VariableReferenceExpression" abstract="true"
-      eSuperTypes="#//ReferenceExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclaration" lowerBound="1"
-        eType="#//VariableDeclaration"/>
-  </eClassifiers>
+      eSuperTypes="#//AbstractDirectReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="TupleReferenceExpression" eSuperTypes="#//ReferenceExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="references" lowerBound="1"
         upperBound="-1" eType="#//ReferenceExpression" containment="true"/>

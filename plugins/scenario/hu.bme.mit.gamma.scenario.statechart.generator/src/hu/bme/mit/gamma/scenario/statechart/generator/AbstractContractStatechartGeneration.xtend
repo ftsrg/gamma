@@ -420,7 +420,7 @@ abstract class AbstractContractStatechartGeneration {
 				val reference = createEventParameterReferenceExpression
 				reference.port = getPort(port.turnedOutPortName)
 				reference.event = getEvent(signal.getEvent.name, reference.port)
-				reference.parameterDeclaration = argument
+				reference.declaration = argument
 				action.arguments += reference
 			}
 		} else {
@@ -506,7 +506,7 @@ abstract class AbstractContractStatechartGeneration {
 			val event = getEvent(tmp.getEvent.name, port)
 			for (paramDec : event.parameterDeclarations) {
 				val paramRef = createEventParameterReferenceExpression
-				paramRef.parameterDeclaration = paramDec
+				paramRef.declaration = paramDec
 				paramRef.port = port
 				paramRef.event = event
 				guard1.operands += paramRef.createEqualityExpression(tmp.arguments.get(i).clone)

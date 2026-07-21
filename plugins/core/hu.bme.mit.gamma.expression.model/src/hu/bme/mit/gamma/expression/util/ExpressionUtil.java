@@ -120,9 +120,6 @@ public class ExpressionUtil {
 		if (expression instanceof AbstractDirectReferenceExpression reference) {
 			return reference.getDeclaration();
 		}
-		if (expression instanceof ParameterReferenceExpression reference) {
-			return reference.getParameterDeclaration();
-		}
 		if (expression instanceof RecordAccessExpression access) {
 			if (ExpressionModelDerivedFeatures.isRecordAccessEvaluable(access)) { // RecordLiteral
 				Expression evaluatedRecordAccess = evaluator.evaluateRecordAccess(access);
@@ -186,9 +183,6 @@ public class ExpressionUtil {
 		ReferenceExpression reference = getAccessReference(expression);
 		if (reference instanceof AbstractDirectReferenceExpression directReference) {
 			return directReference.getDeclaration();
-		}
-		if (reference instanceof ParameterReferenceExpression directReference) {
-			return directReference.getParameterDeclaration();
 		}
 		throw new IllegalArgumentException("Not supported element: " + expression);
 	}

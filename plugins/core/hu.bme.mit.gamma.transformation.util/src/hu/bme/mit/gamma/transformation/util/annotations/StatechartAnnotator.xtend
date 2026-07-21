@@ -705,7 +705,7 @@ class StatechartAnnotator {
 					createEventParameterReferenceExpression => [
 						it.port = inPort
 						it.event = event
-						it.parameterDeclaration = inParameter
+						it.declaration = inParameter
 					]
 				)
 				if (RECEIVER_CONSIDERATION) {
@@ -1045,7 +1045,7 @@ class StatechartAnnotator {
 			val defReference = createEventParameterReferenceExpression => [
 				it.port = useReference.port
 				it.event = useReference.event
-				it.parameterDeclaration = defVariable
+				it.declaration = defVariable
 			]
 			val useVariable = defUseVariablePair.useVariable
 			val assignment = useVariable.createAssignment(defReference)

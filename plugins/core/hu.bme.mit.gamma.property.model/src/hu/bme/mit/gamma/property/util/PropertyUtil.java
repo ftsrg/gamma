@@ -23,6 +23,7 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.property.derivedfeatures.PropertyModelDerivedFeatures;
 import hu.bme.mit.gamma.property.model.AtomicFormula;
 import hu.bme.mit.gamma.property.model.BinaryLogicalOperator;
 import hu.bme.mit.gamma.property.model.BinaryOperandLogicalPathFormula;
@@ -169,7 +170,7 @@ public class PropertyUtil extends StatechartUtil {
 		if (lastExpression instanceof EventParameterReferenceExpression reference) {
 			Port port = reference.getPort();
 			Event event = reference.getEvent();
-			ParameterDeclaration parameter = reference.getParameterDeclaration();
+			ParameterDeclaration parameter = PropertyModelDerivedFeatures.getParameterDeclaration(reference);
 			ComponentInstanceEventParameterReferenceExpression parameterReference =
 					createParameterReference(rootInstance, port, event, parameter);
 			return parameterReference;

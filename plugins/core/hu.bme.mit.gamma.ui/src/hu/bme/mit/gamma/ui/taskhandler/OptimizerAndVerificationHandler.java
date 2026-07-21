@@ -208,7 +208,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 					ecoreUtil.getAllContentsOfType(formula,
 							ComponentInstanceVariableReferenceExpression.class); // Must reference the unwrapped
 			List<VariableDeclaration> keepableGammaVariables = keepableVariableReferences.stream()
-					.map(it -> it.getVariableDeclaration())
+					.map(it -> StatechartModelDerivedFeatures.getVariableDeclaration(it))
 					.collect(Collectors.toList());
 			List<ComponentInstanceStateReferenceExpression> keepableStateReferences =
 					ecoreUtil.getAllContentsOfType(formula,

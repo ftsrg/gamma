@@ -469,7 +469,7 @@ public class StatechartUtil extends ActionUtil {
 			Port referredPort = parameterReference.getPort();
 			Event referredEvent = parameterReference.getEvent();
 			if (port == referredPort && event == referredEvent) {
-				ParameterDeclaration referredParameter = parameterReference.getParameterDeclaration();
+				Declaration referredParameter = parameterReference.getDeclaration();
 				int index = ecoreUtil.getIndex(referredParameter);
 				Expression argument = arguments.get(index);
 				Expression clonedArgument = ecoreUtil.clone(argument);
@@ -1169,7 +1169,7 @@ public class StatechartUtil extends ActionUtil {
 		expression.setPort(port);
 		Event event = ecoreUtil.getContainerOfType(parameter, Event.class);
 		expression.setEvent(event);
-		expression.setParameterDeclaration(parameter);
+		expression.setDeclaration(parameter);
 		return expression;
 	}
 	
@@ -1234,7 +1234,7 @@ public class StatechartUtil extends ActionUtil {
 		ComponentInstanceVariableReferenceExpression reference =
 				compositeFactory.createComponentInstanceVariableReferenceExpression();
 		reference.setInstance(instance);
-		reference.setVariableDeclaration(variable);
+		reference.setDeclaration(variable);
 		return reference;
 	}
 	
@@ -1244,7 +1244,7 @@ public class StatechartUtil extends ActionUtil {
 				compositeFactory.createComponentInstancePortVariableReferenceExpression();
 		reference.setInstance(instance);
 		reference.setPort(port);
-		reference.setVariableDeclaration(variable);
+		reference.setDeclaration(variable);
 		return reference;
 	}
 	
@@ -1288,7 +1288,7 @@ public class StatechartUtil extends ActionUtil {
 		reference.setInstance(instance);
 		reference.setPort(port);
 		reference.setEvent(event);
-		reference.setParameterDeclaration(parameter);
+		reference.setDeclaration(parameter);
 		return reference;
 	}
 	

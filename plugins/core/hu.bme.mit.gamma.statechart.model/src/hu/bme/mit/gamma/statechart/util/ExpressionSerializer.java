@@ -14,7 +14,6 @@ import java.util.List;
 
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.Expression;
-import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression;
@@ -111,7 +110,7 @@ public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.Expre
 	
 	protected String _serialize(EventParameterReferenceExpression expression) {
 		return expression.getPort().getName() + "." + expression.getEvent().getName() + "::"
-				+ expression.getParameterDeclaration().getName();
+				+ expression.getDeclaration().getName();
 	}
 	
 	protected String _serialize(PortDeclarationReferenceExpression expression) {
@@ -158,14 +157,14 @@ public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.Expre
 	
 	protected String _serialize(ComponentInstanceVariableReferenceExpression expression) {
 		ComponentInstanceReferenceExpression instance = expression.getInstance();
-		Declaration variableDeclaration = expression.getVariableDeclaration();
+		Declaration variableDeclaration = expression.getDeclaration();
 		return _serialize(instance) + DELIMITER + variableDeclaration.getName();
 	}
 	
 	protected String _serialize(ComponentInstancePortVariableReferenceExpression expression) {
 		ComponentInstanceReferenceExpression instance = expression.getInstance();
 		Port port = expression.getPort();
-		Declaration variableDeclaration = expression.getVariableDeclaration();
+		Declaration variableDeclaration = expression.getDeclaration();
 		return _serialize(instance) + DELIMITER + port.getName() + DELIMITER + variableDeclaration.getName();
 	}
 	
@@ -177,7 +176,7 @@ public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.Expre
 	
 	protected String _serialize(ComponentInstanceEventParameterReferenceExpression expression) {
 		ComponentInstanceReferenceExpression instance = expression.getInstance();
-		ParameterDeclaration parameterDeclaration = expression.getParameterDeclaration();
+		Declaration parameterDeclaration = expression.getDeclaration();
 		return _serialize(instance) + DELIMITER + expression.getPort().getName() +
 				DELIMITER + expression.getEvent().getName() + "::" + parameterDeclaration.getName();
 	}

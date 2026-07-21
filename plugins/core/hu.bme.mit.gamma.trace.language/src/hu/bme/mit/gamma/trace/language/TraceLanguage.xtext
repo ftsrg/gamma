@@ -129,15 +129,15 @@ ReferenceExpression returns ConstraintModel::Expression:
 ;
 
 EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenceExpression:
-	'parameter' port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] '::' parameterDeclaration=[ConstraintModel::ParameterDeclaration]
+	'parameter' port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] '::' declaration=[ConstraintModel::ParameterDeclaration]
 ;
 
 ComponentInstancePortVariableReferenceExpression returns CompositeModel::ComponentInstancePortVariableReferenceExpression:
-	'port-variable' (instance=ComponentInstanceReferenceExpression | 'self') '::' port=[InterfaceModel::Port] '::' variableDeclaration=[ConstraintModel::VariableDeclaration]
+	'port-variable' (instance=ComponentInstanceReferenceExpression | 'self') '::' port=[InterfaceModel::Port] '::' declaration=[ConstraintModel::VariableDeclaration]
 ;
 
 ComponentInstanceVariableReferenceExpression returns CompositeModel::ComponentInstanceVariableReferenceExpression:
-	'variable' (instance=ComponentInstanceReferenceExpression | 'self') '.' variableDeclaration=[ConstraintModel::VariableDeclaration]
+	'variable' (instance=ComponentInstanceReferenceExpression | 'self') '.' declaration=[ConstraintModel::VariableDeclaration]
 ;
 
 ComponentInstanceStateReferenceExpression returns CompositeModel::ComponentInstanceStateReferenceExpression:

@@ -245,7 +245,7 @@ class ModelElementMutator {
 		val newParameter = newParameters.get(random.nextInt(newParameters.size))
 		
 		expression.event = newEvent
-		expression.parameterDeclaration = newParameter
+		expression.declaration = newParameter
 
 		info('''Changed event reference of event parameter reference from «oldEvent.name» to «newEvent.name»''')
 	}
@@ -254,7 +254,7 @@ class ModelElementMutator {
 		val oldParameter = expression.parameterDeclaration
 		val newParameter = oldParameter.newParameter
 		
-		expression.parameterDeclaration = newParameter
+		expression.declaration = newParameter
 
 		info('''Changed parameter reference of event parameter reference from «oldParameter.name» to «newParameter.name»''')
 	}

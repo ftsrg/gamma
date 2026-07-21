@@ -177,11 +177,11 @@ ComponentInstancePortReferenceExpression returns composite::ComponentInstancePor
 ;
 
 ComponentInstanceVariableReferenceExpression returns composite::ComponentInstanceVariableReferenceExpression:
-	instance=ComponentInstanceReferenceExpression '.' variableDeclaration=[expression::VariableDeclaration]
+	instance=ComponentInstanceReferenceExpression '.' declaration=[expression::VariableDeclaration]
 ;
 
 ComponentInstancePortVariableReferenceExpression returns composite::ComponentInstancePortVariableReferenceExpression:
-	instance=ComponentInstanceReferenceExpression '.' port=[interface::Port] '.' variableDeclaration=[expression::VariableDeclaration]
+	instance=ComponentInstanceReferenceExpression '.' port=[interface::Port] '.' declaration=[expression::VariableDeclaration]
 ;
 
 ComponentInstanceStateConfigurationReferenceExpression returns composite::ComponentInstanceStateReferenceExpression:

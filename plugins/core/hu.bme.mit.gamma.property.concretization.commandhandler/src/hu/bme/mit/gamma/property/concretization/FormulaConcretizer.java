@@ -113,7 +113,7 @@ public class FormulaConcretizer {
 			ComponentInstanceVariableReferenceExpression variableReference =
 					factory.createComponentInstanceVariableReferenceExpression();
 			
-			variableReference.setVariableDeclaration(variable);
+			variableReference.setDeclaration(variable);
 			
 			return variableReference;
 		} 
@@ -137,7 +137,7 @@ public class FormulaConcretizer {
 			
 			eventParameterReference.setPort(port);
 			eventParameterReference.setEvent(event);
-			eventParameterReference.setParameterDeclaration(parameterDeclaration);
+			eventParameterReference.setDeclaration(parameterDeclaration);
 			
 			return eventParameterReference;
 		}
@@ -161,7 +161,7 @@ public class FormulaConcretizer {
 			
 			ComponentInstanceVariableReferenceExpression variableReference =
 					factory.createComponentInstanceVariableReferenceExpression();
-			variableReference.setVariableDeclaration(transitionVariable);
+			variableReference.setDeclaration(transitionVariable);
 			
 			return variableReference;
 		}

@@ -23,6 +23,7 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceE
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.QueueNamings.*
 
 abstract class PropertyExpressionSerializer extends ExpressionSerializer {

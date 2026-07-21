@@ -392,9 +392,9 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		
 		if (!considerInjectedVariables) {
 			lhsAsserts.removeIf(it -> ecoreUtil.getSelfAndAllContentsOfType(it,	ComponentInstanceVariableReferenceExpression.class)
-					.stream().anyMatch(ref -> isInjected(ref.getVariableDeclaration())));
+					.stream().anyMatch(ref -> isInjected(StatechartModelDerivedFeatures.getVariableDeclaration(ref))));
 			rhsAsserts.removeIf(it -> ecoreUtil.getSelfAndAllContentsOfType(it,	ComponentInstanceVariableReferenceExpression.class)
-					.stream().anyMatch(ref -> isInjected(ref.getVariableDeclaration())));
+					.stream().anyMatch(ref -> isInjected(StatechartModelDerivedFeatures.getVariableDeclaration(ref))));
 		}
 		
 		int size = lhsAsserts.size();

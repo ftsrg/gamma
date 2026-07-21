@@ -34,7 +34,6 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FieldReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
-import hu.bme.mit.gamma.expression.model.ParameterReferenceExpression;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
@@ -84,10 +83,6 @@ public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProv
 	protected List<FieldDeclaration> getFieldDeclarations(Expression operand) {
 		if (operand instanceof AbstractDirectReferenceExpression reference) {
 			Declaration declaration = reference.getDeclaration();
-			return getFieldDeclarations(declaration);
-		}
-		if (operand instanceof ParameterReferenceExpression reference) {
-			Declaration declaration = reference.getParameterDeclaration();
 			return getFieldDeclarations(declaration);
 		}
 		if (operand instanceof FieldReferenceExpression reference) {

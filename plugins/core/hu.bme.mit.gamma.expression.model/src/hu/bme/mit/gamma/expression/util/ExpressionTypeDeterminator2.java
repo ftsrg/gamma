@@ -51,8 +51,6 @@ import hu.bme.mit.gamma.expression.model.ModExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.MultiplyExpression;
 import hu.bme.mit.gamma.expression.model.OpaqueExpression;
-import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
-import hu.bme.mit.gamma.expression.model.ParameterReferenceExpression;
 import hu.bme.mit.gamma.expression.model.PredicateExpression;
 import hu.bme.mit.gamma.expression.model.QuantifierExpression;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
@@ -69,7 +67,6 @@ import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression;
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression;
-import hu.bme.mit.gamma.expression.model.VariableReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VoidTypeDefinition;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.util.JavaUtil;
@@ -139,14 +136,6 @@ public class ExpressionTypeDeterminator2 {
 		}
 		if (expression instanceof AbstractDirectReferenceExpression referenceExpression) {
 			Declaration declaration = referenceExpression.getDeclaration();
-			return getType(declaration);
-		}
-		if (expression instanceof ParameterReferenceExpression referenceExpression) {
-			ParameterDeclaration declaration = referenceExpression.getParameterDeclaration();
-			return getType(declaration);
-		}
-		if (expression instanceof VariableReferenceExpression referenceExpression) {
-			Declaration declaration = referenceExpression.getVariableDeclaration();
 			return getType(declaration);
 		}
 		if (expression instanceof ElseExpression) {

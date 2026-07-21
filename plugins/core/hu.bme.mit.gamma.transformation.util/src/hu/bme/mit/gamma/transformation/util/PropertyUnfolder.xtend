@@ -85,7 +85,7 @@ class PropertyUnfolder {
 		val newVariable = newInstance.getNewVariable(variable)
 		return reference.clone	=> [
 			it.instance = newInstanceReference
-			it.variableDeclaration = newVariable
+			it.declaration = newVariable
 		]
 	}
 	

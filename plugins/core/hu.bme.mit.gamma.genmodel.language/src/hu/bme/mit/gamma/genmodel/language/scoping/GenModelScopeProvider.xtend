@@ -94,7 +94,7 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 				return Scopes.scopeFor(ports)
 			}
 		}
-		if (reference == ExpressionModelPackage.Literals.VARIABLE_REFERENCE_EXPRESSION__VARIABLE_DECLARATION) {
+		if (reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			val componentInstanceReference = context as ComponentInstanceVariableReferenceExpression
 			val componentInstance = componentInstanceReference.instance.lastInstance
 			if (componentInstance !== null) {
