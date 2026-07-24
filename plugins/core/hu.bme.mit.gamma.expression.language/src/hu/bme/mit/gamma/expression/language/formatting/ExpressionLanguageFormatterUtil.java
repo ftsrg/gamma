@@ -10,7 +10,13 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.expression.language.formatting;
 
+import java.util.List;
+
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.xtext.AbstractElement;
+import org.eclipse.xtext.Group;
 import org.eclipse.xtext.Keyword;
+import org.eclipse.xtext.RuleCall;
 import org.eclipse.xtext.formatting.impl.FormattingConfig;
 import org.eclipse.xtext.service.AbstractElementFinder.AbstractGrammarElementFinder;
 import org.eclipse.xtext.util.Pair;
@@ -35,7 +41,25 @@ public class ExpressionLanguageFormatterUtil {
 
 	protected void setDoubleColons(FormattingConfig c, AbstractGrammarElementFinder f) {
 		for (Keyword dot : f.findKeywords("::")) {
-			c.setNoSpace().around(dot);
+//			c.setNoSpace().around(dot);
+			EObject container = dot.eContainer();
+		    if (container instanceof Group group) {
+		        List<AbstractElement> elements = group.getElements();
+		        int size = elements.size();
+		        int i = elements.indexOf(dot);
+		        if (i > 0 
+//		        		&& i < elements.size() - 1
+//		                && elements.get(i - 1) instanceof RuleCall left
+//		                && elements.get(i + 1) instanceof RuleCall right
+//		                && left.getRule().getName().equals("ID")
+//		                && right.getRule().getName().equals("ID")
+		                ) {
+					c.setNoSpace().before(dot);
+		        }
+		        if (i < size - 1) {
+					c.setNoSpace().after(dot);
+		        }
+		    }
 		}
 	}
 

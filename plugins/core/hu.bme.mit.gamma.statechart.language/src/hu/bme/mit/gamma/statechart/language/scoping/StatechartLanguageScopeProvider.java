@@ -495,6 +495,10 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					}
 					boolean _equals_3 = Objects.equal(reference, ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION);
 					if (_equals_3) {
+						if (context instanceof ComponentInstanceEventParameterReferenceExpression eventParameterReference) {
+							Event event = eventParameterReference.getEvent();
+							return Scopes.scopeFor(event.getParameterDeclarations());
+						}
 						return Scopes.scopeFor(statechart.getVariableDeclarations());
 					}
 					if (Objects.equal(reference, InterfaceModelPackage.Literals.PORT_REFERENCE_EXPRESSION__PORT)) {
@@ -517,11 +521,6 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 								return Scopes.scopeFor(StatechartModelDerivedFeatures.getOutputEvents(port_1));
 							}
 						}
-					}
-					boolean _equals_4 = Objects.equal(reference, ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION);
-					if (_equals_4) {
-						ComponentInstanceEventParameterReferenceExpression eventParameterReference = (ComponentInstanceEventParameterReferenceExpression) context;
-						return Scopes.scopeFor(eventParameterReference.getEvent().getParameterDeclarations());
 					}
 				}
 				else if (type instanceof AsynchronousAdapter adapter) {
