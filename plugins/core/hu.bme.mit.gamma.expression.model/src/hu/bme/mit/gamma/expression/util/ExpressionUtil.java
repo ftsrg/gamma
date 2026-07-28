@@ -1484,6 +1484,14 @@ public class ExpressionUtil {
 		return weavedIfThenElse;
 	}
 	
+	public void eliminateElseBranch(Expression expression) {
+		EObject container = expression.eContainer();
+		if (container instanceof IfThenElseExpression ifThenElseExpression) {
+			Expression then = ifThenElseExpression.getThen();
+			ecoreUtil.replace(then, ifThenElseExpression);
+		}
+	}
+	
 	public FunctionAccessExpression createFunctionAccessExpression(FunctionDeclaration function, List<? extends Expression> arguments) {
 		DirectReferenceExpression reference = createReferenceExpression(function);
 		FunctionAccessExpression callExpression = factory.createFunctionAccessExpression();
