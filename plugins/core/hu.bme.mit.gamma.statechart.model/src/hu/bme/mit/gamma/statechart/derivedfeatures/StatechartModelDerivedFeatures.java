@@ -2198,6 +2198,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return events;
 	}
 	
+	public static boolean isTriggeredBy(Transition transition, Entry<Port, Event> portEvent) {
+		List<Entry<Port, Event>> triggeringInputEvents = getTriggeringInputEvents(transition);
+		return triggeringInputEvents.contains(portEvent);
+	}
+	
 	public static List<Entry<Port, Event>> getPortInputEvents(Component component) {
 		List<Entry<Port, Event>> inputEvents = new ArrayList<Entry<Port, Event>>();
 		
@@ -2225,13 +2230,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static List<Event> getInputEvents(Component component) {
-		return getInputEvents(
-				getAllPorts(component));
+		List<Port> allPorts = getAllPorts(component);
+		return getInputEvents(allPorts);
 	}
 	
 	public static List<Event> getOutputEvents(Component component) {
-		return getOutputEvents(
-				getAllPorts(component));
+		List<Port> allPorts = getAllPorts(component);
+		return getOutputEvents(allPorts);
 	}
 	
 	public static Port getBoundCompositePort(Port port) {
