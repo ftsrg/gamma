@@ -1148,6 +1148,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return getAllContainedStatecharts(component);
 	}
 	
+	public static boolean isEmpty(Port port) {
+		Interface _interface = getInterface(port);
+		return isEmpty(_interface);
+	}
+	
+	public static boolean isEmpty(Interface _interface) {
+		List<EObject> contents = _interface.eContents();
+		return contents.isEmpty();
+	}
+	
 	public static List<Interface> getAllParents(Interface _interface) {
 		List<Interface> interfaces = new ArrayList<Interface>();
 		for (Interface parent : _interface.getParents()) {
