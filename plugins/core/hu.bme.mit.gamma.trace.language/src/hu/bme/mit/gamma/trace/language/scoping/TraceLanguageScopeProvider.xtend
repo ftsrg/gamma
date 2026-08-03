@@ -62,8 +62,25 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			}
 			if (port !== null) {
 				try {
-					val events = port.allEvents
-					return Scopes.scopeFor(events)
+					val interface_ = port.interface
+					
+					val allEvents = newArrayList
+					allEvents += port.allEvents
+					
+					val events = newArrayList
+					events += allEvents
+					
+					val parentEvents = newArrayList
+					if (!interface_.parents.empty) {
+						parentEvents += port.parentEvents
+						events -= parentEvents
+					}
+					
+					val wrongDirectionEvents = context instanceof RaiseEventAct ? port.inputEvents : port.outputEvents
+					events -= wrongDirectionEvents
+					parentEvents -= wrongDirectionEvents
+					
+					return embedScopes2(#[ allEvents, parentEvents, events ])
 				} catch (NullPointerException e) {
 					// For some reason dirty editor errors emerge
 					return super.getScope(context, reference)

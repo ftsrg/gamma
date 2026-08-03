@@ -144,6 +144,17 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 		return parentScope;
 	}
 	
+	protected IScope embedScopes2(Collection<Iterable<? extends EObject>> collections) {
+		Collection<IScope> scopes = new ArrayList<IScope>();
+		
+		for (Iterable<? extends EObject> iterable : collections) {
+			IScope scope = Scopes.scopeFor(iterable);
+			scopes.add(scope);
+		}
+		
+		return embedScopes(scopes);
+	}
+	
 	//
 	
 	protected EObject checkParent(NamedElement parent) {

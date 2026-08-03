@@ -1155,7 +1155,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static boolean isEmpty(Interface _interface) {
 		List<EObject> contents = _interface.eContents();
-		return contents.isEmpty();
+		List<EObject> crossReferences = _interface.eCrossReferences();
+		return contents.isEmpty() && crossReferences.isEmpty();
 	}
 	
 	public static List<Interface> getAllParents(Interface _interface) {
@@ -1185,6 +1186,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 					parentInterface.getEventDeclarations());
 		}
 		return eventDeclarations;
+	}
+	
+	public static List<Event> getEvents(Interface _interface) {
+		return _interface.getEventDeclarations().stream()
+				.map(it -> it.getEvent()).toList();
 	}
 	
 	public static List<Event> getAllEvents(Interface _interface) {
@@ -1285,6 +1291,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return getAllEvents(interface1);
 	}
 	
+	public static List<Event> getParentEvents(Port port) {
+		List<Event> events = new ArrayList<Event>(
+				getAllEvents(port));
+		events.removeIf(it -> getInterface(port).getEventDeclarations()
+					.contains(getContainingEventDeclaration(it)));
+		return events;
+	}
+	
 	public static List<Event> getInputEvents(Iterable<? extends Port> ports) {
 		List<Event> events = new ArrayList<Event>();
 		for (Port port : ports) {
@@ -1292,6 +1306,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 					getInputEvents(port));
 		}
 		return events;
+	}
+	
+	public static List<Event> getParentInputEvents(Port port) {
+		List<Event> inputEvents = getInputEvents(port);
+		inputEvents.removeIf(it -> getInterface(port).getEventDeclarations()
+					.contains(getContainingEventDeclaration(it)));
+		return inputEvents;
 	}
 	
 	public static List<Event> getInputEvents(Port port) {
@@ -1333,6 +1354,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 					getOutputEvents(port));
 		}
 		return events;
+	}
+	
+	public static List<Event> getParentIOutputEvents(Port port) {
+		List<Event> outputEvents = getOutputEvents(port);
+		outputEvents.removeIf(it -> getInterface(port).getEventDeclarations()
+					.contains(getContainingEventDeclaration(it)));
+		return outputEvents;
 	}
 	
 	public static List<Event> getOutputEvents(Port port) {
