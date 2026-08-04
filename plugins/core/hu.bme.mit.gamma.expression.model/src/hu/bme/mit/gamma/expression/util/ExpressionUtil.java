@@ -1424,6 +1424,20 @@ public class ExpressionUtil {
 		return ifThenElseExpression;
 	}
 	
+	public Expression weaveIfNeeded(Collection<? extends IfThenElseExpression> expressions) {
+		if (expressions.size() > 1) {
+			return weave(expressions);
+		}
+		if (expressions.size() == 1) {
+			IfThenElseExpression next = expressions.iterator().next();
+			if (next.getElse() == null) {
+				return next.getThen(); // Nothing else makes sense
+			}
+			return next;
+		}
+		return null;
+	}
+	
 	public IfThenElseExpression weave(Collection<? extends IfThenElseExpression> expressions) {
 		// Maybe there is a single if-then-else expression
 		if (expressions.size() == 1) {

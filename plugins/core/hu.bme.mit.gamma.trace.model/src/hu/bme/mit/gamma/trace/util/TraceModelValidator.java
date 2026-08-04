@@ -34,6 +34,7 @@ import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
 import hu.bme.mit.gamma.statechart.interface_.EventDirection;
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.statechart.State;
@@ -95,7 +96,7 @@ public class TraceModelValidator extends StatechartModelValidator {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.ERROR, 
 						"This event is an out-event of the component",
-							new ReferenceInfo(StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT)));
+							new ReferenceInfo(InterfaceModelPackage.Literals.EVENT_REFERENCE_EXPRESSION__EVENT)));
 			}			
 		}
 		else {
@@ -105,7 +106,7 @@ public class TraceModelValidator extends StatechartModelValidator {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.ERROR, 
 						"This event is an in-event of the component",
-							new ReferenceInfo(StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT)));
+							new ReferenceInfo(InterfaceModelPackage.Literals.EVENT_REFERENCE_EXPRESSION__EVENT)));
 			}			
 		}
 		return validationResultMessages;

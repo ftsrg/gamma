@@ -20,6 +20,7 @@ import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage
 import hu.bme.mit.gamma.statechart.interface_.PortReferenceExpression
+import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage
@@ -49,17 +50,13 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 				return Scopes.scopeFor(executionTrace.import.components)
 			}
 		}
-		if ((context instanceof RaiseEventAct && reference == StatechartModelPackage.Literals.RAISE_EVENT_ACTION__PORT) ||
-			(context instanceof EventParameterReferenceExpression && reference == InterfaceModelPackage.Literals.PORT_REFERENCE_EXPRESSION__PORT)) {
+		if ((context instanceof RaiseEventAct || context instanceof EventParameterReferenceExpression) &&
+				reference == InterfaceModelPackage.Literals.PORT_REFERENCE_EXPRESSION__PORT) {
 			return Scopes.scopeFor(component.allPorts)
 		}
-		if ((context instanceof RaiseEventAct && reference == StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT) ||
-				(context instanceof EventParameterReferenceExpression && reference == InterfaceModelPackage.Literals.EVENT_REFERENCE_EXPRESSION__EVENT)) {
-			val port = if (context instanceof RaiseEventAct) {
-				context.port
-			} else if (context instanceof EventParameterReferenceExpression) {
-				context.port
-			}
+		if ((context instanceof RaiseEventAct || context instanceof EventParameterReferenceExpression) &&
+				reference == InterfaceModelPackage.Literals.EVENT_REFERENCE_EXPRESSION__EVENT) {
+			val port = (context instanceof PortEventReference) ? context.port : null
 			if (port !== null) {
 				try {
 					val interface_ = port.interface

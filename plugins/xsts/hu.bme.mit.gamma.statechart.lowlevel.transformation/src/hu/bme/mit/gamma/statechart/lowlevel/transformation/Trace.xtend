@@ -263,6 +263,10 @@ class Trace {
 		componentMappings.get(gammaComponent)
 	}
 	
+	def getLastGammaStatechart() {
+		return componentMappings.keySet.filter(hu.bme.mit.gamma.statechart.statechart.StatechartDefinition).lastOrNull
+	}
+	
 	def getLastStatechart() {
 		return componentMappings.values.filter(StatechartDefinition).lastOrNull
 	}

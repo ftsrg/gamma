@@ -178,7 +178,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			}
 			//
 			if (context instanceof RaiseEventAction raiseEventAction && 
-					reference == StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT) {
+					reference == InterfaceModelPackage.Literals.EVENT_REFERENCE_EXPRESSION__EVENT) {
 				Port port = raiseEventAction.getPort();
 				// Not only in events are returned as less-aware users tend to write in events on actions
 				return Scopes.scopeFor(

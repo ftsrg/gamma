@@ -89,10 +89,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
         eType="#//TransitionAnnotation" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="RaiseEventAction" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Statement">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="ecore:EClass interface.ecore#//Event"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="ecore:EClass interface.ecore#//Port"/>
-  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="RaiseEventAction" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Statement interface.ecore#//PortReferenceExpression interface.ecore#//EventReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="TimeoutAction" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.action.model/model/action.ecore#//Statement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="timeoutDeclaration" lowerBound="1"
         eType="#//TimeoutDeclaration"/>

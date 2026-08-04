@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.interface_.Event
+import hu.bme.mit.gamma.statechart.interface_.EventAnyPortParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
@@ -96,6 +97,8 @@ class StatechartToLowlevelTransformer {
 		// Eliminating merge states
 		val mergeStateEliminator = new MergeStateEliminator(statechart)
 		mergeStateEliminator.execute
+		//
+		statechart.preprocessEventAnyPortParameters
 		//
 		return statechart.transformComponent as hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
 	}
@@ -329,6 +332,20 @@ class StatechartToLowlevelTransformer {
 		}
 		
 		return lowlevelStatechart
+	}
+	
+	protected def preprocessEventAnyPortParameters(StatechartDefinition statechart) {
+		for (reference : statechart.getAllContentsOfType(EventAnyPortParameterReferenceExpression)) {
+			val ports = statechart.allPortsWithInput
+			val parameter = reference.parameterDeclaration
+			
+			val ifThenElses = newArrayList
+			for (port : ports) {
+				ifThenElses += statechartUtil.createIfRaisedThenExpression(port, parameter)
+			}
+			val unfoldedReference = ifThenElses.weaveIfNeeded
+			unfoldedReference.replace(reference)
+		}
 	}
 
 	protected def transform(SchedulingOrder order) {

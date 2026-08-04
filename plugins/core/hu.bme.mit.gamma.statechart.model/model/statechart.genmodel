@@ -219,6 +219,9 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference interface.ecore#//EventReferenceExpression/event"/>
     </genClasses>
     <genClasses ecoreClass="interface.ecore#//EventParameterReferenceExpression"/>
+    <genClasses ecoreClass="interface.ecore#//EventAnyPortParameterReferenceExpression">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference interface.ecore#//EventAnyPortParameterReferenceExpression/interface"/>
+    </genClasses>
     <genClasses ecoreClass="interface.ecore#//PortDeclarationReferenceExpression"/>
     <genClasses ecoreClass="interface.ecore#//AnyTrigger"/>
     <genClasses ecoreClass="interface.ecore#//EventTrigger">
@@ -335,10 +338,7 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//Transition/effects"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//Transition/annotations"/>
     </genClasses>
-    <genClasses ecoreClass="statechart.ecore#//RaiseEventAction">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statechart.ecore#//RaiseEventAction/event"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statechart.ecore#//RaiseEventAction/port"/>
-    </genClasses>
+    <genClasses ecoreClass="statechart.ecore#//RaiseEventAction"/>
     <genClasses image="false" ecoreClass="statechart.ecore#//TimeoutAction">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statechart.ecore#//TimeoutAction/timeoutDeclaration"/>
     </genClasses>

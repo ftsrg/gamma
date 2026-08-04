@@ -88,6 +88,10 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="#//Event"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EventParameterReferenceExpression" eSuperTypes="#//PortReferenceExpression #//EventReferenceExpression ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParameterReferenceExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="EventAnyPortParameterReferenceExpression"
+      eSuperTypes="#//EventReferenceExpression ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParameterReferenceExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="interface" eType="#//Interface"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="PortDeclarationReferenceExpression"
       eSuperTypes="#//PortReferenceExpression ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//AbstractDirectReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="AnyTrigger" eSuperTypes="#//SimpleTrigger"/>

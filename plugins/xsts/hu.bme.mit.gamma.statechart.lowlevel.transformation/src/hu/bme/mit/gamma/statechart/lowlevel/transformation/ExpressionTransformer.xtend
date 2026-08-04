@@ -36,6 +36,7 @@ import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.util.ArgumentInliner
 import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
+import hu.bme.mit.gamma.statechart.interface_.EventAnyPortParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.OccurrenceReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.PortDeclarationReferenceExpression
@@ -253,6 +254,10 @@ class ExpressionTransformer {
 		return expression.transformReferenceExpression
 	}
 	
+	def dispatch List<Expression> transformExpression(EventAnyPortParameterReferenceExpression expression) {
+		return expression.transformReferenceExpression
+	}
+	
 	def dispatch List<Expression> transformExpression(PortDeclarationReferenceExpression expression) {
 		return expression.transformReferenceExpression
 	}
@@ -318,6 +323,9 @@ class ExpressionTransformer {
 			val event = reference.event
 			val parameter = reference.parameterDeclaration
 			lowlevelVariables += trace.getAllInParameters(port, event, parameter -> fieldAccess)
+		}
+		else if (reference instanceof EventAnyPortParameterReferenceExpression) {
+			checkState(false)
 		}
 		
 		// Simple references are returned if indexes are empty
