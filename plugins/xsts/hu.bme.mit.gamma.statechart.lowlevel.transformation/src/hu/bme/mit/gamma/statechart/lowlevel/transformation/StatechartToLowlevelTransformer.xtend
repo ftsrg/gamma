@@ -97,7 +97,7 @@ class StatechartToLowlevelTransformer {
 		// Eliminating merge states
 		val mergeStateEliminator = new MergeStateEliminator(statechart)
 		mergeStateEliminator.execute
-		//
+		// Transform event any port parameter here as later, record and array accesses complicate things
 		statechart.preprocessEventAnyPortParameters
 		//
 		return statechart.transformComponent as hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
@@ -336,10 +336,13 @@ class StatechartToLowlevelTransformer {
 	
 	protected def preprocessEventAnyPortParameters(StatechartDefinition statechart) {
 		for (reference : statechart.getAllContentsOfType(EventAnyPortParameterReferenceExpression)) {
-			val ports = statechart.allPortsWithInput
+			val event = reference.event
 			val parameter = reference.parameterDeclaration
 			
 			val ifThenElses = newArrayList
+			
+			val ports = statechart.allPortsWithInput
+					.filter[it.inputEvents.contains(event)]
 			for (port : ports) {
 				ifThenElses += statechartUtil.createIfRaisedThenExpression(port, parameter)
 			}

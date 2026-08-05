@@ -72,6 +72,7 @@ import hu.bme.mit.gamma.statechart.interface_.AnyTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.ComponentAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.Event;
+import hu.bme.mit.gamma.statechart.interface_.EventAnyPortParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
 import hu.bme.mit.gamma.statechart.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
@@ -1165,9 +1166,29 @@ public class StatechartUtil extends ActionUtil {
 	
 	public EventParameterReferenceExpression createEventParameterReference(
 			Port port, ParameterDeclaration parameter) {
+		Event event = ecoreUtil.getContainerOfType(parameter, Event.class);
+		return createEventParameterReference(port, event, parameter);
+	}
+	
+	public EventParameterReferenceExpression createEventParameterReference(
+			Port port, Event event, ParameterDeclaration parameter) {
 		EventParameterReferenceExpression expression = interfaceFactory.createEventParameterReferenceExpression();
 		expression.setPort(port);
+		expression.setEvent(event);
+		expression.setDeclaration(parameter);
+		return expression;
+	}
+	
+	public EventAnyPortParameterReferenceExpression createEventAnyPortParameterReference(ParameterDeclaration parameter) {
 		Event event = ecoreUtil.getContainerOfType(parameter, Event.class);
+		return createEventAnyPortParameterReference(event, parameter);
+	}
+	
+	public EventAnyPortParameterReferenceExpression createEventAnyPortParameterReference(
+			Event event, ParameterDeclaration parameter) {
+		EventAnyPortParameterReferenceExpression expression = interfaceFactory.createEventAnyPortParameterReferenceExpression();
+		Interface _interface = ecoreUtil.getContainerOfType(event, Interface.class);
+		expression.setInterface(_interface);
 		expression.setEvent(event);
 		expression.setDeclaration(parameter);
 		return expression;

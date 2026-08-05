@@ -62,6 +62,7 @@ import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeature
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
+import hu.bme.mit.gamma.statechart.interface_.EventReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceParameterReferenceExpression;
@@ -206,9 +207,8 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 						List.of(allEvents, parentInputEvents, inputEvents));
 				return scopes;
 			}
-			if (context instanceof EventParameterReferenceExpression expression &&
+			if (context instanceof EventReferenceExpression expression &&
 					reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
-				checkState(expression.getPort() != null);
 				Event event = expression.getEvent();
 				List<ParameterDeclaration> parameterDeclarations = event.getParameterDeclarations();
 				return Scopes.scopeFor(parameterDeclarations);
@@ -242,7 +242,8 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 
 			// Ports
 			if (context instanceof InterfaceRealization && reference == InterfaceModelPackage.Literals.INTERFACE_REALIZATION__INTERFACE ||
-					reference == StatechartModelPackage.Literals.EVENT_ANY_PORT_REFERENCE__INTERFACE) {
+					reference == StatechartModelPackage.Literals.EVENT_ANY_PORT_REFERENCE__INTERFACE || 
+					reference == InterfaceModelPackage.Literals.EVENT_ANY_PORT_PARAMETER_REFERENCE_EXPRESSION__INTERFACE) {
 				Package gammaPackage = StatechartModelDerivedFeatures.getContainingPackage(context);
 				if (!gammaPackage.getImports().isEmpty()) {
 					Set<Interface> interfaces = new HashSet<Interface>();

@@ -255,7 +255,7 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch List<Expression> transformExpression(EventAnyPortParameterReferenceExpression expression) {
-		return expression.transformReferenceExpression
+		throw new IllegalArgumentException("Unsupported here, should be addressed by pre-processing: " + expression)
 	}
 	
 	def dispatch List<Expression> transformExpression(PortDeclarationReferenceExpression expression) {
@@ -325,7 +325,7 @@ class ExpressionTransformer {
 			lowlevelVariables += trace.getAllInParameters(port, event, parameter -> fieldAccess)
 		}
 		else if (reference instanceof EventAnyPortParameterReferenceExpression) {
-			checkState(false)
+			throw new IllegalArgumentException("Unsupported here, should be addressed by pre-processing: " + expression)
 		}
 		
 		// Simple references are returned if indexes are empty
