@@ -675,6 +675,7 @@ ReferenceExpression returns ExpressionModel::Expression:
 	super |
 	PortDeclarationReferenceExpression |
 	EventParameterReferenceExpression |
+	EventAnyPortParameterReferenceExpression |
 	InterfaceParameterReferenceExpression |
 	TimeoutReferenceExpression |
 	( OccurrenceReferenceExpression '::' ) | // Now these event references are not usable only in triggers
@@ -687,6 +688,9 @@ StateReferenceExpression returns StateReferenceExpression:
 
 EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenceExpression:
 	port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] '::' declaration=[ExpressionModel::ParameterDeclaration];
+
+EventAnyPortParameterReferenceExpression returns InterfaceModel::EventAnyPortParameterReferenceExpression:
+	'any' '.'(interface=[InterfaceModel::Interface] '.')? event=[InterfaceModel::Event] '::' declaration=[ExpressionModel::ParameterDeclaration];
 
 InterfaceParameterReferenceExpression returns InterfaceModel::InterfaceParameterReferenceExpression:
 	// this is a placeholder for the language to be unambiguous

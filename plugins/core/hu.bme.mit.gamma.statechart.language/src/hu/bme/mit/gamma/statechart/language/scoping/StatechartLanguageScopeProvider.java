@@ -68,7 +68,7 @@ import hu.bme.mit.gamma.statechart.interface_.InterfaceParameterReferenceExpress
 import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Port;
-import hu.bme.mit.gamma.statechart.interface_.PortReferenceExpression;
+import hu.bme.mit.gamma.statechart.interface_.PortDeclarationReferenceExpression;
 import hu.bme.mit.gamma.statechart.phase.InstanceVariableReference;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation;
 import hu.bme.mit.gamma.statechart.phase.PhaseModelPackage;
@@ -368,9 +368,9 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			}
 			if (reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 				// 0. Interface declarations
-				PortReferenceExpression portReferenceExpression = ecoreUtil.getSelfOrContainerOfType(context, PortReferenceExpression.class);
-				if (portReferenceExpression != null) {
-					Port port = portReferenceExpression.getPort();
+				PortDeclarationReferenceExpression portDeclarationReference = ecoreUtil.getSelfOrContainerOfType(context, PortDeclarationReferenceExpression.class);
+				if (portDeclarationReference != null) {
+					Port port = portDeclarationReference.getPort();
 					Interface _interface = StatechartModelDerivedFeatures.getInterface(port);
 					Collection<Declaration> declarations = new ArrayList<Declaration>();
 					declarations.addAll(

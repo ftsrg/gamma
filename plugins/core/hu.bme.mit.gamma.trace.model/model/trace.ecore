@@ -23,7 +23,7 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Act" abstract="true"/>
-  <eClassifiers xsi:type="ecore:EClass" name="RaiseEventAct" eSuperTypes="#//Act ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//RaiseEventAction ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="RaiseEventAct" eSuperTypes="#//Act ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//RaiseEventAction"/>
   <eClassifiers xsi:type="ecore:EClass" name="TimeElapse" eSuperTypes="#//Act">
     <eStructuralFeatures xsi:type="ecore:EReference" name="elapsedTime" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
