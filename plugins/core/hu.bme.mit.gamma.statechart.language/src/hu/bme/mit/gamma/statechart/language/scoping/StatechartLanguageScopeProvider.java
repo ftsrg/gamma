@@ -71,6 +71,7 @@ import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.PortDeclarationReferenceExpression;
+import hu.bme.mit.gamma.statechart.interface_.PortReferenceExpression;
 import hu.bme.mit.gamma.statechart.phase.InstanceVariableReference;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation;
 import hu.bme.mit.gamma.statechart.phase.PhaseModelPackage;
@@ -196,9 +197,10 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				Component component = StatechartModelDerivedFeatures.getContainingComponent(context);				
 				return Scopes.scopeFor(component.getPorts());
 			}
-			if (context instanceof EventParameterReferenceExpression expression &&
+			if ((context instanceof EventParameterReferenceExpression || context instanceof PortEventReference)  &&
 					reference == InterfaceModelPackage.Literals.EVENT_REFERENCE_EXPRESSION__EVENT) {
-				Port port = expression.getPort();
+				PortReferenceExpression portReferenceExpression = (PortReferenceExpression) context;
+				Port port = portReferenceExpression.getPort();
 				checkState(port != null);
 				List<Event> inputEvents = StatechartModelDerivedFeatures.getInputEvents(port);
 				List<Event> parentInputEvents = StatechartModelDerivedFeatures.getParentInputEvents(port);
@@ -335,7 +337,8 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					reference == InterfaceModelPackage.Literals.EVENT_REFERENCE_EXPRESSION__EVENT) {
 				AsynchronousAdapter wrapper = ecoreUtil.getContainerOfType(context, AsynchronousAdapter.class);
 				Collection<Event> events = new HashSet<Event>();
-				StatechartModelDerivedFeatures.getAllPorts(wrapper).stream()
+				List<Port> ports = StatechartModelDerivedFeatures.getAllPorts(wrapper);
+				ports.stream()
 						.forEach(it -> events.addAll(StatechartModelDerivedFeatures.getInputEvents(it)));
 				return Scopes.scopeFor(events);
 			}
