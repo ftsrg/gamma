@@ -371,7 +371,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return interfaceRealization.getInterface();
 	}
 	
-	public static List<Interface> getAllInterfaces(Port port) {
+	public static Set<Interface> getAllInterfaces(Port port) {
 		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
 		Interface _interface = interfaceRealization.getInterface();
 		return getAllParentsAndSelf(_interface);
@@ -1159,8 +1159,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return contents.isEmpty() && crossReferences.isEmpty();
 	}
 	
-	public static List<Interface> getAllParents(Interface _interface) {
-		List<Interface> interfaces = new ArrayList<Interface>();
+	public static Set<Interface> getAllParents(Interface _interface) {
+		Set<Interface> interfaces = new LinkedHashSet<Interface>();
 		for (Interface parent : _interface.getParents()) {
 			if (_interface != parent) {
 				interfaces.addAll(
@@ -1172,15 +1172,15 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return interfaces;
 	}
 	
-	public static List<Interface> getAllParentsAndSelf(Interface _interface) {
-		List<Interface> interfaces = getAllParents(_interface);
+	public static Set<Interface> getAllParentsAndSelf(Interface _interface) {
+		Set<Interface> interfaces = getAllParents(_interface);
 		interfaces.add(_interface);
 		return interfaces;
 	}
 	
 	public static List<EventDeclaration> getAllEventDeclarations(Interface _interface) {
 		List<EventDeclaration> eventDeclarations = new ArrayList<EventDeclaration>();
-		List<Interface> interfaces = getAllParentsAndSelf(_interface);
+		Set<Interface> interfaces = getAllParentsAndSelf(_interface);
 		for (Interface parentInterface : interfaces) {
 			eventDeclarations.addAll(
 					parentInterface.getEventDeclarations());
@@ -1295,6 +1295,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		List<Event> events = new ArrayList<Event>(
 				getAllEvents(port));
 		events.removeIf(it -> getInterface(port).getEventDeclarations()
+					.contains(getContainingEventDeclaration(it)));
+		return events;
+	}
+	
+	public static List<Event> getParentEvents(Interface _interface) {
+		List<Event> events = new ArrayList<Event>(
+				getAllEvents(_interface));
+		events.removeIf(it -> _interface.getEventDeclarations()
 					.contains(getContainingEventDeclaration(it)));
 		return events;
 	}
@@ -1611,7 +1619,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static List<VariableDeclaration> getAllVariableDeclarations(Port port) {
 		List<VariableDeclaration> variableDeclarations = new ArrayList<VariableDeclaration>();
 		
-		List<Interface> interfaces = getAllInterfaces(port);
+		Set<Interface> interfaces = getAllInterfaces(port);
 		for (Interface interface_ : interfaces) {
 			variableDeclarations.addAll(
 					interface_.getVariableDeclarations());

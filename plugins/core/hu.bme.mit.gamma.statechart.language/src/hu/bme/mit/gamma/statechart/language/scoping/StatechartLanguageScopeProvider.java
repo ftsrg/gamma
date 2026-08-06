@@ -61,6 +61,7 @@ import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
+import hu.bme.mit.gamma.statechart.interface_.EventAnyPortParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.EventReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
@@ -205,6 +206,15 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				inputEvents.removeAll(parentInputEvents);
 				IScope scopes = embedScopes2(
 						List.of(allEvents, parentInputEvents, inputEvents));
+				return scopes;
+			}
+			if (context instanceof EventAnyPortParameterReferenceExpression expression &&
+					reference == InterfaceModelPackage.Literals.EVENT_REFERENCE_EXPRESSION__EVENT) {
+				Interface _interface = expression.getInterface();
+				List<Event> events = StatechartModelDerivedFeatures.getEvents(_interface);
+				List<Event> parentEvents = StatechartModelDerivedFeatures.getParentEvents(_interface);
+				IScope scopes = embedScopes2(
+						List.of(parentEvents, events));
 				return scopes;
 			}
 			if (context instanceof EventReferenceExpression expression &&
