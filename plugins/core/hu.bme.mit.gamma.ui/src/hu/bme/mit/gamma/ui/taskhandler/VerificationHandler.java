@@ -102,8 +102,10 @@ import hu.bme.mit.gamma.xsts.util.XstsActionUtil;
 
 public class VerificationHandler extends TaskHandler {
 	
-	protected final boolean serializeResults; // Denotes whether JSON results are serialized
-	protected final boolean serializeTraces; // Denotes whether traces are serialized
+	protected final boolean setSerializeResults; // Set externally: denotes whether JSON results are serialized
+	protected final boolean setSerializeTraces; // Set externally: denotes whether traces are serialized
+	protected boolean serializeResults; // Denotes whether JSON results are serialized
+	protected boolean serializeTraces; // Denotes whether traces are serialized
 	protected boolean serializeTest; // Denotes whether test code is generated
 	protected String testFolderUri;
 	// targetFolderUri is traceFolderUri 
@@ -152,8 +154,8 @@ public class VerificationHandler extends TaskHandler {
 	public VerificationHandler(IFile file, boolean serializeResults, boolean serializeTraces,
 			VerificationPostprocessor verificationPostprocessor) {
 		super(file);
-		this.serializeResults = serializeResults;
-		this.serializeTraces = serializeTraces;
+		this.setSerializeResults = serializeResults;
+		this.setSerializeTraces = serializeTraces;
 		this.verificationPostprocessor = verificationPostprocessor;
 	}
 	
@@ -490,10 +492,10 @@ public class VerificationHandler extends TaskHandler {
 	}
 	
 	protected void doSetSerialization() throws IOException {
-		if (serializeResults) {
+		if (serializeResults && setSerializeResults) {
 			serializeResults();
 		}
-		if (serializeTraces) {
+		if (serializeTraces && setSerializeTraces) {
 			serializeTraces();
 		}
 		if (verificationPostprocessor != null) {
@@ -717,6 +719,8 @@ public class VerificationHandler extends TaskHandler {
 			// Setting the attribute, the test folder is a RELATIVE path now from the project
 			this.testFolderUri = URI.decode(projectLocation + File.separator + testFolders.get(0));
 		}
+		this.serializeResults = verification.isSerializeResults();
+		this.serializeTraces = verification.isSerializeTraces();
 		Resource resource = verification.eResource();
 		File file = (resource != null) ?
 				ecoreUtil.getFile(resource).getParentFile() : // If Verification is contained in a resource

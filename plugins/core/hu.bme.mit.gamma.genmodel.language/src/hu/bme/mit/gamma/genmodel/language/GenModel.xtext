@@ -391,6 +391,8 @@ Verification returns Verification:
 			'test-language' ':' programmingLanguages+=ProgrammingLanguage |
 			('optimize' | ('optimize-traces')) ':' ('false' | optimize?='true') |
 			'back-annotate-to-original' ':' ('false' | backAnnotateToOriginal?='true') |
+			'serialize-results' ':' serializeResults=BOOLEAN |
+			'serialize-traces' ':' serializeTraces=BOOLEAN |
 			'test-folder' ':' testFolder+=STRING |
 			'timeout' ':' timeout=TimeSpecification
 		)*
