@@ -205,6 +205,25 @@ public class ActionUtil extends ExpressionUtil {
 		return createBlock(actions);
 	}
 	
+	public void removeBlockInBlock(Action action) {
+		if (action == null) {
+			return;
+		}
+		List<Block> blocks = ecoreUtil.getSelfAndAllContentsOfType(action, Block.class);
+		for (Block block : blocks) {
+			List<Action> actions = block.getActions();
+			EObject container = block.eContainer();
+			if (actions.isEmpty()) {
+				ecoreUtil.remove(block);
+			}
+			else if (container instanceof Block containerBlock) {
+				containerBlock.getActions()
+					.addAll(actions);
+				ecoreUtil.remove(block);
+			}
+		}
+	}
+	
 	public IfStatement createIfStatement(Expression condition, Action then) {
 		return createIfStatement(condition, then, null);
 	}
