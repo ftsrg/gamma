@@ -66,6 +66,16 @@ class GammaEcoreUtil {
 		}
 	}
 	
+	def <T extends EObject> void moveContent(T from, T to) {
+		val lhsElements = newArrayList
+		lhsElements += from.eContents.map[it.eContainmentFeature -> it].toList
+		to.eContents.removeAll
+		
+		for (lhsElement : lhsElements) {
+			to.add(lhsElement.key, lhsElement.value)
+		}
+	}
+	
 	def isReferenced(EObject target, EObject container) {
 		val settings = UsageCrossReferencer.find(target, container)
 		return !settings.empty
