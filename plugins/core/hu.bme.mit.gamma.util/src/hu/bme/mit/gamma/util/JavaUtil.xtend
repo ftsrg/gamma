@@ -27,6 +27,11 @@ class JavaUtil {
 	protected new() {}
 	//
 	public static final String DELIM_CHAR = "_"
+	public static final String WHITESPACE_PATTERN = "\\s"
+	public static final String WHITESPACES_PATTERN = "\\s+"
+	public static final String ALFA_NUMERICAL_CHAR_PATTERN = "[A-Za-z0-9]"
+	public static final String ID_CHAR_PATTERN = "[_A-Za-z0-9]"
+	public static final String ID_PATTERN = "[_A-Za-z]" + ID_CHAR_PATTERN + "*"
 	//
 
 	def <E, T> List<T> filterIntoList(Iterable<E> collection, Class<T> clazz) {
@@ -386,12 +391,12 @@ class JavaUtil {
 	
 	def isAlfaNumerical(char character) {
 		val String string = character.toString
-		return string.matches("[A-Za-z0-9]")
+		return string.matches(ALFA_NUMERICAL_CHAR_PATTERN)
 	}
 	
 	def isIdChar(char character) {
 		val String string = character.toString
-		return string.matches("[_A-Za-z0-9]")
+		return string.matches(ID_CHAR_PATTERN)
 	}
 	
 	def toId(String string) {
@@ -452,8 +457,7 @@ class JavaUtil {
 		if (string.nullOrEmpty) {
 			return false
 		}
-		val pattern = "[_A-Za-z][_A-Za-z0-9]*"
-		return string.matches(pattern)
+		return string.matches(ID_PATTERN)
 	}
 	
 	def countChar(String string, String _char) {
