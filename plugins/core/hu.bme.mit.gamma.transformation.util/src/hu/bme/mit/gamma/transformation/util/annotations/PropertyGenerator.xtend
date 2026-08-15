@@ -49,6 +49,7 @@ import java.util.Map
 import java.util.Set
 import org.eclipse.emf.ecore.EObject
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class PropertyGenerator {

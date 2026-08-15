@@ -197,12 +197,19 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE;
 		
 		public abstract void execute(AnalysisModelTransformation transformation) throws IOException;
-
+		
 		protected void serializeProperties(String fileName) throws IOException {
+			serializeProperties(fileName, List.of());
+		}
+		
+		protected void serializeProperties(String fileName, List<Coverage> coverages) throws IOException {
 			try {
 				File propertyFile = new File(targetFolderUri + File.separator +
 					fileNamer.getHiddenEmfPropertyFileName(fileName));
 				PropertyPackage propertyPackage = (PropertyPackage) ecoreUtil.normalLoad(propertyFile);
+				for (Coverage coverage : coverages) {
+					propertyPackage.getCoverages().add(coverage.eClass().getName());
+				}
 				// ! The object has to be removed from the resource if we want to serialize it
 				ecoreUtil.deleteResource(propertyPackage);
 				serializeProperties(propertyPackage, fileName);
@@ -484,7 +491,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			);
 			transformer.execute();
 			// Property serialization
-			serializeProperties(fileName);
+			serializeProperties(fileName, transformation.getCoverages());
 			logger.info("The UPPAAL transformation has been finished");
 		}
 		
@@ -629,7 +636,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			);
 			transformer.execute();
 			// Property serialization
-			serializeProperties(fileName);
+			serializeProperties(fileName, transformation.getCoverages());
 			logger.info("The XSTS transformation has been finished");
 		}
 		
@@ -761,7 +768,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			);
 			transformer.execute();
 			// Property serialization
-			serializeProperties(fileName);
+			serializeProperties(fileName, transformation.getCoverages());
 			logger.info("The Gamma -> XSTS-UPPAAL transformation has been finished");
 		}
 		
@@ -861,7 +868,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			);
 			transformer.execute();
 			// Property serialization
-			serializeProperties(fileName);
+			serializeProperties(fileName, transformation.getCoverages());
 			logger.info("The Gamma -> XSTS-Promela transformation has been finished");
 		}
 		
@@ -960,7 +967,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			);
 			transformer.execute();
 			// Property serialization
-			serializeProperties(fileName);
+			serializeProperties(fileName, transformation.getCoverages());
 			logger.info("The Gamma -> XSTS-nuXmv transformation has been finished");
 		}
 		
@@ -1114,7 +1121,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			);
 			transformer.execute();
 			// Property serialization
-			serializeProperties(fileName);
+			serializeProperties(fileName, transformation.getCoverages());
 			logger.info("The Gamma -> XSTS-IML transformation has been finished");
 		}
 		
