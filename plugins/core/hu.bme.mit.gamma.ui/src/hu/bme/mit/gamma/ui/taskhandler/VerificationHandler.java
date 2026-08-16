@@ -27,6 +27,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.resources.IFile;
@@ -95,6 +98,17 @@ import hu.bme.mit.gamma.util.ThreadRacer;
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean;
 import hu.bme.mit.gamma.verification.util.AbstractVerification;
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result;
+import hu.bme.mit.gamma.verification.util.CompletenessCheckPostprocessor;
+import hu.bme.mit.gamma.verification.util.DeadlockCheckPostprocessor;
+import hu.bme.mit.gamma.verification.util.DeadlockStateCheckPostprocessor;
+import hu.bme.mit.gamma.verification.util.DeterminismCheckPostprocessor;
+import hu.bme.mit.gamma.verification.util.InteractionCheckPostprocessor;
+import hu.bme.mit.gamma.verification.util.OrthogonalLeafStateCombinationCheckPostprocessor;
+import hu.bme.mit.gamma.verification.util.OrthogonalStateCombinationCheckPostprocessor;
+import hu.bme.mit.gamma.verification.util.StateReachabilityCheckPostprocessor;
+import hu.bme.mit.gamma.verification.util.TransitionExecutabilityCheckPostprocessor;
+import hu.bme.mit.gamma.verification.util.TransitionPairExecutabilityCheckPostprocessor;
+import hu.bme.mit.gamma.verification.util.TrapStateCheckPostprocessor;
 import hu.bme.mit.gamma.verification.util.VerificationPostprocessor;
 import hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures;
 import hu.bme.mit.gamma.xsts.model.XSTS;
@@ -178,15 +192,21 @@ public class VerificationHandler extends TaskHandler {
 	
 	public Entry<InterruptableCallable<VerificationHandler>, Verification> wrap(
 			Verification verification, AnalysisLanguage analysisLanguage) {
+		return wrap(verification, analysisLanguage, false, false); // By default: no serialization to prevent race conditions
+	}
+	
+	public Entry<InterruptableCallable<VerificationHandler>, Verification> wrap(
+			Verification verification, AnalysisLanguage analysisLanguage,
+			boolean setSerializeResults, boolean setSerializeTraces) {
 		Verification verification2 = ecoreUtil.clone(verification);
 		verification2.getAnalysisLanguages().clear();
 		verification2.getAnalysisLanguages().add(analysisLanguage);
 		
-		VerificationHandler verificationHandler2 = new VerificationHandler(file, false, false, null);
+		VerificationHandler verificationHandler2 = new VerificationHandler(file, setSerializeResults, setSerializeTraces, null);
 		InterruptableCallable<VerificationHandler> verificationCall = new InterruptableCallable<VerificationHandler>() {
 			public VerificationHandler call() throws Exception {
 				verificationHandler2.executeOnce(verification2);
-				logger.info(analysisLanguage + " has won");
+				logger.info(analysisLanguage + " has finished");
 				return verificationHandler2; // Dummy
 			}
 			public void cancel() {
@@ -203,21 +223,32 @@ public class VerificationHandler extends TaskHandler {
 	public void execute(Verification verification) throws IOException, InterruptedException {
 		List<AnalysisLanguage> languages = verification.getAnalysisLanguages();
 		
-		if (languages.contains(AnalysisLanguage.SMART_ALL)) { // TODO jointly
-			languages.clear();
+		if (languages.contains(AnalysisLanguage.SMART_ALL)) {
+			// Parallel execution
 			List<AnalysisLanguage> smartAnalysisLanguages = getAllSmartAnalysisLanguages();
+			
+			List<InterruptableCallable<VerificationHandler>> callables = new ArrayList<>();
+			ExecutorService executor = Executors.newFixedThreadPool(smartAnalysisLanguages.size());
+			
 			for (AnalysisLanguage analysisLanguage : smartAnalysisLanguages) {
-				Verification verification2 = ecoreUtil.clone(verification);
-				verification2.getAnalysisLanguages().add(analysisLanguage);
-				
-				executeOnce(verification2);
+				var wrap = wrap(verification, analysisLanguage);
+				InterruptableCallable<VerificationHandler> callable = wrap.getKey();
+				callables.add(callable);
 			}
 			
+			var results = executor.invokeAll(callables); // Blocking call
+			for (Future<VerificationHandler> future : results) {
+				VerificationHandler handler = future.resultNow();
+				addAllResults(handler);
+			}
+			
+			setAll(verification);
+			doSetSerialization();
 			return;
 		}
 		else if (languages.size() > 1) {
 			if (verification.isOptimize() || GenmodelDerivedFeatures.getFormulaCount(verification) <= 1) {
-				// All properties jointly
+				// Racing: all properties jointly
 				List<InterruptableCallable<VerificationHandler>> verificationCalls = new ArrayList<InterruptableCallable<VerificationHandler>>();
 				for (AnalysisLanguage analysisLanguage : languages) {
 					Entry<InterruptableCallable<VerificationHandler>, Verification> entry = wrap(verification, analysisLanguage);
@@ -230,7 +261,7 @@ public class VerificationHandler extends TaskHandler {
 				addAllResults(winnerHandler);
 			}
 			else {
-				// Property by property
+				// Racing: property by property
 				for (PropertyPackage propertyPackage : verification.getPropertyPackages()) {
 					PropertyPackage propertyPackage2 = ecoreUtil.clone(propertyPackage);
 					List<CommentableStateFormula> formulas2 = propertyPackage2.getFormulas();
@@ -772,7 +803,46 @@ public class VerificationHandler extends TaskHandler {
 		}
 	}
 	
+	protected VerificationPostprocessor createVerificationPostprocessor(Verification verification) {
+		List<PropertyPackage> propertyPackages = verification.getPropertyPackages();
+		if (!propertyPackages.isEmpty()) {
+			PropertyPackage propertyPackage = propertyPackages.getFirst();
+			List<String> coverages = propertyPackage.getCoverages();
+			if (!coverages.isEmpty()) {
+				String coverage = coverages.getFirst();
+				String shortCoverage = coverage.replace("Coverage", "");
+				switch (shortCoverage) {
+					case "State": return new StateReachabilityCheckPostprocessor();
+					case "Transition": return new TransitionExecutabilityCheckPostprocessor();
+					case "TransitionPair": return new TransitionPairExecutabilityCheckPostprocessor();
+					case "OutEvent" : return null;
+					case "Interaction" : return new InteractionCheckPostprocessor();
+					case "InteractionDataflow" : return null;
+					case "Dataflow" : return null;
+					case "TrapState" : return new TrapStateCheckPostprocessor(null);
+					case "UnstableState" : return null;
+					case "OrthogonalLeafStateCombination" : return new OrthogonalStateCombinationCheckPostprocessor(null);
+					case "OrthogonalStateCombination" : return new OrthogonalLeafStateCombinationCheckPostprocessor(null);
+					case "DeadlockState" : return new DeadlockStateCheckPostprocessor(null);
+					case "Deadlock" : return new DeadlockCheckPostprocessor();
+					case "NonDeterministicTransition" : return new DeterminismCheckPostprocessor();
+					case "Completeness" : return new CompletenessCheckPostprocessor(null);
+					case "QueueOverflow" : return null;
+					
+					default: return null;
+				}
+			}
+		}
+		return null;
+	}
+	
 	//
+	
+	protected void addAllResults(Collection<? extends VerificationHandler> verificationHandlers) {
+		for (VerificationHandler verificationHandler : verificationHandlers) {
+			addAllResults(verificationHandler);
+		}
+	}
 	
 	protected void addAllResults(VerificationHandler verificationHandler) {
 		traces.addAll(verificationHandler.traces);
