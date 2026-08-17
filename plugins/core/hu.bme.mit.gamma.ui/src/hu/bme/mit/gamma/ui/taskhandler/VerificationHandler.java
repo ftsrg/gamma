@@ -118,8 +118,8 @@ public class VerificationHandler extends TaskHandler {
 	
 	protected final boolean setSerializeResults; // Set externally: denotes whether JSON results are serialized
 	protected final boolean setSerializeTraces; // Set externally: denotes whether traces are serialized
-	protected boolean serializeResults; // Denotes whether JSON results are serialized
-	protected boolean serializeTraces; // Denotes whether traces are serialized
+	protected boolean serializeResults; // Comes in Verification: denotes whether JSON results are serialized
+	protected boolean serializeTraces; // Comes in Verification: denotes whether traces are serialized
 	protected boolean serializeTest; // Denotes whether test code is generated
 	protected String testFolderUri;
 	// targetFolderUri is traceFolderUri 

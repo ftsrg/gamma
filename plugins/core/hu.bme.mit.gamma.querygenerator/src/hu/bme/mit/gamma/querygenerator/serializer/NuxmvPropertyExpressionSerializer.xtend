@@ -41,11 +41,11 @@ class NuxmvPropertyExpressionSerializer extends ThetaPropertyExpressionSerialize
 
 	override String _serialize(FalseExpression expression) '''FALSE'''
 	
-	override String _serialize(OrExpression expression) '''(«FOR operand : expression.operands SEPARATOR ' | '»«operand.serialize»«ENDFOR»)'''
+	override String _serialize(OrExpression expression) '''(«FOR operand : expression.operands SEPARATOR ' | '»(«operand.serialize»)«ENDFOR»)'''
 
-	override String _serialize(XorExpression expression) '''(«FOR operand : expression.operands SEPARATOR ' xor '»«operand.serialize»«ENDFOR»)'''
+	override String _serialize(XorExpression expression) '''(«FOR operand : expression.operands SEPARATOR ' xor '»(«operand.serialize»)«ENDFOR»)'''
 
-	override String _serialize(AndExpression expression) '''(«FOR operand : expression.operands SEPARATOR ' & '»«operand.serialize»«ENDFOR»)'''
+	override String _serialize(AndExpression expression) '''(«FOR operand : expression.operands SEPARATOR ' & '»(«operand.serialize»)«ENDFOR»)'''
 
 	override String _serialize(ImplyExpression expression) '''((«expression.leftOperand.serialize») -> («expression.rightOperand.serialize»))'''
 
