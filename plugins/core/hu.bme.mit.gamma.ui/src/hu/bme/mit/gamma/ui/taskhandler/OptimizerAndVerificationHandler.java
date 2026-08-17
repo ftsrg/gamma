@@ -100,32 +100,36 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 	//
 	
 	public void execute(Verification verification) throws IOException, InterruptedException {
-		List<AnalysisLanguage> analysisLanguages = verification.getAnalysisLanguages();
-		AnalysisLanguage analysisLanguage = analysisLanguages.get(0);
+		List<AnalysisLanguage> analysisLanguages = new ArrayList<AnalysisLanguage>(
+				verification.getAnalysisLanguages());
+		
+		setSmartAnalysisLanguages(analysisLanguages);
+		
+		AnalysisLanguage firstAnalysisLanguage = analysisLanguages.get(0);
 		checkArgument(analysisLanguages.contains(AnalysisLanguage.THETA) ||
 				analysisLanguages.contains(AnalysisLanguage.XSTS_UPPAAL) ||
 				analysisLanguages.contains(AnalysisLanguage.PROMELA) ||
 				analysisLanguages.contains(AnalysisLanguage.NUXMV) ||
 				analysisLanguages.contains(AnalysisLanguage.IML),
-				analysisLanguage + " is not supported for slicing");
+				firstAnalysisLanguage + " is not supported for slicing");
 		
 		List<String> fileNames = verification.getFileName();
 		String analysisFilePath = fileNames.get(0);
-		File analysisFile = null;
+		File anchorAnalysisFile = null;
 		
 		// Checking the file name
 		try {
-			analysisFile = super.exporeRelativeFile(verification, analysisFilePath);
+			anchorAnalysisFile = super.exporeRelativeFile(verification, analysisFilePath);
 		} catch (NullPointerException e) {
 			if (!fileUtil.hasExtension(analysisFilePath) ) {
-				String fileExtension = fileNamer.getFileExtension(analysisLanguage);
+				String fileExtension = fileNamer.getFileExtension(firstAnalysisLanguage);
 				analysisFilePath = fileUtil.changeExtension(analysisFilePath, fileExtension);
 			}
 			try {
-				analysisFile = super.exporeRelativeFile(verification, analysisFilePath);
+				anchorAnalysisFile = super.exporeRelativeFile(verification, analysisFilePath);
 			} catch (NullPointerException ex) {
 				// Verification is not serialized?
-				analysisFile = new File(projectLocation + File.separator + analysisFilePath);
+				anchorAnalysisFile = new File(projectLocation + File.separator + analysisFilePath);
 			}
 		}
 		//
@@ -246,7 +250,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			xStsOptimizer.optimizeXSts(xSts); // To remove null/empty actions
 			
 			// Serialize XSTS
-			String analysisFileString = analysisFile.toString();
+			String analysisFileString = anchorAnalysisFile.toString();
 			String xStsFile = fileUtil.changeExtension(
 					analysisFileString, GammaFileNamer.XSTS_XTEXT_EXTENSION);
 			String xStsString = xStsSerializer.serializeXsts(xSts);
@@ -275,9 +279,9 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 				sseTransformer.execute();
 				// SMV
 				String analysisFileName = fileUtil.changeExtension(
-						analysisFile.getName(), GammaFileNamer.NUXMV_MODEL_EXTENSION);
+						anchorAnalysisFile.getName(), GammaFileNamer.NUXMV_MODEL_EXTENSION);
 				XstsToNuxmvTransformer nuxmvTransformer = new XstsToNuxmvTransformer(xSts,
-					analysisFile.getParentFile().toString(), analysisFileName);
+					anchorAnalysisFile.getParentFile().toString(), analysisFileName);
 				nuxmvTransformer.execute();
 				// XSTS
 				if (analysisLanguages.size() == 1) {

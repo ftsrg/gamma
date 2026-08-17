@@ -223,6 +223,19 @@ public class VerificationHandler extends TaskHandler {
 	public void execute(Verification verification) throws IOException, InterruptedException {
 		List<AnalysisLanguage> languages = verification.getAnalysisLanguages();
 		
+		boolean needsPreprocess = languages.contains(AnalysisLanguage.SMART_ALL) || languages.size() > 1;
+		if (needsPreprocess) {
+			preprocessAndExecute(verification);
+			return;
+		}
+		
+		// Default mode (single language or smart, non smart-all)
+		executeOnce(verification);
+	}
+
+	protected void preprocessAndExecute(Verification verification) throws InterruptedException, IOException {
+		List<AnalysisLanguage> languages = new ArrayList<AnalysisLanguage>(
+				verification.getAnalysisLanguages());
 		if (languages.contains(AnalysisLanguage.SMART_ALL)) {
 			// Parallel execution
 			List<AnalysisLanguage> smartAnalysisLanguages = getAllSmartAnalysisLanguages();
@@ -241,10 +254,6 @@ public class VerificationHandler extends TaskHandler {
 				VerificationHandler handler = future.resultNow();
 				addAllResults(handler);
 			}
-			
-			setAll(verification);
-			doSetSerialization();
-			return;
 		}
 		else if (languages.size() > 1) {
 			if (verification.isOptimize() || GenmodelDerivedFeatures.getFormulaCount(verification) <= 1) {
@@ -290,14 +299,12 @@ public class VerificationHandler extends TaskHandler {
 					}
 				}
 			}
-			
-			setAll(verification);
-			doSetSerialization();
-			return;
 		}
 		
-		// Default mode (single language, non smart-all)
-		executeOnce(verification);
+		setAll(verification);
+		doSetSerialization();
+		verification.getAnalysisLanguages().clear();
+		verification.getAnalysisLanguages().addAll(languages); // Restore original
 	}
 	
 	protected void executeOnce(Verification verification) throws IOException, InterruptedException {
