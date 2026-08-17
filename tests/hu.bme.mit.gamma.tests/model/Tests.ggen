@@ -18,6 +18,7 @@ include "Spacecraft/Spacecraft.ggen"
 include "SSM/SSM.ggen"
 include "TMT/TMT.ggen"
 include "TrafficLight/TrafficLight.ggen"
+include "TrafficLight/TrafficLightForm.ggen"
 include "Variables/Variables.ggen"
 include "XSML/XSML.ggen"
 

@@ -1,0 +1,93 @@
+package TrafficLightpkg
+import "Interfaces/Interfaces.gcd"
+
+@Asynchronous
+statechart TrafficLightForm() [
+	port Port : requires Default
+] {
+	var isYellowOn : boolean
+	var isGreenOn : boolean
+	var isRedOn : boolean
+	
+	timeout blinking
+	
+	region main {
+		initial InitialOfMain
+		state Off {
+			entry / set blinking := 1 s; setOff();
+		}
+		state On {
+			region on_OR_refinement {
+				initial InitialOfOn
+				state Yellow { entry / setYellow(); }
+				state Green { entry / setGreen(); }
+				state RedYellow { entry / setRedYellow(); }
+				state Red {
+					entry / setRed();
+					region camera {
+						shallow history InitialOfCamera
+						state On_
+						state Off_
+						choice Shoot
+					}
+					region count {
+						initial InitialOfCount
+						state Car0
+						state Car1
+						state Car2
+					}
+				}
+			}
+		}
+	}
+	
+	transition from InitialOfMain to Off
+	transition from Off to On when Port.on
+	transition from On to Off when Port.^off
+	
+	transition from Off to Off when timeout blinking
+	
+	transition from InitialOfOn to Green
+	transition from Green to Yellow when Port.toggle
+	transition from Yellow to Red when Port.toggle
+	transition from Red to RedYellow when Port.toggle
+	transition from RedYellow to Green when Port.toggle
+	
+	transition from InitialOfCamera to On_
+	transition from On_ to Off_ when Port.manualOff
+	transition from Off_ to On_ when Port.manualOn
+	transition from On_ to Shoot when Port.carGo
+	transition from Shoot to On_
+	
+	transition from InitialOfCount to Car0
+	transition from Car0 to Car1 when Port.carIn
+	transition from Car1 to Car2 when Port.carIn
+	transition from Car2 to RedYellow when Port.carIn
+	
+	procedure setOff() : void {
+		setLights(false, false, false);
+	}
+	
+	procedure setYellow() : void {
+		setLights(true, false, false);
+	}
+	
+	procedure setGreen() : void {
+		setLights(false, true, false);
+	}
+	
+	procedure setRed() : void {
+		setLights(false, false, true);
+	}
+	
+	procedure setRedYellow() : void {
+		setLights(true, false, true);
+	}
+	
+	procedure setLights(yellow : boolean, green : boolean, red : boolean) : void {
+		isYellowOn := yellow;
+		isGreenOn := green;
+		isRedOn := red;
+	}
+	
+}
