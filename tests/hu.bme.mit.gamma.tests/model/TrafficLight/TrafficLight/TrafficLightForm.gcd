@@ -14,7 +14,7 @@ statechart TrafficLightForm() [
 	region main {
 		initial InitialOfMain
 		state Off {
-			entry / set blinking := 1 s; setOff();
+			entry / set blinking := 1 s; setRedGreenOff(); isYellowOn := !isYellowOn;
 		}
 		state On {
 			region on_OR_refinement {
@@ -66,6 +66,10 @@ statechart TrafficLightForm() [
 	
 	procedure setOff() : void {
 		setLights(false, false, false);
+	}
+	
+	procedure setRedGreenOff() : void {
+		setLights(isYellowOn, false, false);
 	}
 	
 	procedure setYellow() : void {
