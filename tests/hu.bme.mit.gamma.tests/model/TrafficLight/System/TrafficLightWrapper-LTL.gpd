@@ -1,4 +1,4 @@
-import "/hu.bme.mit.gamma.tests/model/TrafficLight/System/.TrafficLightWrapper.gsm"
+import "/hu.bme.mit.gamma.tests/model/TrafficLight/System/TrafficLightWrapper.gcd"
 component TrafficLightWrapper
 
 A G ( F [ { state TrafficLight.Counting.Threshold } ] )
