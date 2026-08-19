@@ -616,9 +616,9 @@ public class VerificationHandler extends TaskHandler {
 			
 			wrappedFormulas.add(entry);
 		}
-		//
+		
 		removeCoveredProperties(wrappedFormulas);
-		//
+		
 		formulas.removeIf(it -> !wrappedFormulas.contains(
 				Map.entry(dummyKey, it.getFormula())));
 	}

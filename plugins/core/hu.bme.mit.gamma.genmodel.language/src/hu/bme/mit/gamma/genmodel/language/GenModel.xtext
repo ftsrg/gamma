@@ -31,7 +31,8 @@ GenModel returns GenModel:
 //		'external' statechartImports+=[EObject| STRING] |
 		'scenario' scenarioImports+=[scenario::ScenarioPackage| STRING] |
 		'trace' traceImports+=[trace::ExecutionTrace | STRING])) |
-		'include' genmodelImports+=[GenModel | STRING]
+		'include' inclusions+=[GenModel | STRING] |
+		'parallel' 'exec' parallelExecutions+=[GenModel | STRING]
 	)*
 	(tasks += Task)*
 ;

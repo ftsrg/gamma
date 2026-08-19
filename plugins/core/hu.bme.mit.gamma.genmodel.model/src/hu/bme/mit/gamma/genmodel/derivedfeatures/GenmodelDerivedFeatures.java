@@ -11,7 +11,9 @@
 package hu.bme.mit.gamma.genmodel.derivedfeatures;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.emf.ecore.EObject;
 
@@ -66,18 +68,35 @@ public class GenmodelDerivedFeatures extends ExpressionModelDerivedFeatures {
 
 	public static List<Task> getAllTasks(GenModel genmodel) {
 		List<Task> tasks = new ArrayList<Task>(genmodel.getTasks());
-		for (GenModel includedGenmodel : genmodel.getGenmodelImports()) {
+		for (GenModel includedGenmodel : genmodel.getInclusions()) {
 			tasks.addAll(
 					getAllTasks(includedGenmodel));
 		}
 		return tasks;
 	}
-
+	
+	public static Set<GenModel> getAllParallelExecutions(GenModel genmodel) {
+		Set<GenModel> parallelExecutions = getSelfAndParallelExecutions(genmodel, new LinkedHashSet<GenModel>());
+		parallelExecutions.remove(genmodel);
+		return parallelExecutions;
+	}
+	
+	protected static Set<GenModel> getSelfAndParallelExecutions(GenModel genmodel, Set<GenModel> genmodels) {
+		if (!genmodels.contains(genmodel)) {
+			genmodels.add(genmodel);
+			List<GenModel> parallelExecutions = genmodel.getParallelExecutions();
+			for (GenModel parallelExecution : parallelExecutions) {
+				getSelfAndParallelExecutions(parallelExecution, genmodels);
+			}
+		}
+		return genmodels;
+	}
+	
 	public static NamedElement getModel(AnalysisModelTransformation analysisModelTransformation) {
 		ModelReference modelReference = analysisModelTransformation.getModel();
 		return getModel(modelReference);
 	}
-
+	
 	public static NamedElement getModel(ModelReference modelReference) {
 		if (modelReference instanceof ComponentReference componentReference) {
 			return componentReference.getComponent();

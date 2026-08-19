@@ -6,14 +6,16 @@
         eType="ecore:EClass http://www.eclipse.org/emf/2002/Ecore#//EObject"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="packageImports" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Package"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="tasks" upperBound="-1"
-        eType="#//Task" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="traceImports" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.trace.model/model/trace.ecore#//ExecutionTrace"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="genmodelImports" upperBound="-1"
-        eType="#//GenModel"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="scenarioImports" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.scenario.model/model/scenario.ecore#//ScenarioPackage"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="inclusions" upperBound="-1"
+        eType="#//GenModel"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="parallelExecutions" upperBound="-1"
+        eType="#//GenModel"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="tasks" upperBound="-1"
+        eType="#//Task" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Task" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="fileName" unique="false"
