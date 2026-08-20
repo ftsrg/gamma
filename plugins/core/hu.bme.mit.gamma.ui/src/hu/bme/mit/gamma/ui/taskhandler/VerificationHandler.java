@@ -930,10 +930,9 @@ public class VerificationHandler extends TaskHandler {
 			String baseFileName = traceFileName;
 			Integer id = getCorrespondingIndex(traceFolder, trace);
 			if (id == null) {
-				Entry<String, Integer> fileNamePair = fileUtil.getFileName(traceFolder,
-						traceFileName, GammaFileNamer.EXECUTION_XTEXT_EXTENSION);
-				id = fileNamePair.getValue();
+				id = getNextIndex(traceFolderUri, traceFileName);
 			}
+			
 			String fileName = baseFileName + id + "." + GammaFileNamer.EXECUTION_XTEXT_EXTENSION;
 			serializer.saveModel(trace, traceFolderUri, fileName);
 			
@@ -1000,6 +999,15 @@ public class VerificationHandler extends TaskHandler {
 			return null;
 		}
 		
+		protected Integer getNextIndex(String folder, String fileName) {
+			Entry<String, Integer> fileNamePair = fileUtil.getFileName(folder,
+					fileName, GammaFileNamer.VERIFICATION_RESULT_EXTENSION);
+			Entry<String, Integer> fileNamePair2 = fileUtil.getFileName(folder,
+					fileName, GammaFileNamer.EXECUTION_XTEXT_EXTENSION);
+			int id = Integer.max(fileNamePair.getValue(), fileNamePair2.getValue());
+			return id;
+		}
+		
 		public void serialize(String resultFolderUri, String resultFileName,
 				Collection<? extends VerificationResult> results) throws IOException {
 			for (VerificationResult result : results) {
@@ -1009,12 +1017,9 @@ public class VerificationHandler extends TaskHandler {
 		
 		public void serialize(String resultFolderUri, String resultFileName,
 				VerificationResult result) throws IOException {
-			File folder = new File(resultFolderUri);
-			Entry<String, Integer> fileNamePair = fileUtil.getFileName(folder,
-					resultFileName, GammaFileNamer.VERIFICATION_RESULT_EXTENSION);
-			String fileName = fileNamePair.getKey();
+			int id = getNextIndex(resultFolderUri, resultFileName);
 			String jsonResult = gson.toJson(result);
-			String path = resultFolderUri + File.separator + fileName;
+			String path = resultFolderUri + File.separator + resultFileName + id + "." + GammaFileNamer.VERIFICATION_RESULT_EXTENSION;
 			fileUtil.saveString(path, jsonResult);
 		}
 		
