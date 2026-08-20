@@ -32,4 +32,5 @@ verification {
 	file : "Vaganyut.smv"
 	property-file : "Vaganyut.gpd"
 	test-language : java
+	serialize-results : false
 }

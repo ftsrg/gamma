@@ -47,6 +47,7 @@ verification {
 	property-file : ".PortFunctionsSystem.gpd"
 	optimize-traces : true
 	test-language : java
+	serialize-results : false
 }
 
 code {
@@ -66,6 +67,7 @@ verification {
 	property-file : ".PortFunctionsSystem3.gpd"
 	optimize-traces : true
 	test-language : java
+	serialize-results : false
 }
 
 code {
@@ -104,6 +106,7 @@ verification {
 	property-file : ".PortFunctionsSystem5.gpd"
 	optimize-traces : true
 	test-language : java
+	serialize-results : false
 }
 
 code {
@@ -138,6 +141,7 @@ verification {
 	property-file : ".AsyncPortFunctionsSystem.gpd"
 	optimize-traces : true
 	test-language : java
+	serialize-results : false
 }
 
 code {

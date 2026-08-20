@@ -21,4 +21,5 @@ verification {
 	file : "ParallelMachineAdapter.pml"
 	property-file : "ParallelRegion.gpd"
 	test-language : java
+	serialize-results : false
 }

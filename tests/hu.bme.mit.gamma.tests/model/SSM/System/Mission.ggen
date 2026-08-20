@@ -33,6 +33,7 @@ verification {
 	query-file : "Mission.q"
 	optimize : true
 	test-language : java
+	serialize-results : false
 }
 
 analysis {
@@ -49,6 +50,7 @@ verification {
 	property-file : ".Mission-XSTS.gpd"
 	optimize : true
 	test-language : java
+	serialize-results : false
 }
 
 analysis {
@@ -68,6 +70,7 @@ verification {
 	property-file : ".Mission-SMV.gpd"
 	optimize-traces : true
 	test-language : java
+	serialize-results : false
 }
 
 analysis {
@@ -85,4 +88,5 @@ verification {
 	file : "Mission-Promela.pml"
 	property-file : "Mission-LTL.gpd"
 	test-language : java
+	serialize-results : false
 }

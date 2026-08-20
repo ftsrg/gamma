@@ -20,6 +20,7 @@ verification {
 	property-file : ".Functions_1.gpd"
 	test-language : java
 	optimize-traces : true
+	serialize-results : false
 }
 
 code {
@@ -39,6 +40,7 @@ verification {
 	property-file : ".Functions_2.gpd"
 	test-language : java
 	optimize-traces : true
+	serialize-results : false
 }
 
 code {
@@ -58,6 +60,7 @@ verification {
 	property-file : ".Functions_3.gpd"
 	test-language : java
 	optimize-traces : true
+	serialize-results : false
 }
 
 code {
@@ -77,4 +80,5 @@ verification {
 	property-file : ".Functions_4.gpd"
 	test-language : java
 	optimize-traces : true
+	serialize-results : false
 }
