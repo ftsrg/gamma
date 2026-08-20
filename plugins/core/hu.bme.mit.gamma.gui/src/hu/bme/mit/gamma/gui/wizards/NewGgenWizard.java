@@ -45,14 +45,11 @@ import org.eclipse.ui.ide.IDE;
  * sample multi-page editor (also available as a template) is registered for the
  * same extension, it will be able to open it.
  */
-public class NewGammaAsynchronousAdapterWizard extends Wizard implements INewWizard {
-	private NewGammaAsynchronousAdapterWizardPage page;
+public class NewGgenWizard extends Wizard implements INewWizard {
+	private NewGgenWizardPage page;
 	private ISelection selection;
 
-	/**
-	 * Constructor for NewGCLStatechartWizard.
-	 */
-	public NewGammaAsynchronousAdapterWizard() {
+	public NewGgenWizard() {
 		super();
 		setNeedsProgressMonitor(true);
 	}
@@ -62,7 +59,7 @@ public class NewGammaAsynchronousAdapterWizard extends Wizard implements INewWiz
 	 */
 	@Override
 	public void addPages() {
-		page = new NewGammaAsynchronousAdapterWizardPage(selection);
+		page = new NewGgenWizardPage(selection);
 		addPage(page);
 	}
 
@@ -136,22 +133,23 @@ public class NewGammaAsynchronousAdapterWizard extends Wizard implements INewWiz
 	 */
 	private InputStream openContentStream() {
 		String contents = """
-				package packagename
-				
-				// import adaptable synchronous components
-				
-				adapter DefaultAdapterName of component defaultComponentInstanceName [
-					// Declaration of control ports
-				] {
-					// Control specification
-					when any / run
-					
-					queue messageQueue(priority = 1, capacity = 4) {
-						// Messages stored in this queue
-					}
-					
-				}
-				""";
+		code {
+			component : ComponentName
+			language : java
+		}
+		
+		analysis {
+			component : ComponentName
+			language : smart
+			state-coverage
+		}
+		
+		verification {
+			language : smart
+			file : "ComponentName"
+			property-file : ".ComponentName.gpd"
+		}
+		""";
 		return new ByteArrayInputStream(contents.getBytes());
 	}
 

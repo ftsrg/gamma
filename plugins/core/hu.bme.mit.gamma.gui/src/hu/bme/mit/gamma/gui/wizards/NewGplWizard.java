@@ -33,14 +33,14 @@ import org.eclipse.ui.ide.IDE;
  * sample multi-page editor (also available as a template) is registered for the
  * same extension, it will be able to open it.
  */
-public class NewGammaPropertyWizard extends Wizard implements INewWizard {
-	private NewGammaPropertyWizardPage page;
+public class NewGplWizard extends Wizard implements INewWizard {
+	private NewGplWizardPage page;
 	private ISelection selection;
 
 	/**
 	 * Constructor for NewGammaPropertyWizard.
 	 */
-	public NewGammaPropertyWizard() {
+	public NewGplWizard() {
 		super();
 		setNeedsProgressMonitor(true);
 	}
@@ -50,7 +50,7 @@ public class NewGammaPropertyWizard extends Wizard implements INewWizard {
 	 */
 	@Override
 	public void addPages() {
-		page = new NewGammaPropertyWizardPage(selection);
+		page = new NewGplWizardPage(selection);
 		addPage(page);
 	}
 
