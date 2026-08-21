@@ -133,6 +133,8 @@ public class NewGgenWizard extends Wizard implements INewWizard {
 	 */
 	private InputStream openContentStream() {
 		String contents = """
+		import "ComponentName"
+		
 		code {
 			component : ComponentName
 			language : java
@@ -146,6 +148,7 @@ public class NewGgenWizard extends Wizard implements INewWizard {
 		
 		verification {
 			language : smart
+			test-language : java
 			file : "ComponentName"
 			property-file : ".ComponentName.gpd"
 		}

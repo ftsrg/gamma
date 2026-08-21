@@ -1,0 +1,247 @@
+package system
+import "Declarations.gcd"
+scheduled-async OrionSystem [
+	port Connection_Port : requires Connection_Interface_For_Orion
+] {
+	component master : master
+	component slave : slave
+	bind Connection_Port -> master.Connection_Port
+	channel [ master.Send_StateMachine_Port ] -o)- [ slave.StateMachine_Port ]
+	channel [ slave.Send_StateMachine_Port ] -o)- [ master.StateMachine_Port ]
+}
+adapter master of component System_MasterStatechart : System_MasterStatechart
+{
+	when any / run
+	queue masterQueue (priority = 1, capacity = 4) {
+		Block_Port.any, StateMachine_Port.any
+	}
+	queue masterEnvironmentQueue (priority = 0, capacity = 4) {
+		Connection_Port.any
+	}
+}
+adapter slave of component System_SlaveStatechart : System_SlaveStatechart
+{
+	when any / run
+	queue slaveQueue (priority = 1, capacity = 4) {
+		Block_Port.any, Connection_Port.any, StateMachine_Port.any
+	}
+}
+@RegionSchedule = bottom-up
+@GuardEvaluation = beginning-of-step
+@TransitionPriority = order-based
+statechart System_MasterStatechart [
+	port Block_Port : requires Block_Interface_ForOrion
+	port Connection_Port : requires Connection_Interface_For_Orion
+	port StateMachine_Port : requires StateMachine_Interface_For_Orion
+	port Send_StateMachine_Port : provides StateMachine_Interface_For_Orion
+	port Process_StateMachine_Port : provides StateMachine_Interface_For_Orion
+] {
+	timeout Closed_0
+	timeout Connecting_1
+	timeout KeepAliveReceiveTimeout_3_2
+	timeout KeepAliveSendTimeout_1_3
+	region Submain_region_of_Orion_Master_SM {
+		state Closed {
+			entry / set Closed_0 := 5 s;
+		}
+		state Connecting {
+			entry / set Connecting_1 := 5 s;
+		}
+		state Connected {
+			region Parentregion_1_in_Connected {
+				state region_1_in_Connected {
+					region Subregion_1_in_Connected {
+						state KeepAliveSendTimeout_1 {
+							entry / set KeepAliveSendTimeout_1_3 := 4 s;
+						}
+						initial Initialregion_1_in_ConnectedOfSubregion_1_in_Connected
+					}
+				}
+				initial Initialregion_1_in_ConnectedOfParentregion_1_in_Connected
+			}
+			region Parentregion_2_in_Connected {
+				state region_2_in_Connected {
+					region Subregion_2_in_Connected {
+						state KeepAliveReceiveTimeout_3 {
+							entry / set KeepAliveReceiveTimeout_3_2 := 5 s;
+						}
+						initial Initialregion_2_in_ConnectedOfSubregion_2_in_Connected
+					}
+				}
+				initial Initialregion_2_in_ConnectedOfParentregion_2_in_Connected
+			}
+		}
+		state Merge_in_main_region_of_Orion_Master_SM
+		state Merge_2_in_main_region_of_Orion_Master_SM
+		initial Initialmain_region_of_Orion_Master_SMOfSubmain_region_of_Orion_Master_SM
+	}
+	transition from Initialregion_1_in_ConnectedOfParentregion_1_in_Connected to
+		region_1_in_Connected
+	transition from Initialregion_2_in_ConnectedOfSubregion_2_in_Connected to
+		KeepAliveReceiveTimeout_3
+	transition from Initialregion_2_in_ConnectedOfParentregion_2_in_Connected to
+		region_2_in_Connected
+	transition from Initialmain_region_of_Orion_Master_SMOfSubmain_region_of_Orion_Master_SM to
+		Closed
+	transition from Initialregion_1_in_ConnectedOfSubregion_1_in_Connected to KeepAliveSendTimeout_1
+	transition from Closed to Connecting when timeout Closed_0 / {
+		raise Send_StateMachine_Port.out_OrionConnReq;
+	}
+	transition from Closed to Connecting when Connection_Port.in_Operation_Call_Connect / {
+		raise Send_StateMachine_Port.out_OrionConnReq;
+	}
+	transition from Connecting to Connected when StateMachine_Port.in_OrionConnResp / {
+		raise Send_StateMachine_Port.out_OrionConnConf;
+	}
+	transition from Connecting to Merge_2_in_main_region_of_Orion_Master_SM when timeout Connecting_1
+	transition from Connecting to Closed when StateMachine_Port.in_OrionDisconnCause
+	transition from Connecting to Merge_2_in_main_region_of_Orion_Master_SM when
+		Block_Port.in_Operation_Call_Invalid
+	transition from Connecting to Merge_2_in_main_region_of_Orion_Master_SM when
+		StateMachine_Port.out_OrionConnConf
+	transition from Connecting to Merge_2_in_main_region_of_Orion_Master_SM when
+		StateMachine_Port.in_OrionKeepAlive
+	transition from Connecting to Merge_2_in_main_region_of_Orion_Master_SM when
+		StateMachine_Port.in_OrionAppData
+	transition from Connecting to Merge_2_in_main_region_of_Orion_Master_SM when
+		StateMachine_Port.out_OrionConnReq
+	transition from Connected to Merge_in_main_region_of_Orion_Master_SM when
+		Connection_Port.in_Operation_Call_Disconn
+	transition from Connected to Merge_in_main_region_of_Orion_Master_SM when
+		StateMachine_Port.out_OrionConnReq
+	transition from Connected to Closed when StateMachine_Port.in_OrionDisconnCause
+	transition from Connected to Merge_in_main_region_of_Orion_Master_SM when
+		Block_Port.in_Operation_Call_Invalid
+	transition from Connected to Merge_in_main_region_of_Orion_Master_SM when
+		StateMachine_Port.in_OrionConnResp
+	transition from Connected to Merge_in_main_region_of_Orion_Master_SM when
+		StateMachine_Port.out_OrionConnConf
+	transition from Merge_in_main_region_of_Orion_Master_SM to Closed when cycle [true] / {
+		raise Send_StateMachine_Port.out_OrionDisconn;
+	}
+	transition from Merge_2_in_main_region_of_Orion_Master_SM to Closed when cycle [true] / {
+		raise Send_StateMachine_Port.out_OrionDisconn;
+	}
+	transition from KeepAliveReceiveTimeout_3 to Merge_in_main_region_of_Orion_Master_SM when timeout
+		KeepAliveReceiveTimeout_3_2
+	transition from KeepAliveReceiveTimeout_3 to KeepAliveReceiveTimeout_3 when
+		StateMachine_Port.in_OrionAppData / {
+		raise Process_StateMachine_Port.in_OrionAppData;
+	}
+	transition from KeepAliveReceiveTimeout_3 to KeepAliveReceiveTimeout_3 when
+		StateMachine_Port.in_OrionKeepAlive
+	transition from KeepAliveSendTimeout_1 to KeepAliveSendTimeout_1 when timeout
+		KeepAliveSendTimeout_1_3 / {
+		raise Send_StateMachine_Port.in_OrionKeepAlive;
+	}
+	transition from KeepAliveSendTimeout_1 to KeepAliveSendTimeout_1 when
+		Block_Port.in_Operation_Call_SendData / {
+		raise Send_StateMachine_Port.in_OrionAppData;
+	}
+}
+@RegionSchedule = bottom-up
+@GuardEvaluation = beginning-of-step
+@TransitionPriority = order-based
+statechart System_SlaveStatechart [
+	port Block_Port : requires Block_Interface_ForOrion
+	port Connection_Port : requires Connection_Interface_For_Orion
+	port StateMachine_Port : requires StateMachine_Interface_For_Orion
+	port Send_StateMachine_Port : provides StateMachine_Interface_For_Orion
+	port Process_StateMachine_Port : provides StateMachine_Interface_For_Orion
+	port Handle_StateMachine_Port : provides StateMachine_Interface_For_Orion
+] {
+	timeout Connecting_0
+	timeout KeepAliveSendTimeout_1
+	timeout KeepAliveReceiveTimeout_2
+	region Submain_region_of_Orion_Slave_SM {
+		state Connected {
+			region Parentregion_1_in_Connected {
+				state region_1_in_Connected {
+					region Subregion_1_in_Connected {
+						state KeepAliveSendTimeout {
+							entry / set KeepAliveSendTimeout_1 := 4 s;
+						}
+						initial Initialregion_1_in_ConnectedOfSubregion_1_in_Connected
+					}
+				}
+				initial Initialregion_1_in_ConnectedOfParentregion_1_in_Connected
+			}
+			region Parentregion_2_in_Connected {
+				state region_2_in_Connected {
+					region Subregion_2_in_Connected {
+						state KeepAliveReceiveTimeout {
+							entry / set KeepAliveReceiveTimeout_2 := 5 s;
+						}
+						initial Initialregion_2_in_ConnectedOfSubregion_2_in_Connected
+					}
+				}
+				initial Initialregion_2_in_ConnectedOfParentregion_2_in_Connected
+			}
+		}
+		state Closed
+		state Connecting {
+			entry / set Connecting_0 := 5 s;
+		}
+		state Merge_in_main_region_of_Orion_Slave_SM
+		state Merge_2_in_main_region_of_Orion_Slave_SM
+		initial Initialmain_region_of_Orion_Slave_SMOfSubmain_region_of_Orion_Slave_SM
+	}
+	transition from Initialregion_2_in_ConnectedOfSubregion_2_in_Connected to KeepAliveReceiveTimeout
+	transition from Initialmain_region_of_Orion_Slave_SMOfSubmain_region_of_Orion_Slave_SM to Closed
+	transition from Initialregion_2_in_ConnectedOfParentregion_2_in_Connected to
+		region_2_in_Connected
+	transition from Initialregion_1_in_ConnectedOfSubregion_1_in_Connected to KeepAliveSendTimeout
+	transition from Initialregion_1_in_ConnectedOfParentregion_1_in_Connected to
+		region_1_in_Connected
+	transition from Connected to Merge_in_main_region_of_Orion_Slave_SM when
+		Block_Port.in_Operation_Call_Invalid
+	transition from Connected to Merge_in_main_region_of_Orion_Slave_SM when
+		StateMachine_Port.in_OrionConnResp
+	transition from Connected to Merge_in_main_region_of_Orion_Slave_SM when
+		StateMachine_Port.out_OrionConnReq
+	transition from Connected to Merge_in_main_region_of_Orion_Slave_SM when
+		StateMachine_Port.out_OrionConnConf
+	transition from Connected to Closed when StateMachine_Port.in_OrionDisconnCause
+	transition from Connected to Merge_in_main_region_of_Orion_Slave_SM when
+		Connection_Port.in_Operation_Call_Disconn
+	transition from Closed to Connecting when StateMachine_Port.out_OrionConnReq / {
+		raise Send_StateMachine_Port.in_OrionConnResp;
+	}
+	transition from Connecting to Connected when StateMachine_Port.out_OrionConnConf / {
+		raise Handle_StateMachine_Port.out_OrionConnConf;
+	}
+	transition from Connecting to Merge_2_in_main_region_of_Orion_Slave_SM when timeout Connecting_0
+	transition from Connecting to Closed when StateMachine_Port.in_OrionDisconnCause
+	transition from Connecting to Merge_2_in_main_region_of_Orion_Slave_SM when
+		StateMachine_Port.in_OrionConnResp
+	transition from Connecting to Merge_2_in_main_region_of_Orion_Slave_SM when
+		StateMachine_Port.out_OrionConnReq
+	transition from Connecting to Merge_2_in_main_region_of_Orion_Slave_SM when
+		StateMachine_Port.in_OrionAppData
+	transition from Connecting to Merge_2_in_main_region_of_Orion_Slave_SM when
+		Block_Port.in_Operation_Call_Invalid
+	transition from Connecting to Merge_2_in_main_region_of_Orion_Slave_SM when
+		StateMachine_Port.in_OrionKeepAlive
+	transition from Merge_in_main_region_of_Orion_Slave_SM to Closed when cycle [true] / {
+		raise Send_StateMachine_Port.out_OrionDisconn;
+	}
+	transition from Merge_2_in_main_region_of_Orion_Slave_SM to Closed when cycle [true] / {
+		raise Send_StateMachine_Port.out_OrionDisconn;
+	}
+	transition from KeepAliveSendTimeout to KeepAliveSendTimeout when timeout KeepAliveSendTimeout_1
+		/ {
+		raise Send_StateMachine_Port.in_OrionKeepAlive;
+	}
+	transition from KeepAliveSendTimeout to KeepAliveSendTimeout when
+		Block_Port.in_Operation_Call_SendData / {
+		raise Send_StateMachine_Port.in_OrionAppData;
+	}
+	transition from KeepAliveReceiveTimeout to Merge_in_main_region_of_Orion_Slave_SM when timeout
+		KeepAliveReceiveTimeout_2
+	transition from KeepAliveReceiveTimeout to KeepAliveReceiveTimeout when
+		StateMachine_Port.in_OrionAppData / {
+		raise Process_StateMachine_Port.in_OrionAppData;
+	}
+	transition from KeepAliveReceiveTimeout to KeepAliveReceiveTimeout when
+		StateMachine_Port.in_OrionKeepAlive
+}

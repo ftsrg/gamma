@@ -1,0 +1,217 @@
+package adsystem
+import "Declarations.gcd"
+cascade AdSystem [
+	port input : provides Environmental_port
+] {
+	component controller : AdSystem_ControllerStatechart
+	bind input -> controller.input
+}
+@RegionSchedule = bottom-up
+@GuardEvaluation = beginning-of-step
+@TransitionPriority = order-based
+statechart AdSystem_ControllerStatechart [
+	port input : provides Environmental_port
+] {
+	region Subdriving_control_module {
+		state human_mode
+		state autonomous_mode {
+			region Parentautonomous_driving {
+				state autonomous_driving {
+					region Subautonomous_driving {
+						state initialize
+						state highway_driving {
+							region Subhighway_driving {
+								state enter_hwy
+								state lane_change
+								state cruise
+								state exit_hwy
+								initial Initialhighway_drivingOfSubhighway_driving
+							}
+						}
+						state urban_driving {
+							region Suburban_driving {
+								state enter_urban
+								state intersection
+								state straight
+								state urban_lane_change
+								state exit_urban
+								initial Initialurban_drivingOfSuburban_driving
+							}
+						}
+						state finish
+						initial Initialautonomous_drivingOfSubautonomous_driving
+					}
+				}
+				initial Initialautonomous_drivingOfParentautonomous_driving
+			}
+			region Parentobstacle_detection {
+				state obstacle_detection {
+					region Subobstacle_detection {
+						state collision_avoidance_deactive
+						state collision_avoidance_active {
+							region Subcollision_avoidance_active {
+								state collision_avoidance {
+									region Parentfrontend {
+										state frontend {
+											region Subfrontend {
+												state avoid_frontend_collision
+												state front_inactive
+												initial InitialfrontendOfSubfrontend
+											}
+										}
+										initial InitialfrontendOfParentfrontend
+									}
+									region Parentrearend {
+										state rearend {
+											region Subrearend {
+												state avoid_rearend_collision
+												state rear_inactive
+												initial InitialrearendOfSubrearend
+											}
+										}
+										initial InitialrearendOfParentrearend
+									}
+									region Parentpedestian {
+										state pedestian {
+											region Subpedestian {
+												state avoid_pedestrian_collision
+												state pedestrian_inactive
+												initial InitialpedestianOfSubpedestian
+											}
+										}
+										initial InitialpedestianOfParentpedestian
+									}
+								}
+								state collision_avoidance_done
+								initial Initialcollision_avoidance_activeOfSubcollision_avoidance_active
+							}
+						}
+						initial Initialobstacle_detectionOfSubobstacle_detection
+					}
+				}
+				initial Initialobstacle_detectionOfParentobstacle_detection
+			}
+		}
+		state autonomous_mode_done
+		initial Initialdriving_control_moduleOfSubdriving_control_module
+	}
+	transition from InitialrearendOfSubrearend to rear_inactive
+	transition from Initialdriving_control_moduleOfSubdriving_control_module to human_mode
+	transition from Initialautonomous_drivingOfParentautonomous_driving to autonomous_driving
+	transition from Initialautonomous_drivingOfSubautonomous_driving to initialize
+	transition from Initialobstacle_detectionOfParentobstacle_detection to obstacle_detection
+	transition from InitialpedestianOfParentpedestian to pedestian
+	transition from InitialrearendOfParentrearend to rearend
+	transition from Initialhighway_drivingOfSubhighway_driving to enter_hwy
+	transition from InitialpedestianOfSubpedestian to pedestrian_inactive
+	transition from Initialcollision_avoidance_activeOfSubcollision_avoidance_active to
+		collision_avoidance
+	transition from Initialurban_drivingOfSuburban_driving to enter_urban
+	transition from InitialfrontendOfParentfrontend to frontend
+	transition from Initialobstacle_detectionOfSubobstacle_detection to collision_avoidance_deactive
+	transition from InitialfrontendOfSubfrontend to front_inactive
+	transition from human_mode to autonomous_mode when input.Payload
+		[((input.Payload::e.in_autonomous_mode and input.Payload::e.di.brake_pressed =
+		false) and input.Payload::e.di.human_steering_cmd = false) and
+		input.Payload::e.power_on]
+	transition from autonomous_mode to human_mode when input.Payload
+		[(input.Payload::e.di.brake_pressed and input.Payload::e.di.human_steering_cmd) and
+		input.Payload::e.power_on]
+	transition from human_mode to autonomous_mode_done when input.Payload
+		[input.Payload::e.power_on = false]
+	transition from autonomous_mode to autonomous_mode_done when input.Payload
+		[input.Payload::e.power_on = false]
+	transition from collision_avoidance_deactive to collision_avoidance_active when
+		input.Payload [(((input.Payload::e.op.ped_detected or
+		Dist_calc(input.Payload::e.op.ped_distance_rear, input.Payload::e.ov.rear_distance)
+		< 5.0 and input.Payload::e.k.vel > 30.0) or
+		Dist_calc(input.Payload::e.op.ped_distance_rear, input.Payload::e.ov.rear_distance)
+		< 15.0 and input.Payload::e.k.vel > 60.0) or
+		Dist_calc(input.Payload::e.op.ped_distance_front,
+		input.Payload::e.ov.front_distance) < 15.0 and input.Payload::e.odd = Odd::highway)
+		or Dist_calc(input.Payload::e.op.ped_distance_front,
+		input.Payload::e.ov.front_distance) < 10.0 and input.Payload::e.odd = Odd::urban]
+	transition from collision_avoidance_active to collision_avoidance_deactive when
+		input.Payload [(input.Payload::e.op.ped_detected = false and
+		Dist_calc(input.Payload::e.op.ped_distance_rear, input.Payload::e.ov.rear_distance)
+		>= 12.0) and Dist_calc(input.Payload::e.op.ped_distance_front,
+		input.Payload::e.ov.front_distance) >= 15.0]
+	transition from rear_inactive to avoid_rearend_collision when input.Payload
+		[Dist_calc(input.Payload::e.op.ped_distance_rear, input.Payload::e.ov.rear_distance)
+		< 5.0 and input.Payload::e.k.vel > 30.0 or
+		Dist_calc(input.Payload::e.op.ped_distance_rear, input.Payload::e.ov.rear_distance)
+		< 1.0 and input.Payload::e.k.vel > 60.0]
+	transition from avoid_rearend_collision to rear_inactive when input.Payload
+		[Dist_calc(input.Payload::e.op.ped_distance_rear, input.Payload::e.ov.rear_distance)
+		> 12.0]
+	transition from initialize to highway_driving when input.Payload
+		[input.Payload::e.odd = Odd::highway]
+	transition from initialize to urban_driving when input.Payload [input.Payload::e.odd
+		= Odd::urban]
+	transition from urban_driving to finish when input.Payload
+		[input.Payload::e.di.power_off]
+	transition from highway_driving to finish when input.Payload
+		[input.Payload::e.di.power_off]
+	transition from highway_driving to highway_driving when input.Payload
+		[input.Payload::e.di.power_off = false and (input.Payload::e.odd = Odd::urban) =
+		false]
+	transition from urban_driving to urban_driving when input.Payload
+		[input.Payload::e.di.power_off = false and (input.Payload::e.odd = Odd::highway) =
+		false]
+	transition from front_inactive to avoid_frontend_collision when input.Payload
+		[Dist_calc(input.Payload::e.op.ped_distance_front,
+		input.Payload::e.ov.front_distance) < 15.0 and input.Payload::e.odd = Odd::highway
+		or Dist_calc(input.Payload::e.op.ped_distance_front,
+		input.Payload::e.ov.front_distance) < 10.0 and input.Payload::e.odd = Odd::urban]
+	transition from avoid_frontend_collision to front_inactive when input.Payload
+		[Dist_calc(input.Payload::e.op.ped_distance_front,
+		input.Payload::e.ov.front_distance) > 15.0]
+	transition from pedestrian_inactive to avoid_pedestrian_collision when input.Payload
+		[input.Payload::e.op.ped_detected]
+	transition from avoid_pedestrian_collision to pedestrian_inactive when input.Payload
+		[input.Payload::e.op.ped_detected = false]
+	transition from enter_hwy to cruise when cycle
+	transition from cruise to lane_change when input.Payload
+		[Dist_calc(input.Payload::e.op.ped_distance_front,
+		input.Payload::e.ov.front_distance) < 25.0 and input.Payload::e.rf.extra_lane]
+	transition from enter_hwy to lane_change when input.Payload
+		[Dist_calc(input.Payload::e.op.ped_distance_front,
+		input.Payload::e.ov.front_distance) < 25.0 and input.Payload::e.rf.extra_lane]
+	transition from lane_change to cruise when cycle
+	transition from lane_change to exit_hwy when input.Payload
+		[input.Payload::e.rf.distance_to_exit < 2.0]
+	transition from cruise to exit_hwy when input.Payload
+		[input.Payload::e.rf.distance_to_exit < 2.0]
+	transition from collision_avoidance to collision_avoidance_done when input.Payload
+		[(Dist_calc(input.Payload::e.op.ped_distance_rear,
+		input.Payload::e.ov.rear_distance) > 12.0 and input.Payload::e.op.ped_detected =
+		false) and Dist_calc(input.Payload::e.op.ped_distance_front,
+		input.Payload::e.ov.front_distance) > 15.0]
+	transition from enter_urban to straight when cycle
+	transition from enter_urban to intersection when input.Payload
+		[input.Payload::e.rf.intersection]
+	transition from straight to intersection when input.Payload
+		[input.Payload::e.rf.intersection]
+	transition from intersection to straight when cycle
+	transition from straight to urban_lane_change when input.Payload
+		[Dist_calc(input.Payload::e.op.ped_distance_front,
+		input.Payload::e.ov.front_distance) < 15.0 and input.Payload::e.rf.extra_lane]
+	transition from enter_urban to urban_lane_change when input.Payload
+		[Dist_calc(input.Payload::e.op.ped_distance_front,
+		input.Payload::e.ov.front_distance) < 15.0 and input.Payload::e.rf.extra_lane]
+	transition from urban_lane_change to straight when cycle
+	transition from urban_lane_change to exit_urban when input.Payload
+		[input.Payload::e.rf.distance_to_exit < 0.7]
+	transition from straight to exit_urban when input.Payload
+		[input.Payload::e.rf.distance_to_exit < 0.7]
+	lambda Dist_calc(ped_dist : decimal, veh_dist : decimal) : decimal := veh_dist < ped_dist ?
+		veh_dist : ped_dist
+}
+adapter ControllerAdSystem_ControllerStatechart of component AdSystem_ControllerStatechart :
+	AdSystem_ControllerStatechart
+{
+	when any / run
+	queue controllerQueue (priority = 1, capacity = 4) {
+		input.any
+	}
+}
