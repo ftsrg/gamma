@@ -23,6 +23,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -324,7 +325,7 @@ public class GammaApi {
 					logger.warning("The given resource does not contain a GenModel: " + resource);
 				}
 			}
-		} catch (InterruptedException e) {
+		} catch (InterruptedException | OperationCanceledException e) {
 			String threadName = Thread.currentThread().getName();
 			logger.info("The task run by this thread has been cancelled: " + threadName);
 			System.out.println("The task run by this thread has been cancelled: " + threadName);
@@ -364,9 +365,9 @@ public class GammaApi {
 					}
 					
 					int threadCount = Integer.min(MAX_THREAD_NUM, parellelExecs.size());
-					ExecutorService executor = Executors.newFixedThreadPool(threadCount);
-					executor.invokeAll(callables); // Blocking call4
-					executor.shutdown();
+					try (ExecutorService executor = Executors.newFixedThreadPool(threadCount)) {
+						executor.invokeAll(callables); // Blocking call
+					}
 				}
 			}
 			

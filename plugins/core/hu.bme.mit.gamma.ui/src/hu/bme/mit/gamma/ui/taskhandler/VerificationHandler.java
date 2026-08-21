@@ -241,7 +241,6 @@ public class VerificationHandler extends TaskHandler {
 			List<AnalysisLanguage> smartAnalysisLanguages = getAllSmartAnalysisLanguages();
 			
 			List<InterruptableCallable<VerificationHandler>> callables = new ArrayList<>();
-			ExecutorService executor = Executors.newFixedThreadPool(smartAnalysisLanguages.size());
 			
 			for (AnalysisLanguage analysisLanguage : smartAnalysisLanguages) {
 				var wrap = wrap(verification, analysisLanguage);
@@ -249,11 +248,12 @@ public class VerificationHandler extends TaskHandler {
 				callables.add(callable);
 			}
 			
-			var results = executor.invokeAll(callables); // Blocking call
-			executor.shutdown();
-			for (Future<VerificationHandler> future : results) {
-				VerificationHandler handler = future.resultNow();
-				addAllResults(handler);
+			try (ExecutorService executor = Executors.newFixedThreadPool(smartAnalysisLanguages.size())) {
+				var results = executor.invokeAll(callables); // Blocking call
+				for (Future<VerificationHandler> future : results) {
+					VerificationHandler handler = future.resultNow();
+					addAllResults(handler);
+				}
 			}
 		}
 		else if (languages.size() > 1) {
