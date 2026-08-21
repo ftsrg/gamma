@@ -250,6 +250,7 @@ public class VerificationHandler extends TaskHandler {
 			}
 			
 			var results = executor.invokeAll(callables); // Blocking call
+			executor.shutdown();
 			for (Future<VerificationHandler> future : results) {
 				VerificationHandler handler = future.resultNow();
 				addAllResults(handler);

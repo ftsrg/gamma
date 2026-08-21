@@ -88,7 +88,8 @@ import hu.bme.mit.gamma.util.InterruptableCallable;
 public class GammaApi {
 	//
 	protected boolean startParallelExecution = true;
-	protected Logger logger = Logger.getLogger("GammaLogger");
+	protected final int MAX_THREAD_NUM = Runtime.getRuntime().availableProcessors();
+	protected final Logger logger = Logger.getLogger("GammaLogger");
 	//
 	
 	/**
@@ -351,9 +352,10 @@ public class GammaApi {
 						
 						InterruptableCallable<Object> callable = new InterruptableCallable<Object>() {
 							public Object call() throws Exception {
-								logger.info("Starting parallel execution of " + platformString + "...");
+								int i = callables.indexOf(this);
+								logger.info(i + ": starting parallel execution of " + platformString + "...");
 								run(platformString, resourceSetCreator, hook);
-								logger.info("Parallel execution of " + platformString + " has finished");
+								logger.info(i + ": parallel execution of " + platformString + " has finished");
 								return null;
 							}
 							public void cancel() {}
@@ -361,8 +363,10 @@ public class GammaApi {
 						callables.add(callable);
 					}
 					
-					ExecutorService executor = Executors.newFixedThreadPool(parellelExecs.size());
-					executor.invokeAll(callables); // Blocking call
+					int threadCount = Integer.min(MAX_THREAD_NUM, parellelExecs.size());
+					ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+					executor.invokeAll(callables); // Blocking call4
+					executor.shutdown();
 				}
 			}
 			
