@@ -10,7 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.genmodel.derivedfeatures;
 
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -59,15 +58,15 @@ public class GenmodelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		throw new IllegalArgumentException("Not supported element: " + element);
 	}
 	
-	public static List<Task> getIncludedTasks(GenModel genmodel) {
-		List<Task> tasks = getAllTasks(genmodel);
+	public static Set<Task> getAllIncludedTasks(GenModel genmodel) {
+		Set<Task> tasks = getAllTasks(genmodel);
 		tasks.removeAll(
 				genmodel.getTasks());
 		return tasks;
 	}
-
-	public static List<Task> getAllTasks(GenModel genmodel) {
-		List<Task> tasks = new ArrayList<Task>(genmodel.getTasks());
+	
+	public static Set<Task> getAllTasks(GenModel genmodel) {
+		Set<Task> tasks = new LinkedHashSet<Task>(genmodel.getTasks());
 		for (GenModel includedGenmodel : genmodel.getInclusions()) {
 			tasks.addAll(
 					getAllTasks(includedGenmodel));
@@ -75,18 +74,50 @@ public class GenmodelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return tasks;
 	}
 	
+	public static Set<GenModel> getAllIncludedGenmodels(GenModel genmodel) {
+		Set<GenModel> includedGenmodels = getSelfAndAllIncludedGenmodels(genmodel);
+		includedGenmodels.remove(genmodel);
+		return includedGenmodels;
+	}
+	
+	protected static Set<GenModel> getSelfAndAllIncludedGenmodels(GenModel genmodel) {
+		return getSelfAndAllIncludedGenmodels(genmodel, new LinkedHashSet<GenModel>());
+	}
+	
+	protected static Set<GenModel> getSelfAndAllIncludedGenmodels(GenModel genmodel, Set<GenModel> genmodels) {
+		if (!genmodels.contains(genmodel)) {
+			genmodels.add(genmodel);
+			List<GenModel> includedGenmodels = genmodel.getInclusions();
+			for (GenModel includedGenmodel : includedGenmodels) {
+				getSelfAndAllIncludedGenmodels(includedGenmodel, genmodels);
+			}
+		}
+		return genmodels;
+	}
+	
 	public static Set<GenModel> getAllParallelExecutions(GenModel genmodel) {
-		Set<GenModel> parallelExecutions = getSelfAndParallelExecutions(genmodel, new LinkedHashSet<GenModel>());
-		parallelExecutions.remove(genmodel);
+		Set<GenModel> parallelExecutions = new LinkedHashSet<GenModel>();
+		
+		Set<GenModel> allGenmodels = getSelfAndAllIncludedGenmodels(genmodel);
+		for (GenModel includedGenmodel : allGenmodels) {
+			Set<GenModel> allParallelExecutions = getSelfAndAllParallelExecutions(includedGenmodel);
+			allParallelExecutions.remove(includedGenmodel);
+			parallelExecutions.addAll(allParallelExecutions);
+		}
+		
 		return parallelExecutions;
 	}
 	
-	protected static Set<GenModel> getSelfAndParallelExecutions(GenModel genmodel, Set<GenModel> genmodels) {
+	protected static Set<GenModel> getSelfAndAllParallelExecutions(GenModel genmodel) {
+		return getSelfAndAllParallelExecutions(genmodel, new LinkedHashSet<GenModel>());
+	}
+	
+	protected static Set<GenModel> getSelfAndAllParallelExecutions(GenModel genmodel, Set<GenModel> genmodels) {
 		if (!genmodels.contains(genmodel)) {
 			genmodels.add(genmodel);
 			List<GenModel> parallelExecutions = genmodel.getParallelExecutions();
 			for (GenModel parallelExecution : parallelExecutions) {
-				getSelfAndParallelExecutions(parallelExecution, genmodels);
+				getSelfAndAllParallelExecutions(parallelExecution, genmodels);
 			}
 		}
 		return genmodels;

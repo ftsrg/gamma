@@ -87,6 +87,7 @@ import hu.bme.mit.gamma.util.InterruptableCallable;
 
 public class GammaApi {
 	//
+	protected boolean startParallelExecution = true;
 	protected Logger logger = Logger.getLogger("GammaLogger");
 	//
 	
@@ -331,32 +332,41 @@ public class GammaApi {
 
 	private void executeParallelTasks(String fileWorkspaceRelativePath,
 			ResourceSetCreator resourceSetCreator, TaskHook hook) throws InterruptedException {
-		URI fileUri = URI.createPlatformResourceURI(fileWorkspaceRelativePath, true);
-		ResourceSet resourceSet = resourceSetCreator.createResourceSet();
-		Resource resource = resourceSet.getResource(fileUri, true);
-		EObject content = resource.getContents().get(0);
-		if (content instanceof GenModel genmodel) {
-			Set<GenModel> parellelExecs = GenmodelDerivedFeatures.getAllParallelExecutions(genmodel);
-			if (!parellelExecs.isEmpty()) {
-				List<InterruptableCallable<?>> callables = new ArrayList<>();
-				for (GenModel parellelExec : parellelExecs) {
-					Resource execResource = parellelExec.eResource();
-					URI uri = execResource.getURI();
-					String platformString = uri.toPlatformString(true);
-					InterruptableCallable<Object> callable = new InterruptableCallable<Object>() {
-						public Object call() throws Exception {
-							logger.info("Starting parallel execution of " + platformString + "...");
-							run(platformString, resourceSetCreator, hook);
-							logger.info("Parallel execution of " + platformString + " has finished");
-							return null;
-						}
-						public void cancel() {}
-					};
-					callables.add(callable);
+		if (startParallelExecution) {
+			// Parallel execution started 'only' from the root
+			startParallelExecution = false;
+			
+			URI fileUri = URI.createPlatformResourceURI(fileWorkspaceRelativePath, true);
+			ResourceSet resourceSet = resourceSetCreator.createResourceSet();
+			Resource resource = resourceSet.getResource(fileUri, true);
+			EObject content = resource.getContents().get(0);
+			if (content instanceof GenModel genmodel) {
+				Set<GenModel> parellelExecs = GenmodelDerivedFeatures.getAllParallelExecutions(genmodel);
+				if (!parellelExecs.isEmpty()) {
+					List<InterruptableCallable<?>> callables = new ArrayList<>();
+					for (GenModel parellelExec : parellelExecs) {
+						Resource execResource = parellelExec.eResource();
+						URI uri = execResource.getURI();
+						String platformString = uri.toPlatformString(true);
+						
+						InterruptableCallable<Object> callable = new InterruptableCallable<Object>() {
+							public Object call() throws Exception {
+								logger.info("Starting parallel execution of " + platformString + "...");
+								run(platformString, resourceSetCreator, hook);
+								logger.info("Parallel execution of " + platformString + " has finished");
+								return null;
+							}
+							public void cancel() {}
+						};
+						callables.add(callable);
+					}
+					
+					ExecutorService executor = Executors.newFixedThreadPool(parellelExecs.size());
+					executor.invokeAll(callables); // Blocking call
 				}
-				ExecutorService executor = Executors.newFixedThreadPool(parellelExecs.size());
-				executor.invokeAll(callables); // Blocking call
 			}
+			
+			startParallelExecution = true;
 		}
 	}
 
@@ -366,7 +376,7 @@ public class GammaApi {
 	 * This way the user does not have to compile two or three times.
 	 */
 	private List<Task> orderTasks(GenModel genmodel, int iteration) {
-		List<Task> allTasks = GenmodelDerivedFeatures.getAllTasks(genmodel);
+		Set<Task> allTasks = GenmodelDerivedFeatures.getAllTasks(genmodel);
 		switch (iteration) {
 			case 0: 
 				return allTasks.stream()

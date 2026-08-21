@@ -146,7 +146,7 @@ class ThreadRacer<T> {
 					incrementNumberOfAbortedCallables
 					if (currentThread.isInterrupted || // The thread has been interrupted, the result is not valid
 							cause?.class.name.endsWith("NotSolvableException")) { // Theta cannot solve this task
-						// TODO model checking OOM exception should be swallowed here
+						// Model checking OOM exception should be swallowed here?
 						return null
 					}
 					
