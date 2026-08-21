@@ -144,6 +144,9 @@ public class GammaApi {
 						hook.startTaskProcess(task);
 						//
 						for (int j = 0; j < hook.getIterationCount(); j++) {
+							if (Thread.interrupted()) {
+								throw new InterruptedException();
+							}
 							// Iteration start
 							hook.startIteration();
 							//
