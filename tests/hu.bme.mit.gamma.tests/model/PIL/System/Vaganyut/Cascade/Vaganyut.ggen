@@ -24,4 +24,5 @@ verification {
 	file : "Vaganyut.xsts"
 	query-file : "CustomQueries.prop"
 	test-language : java
+	serialize-results : false
 }

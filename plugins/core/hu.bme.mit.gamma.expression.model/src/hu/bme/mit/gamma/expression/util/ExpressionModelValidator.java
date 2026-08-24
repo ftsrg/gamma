@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -20,6 +20,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
+import hu.bme.mit.gamma.expression.model.AbstractDirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
@@ -62,6 +63,7 @@ import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
+import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
@@ -127,8 +129,9 @@ public class ExpressionModelValidator {
 		return checkNameUniqueness(ecoreUtil.getContentsOfType(root, NamedElement.class));
 	}
 	
-	public Collection<ValidationResultMessage> checkNameUniqueness(List<? extends NamedElement> elements) {
+	public Collection<ValidationResultMessage> checkNameUniqueness(Iterable<? extends NamedElement> elements) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
 		Set<String> names = new HashSet<String>();
 		for (NamedElement element : elements) {
 			String name = element.getName();
@@ -141,6 +144,7 @@ public class ExpressionModelValidator {
 				names.add(name);
 			}
 		}
+		
 		return validationResultMessages;
 	}
 	
@@ -283,9 +287,12 @@ public class ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkFunctionAccessExpression(FunctionAccessExpression functionAccessExpression) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		List<Expression> arguments = functionAccessExpression.getArguments();
-		Expression operand = functionAccessExpression.getOperand();
+		ReferenceExpression operand = null;
+		try {
+			operand = expressionUtil.getAccessReference(functionAccessExpression);
+		} catch (IllegalArgumentException e) {}
 		
-		if (!(operand instanceof DirectReferenceExpression)) {
+		if (!(operand instanceof DirectReferenceExpression || operand instanceof AbstractDirectReferenceExpression)) {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.ERROR,
 					"The referenced object is not a valid function declaration", 
@@ -293,8 +300,7 @@ public class ExpressionModelValidator {
 			return validationResultMessages;
 		}
 		
-		DirectReferenceExpression operandAsReference = (DirectReferenceExpression) operand;
-		Declaration declaration = operandAsReference.getDeclaration();
+		Declaration declaration = expressionUtil.getAccessedDeclaration(functionAccessExpression);
 		if (!(declaration instanceof FunctionDeclaration)) {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.ERROR,
@@ -312,11 +318,12 @@ public class ExpressionModelValidator {
 					new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)));
 			return validationResultMessages;
 		}
-		// check if the types of the arguments are the types of the parameters
+		// Check if the types of the arguments are the types of the parameters
 		int i = 0;
 		for (Expression arg : arguments) {
 			Type argumentType = typeDeterminator.getType(arg);
-			if (!typeDeterminator.equals(parameters.get(i).getType(), argumentType)) {
+			ParameterDeclaration parameter = parameters.get(i);
+			if (!typeDeterminator.equals(parameter.getType(), argumentType)) {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.ERROR,
 						"The types of the arguments and the types of the declared function parameters do not match", 
@@ -325,6 +332,7 @@ public class ExpressionModelValidator {
 			}
 			++i;
 		}
+		
 		return validationResultMessages;
 	}
 	
@@ -334,11 +342,10 @@ public class ExpressionModelValidator {
 
 		Declaration declaration = directReferenceExpression.getDeclaration();
 		if (declaration instanceof FunctionDeclaration) {
-			EObject eContainer = directReferenceExpression.eContainer();
-			if (!(eContainer instanceof FunctionAccessExpression)) {
+			if (!ecoreUtil.hasContainerOfType(directReferenceExpression, FunctionAccessExpression.class)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"No arguments are given in this function reference", 
-						new ReferenceInfo(ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION)));
+						new ReferenceInfo(ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION)));
 				
 			}
 		}

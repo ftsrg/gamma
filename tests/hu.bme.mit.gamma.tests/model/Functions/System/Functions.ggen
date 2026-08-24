@@ -15,11 +15,12 @@ analysis {
 }
 
 verification {
-	file : "Functions_1.iml"
+	file : "Functions_1"
 	language : Imandra
 	property-file : ".Functions_1.gpd"
 	test-language : java
 	optimize-traces : true
+	serialize-results : false
 }
 
 code {
@@ -34,11 +35,12 @@ analysis {
 }
 
 verification {
-	file : "Functions_2.iml"
+	file : "Functions_2"
 	language : Imandra
 	property-file : ".Functions_2.gpd"
 	test-language : java
 	optimize-traces : true
+	serialize-results : false
 }
 
 code {
@@ -53,11 +55,12 @@ analysis {
 }
 
 verification {
-	file : "Functions_3.iml"
+	file : "Functions_3"
 	language : Imandra
 	property-file : ".Functions_3.gpd"
 	test-language : java
 	optimize-traces : true
+	serialize-results : false
 }
 
 code {
@@ -72,9 +75,10 @@ analysis {
 }
 
 verification {
-	file : "Functions_4.iml"
+	file : "Functions_4"
 	language : Imandra
 	property-file : ".Functions_4.gpd"
 	test-language : java
 	optimize-traces : true
+	serialize-results : false
 }

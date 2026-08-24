@@ -4,14 +4,28 @@ interface Execute {
 	out event ^execute
 }
 
-type Record : record {
+interface FunctionExecute extends Execute {
+	procedure setValue(x : integer) : void
+	lambda getValue : integer
+	
+	procedure setRecord(r : Rec0rd) : void
+	lambda getRecord : Rec0rd
+	
+	procedure setComplexRecord(r : ComplexRecord) : void
+	procedure setComplexRecord2(a : decimal, b : boolean, c : int) : void
+	lambda getComplexRecord : ComplexRecord
+	
+	lambda factorial(value : integer) : integer := (value <= 1) ? 1 : value * factorial(value - 1)
+}
+
+type Rec0rd : record {
 	a : boolean,
 	b : integer
 }
 
 type ComplexRecord : record {
 	a : decimal,
-	b : Record
+	b : Rec0rd
 }
 
 type int : integer

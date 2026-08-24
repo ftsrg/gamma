@@ -25,6 +25,9 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="typeDeclarations" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//TypeDeclaration"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="functionDeclarations" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//FunctionDeclaration"
+        containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="components" upperBound="-1"
         eType="#//Component" containment="true" eOpposite="#//Component/parentPackage"/>
   </eClassifiers>

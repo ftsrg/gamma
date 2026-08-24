@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.expression.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -84,9 +85,31 @@ public class ComplexTypeUtil {
 		return fieldHierarchies;
 	}
 	
+	public List<Type> getNativeTypes(Collection<? extends Declaration> declarations) {
+		List<Type> nativeTypes = new ArrayList<Type>();
+		
+		for (Declaration declaration : declarations) {
+			List<Type> nativeTypes_ = getNativeTypes(declaration);
+			nativeTypes.addAll(nativeTypes_);
+		}
+		
+		return nativeTypes;
+	}
+	
 	public List<Type> getNativeTypes(Declaration declaration) {
 		TypeDefinition type = ExpressionModelDerivedFeatures.getTypeDefinition(declaration);
 		return getNativeTypes(type);
+	}
+	
+	public List<Type> getNativeTypes(Iterable<? extends Type> types) {
+		List<Type> nativeTypes = new ArrayList<Type>();
+		
+		for (Type type : types) {
+			List<Type> nativeTypes_ = getNativeTypes(type);
+			nativeTypes.addAll(nativeTypes_);
+		}
+		
+		return nativeTypes;
 	}
 	
 	public List<Type> getNativeTypes(Type type) {

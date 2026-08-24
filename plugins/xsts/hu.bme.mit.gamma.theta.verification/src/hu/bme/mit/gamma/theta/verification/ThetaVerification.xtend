@@ -50,4 +50,8 @@ class ThetaVerification extends AbstractVerification {
 		return ThetaPropertySerializer.INSTANCE
 	}
 	
+	override getBackendName() {
+		return "Theta"
+	}
+
 }

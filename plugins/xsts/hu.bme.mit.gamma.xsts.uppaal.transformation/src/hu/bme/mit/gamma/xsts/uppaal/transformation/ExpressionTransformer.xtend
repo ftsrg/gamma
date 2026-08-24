@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.expression.model.DivideExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.FalseExpression
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.GreaterEqualExpression
 import hu.bme.mit.gamma.expression.model.GreaterExpression
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
@@ -44,7 +45,9 @@ import hu.bme.mit.gamma.expression.model.XorExpression
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.ExpressionNegator
 import hu.bme.mit.gamma.uppaal.util.MultiaryExpressionCreator
+import hu.bme.mit.gamma.uppaal.util.NtaBuilder
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import uppaal.expressions.ArithmeticOperator
 import uppaal.expressions.CompareOperator
 import uppaal.expressions.Expression
@@ -60,15 +63,18 @@ import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionMo
 class ExpressionTransformer {
 	
 	protected final Traceability traceability
+	protected final extension NtaBuilder ntaBuilder
 	//
 	protected final extension MultiaryExpressionCreator multiaryExpressionCreator = MultiaryExpressionCreator.INSTANCE
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionNegator expressionNegator = ExpressionNegator.INSTANCE
 	protected final extension ExpressionsFactory expressionsFactory = ExpressionsFactory.eINSTANCE
 	protected final extension ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE
+	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	
-	new(Traceability traceability) {
+	new(Traceability traceability, NtaBuilder ntaBuilder) {
 		this.traceability = traceability
+		this.ntaBuilder = ntaBuilder
 	}
 	
 	def dispatch Expression transform(IntegerLiteralExpression expression) {
@@ -81,6 +87,16 @@ class ExpressionTransformer {
 	
 	def dispatch Expression transform(FalseExpression expression) {
 		return createLiteralExpression => [it.text = false.toString]
+	}
+	
+	def dispatch Expression transform(FunctionAccessExpression expression) {
+		val function = expression.functionDeclaration
+		val uppaalFunctionDeclaration = traceability.get(function)
+		val uppaalFunction = uppaalFunctionDeclaration.function
+		val uppaalArguments = expression.arguments.map[it.transform]
+		
+		val uppaalFunctionCall = uppaalFunction.createFunctionCallExpression(uppaalArguments)
+		return uppaalFunctionCall
 	}
 	
 	def dispatch Expression transform(ArrayAccessExpression expression) {

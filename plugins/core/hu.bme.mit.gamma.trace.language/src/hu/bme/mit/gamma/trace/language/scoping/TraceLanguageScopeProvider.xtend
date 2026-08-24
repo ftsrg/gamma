@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -13,12 +13,13 @@ package hu.bme.mit.gamma.trace.language.scoping
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage
+import hu.bme.mit.gamma.statechart.interface_.PortReferenceExpression
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage
@@ -41,60 +42,75 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 	}
 
 	override getScope(EObject context, EReference reference) {
+		val executionTrace = ecoreUtil.getSelfOrContainerOfType(context, ExecutionTrace)
+		val component = executionTrace?.component
 		if (context instanceof ExecutionTrace && reference == TraceModelPackage.Literals.EXECUTION_TRACE__COMPONENT) {
-			val executionTrace = context as ExecutionTrace
 			if (executionTrace.import !== null) {
 				return Scopes.scopeFor(executionTrace.import.components)
 			}
 		}
-		if ((context instanceof RaiseEventAct && reference == StatechartModelPackage.Literals.RAISE_EVENT_ACTION__PORT) ||
-			(context instanceof EventParameterReferenceExpression && reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PORT)) {
-			val executionTrace = ecoreUtil.getContainerOfType(context, ExecutionTrace)
-			val component = executionTrace.component
+		if ((context instanceof RaiseEventAct || context instanceof EventParameterReferenceExpression) &&
+				reference == InterfaceModelPackage.Literals.PORT_REFERENCE_EXPRESSION__PORT) {
 			return Scopes.scopeFor(component.allPorts)
 		}
-		if ((context instanceof RaiseEventAct && reference == StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT) ||
-				(context instanceof EventParameterReferenceExpression && reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT)) {
-			val port = if (context instanceof RaiseEventAct) {
-				context.port
-			} else if (context instanceof EventParameterReferenceExpression) {
-				context.port
-			}
+		if ((context instanceof RaiseEventAct || context instanceof EventParameterReferenceExpression) &&
+				reference == InterfaceModelPackage.Literals.EVENT_REFERENCE_EXPRESSION__EVENT) {
+			val port = (context instanceof PortReferenceExpression) ? context.port : null
 			if (port !== null) {
 				try {
-					val events = port.allEvents
-					return Scopes.scopeFor(events)
+					val interface_ = port.interface
+					
+					val allEvents = newArrayList
+					allEvents += port.allEvents
+					
+					val events = newArrayList
+					events += allEvents
+					
+					val parentEvents = newArrayList
+					if (!interface_.parents.empty) {
+						parentEvents += port.parentEvents
+						events -= parentEvents
+					}
+					
+					val wrongDirectionEvents = context instanceof RaiseEventAct ? port.inputEvents : port.outputEvents
+					events -= wrongDirectionEvents
+					parentEvents -= wrongDirectionEvents
+					
+					return embedScopes2(#[ allEvents, parentEvents, events ])
 				} catch (NullPointerException e) {
 					// For some reason dirty editor errors emerge
 					return super.getScope(context, reference)
 				}
 			}
 		}
-		if (context instanceof EventParameterReferenceExpression && reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PARAMETER) {
+		if (context instanceof EventParameterReferenceExpression &&
+				reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			val paramReference = context as EventParameterReferenceExpression
 			return Scopes.scopeFor(paramReference.event.parameterDeclarations)
 		}
 		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE) {
-			val executionTrace = ecoreUtil.getContainerOfType(context, ExecutionTrace)
-			val component = executionTrace.component
-			if (!(context instanceof ComponentInstanceReferenceExpression)) {
-				val instances = component.instances // Only first level
+			if (context instanceof ComponentInstanceReferenceExpression) {
+				val parentInstance = context.parent
+				if (parentInstance === null) {
+					val instances = component.allInstances // Both atomic and chain references are supported
+					return Scopes.scopeFor(instances)
+				}
+				val instanceType = parentInstance.componentInstance.derivedType
+				val instances = instanceType.instances
 				return Scopes.scopeFor(instances)
 			}
-			val instances = component.allInstances // Both atomic and chain references are supported
+			val instances = component.instances // Only first level
 			return Scopes.scopeFor(instances)
 		}
 		if (context instanceof ComponentInstanceStateReferenceExpression) {
 			val instance = context.instance
-			val executionTrace = ecoreUtil.getContainerOfType(context, ExecutionTrace)
-			val component = executionTrace.component
 			val instanceType = (instance === null) ? component : instance.lastInstance.derivedType
-			if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_STATE_REFERENCE_EXPRESSION__REGION) {
+			if (reference == StatechartModelPackage.Literals.STATE_REFERENCE_EXPRESSION__REGION) {
 				val regions = newLinkedHashSet
 				if (instanceType === null) {
 					val simpleSyncInstances = component.allSimpleInstances
 					for (simpleInstance : simpleSyncInstances) {
-						regions += ecoreUtil.getAllContentsOfType(simpleInstance.type, Region)
+						regions += ecoreUtil.getAllContentsOfType(simpleInstance.derivedType, Region)
 					}
 				}
 				else {
@@ -102,7 +118,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 				}
 				return Scopes.scopeFor(regions)
 			}
-			if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_STATE_REFERENCE_EXPRESSION__STATE) {
+			if (reference == StatechartModelPackage.Literals.STATE_REFERENCE_EXPRESSION__STATE) {
 				val region = context.region
 				if (region !== null) {
 					return Scopes.scopeFor(region.states) 
@@ -112,7 +128,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 					if (instanceType === null) {
 						val simpleSyncInstances = component.allSimpleInstances
 						for (simpleInstance : simpleSyncInstances) {
-							states += ecoreUtil.getAllContentsOfType(simpleInstance.type, State)
+							states += ecoreUtil.getAllContentsOfType(simpleInstance.derivedType, State)
 						}
 					}
 					else {
@@ -122,23 +138,34 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 				}
 			}
 		}
-		if (reference == CompositeModelPackage.Literals.
-				COMPONENT_INSTANCE_VARIABLE_REFERENCE_EXPRESSION__VARIABLE_DECLARATION) {
-			val instanceVariableState = ecoreUtil.getSelfOrContainerOfType(
-					context, ComponentInstanceVariableReferenceExpression)
-			val instance = instanceVariableState.instance
-			val executionTrace = ecoreUtil.getContainerOfType(context, ExecutionTrace)
-			val component = executionTrace.component
-			val instanceType = (instance === null) ? component : instance.lastInstance.derivedType
+		
+		val instanceVariableState = ecoreUtil.getSelfOrContainerOfType(context, ComponentInstanceElementReferenceExpression)
+		val instance = instanceVariableState?.instance
+		val instanceType = (instance === null) ? component : instance.lastInstance.derivedType
+		
+		if (reference == InterfaceModelPackage.Literals.PORT_REFERENCE_EXPRESSION__PORT) {
+			val ports = instanceType.allPorts
+			return Scopes.scopeFor(ports)
+		}
+		if (reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			if (instanceType === null) {
 				return IScope.NULLSCOPE
 			}
-			val variables = ecoreUtil.getAllContentsOfType(instanceType, VariableDeclaration)
-			variables.removeIf[it.local]
+			
+			val variables = newLinkedHashSet
+			if (context instanceof PortReferenceExpression) {
+				val port = context.port
+				variables += port.allVariableDeclarations
+			}
+			else {
+				variables += ecoreUtil.getAllContentsOfType(instanceType, VariableDeclaration)
+				variables += instanceType.allInterfaceVariableDeclarations
+				variables.removeIf[it.local]
+			}
+			
 			return Scopes.scopeFor(variables)
 		}
-		if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
-			val executionTrace = ecoreUtil.getContainerOfType(context, ExecutionTrace)
+		if (reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			val declarations = <Declaration>newLinkedHashSet
 			
 			declarations += executionTrace.variableDeclarations
@@ -147,6 +174,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			
 			return Scopes.scopeFor(declarations)
 		}
+		
 		super.getScope(context, reference)
 	}
 

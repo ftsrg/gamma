@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.expression.model.GreaterExpression
 import hu.bme.mit.gamma.expression.model.LessEqualExpression
 import hu.bme.mit.gamma.expression.model.LessExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
@@ -66,10 +67,10 @@ class ExpressionSerializer extends hu.bme.mit.gamma.codegeneration.java.util.Exp
 				!assert.arguments.empty», new Object[] {«FOR argument : assert.arguments BEFORE " " SEPARATOR ", " AFTER " "»«argument.serialize»«ENDFOR»}«ENDIF»)'''
 
 	def dispatch String serialize(EventParameterReferenceExpression assert) {
-		val parameter = assert.parameter
+		val parameter = assert.parameterDeclaration
 		'''«testInstanceName».getEventParameterValues("«assert.port.name»", "«assert.event.name»")[«parameter.index»]'''
 	}
-
+	
 	def dispatch String serialize(ComponentInstanceStateReferenceExpression assert) {
 		val instance = assert.instance
 		'''«instance.serializeInstanceReference».isStateActive("«assert.state.parentRegion.name»", "«assert.state.name»")'''
@@ -78,7 +79,16 @@ class ExpressionSerializer extends hu.bme.mit.gamma.codegeneration.java.util.Exp
 	def dispatch String serialize(ComponentInstanceVariableReferenceExpression assert) {
 		val instance = assert.instance
 		val variable = assert.variableDeclaration
-		'''«instance.serializeInstanceReference».getValue("«variable.name»")'''
+		
+		return '''«instance.serializeInstanceReference».getValue("«variable.name»")'''
+	}
+	
+	def dispatch String serialize(ComponentInstancePortVariableReferenceExpression assert) {
+		val instance = assert.instance
+		val port = assert.port
+		val variable = assert.variableDeclaration
+		
+		return '''«instance.serializeInstanceReference».getValue("«port.name»", "«variable.name»")'''
 	}
 	
 	//

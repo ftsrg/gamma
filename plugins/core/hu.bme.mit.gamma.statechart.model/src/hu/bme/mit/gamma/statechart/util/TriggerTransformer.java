@@ -23,8 +23,8 @@ import hu.bme.mit.gamma.expression.model.OrExpression;
 import hu.bme.mit.gamma.expression.model.XorExpression;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger;
-import hu.bme.mit.gamma.statechart.interface_.EventReference;
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger;
+import hu.bme.mit.gamma.statechart.interface_.OccurrenceReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.Trigger;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
@@ -164,7 +164,7 @@ public class TriggerTransformer {
 	}
 	
 	protected Expression transformTrigger(EventTrigger trigger) {
-		EventReference eventReference = trigger.getEventReference();
+		OccurrenceReferenceExpression eventReference = trigger.getEventReference();
 		return ecoreUtil.clone(eventReference); // Clone
 	}
 	

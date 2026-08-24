@@ -55,7 +55,7 @@
   <setupTask
       xsi:type="setup:VariableTask"
       name="eclipse.target.platform"
-      defaultValue="2025-06"
+      defaultValue="2026-06"
       storageURI="scope://Workspace"/>
   <setupTask
       xsi:type="setup.p2:P2Task">
@@ -69,9 +69,9 @@
         name="org.eclipse.viatra.query.sdk.feature.source.feature.group"
         versionRange="2.9.1"/>
     <repository
-        url="https://download.eclipse.org/technology/epp/packages/2025-06/202506041200/"/>
+        url="https://download.eclipse.org/technology/epp/packages/2026-06/202606041000/"/>
     <repository
-        url="https://download.eclipse.org/releases/2025-06/202506111000/">
+        url="https://download.eclipse.org/releases/2026-06/202606101000/">
       <annotation
           source="http://www.eclipse.org/oomph/setup/ReleaseTrain"/>
     </repository>
@@ -94,6 +94,13 @@
           rootFolder="${git.clone.hu.bme.mit.gamma.oomph.location}"
           locateNestedProjects="true"/>
       <repositoryList
+          name="2026-06">
+        <repository
+            url="https://download.eclipse.org/releases/2026-06"/>
+        <repository
+            url="https://download.eclipse.org/cbi/updates/license"/>
+      </repositoryList>
+      <repositoryList
           name="2025-06">
         <repository
             url="https://download.eclipse.org/releases/2025-06"/>
@@ -108,7 +115,7 @@
             url="https://download.eclipse.org/cbi/updates/license"/>
       </repositoryList>
       <repositoryList
-          name="2024-09">
+          name="2024-09"> <!-- Do NOT delete: Needed by VIATRA -->
         <repository
             url="https://download.eclipse.org/releases/2024-09"/>
         <repository
@@ -162,5 +169,5 @@
   <logicalProjectContainer
       xsi:type="setup:ProjectCatalog"
       href="index:/org.eclipse.setup#//@projectCatalogs[name='org.eclipse']"/>
-  <description>Oomph Project to provide a reproducable environment for the users and developers of the Gamma Statechart Composition Framework</description>
+  <description>Oomph Project to provide a reproducible environment for the users and developers of the Gamma Statechart Composition Framework</description>
 </setup:Project>

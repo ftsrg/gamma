@@ -124,4 +124,8 @@ class UppaalVerifier extends AbstractVerifier {
 				"Make sure to add the folder containing the 'verifyta' bin to your path environment variable."
 	}
 	
+	override protected getAnalysisLanguage() {
+		return "UPPAAL"
+	}
+	
 }

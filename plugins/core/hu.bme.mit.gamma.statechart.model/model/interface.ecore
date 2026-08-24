@@ -5,10 +5,16 @@
   <eClassifiers xsi:type="ecore:EClass" name="Interface" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="parents" upperBound="-1"
         eType="#//Interface"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="events" upperBound="-1"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eventDeclarations" upperBound="-1"
         eType="#//EventDeclaration" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="invariants" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="functionDeclarations" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//FunctionDeclaration"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclarations" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="EventDirection">
@@ -29,12 +35,6 @@
   <eClassifiers xsi:type="ecore:EClass" name="Event" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParametricElement ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="priority" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBigInteger"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="persistency" eType="#//Persistency"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="EventParameterReferenceExpression" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="#//Port"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="#//Event"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="parameter" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParameterDeclaration"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EventSource" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="Port" eSuperTypes="#//EventSource">
@@ -77,11 +77,27 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Trigger" abstract="true"/>
-  <eClassifiers xsi:type="ecore:EClass" name="EventReference" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="OccurrenceReferenceExpression" abstract="true"
+      eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="PortReferenceExpression" abstract="true"
+      eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="#//Port"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EventReferenceExpression" abstract="true"
+      eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="#//Event"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EventParameterReferenceExpression" eSuperTypes="#//PortReferenceExpression #//EventReferenceExpression ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParameterReferenceExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="EventAnyPortParameterReferenceExpression"
+      eSuperTypes="#//EventReferenceExpression ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParameterReferenceExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="interface" eType="#//Interface"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="PortDeclarationReferenceExpression"
+      eSuperTypes="#//PortReferenceExpression ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//AbstractDirectReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="AnyTrigger" eSuperTypes="#//SimpleTrigger"/>
   <eClassifiers xsi:type="ecore:EClass" name="EventTrigger" eSuperTypes="#//SimpleTrigger">
     <eStructuralFeatures xsi:type="ecore:EReference" name="eventReference" lowerBound="1"
-        eType="#//EventReference" containment="true"/>
+        eType="#//OccurrenceReferenceExpression" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TimeSpecification" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//LiteralExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="value" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
@@ -107,9 +123,5 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InterfaceParameterReferenceExpression"
-      eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="#//Event"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="parameter" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParameterDeclaration"/>
-  </eClassifiers>
+      eSuperTypes="#//EventReferenceExpression ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParameterReferenceExpression"/>
 </ecore:EPackage>

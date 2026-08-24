@@ -62,16 +62,16 @@ class ActionTransformer {
 	protected final boolean FUNCTION_INLINING
 	
 	new(Trace trace) {
-		this(trace, true, true, 7, null)
+		this(trace, true, true, null)
 	}
 	
-	new(Trace trace, boolean functionInlining, boolean addReturnGuards, int maxRecursionDepth, TimeUnit baseTimeUnit) {
+	new(Trace trace, boolean functionInlining, boolean addReturnGuards, TimeUnit baseTimeUnit) {
 		this.trace = trace
 		this.FUNCTION_INLINING = functionInlining
 		this.expressionTransformer = new ExpressionTransformer(this.trace,
-				functionInlining, addReturnGuards, maxRecursionDepth, baseTimeUnit)
+				functionInlining, addReturnGuards, baseTimeUnit)
 		this.preconditionTransformer = new ExpressionPreconditionTransformer(
-				this.trace, this, functionInlining, addReturnGuards, maxRecursionDepth)
+				this.trace, this, functionInlining, addReturnGuards)
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
 	}
 	
@@ -160,8 +160,9 @@ class ActionTransformer {
 		}
 		
 		if (expression instanceof OpaqueExpression) {
+			val supportedPrefixes = #[ "language ", "doc "] // Should be extracted to a static place
 			val string = expression.expression
-			if (string.startsWith("language ")) {
+			if (supportedPrefixes.exists[string.startsWith(it)]) {
 				actions += action.clone
 			}
 		}
@@ -185,7 +186,7 @@ class ActionTransformer {
 						lowlevelExpressions.createTupleLiteralExpression(
 							trace.get(action
 								.getContainerOfType(ProcedureDeclaration))
-									.typeDefinition)
+									.typeDefinition) // TODO function inline
 			]
 		]
 	}

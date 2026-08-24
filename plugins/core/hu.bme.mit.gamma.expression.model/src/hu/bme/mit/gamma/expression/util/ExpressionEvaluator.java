@@ -37,6 +37,7 @@ import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
+import hu.bme.mit.gamma.expression.model.DivExpression;
 import hu.bme.mit.gamma.expression.model.DivideExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
@@ -114,8 +115,8 @@ public class ExpressionEvaluator {
 			return evaluateArrayExpression(expression);
 		}
 		
-		// None of the above
-		return expression;
+		// None of the above, e.g., enum
+		return ecoreUtil.clone(expression); // Cloning - new value is expected
 	}
 	
 	public Expression evaluateArrayExpression(Expression expression) {
@@ -244,7 +245,8 @@ public class ExpressionEvaluator {
 			}
 			return evaluatedOperands.stream().reduce(1, (p1, p2) -> p1 * p2);
 		}
-		if (expression instanceof DivideExpression divideExpression) {
+		if (expression instanceof DivideExpression || expression instanceof DivExpression) {
+			BinaryExpression divideExpression = (BinaryExpression) expression;
 			int evaluatedNumerator = evaluateInteger(divideExpression.getLeftOperand());
 			if (evaluatedNumerator == 0) {
 				return 0;
@@ -434,6 +436,14 @@ public class ExpressionEvaluator {
 			}
 			
 			return evaluatedNumerator / evaluateDecimal(divideExpression.getRightOperand());
+		}
+		if (expression instanceof DivExpression divExpression) {
+			double evaluatedNumerator = evaluateDecimal(divExpression.getLeftOperand());
+			if (evaluatedNumerator == 0.0) {
+				return 0.0;
+			}
+			
+			return ((int) evaluatedNumerator) / ((int) evaluateDecimal(divExpression.getRightOperand()));
 		}
 		if (expression instanceof AddExpression addExpression) {
 			List<Expression> operands = addExpression.getOperands();

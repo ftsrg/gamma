@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util.annotations
 
+import hu.bme.mit.gamma.expression.model.NamedElement
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
@@ -23,6 +24,8 @@ import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
+import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.JavaUtil
 import java.util.Collection
 import java.util.Map
 import java.util.Set
@@ -47,6 +50,10 @@ class TransitionAnnotations {
 	
 	def getTransitions() {
 		return transitionPairVariables.keySet
+	}
+	
+	def getVariables() {
+		return transitionPairVariables.values
 	}
 	
 	def isAnnotated(Transition transition) {
@@ -175,31 +182,34 @@ class AnnotationNamings {
 	public static val PREFIX = "__id_"
 	public static val POSTFIX = "_"
 	
-	int id = 0
-	int defId = 0
-	int useId = 0
-	int interactionDefId = 0
-	int interactionUseId = 0
+	public static extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	public static extension JavaUtil javaUtil = JavaUtil.INSTANCE
+	
+	Map<EObject, Integer> id = newHashMap
+	Map<EObject, Integer> defId = newHashMap
+	Map<EObject, Integer> useId = newHashMap
+	Map<EObject, Integer> interactionDefId = newHashMap
+	Map<EObject, Integer> interactionUseId = newHashMap
 	
 	def String getTrapStateName() '''_TrapState_'''
 	def String getTrapChoiceStateName(Object object) '''_TrapChoice_«object.hashCode.toString.replaceAll("-", "_")»'''
 	
 	def String getVariableName(Transition transition)
-		'''«IF transition.id !== null»«transition.id»«ELSE»«PREFIX»«transition.sourceState.name»_«id++»_«transition.targetState.name»«POSTFIX»«ENDIF»'''
+		'''«IF transition.id !== null»«transition.id»«ELSE»«PREFIX»«transition.sourceState.name»_«transition.indexOrZero»_«transition.targetState.name»«POSTFIX»«ENDIF»'''
 	def String getFirstVariableName(StatechartDefinition statechart)
-		'''«PREFIX»first_«statechart.name»«id++»«POSTFIX»'''
+		'''«PREFIX»first_«statechart.name»«id.increment(statechart)»«POSTFIX»'''
 	def String getSecondVariableName(StatechartDefinition statechart)
-		'''«PREFIX»second_«statechart.name»«id++»«POSTFIX»'''
+		'''«PREFIX»second_«statechart.name»«id.increment(statechart)»«POSTFIX»'''
 	def String getParameterName(Event event)
-		'''«PREFIX»«event.name»«POSTFIX»'''
+		'''«PREFIX»«event.getContainerOfType(NamedElement)?.name»«event.name»«POSTFIX»'''
 	def String getDefVariableName(VariableDeclaration variable)
-		'''«PREFIX»def_«variable.name»_«defId++»«POSTFIX»'''
+		'''«PREFIX»def_«variable.name»_«defId.increment(variable)»«POSTFIX»'''
 	def String getUseVariableName(VariableDeclaration variable)
-		'''«PREFIX»use_«variable.name»_«useId++»«POSTFIX»'''
+		'''«PREFIX»use_«variable.name»_«useId.increment(variable)»«POSTFIX»'''
 	def String getInteractionDefVariableName(Event event)
-		'''«PREFIX»def_«event.name»_«interactionDefId++»«POSTFIX»'''
+		'''«PREFIX»def_«event.name»_«interactionDefId.increment(event)»«POSTFIX»'''
 	def String getInteractionUseVariableName(EventParameterReferenceExpression reference)
-		'''«PREFIX»use_«reference.port.name»_«reference.event.name»_«reference.parameter.name»_«interactionUseId++»«POSTFIX»'''
+		'''«PREFIX»use_«reference.port.name»_«reference.event.name»_«reference.parameterDeclaration.name»_«interactionUseId.increment(reference)»«POSTFIX»'''
 }
 
 ///

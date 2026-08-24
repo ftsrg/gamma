@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
@@ -47,6 +48,7 @@ import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
@@ -70,16 +72,18 @@ import hu.bme.mit.gamma.statechart.interface_.AnyTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.ComponentAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.Event;
+import hu.bme.mit.gamma.statechart.interface_.EventAnyPortParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
 import hu.bme.mit.gamma.statechart.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
-import hu.bme.mit.gamma.statechart.interface_.EventReference;
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
+import hu.bme.mit.gamma.statechart.interface_.OccurrenceReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Port;
+import hu.bme.mit.gamma.statechart.interface_.PortDeclarationReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
@@ -94,6 +98,7 @@ import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
 import hu.bme.mit.gamma.statechart.statechart.CoordinationStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.CoordinationTransition;
 import hu.bme.mit.gamma.statechart.statechart.EntryState;
+import hu.bme.mit.gamma.statechart.statechart.EventAnyPortReference;
 import hu.bme.mit.gamma.statechart.statechart.InitialState;
 import hu.bme.mit.gamma.statechart.statechart.OnCycleTrigger;
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
@@ -119,37 +124,12 @@ public class StatechartUtil extends ActionUtil {
 	public static final StatechartUtil INSTANCE = new StatechartUtil();
 	protected StatechartUtil() {}
 	//
-
+	
 	protected InterfaceModelFactory interfaceFactory = InterfaceModelFactory.eINSTANCE;
 	protected StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE;
 	protected CompositeModelFactory compositeFactory = CompositeModelFactory.eINSTANCE;
 	
 	// Extending super methods
-	
-	@Override
-	public Declaration getDeclaration(Expression expression) {
-		if (expression instanceof EventParameterReferenceExpression reference) {
-			return reference.getParameter();
-		}
-		return super.getDeclaration(expression);
-	}
-	
-	@Override
-	public ReferenceExpression getAccessReference(Expression expression) {
-		if (expression instanceof EventParameterReferenceExpression reference) {
-			return reference;
-		}
-		return super.getAccessReference(expression);
-	}
-	
-	@Override
-	public Declaration getAccessedDeclaration(Expression expression) {
-		ReferenceExpression referenceExpression = getAccessReference(expression);
-		if (referenceExpression instanceof EventParameterReferenceExpression reference) {
-			return reference.getParameter();
-		}
-		return super.getAccessedDeclaration(referenceExpression);
-	}
 	
 	@Override
 	public Collection<TypeDeclaration> getTypeDeclarations(EObject context) {
@@ -357,6 +337,28 @@ public class StatechartUtil extends ActionUtil {
 		return eventTrigger;
 	}
 	
+	public EventTrigger createAnyPortEventTrigger(Port port) {
+		AnyPortEventReference anyPortEventReference = statechartFactory.createAnyPortEventReference();
+		anyPortEventReference.setPort(port);
+		
+		EventTrigger eventTrigger = interfaceFactory.createEventTrigger();
+		eventTrigger.setEventReference(anyPortEventReference);
+		
+		return eventTrigger;
+	}
+	
+	public EventTrigger createAnyEventTrigger(Event event) {
+		EventAnyPortReference anyEventReference = statechartFactory.createEventAnyPortReference();
+		anyEventReference.setInterface(
+				ecoreUtil.getContainerOfType(event, Interface.class));
+		anyEventReference.setEvent(event);
+		
+		EventTrigger eventTrigger = interfaceFactory.createEventTrigger();
+		eventTrigger.setEventReference(anyEventReference);
+		
+		return eventTrigger;
+	}
+	
 	public List<Trigger> unwrapAnyTriggers(Iterable<? extends Trigger> triggers) {
 		List<Trigger> simpleTriggers = new ArrayList<Trigger>();
 		
@@ -376,7 +378,7 @@ public class StatechartUtil extends ActionUtil {
 		}
 		else if (trigger instanceof EventTrigger) {
 			EventTrigger eventTrigger = (EventTrigger) trigger;
-			EventReference eventReference = eventTrigger.getEventReference();
+			OccurrenceReferenceExpression eventReference = eventTrigger.getEventReference();
 			if (eventReference instanceof AnyPortEventReference) {
 				AnyPortEventReference anyPortEventReference = (AnyPortEventReference) eventReference;
 				Port port = anyPortEventReference.getPort();
@@ -479,7 +481,7 @@ public class StatechartUtil extends ActionUtil {
 			Port referredPort = parameterReference.getPort();
 			Event referredEvent = parameterReference.getEvent();
 			if (port == referredPort && event == referredEvent) {
-				ParameterDeclaration referredParameter = parameterReference.getParameter();
+				Declaration referredParameter = parameterReference.getDeclaration();
 				int index = ecoreUtil.getIndex(referredParameter);
 				Expression argument = arguments.get(index);
 				Expression clonedArgument = ecoreUtil.clone(argument);
@@ -521,6 +523,15 @@ public class StatechartUtil extends ActionUtil {
 			default:
 				throw new IllegalArgumentException("Not known unit: " + unit);
 		}
+	}
+	
+	public long evaluateForSmallestUnit(TimeSpecification time, Package _package) {
+		Expression value = time.getValue();
+		TimeUnit unit = time.getUnit();
+		TimeUnit base = StatechartModelDerivedFeatures.getSmallestTimeUnit(_package);
+		long multiplicator = StatechartModelDerivedFeatures.getMultiplicator(unit, base);
+		Expression value_ = ecoreUtil.clone(value);
+		return evaluator.evaluateInteger(value_) * multiplicator;
 	}
 	
 	public AsynchronousAdapter wrapIntoAdapter(SynchronousComponent component,
@@ -619,6 +630,10 @@ public class StatechartUtil extends ActionUtil {
 		return _package;
 	}
 	
+	public Port createPort(Interface _interface, String name) {
+		return createPort(_interface, RealizationMode.PROVIDED, name);
+	}
+	
 	public Port createPort(Interface _interface, RealizationMode mode, String name) {
 		Port port = interfaceFactory.createPort();
 		port.setName(name);
@@ -632,18 +647,22 @@ public class StatechartUtil extends ActionUtil {
 	public Port createOppositePort(Port port) {
 		Port oppositePort = ecoreUtil.clone(port);
 		
-		InterfaceRealization interfaceRealization = oppositePort.getInterfaceRealization();
+		conjugate(oppositePort);
+		
+		return oppositePort;
+	}
+	
+	public void conjugate(Port port) {
+		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
 		RealizationMode realizationMode = interfaceRealization.getRealizationMode();
 		RealizationMode opposite = StatechartModelDerivedFeatures.getOpposite(realizationMode);
 		interfaceRealization.setRealizationMode(opposite);
-		
-		return oppositePort;
 	}
 	
 	public Interface createBroadcastInterface(Interface _interface) {
 		Interface broadcastInterface = ecoreUtil.clone(_interface);
 		
-		for (EventDeclaration event : broadcastInterface.getEvents()) {
+		for (EventDeclaration event : broadcastInterface.getEventDeclarations()) {
 			event.setDirection(EventDirection.OUT);
 		}
 		
@@ -856,11 +875,50 @@ public class StatechartUtil extends ActionUtil {
 		return channel;
 	}
 	
-	public EventPassing createEventPassing(EventReference source) {
+	public AnyPortEventReference createAnyPortEventReference(Port port) {
+		AnyPortEventReference anyPortEventReference = statechartFactory.createAnyPortEventReference();
+		anyPortEventReference.setPort(port);
+		return anyPortEventReference;
+	}
+	
+	public PortEventReference createPortEventReference(Port port, Event event) {
+		PortEventReference portEventReference = statechartFactory.createPortEventReference();
+		portEventReference.setPort(port);
+		portEventReference.setEvent(event);
+		return portEventReference;
+	}
+	
+	public IfThenElseExpression createIfRaisedThenExpression(Port port, ParameterDeclaration parameter) {
+		EventParameterReferenceExpression eventParameterReference = createEventParameterReference(port, parameter);
+		return createIfRaisedThenExpression(eventParameterReference);
+	}
+	
+	public IfThenElseExpression createIfRaisedThenExpression(EventParameterReferenceExpression expression) {
+		return createIfRaisedThenExpression(
+				expression.getPort(), expression.getEvent(), expression);
+	}
+	
+	public IfThenElseExpression createIfRaisedThenExpression(Port port, Event event, Expression then) {
+		PortEventReference portEventReference = createPortEventReference(port, event);
+		IfThenElseExpression ifThenElseExpression = createIfThenElseExpression(portEventReference, then, null);
+		return ifThenElseExpression;
+	}
+	
+	public EventPassing createEventPassing(Port port) {
+		return createEventPassing(
+				createAnyPortEventReference(port), null);
+	}
+	
+	public EventPassing createEventPassing(Port port, Event event) {
+		return createEventPassing(
+				createPortEventReference(port, event), null);
+	}
+	
+	public EventPassing createEventPassing(OccurrenceReferenceExpression source) {
 		return createEventPassing(source, null);
 	}
 	
-	public EventPassing createEventPassing(EventReference source, EventReference target) {
+	public EventPassing createEventPassing(OccurrenceReferenceExpression source, OccurrenceReferenceExpression target) {
 		EventPassing eventPassing = compositeFactory.createEventPassing();
 
 		eventPassing.setSource(source);
@@ -1119,11 +1177,31 @@ public class StatechartUtil extends ActionUtil {
 	
 	public EventParameterReferenceExpression createEventParameterReference(
 			Port port, ParameterDeclaration parameter) {
+		Event event = ecoreUtil.getContainerOfType(parameter, Event.class);
+		return createEventParameterReference(port, event, parameter);
+	}
+	
+	public EventParameterReferenceExpression createEventParameterReference(
+			Port port, Event event, ParameterDeclaration parameter) {
 		EventParameterReferenceExpression expression = interfaceFactory.createEventParameterReferenceExpression();
 		expression.setPort(port);
-		Event event = ecoreUtil.getContainerOfType(parameter, Event.class);
 		expression.setEvent(event);
-		expression.setParameter(parameter);
+		expression.setDeclaration(parameter);
+		return expression;
+	}
+	
+	public EventAnyPortParameterReferenceExpression createEventAnyPortParameterReference(ParameterDeclaration parameter) {
+		Event event = ecoreUtil.getContainerOfType(parameter, Event.class);
+		return createEventAnyPortParameterReference(event, parameter);
+	}
+	
+	public EventAnyPortParameterReferenceExpression createEventAnyPortParameterReference(
+			Event event, ParameterDeclaration parameter) {
+		EventAnyPortParameterReferenceExpression expression = interfaceFactory.createEventAnyPortParameterReferenceExpression();
+		Interface _interface = ecoreUtil.getContainerOfType(event, Interface.class);
+		expression.setInterface(_interface);
+		expression.setEvent(event);
+		expression.setDeclaration(parameter);
 		return expression;
 	}
 	
@@ -1149,6 +1227,13 @@ public class StatechartUtil extends ActionUtil {
 		raiseEventAction.setEvent(event);
 		raiseEventAction.getArguments().addAll(arguments);
 		return raiseEventAction;
+	}
+	
+	public PortDeclarationReferenceExpression createPortDeclarationReferenceExpression(Port port, Declaration declaraion) {
+		PortDeclarationReferenceExpression portDeclarationReferenceExpression = interfaceFactory.createPortDeclarationReferenceExpression();
+		portDeclarationReferenceExpression.setPort(port);
+		portDeclarationReferenceExpression.setDeclaration(declaraion);
+		return portDeclarationReferenceExpression;
 	}
 	
 	public StateReferenceExpression createStateReference(State state) {
@@ -1181,7 +1266,17 @@ public class StatechartUtil extends ActionUtil {
 		ComponentInstanceVariableReferenceExpression reference =
 				compositeFactory.createComponentInstanceVariableReferenceExpression();
 		reference.setInstance(instance);
-		reference.setVariableDeclaration(variable);
+		reference.setDeclaration(variable);
+		return reference;
+	}
+	
+	public ComponentInstancePortVariableReferenceExpression createPortVariableReference(ComponentInstanceReferenceExpression instance,
+			Port port, VariableDeclaration variable) {
+		ComponentInstancePortVariableReferenceExpression reference =
+				compositeFactory.createComponentInstancePortVariableReferenceExpression();
+		reference.setInstance(instance);
+		reference.setPort(port);
+		reference.setDeclaration(variable);
 		return reference;
 	}
 	
@@ -1225,7 +1320,7 @@ public class StatechartUtil extends ActionUtil {
 		reference.setInstance(instance);
 		reference.setPort(port);
 		reference.setEvent(event);
-		reference.setParameterDeclaration(parameter);
+		reference.setDeclaration(parameter);
 		return reference;
 	}
 	

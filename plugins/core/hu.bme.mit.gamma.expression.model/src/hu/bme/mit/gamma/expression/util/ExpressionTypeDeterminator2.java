@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
+import hu.bme.mit.gamma.expression.model.AbstractDirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.AddExpression;
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
@@ -30,7 +31,6 @@ import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.DivExpression;
 import hu.bme.mit.gamma.expression.model.DivideExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
@@ -134,10 +134,9 @@ public class ExpressionTypeDeterminator2 {
 			arrayTypeDefinition.setSize(size);
 			return arrayTypeDefinition;
 		}
-		if (expression instanceof DirectReferenceExpression referenceExpression) {
+		if (expression instanceof AbstractDirectReferenceExpression referenceExpression) {
 			Declaration declaration = referenceExpression.getDeclaration();
-			Type type = declaration.getType();
-			return ecoreUtil.clone(type);
+			return getType(declaration);
 		}
 		if (expression instanceof ElseExpression) {
 			return factory.createBooleanTypeDefinition();
@@ -237,6 +236,11 @@ public class ExpressionTypeDeterminator2 {
 		//
 		
 		throw new IllegalArgumentException("Unknown type: " + expression);
+	}
+	
+	private Type getType(Declaration declaration) {
+		Type type = declaration.getType();
+		return ecoreUtil.clone(type);
 	}
 	
 	public TypeDefinition getTypeDefinition(Expression expression) {

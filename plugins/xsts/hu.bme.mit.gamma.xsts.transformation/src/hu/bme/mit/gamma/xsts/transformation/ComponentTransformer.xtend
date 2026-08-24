@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -51,6 +51,7 @@ import hu.bme.mit.gamma.xsts.model.InEventGroup
 import hu.bme.mit.gamma.xsts.model.RegionGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
+import hu.bme.mit.gamma.xsts.transformation.util.FunctionInliner
 import hu.bme.mit.gamma.xsts.transformation.util.OrthogonalActionTransformer
 import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
@@ -77,6 +78,7 @@ class ComponentTransformer {
 	// Traceability
 	protected XSTS xSts
 	// Transformation settings
+	protected final boolean inlineFunctions
 	protected final boolean transformOrthogonalActions
 	protected final boolean optimize
 	protected final boolean optimizeEnvironmentalMessageQueues
@@ -94,6 +96,7 @@ class ComponentTransformer {
 	protected final extension InternalEventHandler internalEventHandler = InternalEventHandler.INSTANCE
 	protected final extension SystemReducer systemReducer = SystemReducer.INSTANCE
 	protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE
+	protected final extension FunctionInliner functionInliner = FunctionInliner.INSTANCE
 	
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension XSTSModelFactory xStsModelFactory = XSTSModelFactory.eINSTANCE
@@ -102,9 +105,11 @@ class ComponentTransformer {
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//
 	
-	new(GammaToLowlevelTransformer gammaToLowlevelTransformer, boolean transformOrthogonalActions,
-			boolean optimize, boolean optimizeEnvironmentalMessageQueues, TransitionMerging transitionMerging) {
+	new(GammaToLowlevelTransformer gammaToLowlevelTransformer, boolean inlineFunctions,
+			boolean transformOrthogonalActions, boolean optimize,
+			boolean optimizeEnvironmentalMessageQueues, TransitionMerging transitionMerging) {
 		this.gammaToLowlevelTransformer = gammaToLowlevelTransformer
+		this.inlineFunctions = inlineFunctions
 		this.transformOrthogonalActions = transformOrthogonalActions
 		this.optimize = optimize
 		this.optimizeEnvironmentalMessageQueues = optimizeEnvironmentalMessageQueues
@@ -859,6 +864,16 @@ class ComponentTransformer {
 		xStsDeletableSlaveQueues.changeAssignmentsAndReadingAssignmentsToEmptyActions(xSts)
 		xStsDeletableSlaveQueues.forEach[it.deleteDeclaration] // Variable groups
 		
+		logger.info("Connecting interface functions through channels in " + name)
+		xSts.connectInterfaceFunctionsThroughChannels(component)
+		
+		logger.info("Connecting interface variables through channels in " + name)
+		xSts.connectInterfaceVariablesThroughChannels(component)
+		
+		if (inlineFunctions && component.top) {
+			xSts.inlineFunctionCalls
+		}
+		
 		return xSts
 	}
 	
@@ -1330,6 +1345,16 @@ class ComponentTransformer {
 		logger.info("Connecting events through channels in " + name)
 		xSts.connectEventsThroughChannels(component) // Event (variable setting) connecting across channels
 		
+		logger.info("Connecting interface functions through channels in " + name)
+		xSts.connectInterfaceFunctionsThroughChannels(component)
+		
+		logger.info("Connecting interface variables through channels in " + name)
+		xSts.connectInterfaceVariablesThroughChannels(component)
+		
+		if (inlineFunctions && component.topSynchronous) {
+			xSts.inlineFunctionCalls
+		}
+		
 		logger.info("Binding event to system port events in " + name)
 		val oldInEventAction = xSts.inEventTransition.action
 		val bindingAssignments = xSts.createEventAndParameterAssignmentsBoundToTheSameSystemPort(component)
@@ -1708,6 +1733,11 @@ class ComponentTransformer {
 		val resetAction = clonedInEventAction.resetEverythingExceptPersistentParameters(type)
 		val mergedAction = xSts.mergedAction
 		mergedAction.appendToAction(resetAction)
+	}
+	
+	private def void inlineFunctionCalls(XSTS xSts) {
+		xSts.inlineFunctionAccessExpressions
+		xSts.functionDeclarations.clear
 	}
 	
 	private def void customizeDeclarationNames(XSTS xSts, ComponentInstance instance) {

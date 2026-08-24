@@ -1,0 +1,133 @@
+package example
+import "/Interfaces/Declarations.gcd"
+
+statechart Example_ControllerStatechart [
+	port control : provides Control {
+		invariant control.State_message_item::wait_duration >= 0
+	}
+] {
+	var error : boolean := false
+	var yellow_on_time : integer := 2
+	var green_on_time : integer := 30
+	var red_on_time : integer := 90
+	var yellow_light_state : Light_state := Light_state::^off
+	var red_light_state : Light_state := Light_state::^off
+	var green_light_state : Light_state := Light_state::^off
+	var vehicle_at_light : boolean := false
+	var trans : boolean := false
+	
+	region Subtraffic_light {
+		state ^off
+		state ^initial {
+			entry / power_up_test(10); check_error();
+		}
+		state diagnostic {
+			entry / run_diagnostic();
+			exit / reset_error();
+		}
+		state operation_selection {
+			entry / check_error(); check_status();
+		}
+		state stop_sign
+		state red_blinking {
+			entry / blink_red_light(); check_error();
+		}
+		state caution
+		state yellow_blinking {
+			entry / blink_yellow_light(); check_status();
+		}
+		state traffic_flow {
+			entry / check_status();
+		}
+		state green_on {
+			entry / turn_green_on(); check_status();
+		}
+		state yellow_on {
+			entry / turn_yellow_on(); check_error();
+		}
+		state red_on {
+			entry / turn_red_on(); check_status();
+		}
+		initial Initialtraffic_lightOfSubtraffic_light
+	}
+	transition from Initialtraffic_lightOfSubtraffic_light to ^off
+	transition from ^off to ^initial when control.State_message_item
+	transition from ^initial to diagnostic when cycle [error = true]
+	transition from diagnostic to red_blinking when cycle
+	transition from operation_selection to ^initial when cycle [error = true]
+	transition from ^initial to operation_selection when cycle [error = false]
+	transition from operation_selection to stop_sign when control.State_message_item
+		[control.State_message_item::message_queue = Custom_string::operating_mode_stop_sign and
+		error = false]
+	transition from operation_selection to caution when control.State_message_item
+		[control.State_message_item::message_queue = Custom_string::operating_mode_caution and error
+		= false]
+	transition from operation_selection to traffic_flow when control.State_message_item
+		[control.State_message_item::message_queue = Custom_string::operating_mode_traffic_flow and
+		error = false]
+	transition from caution to yellow_blinking when cycle
+	transition from stop_sign to red_blinking when cycle
+	transition from traffic_flow to red_on when cycle [error = false
+//			and control.State_message_item::message_queue = Custom_string::_
+			]
+	transition from red_on to green_on when control.State_message_item
+		[((control.State_message_item::wait_duration > red_on_time and vehicle_at_light = true) and
+		control.State_message_item::message_queue = Custom_string::Safe_all_red) and error = false]
+	transition from red_on to traffic_flow when control.State_message_item
+		[control.State_message_item::message_queue /= Custom_string::__ and
+		control.State_message_item::message_queue /= Custom_string::Safe_all_red or error = true]
+	transition from green_on to yellow_on when control.State_message_item
+		[control.State_message_item::wait_duration > green_on_time or error = true]
+	transition from yellow_on to red_on when control.State_message_item
+		[control.State_message_item::wait_duration > yellow_on_time or error = true] // TODO added?
+	transition from traffic_flow to operation_selection when control.State_message_item
+		[control.State_message_item::message_queue /= Custom_string::__ or error = true]
+	transition from red_blinking to operation_selection when control.State_message_item
+		[control.State_message_item::message_queue /= Custom_string::__ or error = true]
+	transition from yellow_blinking to operation_selection when control.State_message_item
+		[control.State_message_item::message_queue /= Custom_string::__ or error = true]
+	procedure power_up_test(val : integer) : void {
+	}
+	procedure check_error : void {
+		error := !error;
+		vehicle_at_light := !vehicle_at_light;
+	}
+	procedure run_diagnostic : void {
+		trans := true;
+	}
+	procedure reset_error : void {
+	}
+	procedure check_status : void {
+		check_error();
+	}
+	procedure turn_lights_off : void {
+		green_light_state := Light_state::^off;
+		yellow_light_state := Light_state::^off;
+		red_light_state := Light_state::^off;
+		trans := false;
+	}
+	procedure blink_red_light : void {
+		turn_lights_off();
+		red_light_state := Light_state::blinking;
+	}
+	procedure blink_yellow_light : void {
+		yellow_light_state := Light_state::blinking;
+	}
+	procedure reset_wait_clock : void {
+	}
+	procedure turn_red_on : void {
+		turn_lights_off();
+		reset_wait_clock();
+		red_light_state := Light_state::lit;
+	}
+	procedure turn_green_on : void {
+		turn_lights_off();
+		reset_wait_clock();
+		green_light_state := Light_state::lit;
+	}
+	procedure turn_yellow_on : void {
+		turn_lights_off();
+		reset_wait_clock();
+		yellow_light_state := Light_state::lit;
+	}
+}

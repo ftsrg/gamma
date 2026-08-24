@@ -316,4 +316,8 @@ class NuxmvVerifier extends AbstractVerifier {
 					"(for detailed instructions, see 'https://github.com/ftsrg/gamma/blob/master/plugins/nuxmv/README.md')."
 	}
 	
+	override protected getAnalysisLanguage() {
+		return "NUXMV"
+	}
+	
 }

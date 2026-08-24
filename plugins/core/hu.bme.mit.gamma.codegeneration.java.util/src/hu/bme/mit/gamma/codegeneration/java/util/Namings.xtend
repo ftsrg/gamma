@@ -57,6 +57,8 @@ class Namings {
 	 */
  	static def String getImplementationName(Interface _interface) '''«_interface.name.toFirstUpper»Interface'''
 	
+ 	static def String getVariableBindingInterfaceName(Interface _interface) '''VariableBinder'''
+	
 	/**
 	 * Returns the name of the Java interface the given port realizes, e.g., Controller.Required.
 	 */

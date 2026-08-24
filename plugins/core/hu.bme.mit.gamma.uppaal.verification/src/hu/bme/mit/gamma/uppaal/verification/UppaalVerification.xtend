@@ -25,5 +25,9 @@ class UppaalVerification extends AbstractUppaalVerification {
 	override protected createPropertySerializer() {
 		return UppaalPropertySerializer.INSTANCE
 	}
+	
+	override getBackendName() {
+		return "UPPAAL"
+	}
 
 }

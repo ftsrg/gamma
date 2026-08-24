@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -31,7 +31,8 @@ GenModel returns GenModel:
 //		'external' statechartImports+=[EObject| STRING] |
 		'scenario' scenarioImports+=[scenario::ScenarioPackage| STRING] |
 		'trace' traceImports+=[trace::ExecutionTrace | STRING])) |
-		'include' genmodelImports+=[GenModel | STRING]
+		'include' inclusions+=[GenModel | STRING] |
+		'parallel' 'exec' parallelExecutions+=[GenModel | STRING]
 	)*
 	(tasks += Task)*
 ;
@@ -177,7 +178,11 @@ ComponentInstancePortReferenceExpression returns composite::ComponentInstancePor
 ;
 
 ComponentInstanceVariableReferenceExpression returns composite::ComponentInstanceVariableReferenceExpression:
-	instance=ComponentInstanceReferenceExpression '.' variableDeclaration=[expression::VariableDeclaration]
+	instance=ComponentInstanceReferenceExpression '.' declaration=[expression::VariableDeclaration]
+;
+
+ComponentInstancePortVariableReferenceExpression returns composite::ComponentInstancePortVariableReferenceExpression:
+	instance=ComponentInstanceReferenceExpression '.' port=[interface::Port] '.' declaration=[expression::VariableDeclaration]
 ;
 
 ComponentInstanceStateConfigurationReferenceExpression returns composite::ComponentInstanceStateReferenceExpression:
@@ -214,13 +219,19 @@ enum Scheduler returns Scheduler:
 ;
 
 enum AnalysisLanguage returns AnalysisLanguage:
-	UPPAAL = "UPPAAL" | THETA = "Theta" | THETA = "XSTS" | XSTS_UPPAAL = "XSTS-UPPAAL" |
-		PROMELA = "Promela" | PROMELA = "Spin" | NUXMV = "SMV" | NUXMV = "nuXmv" | OCRA = "OCRA" |
-		IML = "IML" | IML = "Imandra"
+	UPPAAL = "UPPAAL" | UPPAAL = "DUPPAAL" |
+		THETA = "Theta" | THETA = "XSTS" |
+		XSTS_UPPAAL = "XTA" | XSTS_UPPAAL = "XUPPAAL" | XSTS_UPPAAL = "XSTS-UPPAAL" |
+		PROMELA = "Promela" | PROMELA = "Spin" |
+		NUXMV = "SMV" | NUXMV = "nuXmv" |
+		OCRA = "OCRA" |
+		IML = "IML" | IML = "Imandra" |
+		SMART = "smart" | SMART_ALL = "smart-all"
 ;
 
 Coverage returns Coverage:
-	StateCoverage | UnstableStateCoverage | TrapStateCoverage |
+	StateCoverage | OrthogonalStateCombinationCoverage | OrthogonalLeafStateCombinationCoverage |
+	UnstableStateCoverage | TrapStateCoverage | DeadlockStateCoverage |
 	DeadlockCoverage | CompletenessCoverage | NonDeterministicTransitionCoverage |
 	TransitionCoverage | TransitionPairCoverage | OutEventCoverage |
 	InteractionCoverage | DataflowCoverage | InteractionDataflowCoverage |
@@ -229,6 +240,20 @@ Coverage returns Coverage:
 
 StateCoverage returns StateCoverage:
 	{StateCoverage} 'state-coverage' ('{' 
+		('include' ':' '[' include+=ComponentInstanceReferenceExpression (',' include+=ComponentInstanceReferenceExpression)* ']')?
+		('exclude' ':' '[' exclude+=ComponentInstanceReferenceExpression (',' exclude+=ComponentInstanceReferenceExpression)* ']')?
+	'}')?
+;
+
+OrthogonalStateCombinationCoverage returns OrthogonalStateCombinationCoverage:
+	{OrthogonalStateCombinationCoverage} 'orthogonal-state-combination-coverage' ('{'
+		('include' ':' '[' include+=ComponentInstanceReferenceExpression (',' include+=ComponentInstanceReferenceExpression)* ']')?
+		('exclude' ':' '[' exclude+=ComponentInstanceReferenceExpression (',' exclude+=ComponentInstanceReferenceExpression)* ']')?
+	'}')?
+;
+
+OrthogonalLeafStateCombinationCoverage returns OrthogonalLeafStateCombinationCoverage:
+	{OrthogonalLeafStateCombinationCoverage} 'orthogonal-leaf-state-combination-coverage' ('{'
 		('include' ':' '[' include+=ComponentInstanceReferenceExpression (',' include+=ComponentInstanceReferenceExpression)* ']')?
 		('exclude' ':' '[' exclude+=ComponentInstanceReferenceExpression (',' exclude+=ComponentInstanceReferenceExpression)* ']')?
 	'}')?
@@ -243,6 +268,13 @@ UnstableStateCoverage returns UnstableStateCoverage:
 
 TrapStateCoverage returns TrapStateCoverage:
 	{TrapStateCoverage} 'trap-state-coverage' ('{' 
+		('include' ':' '[' include+=ComponentInstanceReferenceExpression (',' include+=ComponentInstanceReferenceExpression)* ']')?
+		('exclude' ':' '[' exclude+=ComponentInstanceReferenceExpression (',' exclude+=ComponentInstanceReferenceExpression)* ']')?
+	'}')?
+;
+
+DeadlockStateCoverage returns DeadlockStateCoverage:
+	{DeadlockStateCoverage} 'deadlock-state-coverage' ('{' 
 		('include' ':' '[' include+=ComponentInstanceReferenceExpression (',' include+=ComponentInstanceReferenceExpression)* ']')?
 		('exclude' ':' '[' exclude+=ComponentInstanceReferenceExpression (',' exclude+=ComponentInstanceReferenceExpression)* ']')?
 	'}')?
@@ -360,6 +392,8 @@ Verification returns Verification:
 			'test-language' ':' programmingLanguages+=ProgrammingLanguage |
 			('optimize' | ('optimize-traces')) ':' ('false' | optimize?='true') |
 			'back-annotate-to-original' ':' ('false' | backAnnotateToOriginal?='true') |
+			'serialize-results' ':' serializeResults=BOOLEAN |
+			'serialize-traces' ':' serializeTraces=BOOLEAN |
 			'test-folder' ':' testFolder+=STRING |
 			'timeout' ':' timeout=TimeSpecification
 		)*

@@ -16,8 +16,6 @@ import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
 import hu.bme.mit.gamma.transformation.util.annotations.AnnotatablePreprocessableElements
-import hu.bme.mit.gamma.transformation.util.annotations.DataflowCoverageCriterion
-import hu.bme.mit.gamma.transformation.util.annotations.InteractionCoverageCriterion
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.transformation.InitialStateSetting
@@ -31,8 +29,8 @@ class Gamma2XstsImlTransformerSerializer {
 	protected final String targetFolderUri
 	protected final String fileName
 	
-	protected final Integer minSchedulingConstraint
-	protected final Integer maxSchedulingConstraint
+	protected final Long minSchedulingConstraint
+	protected final Long maxSchedulingConstraint
 	// Configuration
 	protected final boolean inlineFunctions
 	protected final boolean optimize
@@ -60,23 +58,17 @@ class Gamma2XstsImlTransformerSerializer {
 	}
 	
 	new(Component component, List<Expression> arguments,
-			String targetFolderUri, String fileName,
-			Integer schedulingConstraint) {
+			String targetFolderUri, String fileName, Long schedulingConstraint) {
 		this(component, arguments, targetFolderUri, fileName, schedulingConstraint, schedulingConstraint,
 			true,
 			true, false, TransitionMerging.HIERARCHICAL,
-			null, new AnnotatablePreprocessableElements(
-				null, null, null, null, null, null, null, null, null, null, null,
-				InteractionCoverageCriterion.EVERY_INTERACTION,	InteractionCoverageCriterion.EVERY_INTERACTION,
-				null, DataflowCoverageCriterion.ALL_USE,
-				null, DataflowCoverageCriterion.ALL_USE
-			),
+			null, new AnnotatablePreprocessableElements,
 			null, null)
 	}
 	
 	new(Component component, List<? extends Expression> arguments,
 			String targetFolderUri, String fileName,
-			Integer minSchedulingConstraint, Integer maxSchedulingConstraint,
+			Long minSchedulingConstraint, Long maxSchedulingConstraint,
 			boolean inlineFunctions,
 			boolean optimize,
 			boolean optimizeNondeterministicChoices,
@@ -108,7 +100,7 @@ class Gamma2XstsImlTransformerSerializer {
 		val xStsTransformer = new Gamma2XstsTransformerSerializer(component,
 			arguments, targetFolderUri,
 			fileName, minSchedulingConstraint, maxSchedulingConstraint,
-			inlineFunctions,
+			inlineFunctions, true, // Return guards needed for IML functions
 			optimize,
 			true, // Optimize one-capacity arrays into standalone variables
 			false, // Flatten message queues into standalone variables

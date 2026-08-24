@@ -24,6 +24,7 @@ verification {
 	test-language : java
 	file : "Synchronous.xsts"
 	query-file : "Synchronous.prop"
+	serialize-results : false
 }
 
 //
@@ -40,6 +41,7 @@ verification {
 	file : "Asynchronous.xsts"
 	property-file : ".Asynchronous.gpd"
 	back-annotate-to-original : true
+	serialize-results : false
 }
 
 //
@@ -56,4 +58,5 @@ verification {
 	file : "System.xsts"
 	property-file : ".System.gpd"
 	back-annotate-to-original : true
+	serialize-results : false
 }

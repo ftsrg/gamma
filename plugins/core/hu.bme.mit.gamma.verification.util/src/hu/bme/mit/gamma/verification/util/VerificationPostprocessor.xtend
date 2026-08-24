@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2025 Contributors to the Gamma project
+ * Copyright (c) 2025-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,9 +11,14 @@
 package hu.bme.mit.gamma.verification.util
 
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
+import hu.bme.mit.gamma.property.model.StateFormula
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.util.ElementSerializer
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.util.TraceUtil
+import hu.bme.mit.gamma.transformation.util.UnfoldingTraceability
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
@@ -31,6 +36,7 @@ abstract class VerificationPostprocessor {
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
+	protected final extension UnfoldingTraceability traceability = UnfoldingTraceability.INSTANCE
 	//
 	
 	def Collection<? extends Object> execute(Collection<? extends Result> results) {
@@ -74,6 +80,37 @@ abstract class VerificationPostprocessor {
 				.toList
 		
 		return instanceReferences
+	}
+	
+	//
+	
+	def getId(ComponentInstanceStateReferenceExpression reference) {
+		return reference.instance.name + "." + reference.state.fullContainmentHierarchy
+	}
+	
+	protected def getOriginal(ComponentInstanceStateReferenceExpression reference, Component originalTopComponent) {
+		val instance = reference.instance
+		val lastInstance = instance.lastInstance as SynchronousComponentInstance
+		val state = reference.state
+		
+		val originalInstance = lastInstance.getOriginalSimpleInstanceReference(originalTopComponent)
+		val originalState = originalInstance.getOriginalState(state)
+		
+		val stateReference = originalInstance.createStateReference(originalState)
+		
+		return stateReference
+	}
+	
+	protected def selectState(StateFormula property) {
+		val states = property.selectStates
+		val state = states.head // Could be the second one, too
+		
+		return state
+	}
+	
+	protected def selectStates(StateFormula property) {
+		val states = property.getAllContentsOfType(ComponentInstanceStateReferenceExpression)
+		return states
 	}
 	
 }

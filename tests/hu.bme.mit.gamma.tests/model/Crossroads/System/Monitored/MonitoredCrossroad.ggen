@@ -22,6 +22,7 @@ verification {
 	query-file : "CustomQueries.q"
 	optimize : true
 	test-language : java
+	serialize-results : false
 }
 
 analysis {
@@ -41,6 +42,7 @@ verification {
 	property-file : ".MonitoredCrossroad-XSTS.gpd"
 	optimize-model : true
 	test-language : java
+	serialize-results : false
 }
 
 analysis {
@@ -60,4 +62,5 @@ verification {
 	property-file : ".MonitoredCrossroad-SMV.gpd"
 	optimize-model : true
 	test-language : java
+	serialize-results : false
 }

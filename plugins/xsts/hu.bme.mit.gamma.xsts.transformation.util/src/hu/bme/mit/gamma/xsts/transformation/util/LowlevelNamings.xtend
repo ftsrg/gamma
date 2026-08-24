@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,8 +11,10 @@
 package hu.bme.mit.gamma.xsts.transformation.util
 
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration
+import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration
+import hu.bme.mit.gamma.expression.model.NamedElement
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
@@ -45,6 +47,7 @@ class LowlevelNamings {
 	static def String getComponentParameterName(ParameterDeclaration parameter) '''«parameter.name»'''
 	static def String getName(VariableDeclaration variable) '''«variable.name»'''
 	static def String getName(FunctionDeclaration function) '''«function.name»'''
+	static def String getName(Declaration declaration, NamedElement container) '''«container.name»_«declaration.name»'''
 	static def String getName(TimeoutDeclaration timeout) '''«timeout.name»'''
 	static def String getName(Clock clock) '''«clock.name»'''
 	static def String getName(TypeDeclaration type) '''«type.name»'''
@@ -61,6 +64,9 @@ class LowlevelNamings {
 	}
 	static def List<String> getNames(VariableDeclaration variable) {
 		return variable.namePostfixes.map['''«variable.getName»«it»''']
+	}
+	static def List<String> getNames(VariableDeclaration variable, NamedElement container) {
+		return variable.namePostfixes.map['''«variable.getName(container)»«it»''']
 	}
 	
 	static def List<String> getNames(ConstantDeclaration variable) {

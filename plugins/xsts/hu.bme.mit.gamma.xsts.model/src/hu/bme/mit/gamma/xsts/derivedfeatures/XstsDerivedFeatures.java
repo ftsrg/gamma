@@ -45,6 +45,7 @@ import hu.bme.mit.gamma.util.Triple;
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction;
 import hu.bme.mit.gamma.xsts.model.Action;
 import hu.bme.mit.gamma.xsts.model.ActionAnnotation;
+import hu.bme.mit.gamma.xsts.model.AssertAction;
 import hu.bme.mit.gamma.xsts.model.AssignmentAction;
 import hu.bme.mit.gamma.xsts.model.AssumeAction;
 import hu.bme.mit.gamma.xsts.model.AsynchronousSystemAnnotation;
@@ -144,6 +145,31 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return !clockVariables.isEmpty();
 	}
 	
+	public static EObject getBody(FunctionDeclaration functionDeclaration) {
+		if (functionDeclaration instanceof LambdaDeclaration lambdaDeclaration) {
+			return lambdaDeclaration.getExpression();
+		}
+		if (functionDeclaration instanceof ProcedureDeclaration procedureDeclaration) {
+			return procedureDeclaration.getBody();
+		}
+		throw new IllegalArgumentException("Unknown function: " + functionDeclaration);
+	}
+	
+	public static boolean hasDefinition(FunctionDeclaration functionDeclaration) {
+		if (functionDeclaration instanceof LambdaDeclaration lambdaDeclaration) {
+			return ExpressionModelDerivedFeatures.hasDefinition(lambdaDeclaration);
+		}
+		if (functionDeclaration instanceof ProcedureDeclaration procedureDeclaration) {
+			return hasDefinition(procedureDeclaration);
+		}
+		throw new IllegalArgumentException("Unknown function: " + functionDeclaration);
+	}
+	
+	public static boolean hasDefinition(ProcedureDeclaration procedureDeclaration) {
+		SequentialAction body = procedureDeclaration.getBody();
+		return body != null;
+	}
+	
 	public static boolean hasSideEffect(FunctionDeclaration function) {
 		return !isPure(function);
 	}
@@ -218,7 +244,7 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 	
 	public static List<VariableDeclaration> getLocalVariables(FunctionDeclaration function) {
-		if (function instanceof ProcedureDeclaration procedure) {
+		if (function instanceof ProcedureDeclaration procedure && hasDefinition(function)) {
 			SequentialAction body = procedure.getBody();
 			return getLocalVariables(body);
 		}
@@ -227,7 +253,7 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static List<VariableDeclaration> getLocalVariables(Action action) {
 		return ecoreUtil.getSelfAndAllContentsOfType(action, VariableDeclarationAction.class)
-				.stream().map(it -> it.getVariableDeclaration()).collect(Collectors.toList());
+				.stream().map(it -> it.getVariableDeclaration()).toList();
 	}
 	
 	public static boolean isLocal(Declaration variable) {
@@ -549,6 +575,11 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 				action.getAssumption());
 	}
 	
+	private static Set<VariableDeclaration> _getReadVariables(AssertAction action) {
+		return expressionUtil.getReferredVariables(
+				action.getAssertion());
+	}
+	
 	private static Set<VariableDeclaration> _getReadVariables(ReturnAction action) {
 		return expressionUtil.getReferredVariables(
 				action.getExpression());
@@ -617,13 +648,17 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		FunctionDeclaration function = (FunctionDeclaration) xStsActionUtil.getDeclaration(operand);
 		if (function instanceof LambdaDeclaration lambda) {
 			Expression expression = lambda.getExpression();
-			readVariables.addAll(
-					xStsActionUtil.getReferredVariables(expression));
+			if (expression != null) { // Can be null: declaration
+				readVariables.addAll(
+						xStsActionUtil.getReferredVariables(expression));
+			}
 		}
 		else if (function instanceof ProcedureDeclaration procedure) {
 			SequentialAction body = procedure.getBody();
-			readVariables.addAll(
-					getReadVariables(body));
+			if (body != null) { // Can be null: declaration
+				readVariables.addAll(
+						getReadVariables(body));
+			}
 		}
 		else {
 			throw new IllegalArgumentException("Not known function: " + function);
@@ -818,6 +853,9 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		else if (action instanceof AssumeAction _action) {
 			return _getReadVariables(_action);
 		}
+		else if (action instanceof AssertAction _action) {
+			return _getReadVariables(_action);
+		}
 		else if (action instanceof EmptyAction _action) {
 			return _getReadVariables(_action);
 		}
@@ -916,6 +954,11 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 			return _getWrittenVariables(_action);
 		}
 		else if (action instanceof FunctionCallAction _action) {
+			FunctionDeclaration function = (FunctionDeclaration) xStsActionUtil.getDeclaration(
+					_action.getFunctionCallExpression().getOperand());
+			if (!hasDefinition(function)) {
+				return Set.of();
+			}
 			return _getWrittenVariables(_action);
 		}
 		else if (action instanceof OpaqueAction) {

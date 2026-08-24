@@ -1,0 +1,18 @@
+package statemachine_interface_for_orion
+interface StateMachine_Interface_For_Orion {
+	out event out_OrionConnReq
+	out event in_OrionConnResp
+	out event out_OrionConnConf
+	out event in_OrionDisconnCause
+	out event in_OrionKeepAlive
+	out event in_OrionAppData
+	out event out_OrionDisconn
+}
+interface Connection_Interface_For_Orion {
+	out event in_Operation_Call_Connect
+	out event in_Operation_Call_Disconn
+}
+interface Block_Interface_ForOrion {
+	out event in_Operation_Call_Invalid
+	out event in_Operation_Call_SendData
+}

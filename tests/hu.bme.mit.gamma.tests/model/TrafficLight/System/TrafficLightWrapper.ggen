@@ -37,6 +37,7 @@ verification {
 	property-file : ".TrafficLightWrapper-XTA.gpd"
 	optimize : true
 	test-language : java
+	serialize-results : false
 }
 
 verification {
@@ -45,6 +46,7 @@ verification {
 	property-file : ".TrafficLightWrapper-XSTS.gpd"
 	optimize : true
 	test-language : java
+	serialize-results : false
 }
 
 verification {
@@ -52,4 +54,5 @@ verification {
 	file : "TrafficLightWrapper-SMV.smv"
 	property-file : "TrafficLightWrapper-LTL.gpd"
 	test-language : java
+	serialize-results : false
 }

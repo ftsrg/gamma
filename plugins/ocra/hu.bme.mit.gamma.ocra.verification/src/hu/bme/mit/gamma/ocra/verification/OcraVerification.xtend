@@ -149,5 +149,9 @@ class OcraVerification extends AbstractVerification {
 		// Return false if no NOT_OK result is found
 		return ThreeStateBoolean.FALSE
 	}
+	
+	override getBackendName() {
+		return "OCRA"
+	}
 
 }

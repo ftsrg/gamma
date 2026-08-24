@@ -1,0 +1,13 @@
+package portfunctionssystem2
+
+import "Interfaces/Interfaces.gcd"
+
+import "Statechart/PortFunctions_2.gcd"
+
+cascade PortFunctionsSystem2 [
+	port FunctionExecute : requires FunctionExecute
+] {
+	component _2 : PortFunctions_2
+	
+	bind FunctionExecute -> _2.FunctionExecute
+}

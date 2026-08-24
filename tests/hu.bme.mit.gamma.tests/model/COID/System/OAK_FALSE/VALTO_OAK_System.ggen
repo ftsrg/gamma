@@ -20,4 +20,5 @@ verification {
 	query-file : "VALTO_OAK_System.q"
 	optimize : true
 	test-language : java
+	serialize-results : false
 }

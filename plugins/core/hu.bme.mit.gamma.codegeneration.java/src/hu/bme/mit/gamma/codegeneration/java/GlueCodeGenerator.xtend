@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.codegeneration.java.queries.SimpleGammaComponents
 import hu.bme.mit.gamma.codegeneration.java.queries.SynchronousComponentWrappers
 import hu.bme.mit.gamma.codegeneration.java.queries.TypeDeclarations
 import hu.bme.mit.gamma.codegeneration.java.util.EventCodeGenerator
+import hu.bme.mit.gamma.codegeneration.java.util.InterfaceCodeGenerator
 import hu.bme.mit.gamma.codegeneration.java.util.Namings
 import hu.bme.mit.gamma.codegeneration.java.util.TimerCallbackInterfaceGenerator
 import hu.bme.mit.gamma.codegeneration.java.util.TimerInterfaceGenerator
@@ -68,7 +69,7 @@ class GlueCodeGenerator {
 	protected final extension TimerInterfaceGenerator timerInterfaceGenerator
 	protected final extension TimerCallbackInterfaceGenerator timerCallbackInterfaceGenerator
 	protected final extension TimerServiceCodeGenerator timerServiceCodeGenerator
-	protected final extension PortInterfaceGenerator portInterfaceGenerator
+	protected final extension InterfaceCodeGenerator interfaceCodeGenerator
 	protected final extension ComponentInterfaceGenerator componentInterfaceGenerator
 	protected final extension ReflectiveComponentCodeGenerator reflectiveComponentCodeGenerator
 	protected final extension StatechartWrapperCodeGenerator statechartWrapperCodeGenerator
@@ -106,7 +107,7 @@ class GlueCodeGenerator {
 		this.timerInterfaceGenerator = new TimerInterfaceGenerator(this.BASE_PACKAGE_NAME)
 		this.timerCallbackInterfaceGenerator = new TimerCallbackInterfaceGenerator(this.BASE_PACKAGE_NAME)
 		this.timerServiceCodeGenerator = new TimerServiceCodeGenerator(this.BASE_PACKAGE_NAME)
-		this.portInterfaceGenerator  = new PortInterfaceGenerator(this.BASE_PACKAGE_NAME, trace) // Needed, as there is back-annotation here from integers to strings
+		this.interfaceCodeGenerator  = new InterfaceCodeGenerator(this.BASE_PACKAGE_NAME)
 		this.componentInterfaceGenerator = new ComponentInterfaceGenerator(this.BASE_PACKAGE_NAME)
 		this.reflectiveComponentCodeGenerator = new ReflectiveComponentCodeGenerator(this.BASE_PACKAGE_NAME, trace)
 		this.statechartWrapperCodeGenerator = new StatechartWrapperCodeGenerator(this.BASE_PACKAGE_NAME, this.YAKINDU_PACKAGE_NAME, trace)
@@ -247,7 +248,7 @@ class GlueCodeGenerator {
 			 portInterfaceRule = createRule(Interfaces.instance).action [
  				val interfacePackageName = interface.getPackageString(BASE_PACKAGE_NAME)
 				val INTERFACE_FOLDER_URI = BASE_FOLDER_URI.generateUri(interfacePackageName)
-				val code = it.interface.generatePortInterfaces
+				val code = it.interface.createInterface
 				code.saveCode(INTERFACE_FOLDER_URI + File.separator + it.interface.implementationName + ".java")
 			].build		
 		}

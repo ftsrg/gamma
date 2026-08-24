@@ -41,6 +41,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeTypeDefinition;
+import hu.bme.mit.gamma.expression.model.OpaqueExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
@@ -328,7 +329,9 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Expression expression = expressionStatement.getExpression();
 		if (!(expression instanceof FunctionAccessExpression)) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+			ValidationResult result = (expression instanceof OpaqueExpression) ?
+					ValidationResult.INFO : ValidationResult.WARNING;
+			validationResultMessages.add(new ValidationResultMessage(result,
 				"This expression statement has no effect here",
 					new ReferenceInfo(ActionModelPackage.Literals.EXPRESSION_STATEMENT__EXPRESSION)));
 		}

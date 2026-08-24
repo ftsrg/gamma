@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.language.validation;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
@@ -17,6 +19,7 @@ import org.eclipse.xtext.validation.Check;
 
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
+import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
@@ -73,18 +76,16 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		super.actionModelValidator = statechartModelValidator;
 	}
 	
-	@Check
 	@Override
-	public void checkNameUniqueness(EObject element) {
+	protected Collection<? extends NamedElement> getNamedElementsForCheck(EObject element) {
+		Collection<? extends NamedElement> namedElements = super.getNamedElementsForCheck(element);
 		if (element instanceof Interface _interface) {
+			List<NamedElement> namedElements2 = new ArrayList<NamedElement>(namedElements);
 			List<Event> events = ecoreUtil.getAllContentsOfType(_interface, Event.class);
-			if (!events.isEmpty()) { // checkNameUniqueness(EObject ) would do this - this way it may be faster
-				handleValidationResultMessage(expressionModelValidator.checkNameUniqueness(events));
-			}
+			namedElements2.addAll(events);
+			return namedElements2;
 		}
-		else {
-			super.checkNameUniqueness(element);
-		}
+		return namedElements;
 	}
 	
 	@Check
@@ -543,6 +544,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkComponentInstanceReferences(ComponentInstanceReferenceExpression reference) {
 		handleValidationResultMessage(statechartModelValidator.checkComponentInstanceReferences(reference));
+	}
+	
+	@Check
+	public void checkPortFunctionImplementations(StatechartDefinition statechartDefinition) {
+		handleValidationResultMessage(statechartModelValidator.checkPortFunctionImplementations(statechartDefinition));
 	}
 	
 }

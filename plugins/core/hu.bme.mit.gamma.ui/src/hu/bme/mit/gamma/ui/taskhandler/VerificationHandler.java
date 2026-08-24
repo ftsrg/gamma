@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -27,8 +27,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
@@ -41,6 +43,7 @@ import com.google.gson.GsonBuilder;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.GenmodelModelFactory;
 import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
@@ -90,17 +93,33 @@ import hu.bme.mit.gamma.ui.taskhandler.VerificationHandler.ExecutionTraceSeriali
 import hu.bme.mit.gamma.uppaal.verification.UppaalVerification;
 import hu.bme.mit.gamma.uppaal.verification.XstsUppaalVerification;
 import hu.bme.mit.gamma.util.FileUtil;
+import hu.bme.mit.gamma.util.InterruptableCallable;
+import hu.bme.mit.gamma.util.ThreadRacer;
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean;
 import hu.bme.mit.gamma.verification.util.AbstractVerification;
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result;
+import hu.bme.mit.gamma.verification.util.CompletenessCheckPostprocessor;
+import hu.bme.mit.gamma.verification.util.DeadlockCheckPostprocessor;
+import hu.bme.mit.gamma.verification.util.DeadlockStateCheckPostprocessor;
+import hu.bme.mit.gamma.verification.util.DeterminismCheckPostprocessor;
+import hu.bme.mit.gamma.verification.util.InteractionCheckPostprocessor;
+import hu.bme.mit.gamma.verification.util.OrthogonalLeafStateCombinationCheckPostprocessor;
+import hu.bme.mit.gamma.verification.util.OrthogonalStateCombinationCheckPostprocessor;
+import hu.bme.mit.gamma.verification.util.StateReachabilityCheckPostprocessor;
+import hu.bme.mit.gamma.verification.util.TransitionExecutabilityCheckPostprocessor;
+import hu.bme.mit.gamma.verification.util.TransitionPairExecutabilityCheckPostprocessor;
+import hu.bme.mit.gamma.verification.util.TrapStateCheckPostprocessor;
 import hu.bme.mit.gamma.verification.util.VerificationPostprocessor;
 import hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil;
 
 public class VerificationHandler extends TaskHandler {
-
-	protected boolean serializeTraces; // Denotes whether traces are serialized
+	
+	protected final boolean setSerializeResults; // Set externally: denotes whether JSON results are serialized
+	protected final boolean setSerializeTraces; // Set externally: denotes whether traces are serialized
+	protected boolean serializeResults; // Comes in Verification: denotes whether JSON results are serialized
+	protected boolean serializeTraces; // Comes in Verification: denotes whether traces are serialized
 	protected boolean serializeTest; // Denotes whether test code is generated
 	protected String testFolderUri;
 	// targetFolderUri is traceFolderUri 
@@ -112,16 +131,15 @@ public class VerificationHandler extends TaskHandler {
 	
 	protected TimeSpecification timeout = null;
 	
-	//
-	
+	protected AbstractVerification verificationTask = null;
 	protected PropertySerializer propertySerializer = null;
-	
-	//
-	
-	protected final List<ExecutionTrace> traces = new ArrayList<ExecutionTrace>();
 	protected final VerificationPostprocessor verificationPostprocessor;
 	
-	//
+	protected final List<ExecutionTrace> traces = new ArrayList<ExecutionTrace>();
+	protected final Set<Result> optimizedResults = new LinkedHashSet<Result>();
+	protected final Set<VerificationResult> optimizedVerificationResults = new LinkedHashSet<VerificationResult>();
+	protected final Set<Result> allResults = new LinkedHashSet<Result>();
+	protected final Set<VerificationResult> allVerificationResults = new LinkedHashSet<VerificationResult>();
 	
 	protected final TraceUtil traceUtil = TraceUtil.INSTANCE;
 	protected final PropertyUtil propertyUtil = PropertyUtil.INSTANCE;
@@ -143,10 +161,15 @@ public class VerificationHandler extends TaskHandler {
 		this(file, true, verificationPostprocessor);
 	}
 	
-	public VerificationHandler(IFile file, boolean serializeTraces,
+	public VerificationHandler(IFile file, boolean serializeTraces, VerificationPostprocessor verificationPostprocessor) {
+		this(file, true, serializeTraces, verificationPostprocessor);
+	}
+	
+	public VerificationHandler(IFile file, boolean serializeResults, boolean serializeTraces,
 			VerificationPostprocessor verificationPostprocessor) {
 		super(file);
-		this.serializeTraces = serializeTraces;
+		this.setSerializeResults = serializeResults;
+		this.setSerializeTraces = serializeTraces;
 		this.verificationPostprocessor = verificationPostprocessor;
 	}
 	
@@ -167,57 +190,169 @@ public class VerificationHandler extends TaskHandler {
 		return verificationInstance.getUnavailableBackendMessage();
 	}
 	
+	public Entry<InterruptableCallable<VerificationHandler>, Verification> wrap(
+			Verification verification, AnalysisLanguage analysisLanguage) {
+		return wrap(verification, analysisLanguage, false, false); // By default: no serialization to prevent race conditions
+	}
+	
+	public Entry<InterruptableCallable<VerificationHandler>, Verification> wrap(
+			Verification verification, AnalysisLanguage analysisLanguage,
+			boolean setSerializeResults, boolean setSerializeTraces) {
+		Verification verification2 = ecoreUtil.clone(verification);
+		verification2.getAnalysisLanguages().clear();
+		verification2.getAnalysisLanguages().add(analysisLanguage);
+		
+		VerificationHandler verificationHandler2 = new VerificationHandler(file, setSerializeResults, setSerializeTraces, null);
+		InterruptableCallable<VerificationHandler> verificationCall = new InterruptableCallable<VerificationHandler>() {
+			public VerificationHandler call() throws Exception {
+				verificationHandler2.executeOnce(verification2);
+				logger.info(analysisLanguage + " has finished");
+				return verificationHandler2; // Dummy
+			}
+			public void cancel() {
+				verificationHandler2.cancel();
+				logger.info(analysisLanguage + " has been canceled");
+			}
+		};
+		
+		return Map.entry(verificationCall, verification2);
+	}
+	
 	//
 	
 	public void execute(Verification verification) throws IOException, InterruptedException {
-		// Setting target folder
-		setProjectLocation(verification); // Before the target folder
-		setTargetFolder(verification);
-		//
-		setVerification(verification);
-		Set<AnalysisLanguage> languagesSet = new LinkedHashSet<AnalysisLanguage>(
+		List<AnalysisLanguage> languages = verification.getAnalysisLanguages();
+		
+		boolean needsPreprocess = languages.contains(AnalysisLanguage.SMART_ALL) || languages.size() > 1;
+		if (needsPreprocess) {
+			preprocessAndExecute(verification);
+			return;
+		}
+		
+		// Default mode (single language or smart, non smart-all)
+		executeOnce(verification);
+	}
+
+	protected void preprocessAndExecute(Verification verification) throws InterruptedException, IOException {
+		List<AnalysisLanguage> languages = new ArrayList<AnalysisLanguage>(
 				verification.getAnalysisLanguages());
-		checkArgument(languagesSet.size() == 1);
+		if (languages.contains(AnalysisLanguage.SMART_ALL)) {
+			// Parallel execution
+			List<AnalysisLanguage> smartAnalysisLanguages = getAllSmartAnalysisLanguages();
+			
+			List<InterruptableCallable<VerificationHandler>> callables = new ArrayList<>();
+			
+			for (AnalysisLanguage analysisLanguage : smartAnalysisLanguages) {
+				var wrap = wrap(verification, analysisLanguage);
+				InterruptableCallable<VerificationHandler> callable = wrap.getKey();
+				callables.add(callable);
+			}
+			
+			try (ExecutorService executor = Executors.newFixedThreadPool(smartAnalysisLanguages.size())) {
+				var results = executor.invokeAll(callables); // Blocking call
+				for (Future<VerificationHandler> future : results) {
+					VerificationHandler handler = future.resultNow();
+					addAllResults(handler);
+				}
+			}
+		}
+		else if (languages.size() > 1) {
+			if (verification.isOptimize() || GenmodelDerivedFeatures.getFormulaCount(verification) <= 1) {
+				// Racing: all properties jointly
+				List<InterruptableCallable<VerificationHandler>> verificationCalls = new ArrayList<InterruptableCallable<VerificationHandler>>();
+				for (AnalysisLanguage analysisLanguage : languages) {
+					Entry<InterruptableCallable<VerificationHandler>, Verification> entry = wrap(verification, analysisLanguage);
+					InterruptableCallable<VerificationHandler> verificationCall = entry.getKey();
+					verificationCalls.add(verificationCall);
+				}
+				ThreadRacer<VerificationHandler> threadRacer = new ThreadRacer<VerificationHandler>(verificationCalls);
+				VerificationHandler winnerHandler = threadRacer.execute();
+				
+				addAllResults(winnerHandler);
+			}
+			else {
+				// Racing: property by property
+				for (PropertyPackage propertyPackage : verification.getPropertyPackages()) {
+					PropertyPackage propertyPackage2 = ecoreUtil.clone(propertyPackage);
+					List<CommentableStateFormula> formulas2 = propertyPackage2.getFormulas();
+					List<CommentableStateFormula> allFormulas = new ArrayList<CommentableStateFormula>(formulas2);
+					for (CommentableStateFormula formula : allFormulas) {
+						List<InterruptableCallable<VerificationHandler>> verificationCalls = new ArrayList<InterruptableCallable<VerificationHandler>>();
+						
+						formulas2.clear();
+						formulas2.add(formula);
+						
+						for (AnalysisLanguage analysisLanguage : languages) {
+							Entry<InterruptableCallable<VerificationHandler>, Verification> entry = wrap(verification, analysisLanguage);
+							InterruptableCallable<VerificationHandler> verificationCall = entry.getKey();
+							Verification verification2 = entry.getValue();
+							
+							verification2.getPropertyPackages().clear();
+							verification2.getPropertyPackages().add(propertyPackage2);
+							
+							verificationCalls.add(verificationCall);
+						}
+						
+						ThreadRacer<VerificationHandler> threadRacer = new ThreadRacer<VerificationHandler>(verificationCalls);
+						VerificationHandler winnerHandler = threadRacer.execute();
+						
+						addAllResults(winnerHandler);
+					}
+				}
+			}
+		}
+		
+		setAll(verification);
+		doSetSerialization();
+		verification.getAnalysisLanguages().clear();
+		verification.getAnalysisLanguages().addAll(languages); // Restore original
+	}
+	
+	protected void executeOnce(Verification verification) throws IOException, InterruptedException {
+		setAll(verification);
+		
+		List<AnalysisLanguage> languagesSet = verification.getAnalysisLanguages();
+		int size = languagesSet.size();
+		checkArgument(size == 1, size);
 		List<String> verificationArguments = verification.getVerificationArguments();
 		
 		boolean distinguishStringFormulas = false;
 		
-		AbstractVerification verificationTask = null;
+		verificationTask = null;
 		propertySerializer = null;
-		for (AnalysisLanguage analysisLanguage : languagesSet) {
-			switch (analysisLanguage) {
-				case UPPAAL:
-					verificationTask = UppaalVerification.INSTANCE;
-					propertySerializer = UppaalPropertySerializer.INSTANCE;
-					break;
-				case THETA:
-					verificationTask = ThetaVerification.INSTANCE;
-					propertySerializer = ThetaPropertySerializer.INSTANCE;
-					distinguishStringFormulas = true;
-					break;
-				case XSTS_UPPAAL:
-					verificationTask = XstsUppaalVerification.INSTANCE;
-					propertySerializer = XstsUppaalPropertySerializer.INSTANCE;
-					break;
-				case PROMELA:
-					verificationTask = PromelaVerification.INSTANCE;
-					propertySerializer = PromelaPropertySerializer.INSTANCE;
-					break;
-				case NUXMV:
-					verificationTask = NuxmvVerification.INSTANCE;
-					propertySerializer = NuxmvPropertySerializer.INSTANCE;
-					break;
-				case IML:
-					verificationTask = ImlVerification.INSTANCE;
-					propertySerializer = ImlPropertySerializer.INSTANCE;
-					break;
-				case OCRA:
-					verificationTask = OcraVerification.INSTANCE;
-					propertySerializer = OcraPropertySerializer.INSTANCE;
-					break;
-				default:
-					throw new IllegalArgumentException(analysisLanguage + " is not supported");
-			}
+		AnalysisLanguage analysisLanguage = languagesSet.getFirst();
+		switch (analysisLanguage) {
+			case UPPAAL:
+				verificationTask = UppaalVerification.INSTANCE;
+				propertySerializer = UppaalPropertySerializer.INSTANCE;
+				break;
+			case THETA:
+				verificationTask = ThetaVerification.INSTANCE;
+				propertySerializer = ThetaPropertySerializer.INSTANCE;
+				distinguishStringFormulas = true;
+				break;
+			case XSTS_UPPAAL:
+				verificationTask = XstsUppaalVerification.INSTANCE;
+				propertySerializer = XstsUppaalPropertySerializer.INSTANCE;
+				break;
+			case PROMELA:
+				verificationTask = PromelaVerification.INSTANCE;
+				propertySerializer = PromelaPropertySerializer.INSTANCE;
+				break;
+			case NUXMV:
+				verificationTask = NuxmvVerification.INSTANCE;
+				propertySerializer = NuxmvPropertySerializer.INSTANCE;
+				break;
+			case IML:
+				verificationTask = ImlVerification.INSTANCE;
+				propertySerializer = ImlPropertySerializer.INSTANCE;
+				break;
+			case OCRA:
+				verificationTask = OcraVerification.INSTANCE;
+				propertySerializer = OcraPropertySerializer.INSTANCE;
+				break;
+			default:
+				throw new IllegalArgumentException(analysisLanguage + " is not supported");
 		}
 		String filePath = verification.getFileName().get(0);
 		File modelFile = new File(filePath);
@@ -236,7 +371,7 @@ public class VerificationHandler extends TaskHandler {
 		boolean isOptimize = verification.isOptimize();
 		
 		// Retrieved verification results and traces
-		List<Result> verificationResults = new ArrayList<Result>();
+		List<Result> results = new ArrayList<Result>();
 		List<ExecutionTrace> retrievedTraces = new ArrayList<ExecutionTrace>(); // Derivable from verificationResults
 		List<VerificationResult> derivedVerificationResults = new ArrayList<VerificationResult>();
 		
@@ -251,7 +386,7 @@ public class VerificationHandler extends TaskHandler {
 			if (StatechartModelDerivedFeatures.needsWrapping(component)) {
 				propertyUtil.extendFormulasWithWrapperInstance(propertyPackage);
 			}
-			//
+			
 			for (CommentableStateFormula formula : propertyPackage.getFormulas()) {
 				StateFormula stateFormula = formula.getFormula();
 				//
@@ -260,7 +395,7 @@ public class VerificationHandler extends TaskHandler {
 				String serializedFormula = propertySerializer.serialize(stateFormula);
 				formulas.put(serializedFormula, stateFormula);
 			}
-			//
+			
 			if (StatechartModelDerivedFeatures.needsWrapping(component)) {
 				propertyUtil.removeFirstInstanceFromFormulas(propertyPackage);
 			}
@@ -307,7 +442,8 @@ public class VerificationHandler extends TaskHandler {
 			
 			// Saving the string
 			File file = modelFile;
-			String fileName = fileNamer.getHiddenSerializedPropertyFileName(file.getName());
+			String fileName = fileNamer.getHiddenSerializedPropertyFileName(
+					fileUtil.getExtensionlessName(file) + "-" + verificationTask.getBackendName());
 			String queryFilePath = file.getParentFile().toString() + File.separator + fileName;
 			File queryFile = new File(queryFilePath);
 			fileUtil.saveString(queryFile, serializedFormula);
@@ -324,7 +460,7 @@ public class VerificationHandler extends TaskHandler {
 			result = result.clone(
 					formulas.get(serializedFormula));
 			
-			verificationResults.add(result);
+			results.add(result);
 			ExecutionTrace trace = result.getTrace();
 			ThreeStateBoolean verificationResult = result.getResult();
 			
@@ -339,8 +475,9 @@ public class VerificationHandler extends TaskHandler {
 			long elapsed = stopwatch.elapsed(timeUnit);
 			String elapsedString = elapsed + " " + timeUnit;
 			
+			String modelPath = ecoreUtil.getPlatformUri(modelFile).toPlatformString(true);
 			derivedVerificationResults.add(
-				new VerificationResult(
+				new VerificationResult(modelPath,
 					serializedFormula, verificationResult, arguments, elapsedString));
 			
 			// Checking if some of the unchecked properties are already covered
@@ -351,10 +488,10 @@ public class VerificationHandler extends TaskHandler {
 		if (isOptimize) {
 			// Optimization again on the retrieved tests (front to back and vice versa)
 			Collection<ExecutionTrace> removedTraces = traceUtil.removeCoveredExecutionTraces(retrievedTraces);
-			verificationResults.removeIf(it -> removedTraces.contains(it.getTrace()));
+			results.removeIf(it -> removedTraces.contains(it.getTrace()));
 		}
 		
-		// Back-annotating
+		// Back-annotation
 		if (verification.isBackAnnotateToOriginal()) {
 			List<ExecutionTrace> backAnnotatedTraces = new ArrayList<ExecutionTrace>();
 			for (ExecutionTrace trace : retrievedTraces) {
@@ -368,11 +505,11 @@ public class VerificationHandler extends TaskHandler {
 				backAnnotatedTraces.add(orignalTrace);
 				
 				// Changing in the results list
-				for (int i = 0; i < verificationResults.size(); i++) {
-					Result result = verificationResults.get(i);
+				for (int i = 0; i < results.size(); i++) {
+					Result result = results.get(i);
 					if (result.getTrace() == trace) {
 						Result newResult = result.clone(orignalTrace);
-						verificationResults.set(i, newResult);
+						results.set(i, newResult);
 					}
 				}
 			}
@@ -381,18 +518,27 @@ public class VerificationHandler extends TaskHandler {
 			retrievedTraces.addAll(backAnnotatedTraces);
 		}
 		
-		for (VerificationResult result : derivedVerificationResults) {
-			serializer.serialize(targetFolderUri, traceFileName, result);
-		}
+		// Serialization
+		allVerificationResults.addAll(derivedVerificationResults);
+		allVerificationResults.addAll(optimizedVerificationResults);
 		
 		traces.addAll(retrievedTraces);
 		
-		if (serializeTraces) { // After 'traces.add...'
-			serializeTraces(programmingLanguage);
-		}
+		allResults.addAll(results);
+		allResults.addAll(optimizedResults);
 		
+		doSetSerialization();
+	}
+	
+	protected void doSetSerialization() throws IOException {
+		if (serializeResults && setSerializeResults) {
+			serializeResults();
+		}
+		if (serializeTraces && setSerializeTraces) {
+			serializeTraces();
+		}
 		if (verificationPostprocessor != null) {
-			verificationPostprocessor.execute(verificationResults);
+			verificationPostprocessor.execute(allResults);
 		}
 	}
 	
@@ -471,10 +617,11 @@ public class VerificationHandler extends TaskHandler {
 			
 			wrappedFormulas.add(entry);
 		}
-		//
+		
 		removeCoveredProperties(wrappedFormulas);
-		//
-		formulas.removeIf(it -> !wrappedFormulas.contains(Map.entry(dummyKey, it.getFormula())));
+		
+		formulas.removeIf(it -> !wrappedFormulas.contains(
+				Map.entry(dummyKey, it.getFormula())));
 	}
 	
 	protected void removeCoveredProperties(Collection<? extends Entry<?, StateFormula>> formulas) {
@@ -489,24 +636,49 @@ public class VerificationHandler extends TaskHandler {
 	}
 
 	private void removeCoveredProperties(ExecutionTrace trace,
-			Collection<? extends Entry<?, StateFormula>> formulas) {
+				Collection<? extends Entry<?, StateFormula>> formulas) {
+		List<StateFormula> allCoveredProperties = new ArrayList<StateFormula>();
+		
 		if (trace != null) {
 			List<StateFormula> stateFormulas = formulas.stream()
 					.map(it -> it.getValue())
 					.filter(it -> it != null)
-					.collect(Collectors.toList()); // Not null state formulas
+					.toList(); // Not null state formulas
 			CoveredPropertyReducer reducer = new CoveredPropertyReducer(stateFormulas, trace);
 			List<StateFormula> coveredProperties = reducer.execute();
 			
 			for (StateFormula coveredProperty : coveredProperties) {
 				String serializedProperty = propertySerializer.serialize(coveredProperty);
 				logger.info("Property already covered: " + serializedProperty);
-				formulas.removeIf(it -> it.getValue() == coveredProperty);
+				allCoveredProperties.add(coveredProperty);
 			}
+		}
+		
+		formulas.removeIf(it -> allCoveredProperties.contains(it.getValue()));
+		
+		// Registering optimized properties
+		for (StateFormula coveredProperty : allCoveredProperties) {
+			boolean result = PropertyModelDerivedFeatures.getBooleanResultIfTraceExists(coveredProperty);
+			ThreeStateBoolean value = ThreeStateBoolean.of(result);
+			
+			Result optimizedResult = new Result(coveredProperty, value, null);
+			optimizedResults.add(optimizedResult);
+			
+			File modelFile = ecoreUtil.getFile(trace.getComponent());
+			String modelPath = ecoreUtil.getPlatformUri(modelFile).toPlatformString(true);
+			String serializedProperty = propertySerializer.serialize(coveredProperty);
+			VerificationResult optimizedVerificationResult = new VerificationResult(modelPath, serializedProperty, value);
+			optimizedVerificationResults.add(optimizedVerificationResult);
 		}
 	}
 	
 	//
+	
+	public void cancel() {
+		if (verificationTask != null) {
+			verificationTask.cancel();
+		}
+	}
 	
 	protected Result execute(AbstractVerification verificationTask, File modelFile,
 			File queryFile, List<ExecutionTrace> retrievedTraces, boolean isOptimize) throws InterruptedException {
@@ -543,7 +715,18 @@ public class VerificationHandler extends TaskHandler {
 		return result;
 	}
 	
+	protected void setAll(Verification verification) {
+		// Setting target folder
+		setProjectLocation(verification); // Before the target folder
+		setTargetFolder(verification);
+		//
+		setVerification(verification);
+	}
+	
 	private void setVerification(Verification verification) {
+		List<AnalysisLanguage> analysisLanguages = verification.getAnalysisLanguages();
+		setSmartAnalysisLanguages(analysisLanguages);
+		
 		List<String> traceFileNames = verification.getFileName2();
 		if (!traceFileNames.isEmpty()) {
 			this.traceFileName = traceFileNames.get(0);
@@ -575,12 +758,28 @@ public class VerificationHandler extends TaskHandler {
 			// Setting the attribute, the test folder is a RELATIVE path now from the project
 			this.testFolderUri = URI.decode(projectLocation + File.separator + testFolders.get(0));
 		}
+		this.serializeResults = verification.isSerializeResults();
+		this.serializeTraces = verification.isSerializeTraces();
 		Resource resource = verification.eResource();
 		File file = (resource != null) ?
 				ecoreUtil.getFile(resource).getParentFile() : // If Verification is contained in a resource
 					fileUtil.toFile(super.file).getParentFile(); // If Verification is created in Java
 		// Setting the file paths
-		verification.getFileName().replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
+		List<String> fileNames = verification.getFileName();
+		for (int i = 0; i < fileNames.size(); i++) {
+			String fileName = fileNames.get(i);
+			if (!fileUtil.hasExtension(fileName)) {
+				AnalysisLanguage language = analysisLanguages.getFirst();
+				String newFileName = fileUtil.changeExtension(fileName,
+						fileNamer.getFileExtension(language));
+				logger.info("Setting file extension: " + newFileName);
+				fileNames.set(i, newFileName);
+			}
+		}
+		fileNames.replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
+		if (1 < analysisLanguages.size()) {
+			fileNames.replaceAll(it -> fileUtil.getExtensionlessName(it));
+		}
 		// Setting the query paths
 		verification.getQueryFiles().replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
 		// Setting the timeout
@@ -588,8 +787,7 @@ public class VerificationHandler extends TaskHandler {
 	}
 	
 	protected AbstractVerification getVerification(Verification verification) {
-		Set<AnalysisLanguage> languagesSet = new LinkedHashSet<AnalysisLanguage>(
-				verification.getAnalysisLanguages());
+		Collection<AnalysisLanguage> languagesSet = verification.getAnalysisLanguages();
 		AnalysisLanguage analysisLanguage = javaUtil.getLastElement(languagesSet);
 		return getVerification(analysisLanguage);
 	}
@@ -613,7 +811,52 @@ public class VerificationHandler extends TaskHandler {
 		}
 	}
 	
+	protected VerificationPostprocessor createVerificationPostprocessor(Verification verification) {
+		List<PropertyPackage> propertyPackages = verification.getPropertyPackages();
+		if (!propertyPackages.isEmpty()) {
+			PropertyPackage propertyPackage = propertyPackages.getFirst();
+			List<String> coverages = propertyPackage.getCoverages();
+			if (!coverages.isEmpty()) {
+				String coverage = coverages.getFirst();
+				String shortCoverage = coverage.replace("Coverage", "");
+				switch (shortCoverage) {
+					case "State": return new StateReachabilityCheckPostprocessor();
+					case "Transition": return new TransitionExecutabilityCheckPostprocessor();
+					case "TransitionPair": return new TransitionPairExecutabilityCheckPostprocessor();
+					case "OutEvent" : return null;
+					case "Interaction" : return new InteractionCheckPostprocessor();
+					case "InteractionDataflow" : return null;
+					case "Dataflow" : return null;
+					case "TrapState" : return new TrapStateCheckPostprocessor(null);
+					case "UnstableState" : return null;
+					case "OrthogonalLeafStateCombination" : return new OrthogonalStateCombinationCheckPostprocessor(null);
+					case "OrthogonalStateCombination" : return new OrthogonalLeafStateCombinationCheckPostprocessor(null);
+					case "DeadlockState" : return new DeadlockStateCheckPostprocessor(null);
+					case "Deadlock" : return new DeadlockCheckPostprocessor();
+					case "NonDeterministicTransition" : return new DeterminismCheckPostprocessor();
+					case "Completeness" : return new CompletenessCheckPostprocessor(null);
+					case "QueueOverflow" : return null;
+					
+					default: return null;
+				}
+			}
+		}
+		return null;
+	}
+	
 	//
+	
+	protected void addAllResults(Collection<? extends VerificationHandler> verificationHandlers) {
+		for (VerificationHandler verificationHandler : verificationHandlers) {
+			addAllResults(verificationHandler);
+		}
+	}
+	
+	protected void addAllResults(VerificationHandler verificationHandler) {
+		traces.addAll(verificationHandler.traces);
+		allVerificationResults.addAll(verificationHandler.allVerificationResults);
+		allResults.addAll(verificationHandler.allResults);
+	}
 	
 	public List<ExecutionTrace> getTraces() {
 		return traces;
@@ -626,6 +869,14 @@ public class VerificationHandler extends TaskHandler {
 	public void optimizeTraces() {
 		// Optimization again on the retrieved tests (front to back and vice versa)
 		traceUtil.removeCoveredExecutionTraces(traces);
+	}
+	
+	public void serializeResults() throws IOException {
+		serializer.serialize(targetFolderUri, traceFileName, allVerificationResults);
+	}
+	
+	public void serializeTraces() throws IOException {
+		serializeTraces(programmingLanguage);
 	}
 	
 	public void serializeTraces(ProgrammingLanguage programmingLanguage) throws IOException {
@@ -680,10 +931,9 @@ public class VerificationHandler extends TaskHandler {
 			String baseFileName = traceFileName;
 			Integer id = getCorrespondingIndex(traceFolder, trace);
 			if (id == null) {
-				Entry<String, Integer> fileNamePair = fileUtil.getFileName(traceFolder,
-						traceFileName, GammaFileNamer.EXECUTION_XTEXT_EXTENSION);
-				id = fileNamePair.getValue();
+				id = getNextIndex(traceFolderUri, traceFileName);
 			}
+			
 			String fileName = baseFileName + id + "." + GammaFileNamer.EXECUTION_XTEXT_EXTENSION;
 			serializer.saveModel(trace, traceFolderUri, fileName);
 			
@@ -750,31 +1000,46 @@ public class VerificationHandler extends TaskHandler {
 			return null;
 		}
 		
+		protected Integer getNextIndex(String folder, String fileName) {
+			Entry<String, Integer> fileNamePair = fileUtil.getFileName(folder,
+					fileName, GammaFileNamer.VERIFICATION_RESULT_EXTENSION);
+			Entry<String, Integer> fileNamePair2 = fileUtil.getFileName(folder,
+					fileName, GammaFileNamer.EXECUTION_XTEXT_EXTENSION);
+			int id = Integer.max(fileNamePair.getValue(), fileNamePair2.getValue());
+			return id;
+		}
+		
+		public void serialize(String resultFolderUri, String resultFileName,
+				Collection<? extends VerificationResult> results) throws IOException {
+			for (VerificationResult result : results) {
+				serialize(resultFolderUri, resultFileName, result);
+			}
+		}
+		
 		public void serialize(String resultFolderUri, String resultFileName,
 				VerificationResult result) throws IOException {
-			File folder = new File(resultFolderUri);
-			Entry<String, Integer> fileNamePair = fileUtil.getFileName(folder,
-					resultFileName, GammaFileNamer.VERIFICATION_RESULT_EXTENSION);
-			String fileName = fileNamePair.getKey();
+			int id = getNextIndex(resultFolderUri, resultFileName);
 			String jsonResult = gson.toJson(result);
-			String path = resultFolderUri + File.separator + fileName;
+			String path = resultFolderUri + File.separator + resultFileName + id + "." + GammaFileNamer.VERIFICATION_RESULT_EXTENSION;
 			fileUtil.saveString(path, jsonResult);
 		}
 		
 		@SuppressWarnings("unused")
 		public static class VerificationResult {
 			
+			private String modelPath;
 			private String query;
 			private ThreeStateBoolean result;
 			private String[] parameters;
 			private String executionTime;
 			
-			public VerificationResult(String query, ThreeStateBoolean result) {
-				this(query, result, null, null);
+			public VerificationResult(String modelPath, String query, ThreeStateBoolean result) {
+				this(modelPath, query, result, null, null);
 			}
 			
-			public VerificationResult(String query, ThreeStateBoolean result,
+			public VerificationResult(String modelPath, String query, ThreeStateBoolean result,
 					String[] parameters, String executionTime) {
+				this.modelPath = modelPath;
 				this.query = query;
 				this.result = result;
 				this.parameters = parameters;

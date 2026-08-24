@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -25,6 +25,7 @@ import hu.bme.mit.gamma.expression.model.AndExpression;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
+import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DefaultExpression;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
@@ -32,13 +33,17 @@ import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
+import hu.bme.mit.gamma.expression.model.FalseExpression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
+import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
+import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
+import hu.bme.mit.gamma.expression.model.TupleReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
@@ -51,6 +56,7 @@ import hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures;
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction;
 import hu.bme.mit.gamma.xsts.model.Action;
 import hu.bme.mit.gamma.xsts.model.ActionAnnotation;
+import hu.bme.mit.gamma.xsts.model.AssertAction;
 import hu.bme.mit.gamma.xsts.model.AssignmentAction;
 import hu.bme.mit.gamma.xsts.model.AssumeAction;
 import hu.bme.mit.gamma.xsts.model.CompositeAction;
@@ -81,7 +87,6 @@ public class XstsActionUtil extends ExpressionUtil {
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
 	protected final XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
-	
 	//
 	
 	public XSTS createXsts(String name) {
@@ -235,6 +240,40 @@ public class XstsActionUtil extends ExpressionUtil {
 	public XTransition createEmptyTransition() {
 		EmptyAction emptyAction = xStsFactory.createEmptyAction();
 		return wrap(emptyAction);
+	}
+	
+	public void inlineTupleAssignmentActions(EObject object) {
+		for (TupleReferenceExpression reference :
+				ecoreUtil.getSelfAndAllContentsOfType(object, TupleReferenceExpression.class)) {
+			inlineTupleAssignmentAction(reference);
+		}
+	}
+	
+	public void inlineTupleAssignmentAction(Expression expression) {
+		EObject container = expression.eContainer();
+		if (container instanceof AssignmentAction assignmentAction) {
+			ReferenceExpression _lhs = assignmentAction.getLhs();
+			Expression _rhs = assignmentAction.getRhs();
+			if (_lhs instanceof TupleReferenceExpression lhs && _rhs instanceof MultiaryExpression rhs) {
+				List<ReferenceExpression> references = lhs.getReferences();
+				List<Expression> operands = rhs.getOperands();
+				int size = references.size();
+				if (size != operands.size()) {
+					throw new IllegalArgumentException("Inconsistent tuple assignment: " + assignmentAction);
+				}
+				
+				for (int i = 0; i < size; i++) {
+					ReferenceExpression referenceExpression = references.get(0); // Not i - elements are removed from the list
+					Expression operand = operands.get(0);
+					
+					AssignmentAction elementAssignmentAction = createAssignmentAction(referenceExpression, operand);
+					prependToAction(elementAssignmentAction, assignmentAction);
+					inlineTupleAssignmentAction(operand); // Recursion
+				}
+				
+				ecoreUtil.remove(assignmentAction);
+			}
+		}
 	}
 	
 	public void prependToAction(Collection<? extends Action> actions, Action pivot) {
@@ -485,18 +524,28 @@ public class XstsActionUtil extends ExpressionUtil {
 		return functionCallAction;
 	}
 	
-	public VariableDeclarationAction createVariableDeclarationAction(Type type, String name) {
+	public VariableDeclarationAction createBooleanVariableDeclarationAction(CharSequence name) {
+		BooleanTypeDefinition type = factory.createBooleanTypeDefinition();
+		return createVariableDeclarationAction(type, name, null);
+	}
+	
+	public VariableDeclarationAction createIntegerVariableDeclarationAction(CharSequence name) {
+		IntegerTypeDefinition type = factory.createIntegerTypeDefinition();
+		return createVariableDeclarationAction(type, name, null);
+	}
+	
+	public VariableDeclarationAction createVariableDeclarationAction(Type type, CharSequence name) {
 		return createVariableDeclarationAction(type, name, null);
 	}
 	
 	public VariableDeclarationAction createVariableDeclarationAction(
-			TypeDeclaration type, String name, Expression expression) {
+			TypeDeclaration type, CharSequence name, Expression expression) {
 		TypeReference typeReference = createTypeReference(type);
 		return createVariableDeclarationAction(typeReference, name, expression);
 	}
 	
 	public VariableDeclarationAction createVariableDeclarationAction(
-			Type type, String name, Expression expression) {
+			Type type, CharSequence name, Expression expression) {
 		VariableDeclaration variableDeclaration = createVariableDeclaration(type, name, expression);
 		VariableDeclarationAction action = xStsFactory.createVariableDeclarationAction();
 		action.setVariableDeclaration(variableDeclaration);
@@ -573,6 +622,17 @@ public class XstsActionUtil extends ExpressionUtil {
 		HavocAction havocAction = createHavocAction(variableDeclaration);
 		return new SimpleEntry<VariableDeclarationAction, HavocAction>(
 				variableDeclarationAction, havocAction);
+	}
+	
+	public AssertAction createFalseAssertAction() {
+		FalseExpression falseExpression = factory.createFalseExpression();
+		return createAssertAction(falseExpression);
+	}
+	
+	public AssertAction createAssertAction(Expression expression) {
+		AssertAction assertAction = xStsFactory.createAssertAction();
+		assertAction.setAssertion(expression);
+		return assertAction;
 	}
 	
 	public AssignmentAction increment(VariableDeclaration variable) {

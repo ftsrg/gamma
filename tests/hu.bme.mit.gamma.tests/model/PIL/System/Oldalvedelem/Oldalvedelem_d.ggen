@@ -15,4 +15,5 @@ verification {
 	file : "Oldalvedelem_d.xsts"
 	query-file : "CustomQueriesOldalvedelem_d.prop"
 	test-language : java
+	serialize-results : false
 }

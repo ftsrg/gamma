@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -24,7 +24,7 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 class CompositeComponentCodeGenerator {
 	
 	protected final String PACKAGE_NAME
-	// 
+	//
 	protected final extension TimingDeterminer timingDeterminer = TimingDeterminer.INSTANCE
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final extension NameGenerator nameGenerator
@@ -44,7 +44,7 @@ class CompositeComponentCodeGenerator {
 	}
 	
 	/**
-	 * Generates the needed Java imports in case of the given composite component.
+	 * Generates the needed Java imports for the the given composite component.
 	 */
 	def generateCompositeSystemImports(CompositeComponent component) '''
 		import java.util.List;
@@ -144,8 +144,36 @@ class CompositeComponentCodeGenerator {
 		«ENDFOR»
 	'''
 	
+	def CharSequence delegateInterfaceMethodCalls(Port systemPort) '''
+		«FOR function : systemPort.allFunctionDeclarations SEPARATOR System.lineSeparator»
+			@Override
+			public «function.type.transformType» «function.name»(«function.generateParameters») {
+				«IF !function.isVoid»return «ENDIF»«val connector = systemPort.portBindings.head»«connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().«function.name»(«function.generateArguments»);
+			}
+			«IF function.hasRecordParameterDeclaration»
+				
+				@Override
+				public «function.type.transformType» «function.name»(«function.generateNativeParameters») {
+					«IF !function.isVoid»return «ENDIF»«connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().«function.name»(«function.generateNativeArguments»);
+				}
+			«ENDIF»
+		«ENDFOR»
+	'''
+	
+	def CharSequence delegateBoundInterfaceMethodCalls(Port systemPort) '''
+		«FOR function : systemPort.allFunctionDeclarations SEPARATOR System.lineSeparator»
+			@Override
+			public «function.type.transformType» «function.name»(«function.generateParameters») { «IF !function.isVoid»return «ENDIF»listeners.getFirst().«function.name»(«function.generateArguments»); }
+			«IF function.hasRecordParameterDeclaration»
+				
+				@Override
+				public «function.type.transformType» «function.name»(«function.generateNativeParameters») { «IF !function.isVoid»return «ENDIF»listeners.getFirst().«function.name»(«function.generateNativeArguments»); }
+			«ENDIF»
+		«ENDFOR»
+	'''
+	
 	/**
-	 * Generates methods for own out-event checks in case of composite components.
+	 * Generates methods for own out-event checks for the composite components.
 	 */
 	def CharSequence implementOutMethods(Port systemPort) '''
 «««		Simple flag checks

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -20,6 +20,7 @@ import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
 import hu.bme.mit.gamma.expression.model.TupleTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeReference
+import hu.bme.mit.gamma.expression.model.VoidTypeDefinition
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
@@ -34,6 +35,8 @@ class TypeSerializer {
 	}
 	
 	def dispatch String serialize(TypeReference type) '''«IF type.reference.type.primitive»«type.reference.type.serialize»«ELSE»«type.reference.name»«ENDIF»'''
+	
+	def dispatch String serialize(VoidTypeDefinition type) '''void'''
 	
 	def dispatch String serialize(BooleanTypeDefinition type) '''boolean'''
 	

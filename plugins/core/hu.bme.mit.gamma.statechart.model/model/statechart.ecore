@@ -65,7 +65,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
         eType="#//StateAnnotation" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="StateReferenceExpression" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NullaryExpression">
+  <eClassifiers xsi:type="ecore:EClass" name="StateReferenceExpression" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="region" lowerBound="1"
         eType="#//Region"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="state" lowerBound="1" eType="#//State"/>
@@ -89,10 +89,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
         eType="#//TransitionAnnotation" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="RaiseEventAction" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Statement">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="ecore:EClass interface.ecore#//Event"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="ecore:EClass interface.ecore#//Port"/>
-  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="RaiseEventAction" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Statement interface.ecore#//PortReferenceExpression interface.ecore#//EventReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="TimeoutAction" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.action.model/model/action.ecore#//Statement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="timeoutDeclaration" lowerBound="1"
         eType="#//TimeoutDeclaration"/>
@@ -105,17 +102,15 @@
   <eClassifiers xsi:type="ecore:EClass" name="EntryState" abstract="true" eSuperTypes="#//PseudoState"/>
   <eClassifiers xsi:type="ecore:EClass" name="ShallowHistoryState" eSuperTypes="#//EntryState"/>
   <eClassifiers xsi:type="ecore:EClass" name="DeepHistoryState" eSuperTypes="#//EntryState"/>
-  <eClassifiers xsi:type="ecore:EClass" name="AnyPortEventReference" eSuperTypes="interface.ecore#//EventReference">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="ecore:EClass interface.ecore#//Port"/>
+  <eClassifiers xsi:type="ecore:EClass" name="AnyPortEventReference" eSuperTypes="interface.ecore#//OccurrenceReferenceExpression interface.ecore#//PortReferenceExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="EventAnyPortReference" eSuperTypes="interface.ecore#//OccurrenceReferenceExpression interface.ecore#//EventReferenceExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="interface" eType="ecore:EClass interface.ecore#//Interface"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="PortEventReference" eSuperTypes="interface.ecore#//EventReference">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="ecore:EClass interface.ecore#//Event"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="ecore:EClass interface.ecore#//Port"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ClockTickReference" eSuperTypes="interface.ecore#//EventReference">
+  <eClassifiers xsi:type="ecore:EClass" name="PortEventReference" eSuperTypes="interface.ecore#//OccurrenceReferenceExpression interface.ecore#//PortReferenceExpression interface.ecore#//EventReferenceExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ClockTickReference" eSuperTypes="interface.ecore#//OccurrenceReferenceExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="clock" lowerBound="1" eType="ecore:EClass interface.ecore#//Clock"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="TimeoutEventReference" eSuperTypes="interface.ecore#//EventReference">
+  <eClassifiers xsi:type="ecore:EClass" name="TimeoutEventReference" eSuperTypes="interface.ecore#//OccurrenceReferenceExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="timeout" lowerBound="1"
         eType="#//TimeoutDeclaration"/>
   </eClassifiers>

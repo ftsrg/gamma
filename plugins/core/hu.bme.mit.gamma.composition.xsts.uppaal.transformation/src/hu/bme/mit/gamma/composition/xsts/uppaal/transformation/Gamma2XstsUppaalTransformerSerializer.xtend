@@ -16,8 +16,6 @@ import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
 import hu.bme.mit.gamma.transformation.util.annotations.AnnotatablePreprocessableElements
-import hu.bme.mit.gamma.transformation.util.annotations.DataflowCoverageCriterion
-import hu.bme.mit.gamma.transformation.util.annotations.InteractionCoverageCriterion
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.transformation.InitialStateSetting
@@ -32,9 +30,10 @@ class Gamma2XstsUppaalTransformerSerializer {
 	protected final String targetFolderUri
 	protected final String fileName
 	
-	protected final Integer minSchedulingConstraint
-	protected final Integer maxSchedulingConstraint
+	protected final Long minSchedulingConstraint
+	protected final Long maxSchedulingConstraint
 	// Configuration
+	protected final boolean inlineFunctions
 	protected final boolean optimize
 	protected final TransitionMerging transitionMerging
 	// Slicing
@@ -59,21 +58,17 @@ class Gamma2XstsUppaalTransformerSerializer {
 	
 	new(Component component, List<Expression> arguments,
 			String targetFolderUri, String fileName,
-			Integer schedulingConstraint) {
+			Long schedulingConstraint) {
 		this(component, arguments, targetFolderUri, fileName, schedulingConstraint, schedulingConstraint,
-			true, TransitionMerging.HIERARCHICAL,
-			null, new AnnotatablePreprocessableElements(
-				null, null, null, null, null, null, null, null, null, null, null,
-				InteractionCoverageCriterion.EVERY_INTERACTION,	InteractionCoverageCriterion.EVERY_INTERACTION,
-				null, DataflowCoverageCriterion.ALL_USE,
-				null, DataflowCoverageCriterion.ALL_USE
-			),
+			true, true, TransitionMerging.HIERARCHICAL,
+			null, new AnnotatablePreprocessableElements,
 			null, null)
 	}
 	
 	new(Component component, List<? extends Expression> arguments,
 			String targetFolderUri, String fileName,
-			Integer minSchedulingConstraint, Integer maxSchedulingConstraint,
+			Long minSchedulingConstraint, Long maxSchedulingConstraint,
+			boolean inlineFunctions,
 			boolean optimize,
 			TransitionMerging transitionMerging,
 			PropertyPackage slicingProperties,
@@ -86,6 +81,7 @@ class Gamma2XstsUppaalTransformerSerializer {
 		this.minSchedulingConstraint = minSchedulingConstraint
 		this.maxSchedulingConstraint = maxSchedulingConstraint
 		//
+		this.inlineFunctions = inlineFunctions
 		this.optimize = optimize
 		this.transitionMerging = transitionMerging
 		//
@@ -101,6 +97,7 @@ class Gamma2XstsUppaalTransformerSerializer {
 		val xStsTransformer = new Gamma2XstsTransformerSerializer(component,
 			arguments, targetFolderUri,
 			fileName, minSchedulingConstraint, maxSchedulingConstraint,
+			inlineFunctions, false,
 			optimize, false,
 			false, true,
 			transitionMerging,

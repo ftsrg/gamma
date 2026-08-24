@@ -25,6 +25,7 @@ import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.Triple
 import java.util.List
 
 import static com.google.common.base.Preconditions.checkState
@@ -60,6 +61,7 @@ class ValueDeclarationTransformer {
 		checkState(typeDefinition instanceof IntegerTypeDefinition, typeDefinition)
 		val lowlevelParameter = gammaParameter.clone
 		trace.put(gammaParameter, lowlevelParameter)
+		
 		return lowlevelParameter
 	}
 	
@@ -122,6 +124,7 @@ class ValueDeclarationTransformer {
 			ParameterDeclaration gammaParameter, List<String> lowlevelVariableNames, Tracer<T> tracer) {
 		val lowlevelVariables = gammaParameter.transformValue(tracer)
 		lowlevelVariables.nameLowlevelVariables(lowlevelVariableNames)
+		
 		return lowlevelVariables
 	}
 
@@ -142,7 +145,7 @@ class ValueDeclarationTransformer {
 		// Constant variable names do not really matter in terms of traceability
 		val lowlevelVariableNames = gammaConstant.names
 		lowlevelVariables.nameLowlevelVariables(lowlevelVariableNames)
-		//
+		
 		return lowlevelVariables
 	}
 	
@@ -158,6 +161,23 @@ class ValueDeclarationTransformer {
 		) as List<VariableDeclaration>
 		val lowlevelVariableNames = gammaVariable.names
 		lowlevelVariables.nameLowlevelVariables(lowlevelVariableNames)
+		
+		return lowlevelVariables
+	}
+	
+	def List<VariableDeclaration> transform(VariableDeclaration gammaVariable, Port gammaPort) {
+		val lowlevelVariables = gammaVariable.transformValue(
+			new Tracer<VariableDeclaration> {
+				override trace(ValueDeclaration value, FieldHierarchy fieldHierarchy,
+						VariableDeclaration lowlevelVariable) {
+					trace.put(new Triple(gammaPort, value, fieldHierarchy), lowlevelVariable)
+				}
+				override createValueDeclaration() { return createVariableDeclaration }
+			}
+		) as List<VariableDeclaration>
+		val lowlevelVariableNames = gammaVariable.getNames(gammaPort)
+		lowlevelVariables.nameLowlevelVariables(lowlevelVariableNames)
+		
 		return lowlevelVariables
 	}
 	

@@ -35,8 +35,10 @@ class Gamma2OcraTransformerSerializer {
 	protected List<? extends Expression> arguments
 	protected final String targetFolderUri
 	protected final String fileName
-	protected final Integer minSchedulingConstraint
-	protected final Integer maxSchedulingConstraint
+	
+	protected final Long minSchedulingConstraint
+	protected final Long maxSchedulingConstraint
+	
 	protected final String PROXY_INSTANCE_NAME = "_"
 	
 	//
@@ -54,7 +56,7 @@ class Gamma2OcraTransformerSerializer {
 	}
 	
 	new(Component component, List<? extends Expression> arguments,
-			String targetFolderUri, String fileName, Integer minSchedulingConstraint, Integer maxSchedulingConstraint) {
+			String targetFolderUri, String fileName, Long minSchedulingConstraint, Long maxSchedulingConstraint) {
 		this.component = component
 		this.arguments = arguments
 		this.targetFolderUri = targetFolderUri
@@ -64,16 +66,12 @@ class Gamma2OcraTransformerSerializer {
 	}
 	
 	def execute() {
-		// Organize to Subfolder	
-		//val subfolder = targetFolderUri + File.separator + "ocra"
 		// Normal transformation
 		val gammaToOcraTransformer = ModelSerializer.INSTANCE
 		
 		val contracts = ocraUtil.parseContractsFromFile(targetFolderUri + File.separator + "." +fileName.ocraContractsFileName)
 		val ocraString = gammaToOcraTransformer.execute(component.containingPackage, contracts)
 		
-		//val serialize
-
 		val ocraFile = new File(targetFolderUri + File.separator + fileName.ocraFileName)
 		ocraFile.saveString(ocraString)
 		createImplementationTemplates(ocraFile)
@@ -95,24 +93,24 @@ class Gamma2OcraTransformerSerializer {
 			
 			val originalName = statechart.name
 			val name = fqnInstanceName + "_TEMP"
-			val List<Expression> arguments = statechartInstance.arguments.map[evaluateExpression(it)]
+			val List<Expression> arguments = statechartInstance.arguments.map[it.evaluateExpression]
 			statechart.name = fqnInstanceName
 						
 			val transformer = new Gamma2XstsNuxmvTransformerSerializer(statechart, arguments , targetFolderUri, name, minSchedulingConstraint)
-			transformer.execute()
+			transformer.execute
 			statechart.name = originalName
 		}
 		///
 		
 		//Extract and Copy SMV serializations into respective template		
-		val Map<String, Set<String>> inVars = extractInVars(ocraString)
-		for (entry : inVars.entrySet()) {
-			val componentName = entry.getKey()
-			val inVarSet = entry.getValue()
+		val Map<String, Set<String>> inVars = ocraString.extractInVars
+		for (entry : inVars.entrySet) {
+			val componentName = entry.key
+			val inVarSet = entry.value
 		
-			parseIntoTemplate(targetFolderUri, inVarSet, componentName)
+			targetFolderUri.parseIntoTemplate(inVarSet, componentName)
 		}
-		deleteTempFiles(targetFolderUri)
+		targetFolderUri.deleteTempFiles
 		///
 	}
 	
@@ -147,7 +145,7 @@ class Gamma2OcraTransformerSerializer {
 	
 	def List<String> getConstantDeclerationNameList(int size) {
 		val constantNames = newArrayList
-		for (i : 1..size) {
+		for (i : 1 .. size) {
 			constantNames.add("constant" + i)
 		}
 		return constantNames

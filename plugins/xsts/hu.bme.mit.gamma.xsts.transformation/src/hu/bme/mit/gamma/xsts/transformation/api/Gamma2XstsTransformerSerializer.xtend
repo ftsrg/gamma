@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,8 +17,6 @@ import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
 import hu.bme.mit.gamma.transformation.util.ModelSlicerModelAnnotatorPropertyGenerator
 import hu.bme.mit.gamma.transformation.util.annotations.AnnotatablePreprocessableElements
-import hu.bme.mit.gamma.transformation.util.annotations.DataflowCoverageCriterion
-import hu.bme.mit.gamma.transformation.util.annotations.InteractionCoverageCriterion
 import hu.bme.mit.gamma.transformation.util.preprocessor.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -39,10 +37,12 @@ class Gamma2XstsTransformerSerializer {
 	protected final String targetFolderUri
 	protected final String fileName
 	
-	protected final Integer minSchedulingConstraint
-	protected final Integer maxSchedulingConstraint
+	protected final Long minSchedulingConstraint
+	protected final Long maxSchedulingConstraint
 	// Configuration
-	protected final boolean inlineFunctions
+	protected final boolean inlineLowlevelFunctions
+	protected final boolean inlineXStsFunctions
+	protected final boolean addReturnGuards
 	protected final boolean optimize
 	protected final boolean optimizeArray
 	protected final boolean optimizeMessageQueues
@@ -72,21 +72,17 @@ class Gamma2XstsTransformerSerializer {
 	}
 	
 	new(Component component, List<? extends Expression> arguments,
-			String targetFolderUri, String fileName,
-			Integer schedulingConstraint) {
+			String targetFolderUri, String fileName, Long schedulingConstraint) {
 		this(component, arguments, targetFolderUri, fileName, schedulingConstraint, schedulingConstraint,
 			true, false, false, true, TransitionMerging.HIERARCHICAL,
 			null,
-			new AnnotatablePreprocessableElements(null, null, null, null, null, null, null, null, null, null, null,
-				InteractionCoverageCriterion.EVERY_INTERACTION, InteractionCoverageCriterion.EVERY_INTERACTION,
-				null, DataflowCoverageCriterion.ALL_USE,
-				null, DataflowCoverageCriterion.ALL_USE),
+			new AnnotatablePreprocessableElements,
 			null, null)
 	}
 	
 	new(Component component, List<? extends Expression> arguments,
 			String targetFolderUri, String fileName,
-			Integer minSchedulingConstraint, Integer maxSchedulingConstraint,
+			Long minSchedulingConstraint, Long maxSchedulingConstraint,
 			boolean optimize, boolean optimizeArray,
 			boolean optimizeMessageQueues, boolean optimizeEnvironmentalMessageQueues,
 			TransitionMerging transitionMerging,
@@ -94,15 +90,15 @@ class Gamma2XstsTransformerSerializer {
 			AnnotatablePreprocessableElements annotatableElements,
 			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
 		this(component, arguments, targetFolderUri, fileName, minSchedulingConstraint, maxSchedulingConstraint,
-			true,
+			true, false,
 			optimize, optimizeArray, optimizeMessageQueues, optimizeEnvironmentalMessageQueues, transitionMerging,
 			slicingProperties, annotatableElements, initialState, initialStateSetting)
 	}
 	
 	new(Component component, List<? extends Expression> arguments,
 			String targetFolderUri, String fileName,
-			Integer minSchedulingConstraint, Integer maxSchedulingConstraint,
-			boolean inlineFunctions,
+			Long minSchedulingConstraint, Long maxSchedulingConstraint,
+			boolean inlineFunctions, boolean addReturnGuards,
 			boolean optimize, boolean optimizeArray,
 			boolean optimizeMessageQueues, boolean optimizeEnvironmentalMessageQueues,
 			TransitionMerging transitionMerging,
@@ -116,7 +112,9 @@ class Gamma2XstsTransformerSerializer {
 		this.minSchedulingConstraint = minSchedulingConstraint
 		this.maxSchedulingConstraint = maxSchedulingConstraint
 		//
-		this.inlineFunctions = inlineFunctions
+		this.inlineLowlevelFunctions = inlineFunctions && !component.hasInterfaceFunctionDeclarationsInStatecharts
+		this.inlineXStsFunctions = inlineFunctions && !inlineLowlevelFunctions
+		this.addReturnGuards = addReturnGuards
 		this.optimize = optimize
 		this.optimizeArray = optimizeArray
 		this.optimizeMessageQueues = optimizeMessageQueues
@@ -146,7 +144,7 @@ class Gamma2XstsTransformerSerializer {
 		slicerAnnotatorAndPropertyGenerator.execute
 		val gammaToXSTSTransformer = new GammaToXstsTransformer(
 			minSchedulingConstraint, maxSchedulingConstraint,
-			inlineFunctions,
+			inlineLowlevelFunctions, inlineXStsFunctions, addReturnGuards,
 			true, true, optimizeArray,
 			optimizeMessageQueues, optimizeEnvironmentalMessageQueues,
 			transitionMerging, initialState, initialStateSetting)

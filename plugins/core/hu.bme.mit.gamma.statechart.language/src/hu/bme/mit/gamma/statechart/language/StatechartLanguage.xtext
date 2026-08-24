@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -134,13 +134,14 @@ OpaqueTrigger returns OpaqueTrigger:
 ;
 
 EventTrigger returns InterfaceModel::EventTrigger:
-	eventReference=EventReference
+	eventReference=OccurrenceReferenceExpression
 ;
 
-EventReference returns InterfaceModel::EventReference:
+OccurrenceReferenceExpression returns InterfaceModel::OccurrenceReferenceExpression:
 	ClockTickReference | 
 	TimeoutEventReference |
-	AnyPortEventReference | 
+	AnyPortEventReference |
+	EventAnyPortReference | 
 	PortEventReference
 ;
 
@@ -154,6 +155,10 @@ TimeoutEventReference returns TimeoutEventReference:
 
 AnyPortEventReference returns AnyPortEventReference:
 	port=[InterfaceModel::Port] '.' 'any'
+;
+
+EventAnyPortReference returns EventAnyPortReference:
+	'any' '.'(interface=[InterfaceModel::Interface] '.')? event=[InterfaceModel::Event]
 ;
 
 PortEventReference returns PortEventReference:
@@ -585,7 +590,7 @@ MessageQueue returns CompositeModel::MessageQueue:
 ;
 
 EventPassing returns CompositeModel::EventPassing:
-	source=EventReference ('->' target=EventReference)?
+	source=OccurrenceReferenceExpression ('->' target=OccurrenceReferenceExpression)?
 ;
 
 enum DiscardStrategy returns CompositeModel::DiscardStrategy:
@@ -639,7 +644,9 @@ BroadcastChannel returns CompositeModel::BroadcastChannel:
 Interface returns InterfaceModel::Interface:
 	{InterfaceModel::Interface}
 	'interface' name=ID ('extends' (parents+=[InterfaceModel::Interface]) (',' (parents+=[InterfaceModel::Interface]))* )? '{'
-		((events+=EventDeclaration))*
+		(eventDeclarations+=EventDeclaration)*
+		(functionDeclarations+=FunctionDeclaration | 
+			variableDeclarations+=VariableDeclaration)*
 		('invariant' invariants+=Expression)*
 	'}'
 ;
@@ -662,14 +669,17 @@ enum Persistency returns InterfaceModel::Persistency:
 	PERSISTENT = 'persistent' | TRANSIENT = 'transient'
 ;
 
-// Overriding it for the sake of EventParameterReferenceExpression
+// Expressions (override)
+
 @Override 
-PrimaryExpression returns ExpressionModel::Expression: 
+ReferenceExpression returns ExpressionModel::Expression: 
 	super |
+	PortDeclarationReferenceExpression |
 	EventParameterReferenceExpression |
+	EventAnyPortParameterReferenceExpression |
 	InterfaceParameterReferenceExpression |
 	TimeoutReferenceExpression |
-	( EventReference '::' ) | // Now these event references are not usable only in triggers
+	( OccurrenceReferenceExpression '::' ) | // Now these event references are not usable only in triggers
 	StateReferenceExpression
 ;
 
@@ -678,14 +688,27 @@ StateReferenceExpression returns StateReferenceExpression:
 ;
 
 EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenceExpression:
-	port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] '::' parameter=[ExpressionModel::ParameterDeclaration];
+	port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] '::' declaration=[ExpressionModel::ParameterDeclaration];
+
+EventAnyPortParameterReferenceExpression returns InterfaceModel::EventAnyPortParameterReferenceExpression:
+	'any' '.'(interface=[InterfaceModel::Interface] '.')? event=[InterfaceModel::Event] '::' declaration=[ExpressionModel::ParameterDeclaration];
 
 InterfaceParameterReferenceExpression returns InterfaceModel::InterfaceParameterReferenceExpression:
-	//this is a placeholder for the language to be unambiguous
-	'this' '.' event=[InterfaceModel::Event] '::' parameter=[ExpressionModel::ParameterDeclaration];
+	// this is a placeholder for the language to be unambiguous
+	'this' '.' event=[InterfaceModel::Event] '::' declaration=[ExpressionModel::ParameterDeclaration];
 	
 TimeoutReferenceExpression returns TimeoutReferenceExpression:
 	'time-elapsed' '(' timeout=[TimeoutDeclaration] ')'
+;
+
+PortDeclarationReferenceExpression returns InterfaceModel::PortDeclarationReferenceExpression:
+	'::' port=[InterfaceModel::Port] '::' declaration=[ExpressionModel::ValueDeclaration]
+;
+
+@Override
+AssignableDirectReferenceExpression returns ExpressionModel::ReferenceExpression:
+	super |
+		PortDeclarationReferenceExpression
 ;
 
 // Action Language Extensions
@@ -717,8 +740,8 @@ DeactivateTimeoutAction returns DeactivateTimeoutAction:
 // Component instance element references for subgrammars
 
 ComponentInstanceStateExpression returns CompositeModel::ComponentInstanceElementReferenceExpression:
-	ComponentInstanceStateReferenceExpression | ComponentInstanceVariableReferenceExpression |
-		ComponentInstanceQueueSizeReferenceExpression |
+	ComponentInstanceStateReferenceExpression | ComponentInstancePortVariableReferenceExpression |
+		ComponentInstanceVariableReferenceExpression | ComponentInstanceQueueSizeReferenceExpression |
 		ComponentInstanceEventReferenceExpression | ComponentInstanceEventParameterReferenceExpression
 ;
 
@@ -727,7 +750,11 @@ ComponentInstanceStateReferenceExpression returns CompositeModel::ComponentInsta
 ;
 
 ComponentInstanceVariableReferenceExpression returns CompositeModel::ComponentInstanceVariableReferenceExpression:
-	'variable' instance=ComponentInstanceReferenceExpression '.' variableDeclaration=[ExpressionModel::VariableDeclaration]
+	'variable' instance=ComponentInstanceReferenceExpression '.' declaration=[ExpressionModel::VariableDeclaration]
+;
+
+ComponentInstancePortVariableReferenceExpression returns CompositeModel::ComponentInstancePortVariableReferenceExpression:
+	'port-variable' instance=ComponentInstanceReferenceExpression '::' port=[InterfaceModel::Port] '::' declaration=[ExpressionModel::VariableDeclaration]
 ;
 
 ComponentInstanceQueueSizeReferenceExpression returns CompositeModel::ComponentInstanceQueueSizeReferenceExpression:
@@ -740,7 +767,7 @@ ComponentInstanceEventReferenceExpression returns CompositeModel::ComponentInsta
 
 ComponentInstanceEventParameterReferenceExpression returns CompositeModel::ComponentInstanceEventParameterReferenceExpression:
 	'parameter' instance=ComponentInstanceReferenceExpression '.' port=[InterfaceModel::Port] '.'
-		event=[InterfaceModel::Event] '::' parameterDeclaration=[ExpressionModel::ParameterDeclaration]
+		event=[InterfaceModel::Event] '::' declaration=[ExpressionModel::ParameterDeclaration]
 ;
 
 ComponentInstanceReflectiveElementReferenceExpression returns CompositeModel::ComponentInstanceReflectiveElementReferenceExpression:
@@ -846,5 +873,3 @@ CoordinationTransition returns CoordinationTransition:
 	('/' ( => effects+=Action)* )?
 	
 ;
-
-//

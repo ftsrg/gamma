@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,19 +11,23 @@
 package hu.bme.mit.gamma.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.List
+import java.util.logging.Logger
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
@@ -32,8 +36,11 @@ class EventConnector {
 	public static final EventConnector INSTANCE = new EventConnector
 	protected new() {}
 	// Auxiliary objects
-	protected final extension GammaEcoreUtil expressionUtil = GammaEcoreUtil.INSTANCE
+	protected final Logger logger = Logger.getLogger("GammaLogger")
+	//
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
+	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	
 	// TODO Introduce EventReferenceToXstsVariableMapper
 	
@@ -182,6 +189,103 @@ class EventConnector {
 			val xStsOutVariable = xStsOutVariables.get(i)
 			val xStsInVariable = xStsInVariables.get(i)
 			xStsOutVariable.connectEvents(xStsInVariable, xStsAssignmentActions)
+		}
+	}
+	
+	//
+	
+	def void connectInterfaceFunctionsThroughChannels(XSTS xSts, CompositeComponent component) {
+		val xStsFunctionDeclarations = newArrayList
+		xStsFunctionDeclarations += xSts.functionDeclarations
+		val xStsFunctionCalls = xSts.getAllContentsOfType(FunctionAccessExpression)
+		
+		val channels = component.channels // component.selfAndAllComponents.filter(CompositeComponent).map[it.channels].flatten
+		for (channel : channels) {
+			val providedInstancePort = channel.providedPort
+			val providedPort = providedInstancePort.port
+			val providedSimplePort = providedPort.allBoundSimplePorts.onlyElement
+			val providedInstance = providedSimplePort.containingComponentInstance
+			val providedType = providedInstance.derivedType
+			val providedFunctions = providedType.functionDeclarations
+			
+			val requiredInstancePorts = channel.requiredPorts
+			for (requiredInstancePort : requiredInstancePorts) {
+				val requiredPort = requiredInstancePort.port
+				for (requiredSimplePort : requiredPort.allBoundSimplePorts) {
+					val requiredInstance = requiredSimplePort.containingComponentInstance
+					val requiredFunctions = requiredSimplePort.allFunctionDeclarations
+					for (requiredFunction : requiredFunctions) {
+						val functionDefinition = requiredFunction.getMatchingFunctionDeclaration(providedFunctions)
+						
+						val xStsPortFunctionDeclarationName = requiredFunction.getCustomizedName(requiredSimplePort, requiredInstance)
+						val xStsPortFunctionDeclarations = xStsFunctionDeclarations.filter[it.name == xStsPortFunctionDeclarationName]
+						for (xStsPortFunctionDeclaration : xStsPortFunctionDeclarations) {
+							val xStsFunctionDefinitionName = functionDefinition.getCustomizedName(providedInstance)
+							val xStsFunctionDefinition = xStsFunctionDeclarations.findFirst[it.name == xStsFunctionDefinitionName]
+							
+							for (xStsFunctionCall : xStsFunctionCalls) {
+								val xStsCalledFunction = xStsFunctionCall.functionDeclaration
+								
+								if (xStsCalledFunction === xStsPortFunctionDeclaration) {
+									xStsFunctionCall.operand = xStsFunctionDefinition.createReferenceExpression
+									logger.info('''Changing interface function reference «xStsPortFunctionDeclarationName» to «xStsFunctionDefinitionName»''')
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	def void connectInterfaceVariablesThroughChannels(XSTS xSts, CompositeComponent component) {
+		val xStsVariableDeclarations = newArrayList
+		xStsVariableDeclarations += xSts.variableDeclarations
+		val xStsVariableReferences = xSts.getAllContentsOfType(DirectReferenceExpression)
+		
+		val channels = component.channels // component.selfAndAllComponents.filter(CompositeComponent).map[it.channels].flatten
+		for (channel : channels) {
+			val providedInstancePort = channel.providedPort
+			val providedPort = providedInstancePort.port
+			val providedSimplePort = providedPort.allBoundSimplePorts.onlyElement
+			val providedInstance = providedSimplePort.containingComponentInstance
+			
+			val requiredInstancePorts = channel.requiredPorts
+			for (requiredInstancePort : requiredInstancePorts) {
+				val requiredPort = requiredInstancePort.port
+				for (requiredSimplePort : requiredPort.allBoundSimplePorts) {
+					val requiredInstance = requiredSimplePort.containingComponentInstance
+					val variables = requiredSimplePort.allVariableDeclarations
+					for (variable : variables) {
+						val xStsVariableDeclarationNames = variable.customizeNames(requiredSimplePort, requiredInstance)
+						val xStsVariableDefinitionNames = variable.customizeNames(providedSimplePort, providedInstance)
+						for (var i = 0; i < xStsVariableDeclarationNames.size; i++) {
+							val xStsVariableDeclarationName = xStsVariableDeclarationNames.get(i)
+							val _xStsVariableDeclarations = xStsVariableDeclarations.filter[it.name == xStsVariableDeclarationName]
+							for (xStsVariableDeclaration : _xStsVariableDeclarations) {
+								val xStsVariableDefinitionName = xStsVariableDefinitionNames.get(i)
+								val xStsVariableDefinition = xStsVariableDeclarations.findFirst[it.name == xStsVariableDefinitionName]
+								
+								if (xStsVariableDefinition === null) {
+									// Definition has been removed due to optimization; declaration will serve as definition
+									xStsVariableDeclaration.name = xStsVariableDefinitionName
+								}
+								else {
+									for (xStsVariableReference : xStsVariableReferences) {
+										val xStsReferencedVariable = xStsVariableReference.declaration
+										if (xStsReferencedVariable === xStsVariableDeclaration) {
+											xStsVariableReference.declaration = xStsVariableDefinition
+											logger.info('''Changing interface variable reference «xStsVariableDeclarationName» to «xStsVariableDefinitionName»''')
+										}
+									}
+									
+									xStsVariableDeclaration.delete
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 	

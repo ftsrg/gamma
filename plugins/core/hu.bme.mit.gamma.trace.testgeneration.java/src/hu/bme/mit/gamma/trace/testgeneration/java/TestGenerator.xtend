@@ -34,6 +34,8 @@ class TestGenerator {
 	
 	protected final String FINAL_TEST_PREFIX = "final"
 	protected final String TEST_ANNOTATION = "@Test"
+	protected final String BEFORE_ANNOTATION = "@BeforeEach"
+	protected final String AFTER_ANNOTATION = "@AfterEach"
 	protected final String TEST_NAME = "step"
 	
 	// Value is assigned by the execute methods
@@ -154,7 +156,7 @@ class TestGenerator {
 				protected «variable.type.serialize» «variable.name»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»;
 			«ENDFOR»
 			
-			@Before
+			«BEFORE_ANNOTATION»
 			public void init() {
 				«IF component.timed»
 «««					Only if there are timing specis in the model
@@ -166,7 +168,7 @@ class TestGenerator {
 			«ENDIF»
 			}
 			
-			@After
+			«AFTER_ANNOTATION»
 			public void tearDown() {
 				stop();
 			}
@@ -195,11 +197,11 @@ class TestGenerator {
 		
 		import java.util.Objects;
 		
-		import static org.junit.Assert.assertTrue;
+		import static org.junit.jupiter.api.Assertions.assertTrue;
 		
-		import org.junit.Before;
-		import org.junit.After;
-		import org.junit.Test;
+		import org.junit.jupiter.api.«BEFORE_ANNOTATION.substring(1)»;
+		import org.junit.jupiter.api.«AFTER_ANNOTATION.substring(1)»;
+		import org.junit.jupiter.api.«TEST_ANNOTATION.substring(1)»;
 		«IF waitingHandle instanceof WaitingAllowedInFunction»
 			import java.util.Arrays;
 			import java.util.List;

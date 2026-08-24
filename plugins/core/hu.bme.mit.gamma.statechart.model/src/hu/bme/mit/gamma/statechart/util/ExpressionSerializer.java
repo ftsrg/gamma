@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,18 +12,20 @@ package hu.bme.mit.gamma.statechart.util;
 
 import java.util.List;
 
+import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.Expression;
-import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
-import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
+import hu.bme.mit.gamma.statechart.interface_.Port;
+import hu.bme.mit.gamma.statechart.interface_.PortDeclarationReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
@@ -108,7 +110,11 @@ public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.Expre
 	
 	protected String _serialize(EventParameterReferenceExpression expression) {
 		return expression.getPort().getName() + "." + expression.getEvent().getName() + "::"
-				+ expression.getParameter().getName();
+				+ expression.getDeclaration().getName();
+	}
+	
+	protected String _serialize(PortDeclarationReferenceExpression expression) {
+		return "::" + expression.getPort().getName() + "::" + expression.getDeclaration().getName();
 	}
 	
 	protected String _serialize(StateReferenceExpression expression) {
@@ -151,8 +157,15 @@ public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.Expre
 	
 	protected String _serialize(ComponentInstanceVariableReferenceExpression expression) {
 		ComponentInstanceReferenceExpression instance = expression.getInstance();
-		VariableDeclaration variableDeclaration = expression.getVariableDeclaration();
+		Declaration variableDeclaration = expression.getDeclaration();
 		return _serialize(instance) + DELIMITER + variableDeclaration.getName();
+	}
+	
+	protected String _serialize(ComponentInstancePortVariableReferenceExpression expression) {
+		ComponentInstanceReferenceExpression instance = expression.getInstance();
+		Port port = expression.getPort();
+		Declaration variableDeclaration = expression.getDeclaration();
+		return _serialize(instance) + DELIMITER + port.getName() + DELIMITER + variableDeclaration.getName();
 	}
 	
 	protected String _serialize(ComponentInstanceEventReferenceExpression expression) {
@@ -163,7 +176,7 @@ public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.Expre
 	
 	protected String _serialize(ComponentInstanceEventParameterReferenceExpression expression) {
 		ComponentInstanceReferenceExpression instance = expression.getInstance();
-		ParameterDeclaration parameterDeclaration = expression.getParameterDeclaration();
+		Declaration parameterDeclaration = expression.getDeclaration();
 		return _serialize(instance) + DELIMITER + expression.getPort().getName() +
 				DELIMITER + expression.getEvent().getName() + "::" + parameterDeclaration.getName();
 	}
@@ -188,6 +201,9 @@ public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.Expre
 		if (expression instanceof EventParameterReferenceExpression eventParameterReferenceExpression) {
 			return _serialize(eventParameterReferenceExpression);
 		}
+		if (expression instanceof PortDeclarationReferenceExpression portDeclarationReferenceExpression) {
+			return _serialize(portDeclarationReferenceExpression);
+		}
 		if (expression instanceof StateReferenceExpression reference) {
 			return _serialize(reference);
 		}
@@ -198,6 +214,9 @@ public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.Expre
 			return _serialize(reference);
 		}
 		if (expression instanceof ComponentInstanceVariableReferenceExpression reference) {
+			return _serialize(reference);
+		}
+		if (expression instanceof ComponentInstancePortVariableReferenceExpression reference) {
 			return _serialize(reference);
 		}
 		if (expression instanceof ComponentInstanceEventReferenceExpression reference) {

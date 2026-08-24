@@ -142,9 +142,12 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//FieldAssignment/value"/>
     </genClasses>
     <genClasses ecoreClass="expression.ecore#//ReferenceExpression"/>
-    <genClasses ecoreClass="expression.ecore#//DirectReferenceExpression">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference expression.ecore#//DirectReferenceExpression/declaration"/>
+    <genClasses ecoreClass="expression.ecore#//AbstractDirectReferenceExpression">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference expression.ecore#//AbstractDirectReferenceExpression/declaration"/>
     </genClasses>
+    <genClasses ecoreClass="expression.ecore#//DirectReferenceExpression"/>
+    <genClasses image="false" ecoreClass="expression.ecore#//ParameterReferenceExpression"/>
+    <genClasses image="false" ecoreClass="expression.ecore#//VariableReferenceExpression"/>
     <genClasses ecoreClass="expression.ecore#//TupleReferenceExpression">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//TupleReferenceExpression/references"/>
     </genClasses>

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -204,11 +204,14 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkTasks(Verification verification) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		List<AnalysisLanguage> languages = verification.getAnalysisLanguages();
-		if (languages.size() != 1) {
+		int languagesSize = languages.size();
+		if (languagesSize < 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-				"A single formal language must be specified",
+				"At least one formal language must be specified",
 					new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__ANALYSIS_LANGUAGES)));
+			return validationResultMessages;
 		}
+		AnalysisLanguage language = languages.getFirst();
 		File resourceFile = ecoreUtil.getFile(verification.eResource());
 		List<String> modelFiles = verification.getFileName();
 		if (modelFiles.size() != 1) {
@@ -217,11 +220,24 @@ public class GenmodelValidator extends ExpressionModelValidator {
 					new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME)));
 		}
 		for (String modelFile : modelFiles) {
-			if (!fileUtil.isValidRelativeFile(resourceFile, modelFile)) {
-				int index = modelFiles.indexOf(modelFile);
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"This is not a valid relative path to a model file: " + modelFile,
-						new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, index)));
+			int index = modelFiles.indexOf(modelFile);
+			if (language == AnalysisLanguage.SMART || language == AnalysisLanguage.SMART_ALL ||
+						1 < languagesSize) {
+				if (fileUtil.hasExtension(modelFile)) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+						"Do not add the extension of the file for smart or multi-thread verification: " + modelFile,
+							new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, index)));
+				}
+			}
+			else if (!fileUtil.isValidRelativeFile(resourceFile, modelFile)) {
+				String fileExtension = fileNamer.getFileExtension(language);
+				String adjustedModelFile = fileUtil.changeExtension(modelFile, fileExtension);
+				if (fileUtil.hasExtension(modelFile) ||
+						!fileUtil.isValidRelativeFile(resourceFile, adjustedModelFile)) { 
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+						"This is not a valid relative path to a model file: " + modelFile,
+							new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, index)));
+				}
 			}
 		}
 		
@@ -245,6 +261,11 @@ public class GenmodelValidator extends ExpressionModelValidator {
 				"This setting can be used only if the default name is not changed during the " +
 					"derivation of the analysis model ('file' setting is not used in the analysis task)",
 						new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__BACK_ANNOTATE_TO_ORIGINAL)));
+		}
+		if (verification.isOptimizeModel()) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO,
+				"After the first execution, this setting shall be 'true' unless the analysis model is regenerated",
+					new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__OPTIMIZE_MODEL)));
 		}
 		
 		return validationResultMessages;

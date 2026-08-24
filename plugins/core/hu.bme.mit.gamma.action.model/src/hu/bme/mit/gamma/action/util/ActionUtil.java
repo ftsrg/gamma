@@ -32,6 +32,7 @@ import hu.bme.mit.gamma.action.model.SwitchStatement;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.AccessExpression;
+import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DefaultExpression;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
@@ -39,6 +40,7 @@ import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
+import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.OpaqueExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
@@ -203,6 +205,25 @@ public class ActionUtil extends ExpressionUtil {
 		return createBlock(actions);
 	}
 	
+	public void removeBlockInBlock(Action action) {
+		if (action == null) {
+			return;
+		}
+		List<Block> blocks = ecoreUtil.getSelfAndAllContentsOfType(action, Block.class);
+		for (Block block : blocks) {
+			List<Action> actions = block.getActions();
+			EObject container = block.eContainer();
+			if (actions.isEmpty()) {
+				ecoreUtil.remove(block);
+			}
+			else if (container instanceof Block containerBlock) {
+				containerBlock.getActions()
+					.addAll(actions);
+				ecoreUtil.remove(block);
+			}
+		}
+	}
+	
 	public IfStatement createIfStatement(Expression condition, Action then) {
 		return createIfStatement(condition, then, null);
 	}
@@ -293,9 +314,9 @@ public class ActionUtil extends ExpressionUtil {
 	
 	//
 	
-	public ExpressionStatement createOpaqueStatement(String string) {
+	public ExpressionStatement createOpaqueStatement(CharSequence string) {
 		OpaqueExpression opaqueExpression = factory.createOpaqueExpression();
-		opaqueExpression.setExpression(string);
+		opaqueExpression.setExpression(string.toString());
 		return createExpressionStatement(opaqueExpression);
 	}
 	
@@ -311,7 +332,19 @@ public class ActionUtil extends ExpressionUtil {
 		return statement;
 	}
 	
-	public VariableDeclarationStatement createDeclarationStatement(Type type, String name) {
+	public VariableDeclarationStatement createBooleanDeclarationStatement(CharSequence name) {
+		BooleanTypeDefinition type = factory.createBooleanTypeDefinition();
+		return createDeclarationStatement(type, name,
+				ExpressionModelDerivedFeatures.getDefaultExpression(type));
+	}
+	
+	public VariableDeclarationStatement createIntegerDeclarationStatement(CharSequence name) {
+		IntegerTypeDefinition type = factory.createIntegerTypeDefinition();
+		return createDeclarationStatement(type, name,
+				ExpressionModelDerivedFeatures.getDefaultExpression(type));
+	}
+	
+	public VariableDeclarationStatement createDeclarationStatement(Type type, CharSequence name) {
 		return createDeclarationStatement(type, name, // Otherwise, the variable is "havoced"
 				ExpressionModelDerivedFeatures.getDefaultExpression(type));
 	}
@@ -320,11 +353,23 @@ public class ActionUtil extends ExpressionUtil {
 		return actionFactory.createEmptyStatement();
 	}
 	
+	public VariableDeclarationStatement createIntegerDeclarationStatement(
+			CharSequence name, Expression initialExpression) {
+		IntegerTypeDefinition type = factory.createIntegerTypeDefinition();
+		return createDeclarationStatement(type, name, initialExpression);
+	}
+	
+	public VariableDeclarationStatement createBooleanDeclarationStatement(
+			CharSequence name, Expression initialExpression) {
+		BooleanTypeDefinition type = factory.createBooleanTypeDefinition();
+		return createDeclarationStatement(type, name, initialExpression);
+	}
+	
 	public VariableDeclarationStatement createDeclarationStatement(Type type,
-			String name, Expression initialExpression) {
+			CharSequence name, Expression initialExpression) {
 		VariableDeclaration variable = factory.createVariableDeclaration();
 		variable.setType(type);
-		variable.setName(name);
+		variable.setName(name.toString());
 		variable.setExpression(initialExpression);
 		return createDeclarationStatement(variable);
 	}

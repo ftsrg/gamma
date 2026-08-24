@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -61,8 +61,8 @@ class GammaToXstsTransformer {
 	// Transformation utility
 	protected final extension ComponentTransformer componentTransformer
 	// Transformation settings
-	protected final Integer minSchedulingConstraint
-	protected final Integer maxSchedulingConstraint
+	protected final Long minSchedulingConstraint
+	protected final Long maxSchedulingConstraint
 	
 	protected final PropertyPackage initialState
 	protected final InitialStateSetting initialStateSetting
@@ -89,7 +89,7 @@ class GammaToXstsTransformer {
 		this(null, true, true, false, false, true, TransitionMerging.HIERARCHICAL)
 	}
 	
-	new(Integer schedulingConstraint, boolean transformOrthogonalActions,
+	new(Long schedulingConstraint, boolean transformOrthogonalActions,
 			boolean optimize, boolean optimizeOneCapacityArrays,
 			boolean unfoldMessageQueues, boolean optimizeEnvironmentalMessageQueues,
 			TransitionMerging transitionMerging) {
@@ -98,25 +98,26 @@ class GammaToXstsTransformer {
 				transitionMerging, null, null)
 	}
 	
-	new(Integer schedulingConstraint, boolean transformOrthogonalActions,
+	new(Long schedulingConstraint, boolean transformOrthogonalActions,
 			boolean optimize, boolean optimizeOneCapacityArrays,
 			boolean unfoldMessageQueues, boolean optimizeEnvironmentalMessageQueues,
 			TransitionMerging transitionMerging,
 			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
-		this(schedulingConstraint, schedulingConstraint, true,
+		this(schedulingConstraint, schedulingConstraint, true, false, false,
 			transformOrthogonalActions, optimize, optimizeOneCapacityArrays, unfoldMessageQueues,
 			optimizeEnvironmentalMessageQueues, transitionMerging, initialState, initialStateSetting)
 	}
 	
-	new(Integer minSchedulingConstraint, Integer maxSchedulingConstraint,
-			boolean inlineFunctions,
+	new(Long minSchedulingConstraint, Long maxSchedulingConstraint,
+			boolean inlineLowlevelFunctions, boolean inlineXStsFunctions, boolean addReturnGuards,
 			boolean transformOrthogonalActions,	boolean optimize, boolean optimizeOneCapacityArrays,
 			boolean unfoldMessageQueues, boolean optimizeEnvironmentalMessageQueues,
 			TransitionMerging transitionMerging,
 			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
-		this.gammaToLowlevelTransformer = new GammaToLowlevelTransformer(inlineFunctions)
-		this.componentTransformer = new ComponentTransformer(this.gammaToLowlevelTransformer,
-			transformOrthogonalActions, optimize, optimizeEnvironmentalMessageQueues, transitionMerging)
+		this.gammaToLowlevelTransformer = new GammaToLowlevelTransformer(inlineLowlevelFunctions, addReturnGuards, null)
+		this.componentTransformer = new ComponentTransformer(gammaToLowlevelTransformer,
+				inlineXStsFunctions, transformOrthogonalActions, optimize,
+				optimizeEnvironmentalMessageQueues, transitionMerging)
 		this.minSchedulingConstraint = minSchedulingConstraint
 		this.maxSchedulingConstraint = maxSchedulingConstraint
 		this.initialState = initialState
@@ -136,7 +137,7 @@ class GammaToXstsTransformer {
 		return _package.preprocessAndExecute(
 				topComponentArguments, targetFolderUri, fileName).serializeXsts
 	}
-
+	
 	def preprocessAndExecute(Package _package,
 			String targetFolderUri, String fileName) {
 		val component = modelPreprocessor.preprocess(
@@ -160,6 +161,9 @@ class GammaToXstsTransformer {
 		val lowlevelPackage = gammaToLowlevelTransformer.transform(_package)
 		// Serializing the xSTS
 		val xSts = gammaComponent.transform(lowlevelPackage) // Transforming the Gamma component
+		if (componentTransformer.inlineFunctions) {
+			xSts.functionDeclarations.clear
+		}
 		
 		// Adding metadata
 		if (gammaComponent.synchronous) {

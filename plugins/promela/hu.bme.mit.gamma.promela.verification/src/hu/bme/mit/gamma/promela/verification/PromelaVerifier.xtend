@@ -257,6 +257,10 @@ class PromelaVerifier extends AbstractVerifier {
 					"(for details, see 'https://github.com/ftsrg/gamma/blob/master/plugins/promela/README.md')."
 	}
 	
+	override protected getAnalysisLanguage() {
+		return "PROMELA"
+	}
+	
 	//
 	
 	static class BmcData {

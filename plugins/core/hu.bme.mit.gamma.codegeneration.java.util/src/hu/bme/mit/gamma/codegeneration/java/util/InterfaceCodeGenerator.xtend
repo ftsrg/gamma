@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegeneration.java.util
 
+import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.interface_.Interface
@@ -18,19 +19,19 @@ import java.util.HashSet
 import java.util.Set
 
 import static extension hu.bme.mit.gamma.codegeneration.java.util.Namings.*
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class InterfaceCodeGenerator {
 	
 	final String BASE_PACKAGE_NAME
 	
+	final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
 	final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	
 	new(String basePackageName) {
 		this.BASE_PACKAGE_NAME = basePackageName
 	}
-	
-
 	
 	def createInterface(Interface _interface) '''
 		package «_interface.getPackageString(BASE_PACKAGE_NAME)»;
@@ -41,10 +42,10 @@ class InterfaceCodeGenerator {
 			import «importedPackage.getPackageString(BASE_PACKAGE_NAME)».*;
 		«ENDFOR»
 		
-		public interface «_interface.implementationName» {
+		public interface «_interface.implementationName»«IF !_interface.parents.empty
+				» extends «FOR parent : _interface.parents SEPARATOR ', '»«parent.implementationName»«ENDFOR»«ENDIF» {
 		
 			interface Provided extends Listener.Required {
-				
 				«_interface.createInterface(EventDirection.OUT)»
 				
 				void registerListener(Listener.Provided listener);
@@ -61,14 +62,21 @@ class InterfaceCodeGenerator {
 			
 			interface Listener {
 				
-			interface Provided«IF !_interface.parents.empty» extends «FOR parent : _interface.parents
-						SEPARATOR ', '»«parent.implementationName».Listener.Provided«ENDFOR»«ENDIF» {
-				«_interface.createListenerInterface(EventDirection.OUT)»
+				interface Provided extends «_interface.variableBindingInterfaceName»«FOR parent : _interface.parents
+							», «parent.implementationName».Listener.Provided«ENDFOR» {
+					«_interface.createListenerInterface(EventDirection.OUT)»
 				}
 				
-			interface Required«IF !_interface.parents.empty» extends «FOR parent : _interface.parents
-						SEPARATOR ', '»«parent.implementationName».Listener.Required«ENDFOR»«ENDIF» {
-				«_interface.createListenerInterface(EventDirection.IN)»
+				interface Required extends «_interface.variableBindingInterfaceName»«FOR parent : _interface.parents
+											», «parent.implementationName».Listener.Required«ENDFOR» {
+					«_interface.createFunctionDeclarations»
+					«_interface.createListenerInterface(EventDirection.IN)»
+				}
+				
+				interface «_interface.variableBindingInterfaceName» {
+					«FOR variable : _interface.variableDeclarations»
+						public void set«variable.name.toFirstUpper»(«variable.type.serialize» «variable.name»);
+					«ENDFOR»
 				}
 				
 			}
@@ -84,7 +92,7 @@ class InterfaceCodeGenerator {
 		for (parentInterface : anInterface.parents) {
 			eventSet.addAll(parentInterface.collectAllEvents(oppositeDirection))
 		}
-		for (event : anInterface.events
+		for (event : anInterface.eventDeclarations
 				.filter[it.direction != oppositeDirection]
 				.map[it.event]) {
 			eventSet.add(event)
@@ -107,13 +115,21 @@ class InterfaceCodeGenerator {
 	private def createListenerInterface(Interface _interface, EventDirection eventDirection) {
 		val notCorrectDirection = eventDirection.opposite
 		'''
-			«FOR event : collectAllEvents(_interface,notCorrectDirection)»
+			«FOR event : collectAllEvents(_interface, notCorrectDirection)»
 				void raise«event.name.toFirstUpper»(«FOR parameter : event.parameterDeclarations SEPARATOR ", "»«parameter.type.serialize» «parameter.name»«ENDFOR»);
 			«ENDFOR»
 		'''
 	}
 	
-		
+	private def createFunctionDeclarations(Interface _interface) '''
+		«FOR function : _interface.functionDeclarations»
+			«function.type.serialize» «function.name»(«FOR parameter : function.parameterDeclarations SEPARATOR ", "»«parameter.type.serialize» «parameter.name»«ENDFOR»);
+			«IF function.hasRecordParameterDeclaration»
+				«function.type.serialize» «function.name»(«FOR parameter : function.parameterDeclarations SEPARATOR ", "»«val nativeTypes = parameter.nativeTypes»«FOR type : nativeTypes SEPARATOR ", "»«type.serialize» «parameter.name»_«nativeTypes.indexOf(type)»«ENDFOR»«ENDFOR»);
+			«ENDIF»
+		«ENDFOR»
+	'''
+	
 	def createReflectiveInterface() '''
 		package «BASE_PACKAGE_NAME»;
 		
@@ -152,6 +168,10 @@ class InterfaceCodeGenerator {
 			String[] getVariables();
 			
 			Object getValue(String variable);
+			
+			default Object getValue(String port, String variable) {
+				return getValue(port + "_" + variable);
+			}
 			
 			default boolean checkVariableValue(String variable, Object expectedValue) {
 				return Objects.deepEquals(getValue(variable), expectedValue);

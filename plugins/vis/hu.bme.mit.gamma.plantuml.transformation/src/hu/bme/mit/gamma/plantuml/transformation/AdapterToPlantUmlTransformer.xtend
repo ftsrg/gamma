@@ -13,8 +13,8 @@ package hu.bme.mit.gamma.plantuml.transformation
 import hu.bme.mit.gamma.expression.util.ExpressionSerializer
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
-import hu.bme.mit.gamma.statechart.interface_.EventReference
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
+import hu.bme.mit.gamma.statechart.interface_.OccurrenceReferenceExpression
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
@@ -33,7 +33,7 @@ class AdapterToPlantUmlTransformer {
 	}
 
 	//
-	dispatch def getSimpleConnection(AnyPortEventReference source, EventReference target, String queueName) {
+	dispatch def getSimpleConnection(AnyPortEventReference source, OccurrenceReferenceExpression target, String queueName) {
 		return '''
 			«IF target === null»
 				c_«source.getPort.name» ...> «queueName» : "any"
@@ -48,7 +48,7 @@ class AdapterToPlantUmlTransformer {
 		'''
 	}
 
-	dispatch def getSimpleConnection(PortEventReference source, EventReference target, String queueName) {
+	dispatch def getSimpleConnection(PortEventReference source, OccurrenceReferenceExpression target, String queueName) {
 		return '''
 			«IF target === null»
 				c_«source.getPort.name» ..> «queueName» : "any"
@@ -63,7 +63,7 @@ class AdapterToPlantUmlTransformer {
 		'''
 	}
 	
-	dispatch def getSimpleConnection(ClockTickReference source, EventReference target, String queueName) '''
+	dispatch def getSimpleConnection(ClockTickReference source, OccurrenceReferenceExpression target, String queueName) '''
 		c_«source.clock.name» ..> «queueName»
 	'''
 	//
@@ -140,7 +140,7 @@ class AdapterToPlantUmlTransformer {
 			priority=«queue.priority»
 			]
 			«FOR passing : queue.eventPassings»
-				«getSimpleConnection(passing.source, passing.target, queue.name)»
+				«passing.source.getSimpleConnection(passing.target, queue.name)»
 			«ENDFOR»
 		«ENDFOR»
 		

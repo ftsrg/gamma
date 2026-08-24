@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -46,6 +46,8 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
@@ -89,14 +91,15 @@ import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
-import hu.bme.mit.gamma.statechart.interface_.EventReference;
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
+import hu.bme.mit.gamma.statechart.interface_.OccurrenceReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Persistency;
 import hu.bme.mit.gamma.statechart.interface_.Port;
+import hu.bme.mit.gamma.statechart.interface_.PortDeclarationReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.interface_.SimpleTrigger;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
@@ -362,7 +365,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		for (Trigger trigger : unwrappedContractTriggers) {
 			if (trigger instanceof EventTrigger _eventTrigger) {
 				EventTrigger eventTrigger = ecoreUtil.clone(_eventTrigger);
-				EventReference eventReference = eventTrigger.getEventReference();
+				OccurrenceReferenceExpression eventReference = eventTrigger.getEventReference();
 				if (eventReference instanceof PortEventReference portEventReference) {
 					Port contractPort = portEventReference.getPort();
 					// Port tracing
@@ -609,20 +612,27 @@ public class StatechartModelValidator extends ActionModelValidator {
 		
 		List<Declaration> declarations = ecoreUtil.getAllContentsOfType(component, Declaration.class);
 		
-		Set<Declaration> usedDeclarations = new HashSet<Declaration>();		
-		ecoreUtil.getAllContentsOfType(component, DirectReferenceExpression.class).stream()
-				.map(it -> it.getDeclaration()).forEach(it -> usedDeclarations.add(it));
-		ecoreUtil.getAllContentsOfType(component, VariableBinding.class).stream()
-				.map(it -> it.getStatechartVariable()).forEach(it -> usedDeclarations.add(it));
+		Set<Declaration> usedDeclarations = new HashSet<Declaration>();
+		usedDeclarations.addAll(
+				ecoreUtil.getAllContentsOfType(component, DirectReferenceExpression.class).stream()
+					.map(it -> it.getDeclaration()).toList());
+		usedDeclarations.addAll(
+				ecoreUtil.getAllContentsOfType(component, VariableBinding.class).stream()
+						.map(it -> it.getStatechartVariable()).toList());
 		
-		for (Declaration declaration : declarations) {
-			if (!usedDeclarations.contains(declaration)) {
-				validationResultMessages.add(
-					new ValidationResultMessage(ValidationResult.WARNING, 
-						"This declaration is unused", 
-							new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, declaration)));
-			}
+		List<FunctionDeclaration> functionImplementations = StatechartModelDerivedFeatures.getFunctionImplementations(component);
+		
+		Set<Declaration> unusedDeclarations = new HashSet<Declaration>(declarations);
+		unusedDeclarations.removeAll(usedDeclarations);
+		unusedDeclarations.removeAll(functionImplementations);
+		
+		for (Declaration declaration : unusedDeclarations) {
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.WARNING, 
+					"This declaration is unused", 
+						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, declaration)));
 		}
+		
 		return validationResultMessages;
 	}
 	
@@ -685,8 +695,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 				if (references.stream().noneMatch(it -> it.getPort() == port && it.getEvent() == event)) {
 					validationResultMessages.add(
 						new ValidationResultMessage(ValidationResult.WARNING,
-							"None of the preceding transitions are triggered by this port-event combination", 
-								new ReferenceInfo(InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT)));
+							"None of the corresponding transitions are triggered by this specific port-event combination", 
+								new ReferenceInfo(InterfaceModelPackage.Literals.EVENT_REFERENCE_EXPRESSION__EVENT)));
 				}
 			}
 		}
@@ -783,7 +793,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 							new ReferenceInfo(elseExpression.eContainingFeature(), container)));
 			}
 			StateNode node = transition.getSourceState();
-			List<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(node);
+			List<Transition> outgoingTransitions = new ArrayList<Transition>(
+					StatechartModelDerivedFeatures.getOutgoingTransitions(node));
 			outgoingTransitions.remove(transition);
 			if (outgoingTransitions.stream().anyMatch(it -> it.getGuard() instanceof ElseExpression)) {
 				validationResultMessages.add(
@@ -809,7 +820,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 					validationResultMessages.add(
 						new ValidationResultMessage(ValidationResult.ERROR, 
 							"This event is not an in event",
-								new ReferenceInfo(StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__EVENT)));
+								new ReferenceInfo(InterfaceModelPackage.Literals.EVENT_REFERENCE_EXPRESSION__EVENT)));
 				}
 			}
 		}
@@ -867,7 +878,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.ERROR, 
 					"This event is not an out event",
-						new ReferenceInfo(StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT)));
+						new ReferenceInfo(InterfaceModelPackage.Literals.EVENT_REFERENCE_EXPRESSION__EVENT)));
 			return validationResultMessages;
 		}
 		if (arguments.size() != parameterDeclarations.size()) {
@@ -941,7 +952,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 	}
 	
 	public boolean allTransitionsAreLoop(StateNode node) {
-		Collection<Transition> incomingTransitions = StatechartModelDerivedFeatures.getIncomingTransitions(node);
+		Collection<Transition> incomingTransitions = new ArrayList<Transition>(
+				StatechartModelDerivedFeatures.getIncomingTransitions(node));
 		Collection<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(node);
 		if (incomingTransitions.size() != outgoingTransitions.size()) {
 			return false;
@@ -1305,7 +1317,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 			Expression siblingGuard = siblingTransition.getGuard();
 			boolean oneIsUnguarded = guard == null || siblingGuard == null;
 			if (potentialTrigger instanceof EventTrigger trigger) {
-				EventReference eventReference = trigger.getEventReference();
+				OccurrenceReferenceExpression eventReference = trigger.getEventReference();
 				if (eventReference instanceof PortEventReference portEventReference) {
 					if (isTransitionTriggeredByPortEvent(siblingTransition,
 							portEventReference.getPort(), portEventReference.getEvent())
@@ -1336,7 +1348,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 			return true;
 		}
 		if (trigger instanceof EventTrigger eventTrigger) {
-			EventReference eventReference = eventTrigger.getEventReference();
+			OccurrenceReferenceExpression eventReference = eventTrigger.getEventReference();
 			if (eventReference instanceof PortEventReference candidateEventReference) {
 				if (candidateEventReference.getPort() == port && candidateEventReference.getEvent() == event) {
 					return true;
@@ -1357,7 +1369,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 			return true;
 		}
 		if (trigger instanceof EventTrigger eventTrigger) {
-			EventReference eventReference = eventTrigger.getEventReference();
+			OccurrenceReferenceExpression eventReference = eventTrigger.getEventReference();
 			if (eventReference instanceof PortEventReference candidateEventReference) {
 				if (candidateEventReference.getPort() == port) {
 					return true;
@@ -1969,8 +1981,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Map<Port, Collection<Event>> containedEvents = new HashMap<Port, Collection<Event>>();
 		for (MessageQueue queue : wrapper.getMessageQueues()) {
-			List<EventReference> eventReferences = StatechartModelDerivedFeatures.getSourceEventReferences(queue);
-			for (EventReference eventReference : eventReferences) {
+			List<OccurrenceReferenceExpression> eventReferences = StatechartModelDerivedFeatures.getSourceEventReferences(queue);
+			for (OccurrenceReferenceExpression eventReference : eventReferences) {
 				int index = eventReferences.indexOf(eventReference);
 				if (eventReference instanceof PortEventReference portEventReference) {
 					Port containedPort = portEventReference.getPort();
@@ -2065,7 +2077,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		SimpleTrigger trigger = controlSpecification.getTrigger();
 		if (trigger instanceof EventTrigger eventTrigger) {
-			EventReference eventReference = eventTrigger.getEventReference();
+			OccurrenceReferenceExpression eventReference = eventTrigger.getEventReference();
 			// Checking out-events
 			if (eventReference instanceof PortEventReference portEventReference) {
 				Port containedPort = portEventReference.getPort();
@@ -2116,8 +2128,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 	public Collection<ValidationResultMessage> checkMessageQueue(MessageQueue queue) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
-		List<EventReference> eventReferences = StatechartModelDerivedFeatures.getSourceEventReferences(queue);
-		for (EventReference eventReference : eventReferences) {
+		List<OccurrenceReferenceExpression> eventReferences = StatechartModelDerivedFeatures.getSourceEventReferences(queue);
+		for (OccurrenceReferenceExpression eventReference : eventReferences) {
 			int index = eventReferences.indexOf(eventReference);
 			// Checking out-events
 			if (eventReference instanceof PortEventReference portEventReference) {
@@ -2159,7 +2171,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 				}
 			}
 			if (trigger instanceof EventTrigger eventTrigger) {
-				EventReference eventReference = eventTrigger.getEventReference();
+				OccurrenceReferenceExpression eventReference = eventTrigger.getEventReference();
 				if (eventReference instanceof AnyPortEventReference anyPortEventReference) {
 					Port port = anyPortEventReference.getPort();
 					Collection<Event> portEvents = StatechartModelDerivedFeatures.getInputEvents(port);
@@ -2214,16 +2226,16 @@ public class StatechartModelValidator extends ActionModelValidator {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.ERROR, 
 					"There are no events coming in through this port", 
-						new ReferenceInfo(StatechartModelPackage.Literals.ANY_PORT_EVENT_REFERENCE__PORT)));
+						new ReferenceInfo(InterfaceModelPackage.Literals.PORT_REFERENCE_EXPRESSION__PORT)));
 		}
 		return validationResultMessages;
 	}
 	
 	public Collection<ValidationResultMessage> checkEventPassings(EventPassing eventPassing) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		EventReference target = eventPassing.getTarget();
+		OccurrenceReferenceExpression target = eventPassing.getTarget();
 		if (target != null) {
-			EventReference source = eventPassing.getSource();
+			OccurrenceReferenceExpression source = eventPassing.getSource();
 			if (source instanceof AnyPortEventReference sourceReference) {
 				Port sourcePort = sourceReference.getPort();
 				if (target instanceof AnyPortEventReference targetReference) {
@@ -2370,7 +2382,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 
 	public Collection<ValidationResultMessage> checkStatechartInvariants(StatechartDefinition statechart) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-
+		
 		List<Expression> invariants = statechart.getInvariants();
 		for (Expression invariant : invariants) {
 			if (!typeDeterminator.isBoolean(invariant)) {
@@ -2381,13 +2393,13 @@ public class StatechartModelValidator extends ActionModelValidator {
 							new ReferenceInfo(StatechartModelPackage.Literals.STATECHART_DEFINITION__INVARIANTS, index)));
 			}
 		}
-
+		
 		return validationResultMessages;
 	}
 	
 	public Collection<ValidationResultMessage> checkPortInvariants(Port port) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-
+		
 		List<Expression> invariants = port.getInvariants();
 		for (Expression invariant : invariants) {
 			if (!typeDeterminator.isBoolean(invariant)) {
@@ -2398,13 +2410,13 @@ public class StatechartModelValidator extends ActionModelValidator {
 							new ReferenceInfo(InterfaceModelPackage.Literals.PORT__INVARIANTS, index)));
 			}
 		}
-
+		
 		return validationResultMessages;
 	}
 	
 	public Collection<ValidationResultMessage> checkInterfaceInvariants(Interface gammaInterface) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-
+		
 		List<Expression> invariants = gammaInterface.getInvariants();
 		for (Expression invariant : invariants) {
 			if (!typeDeterminator.isBoolean(invariant)) {
@@ -2416,6 +2428,43 @@ public class StatechartModelValidator extends ActionModelValidator {
 			}
 		}
 
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkPortFunctionImplementations(StatechartDefinition statechart) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+
+		List<FunctionDeclaration> functionDefinitions = statechart.getFunctionDeclarations();
+		for (Port port : StatechartModelDerivedFeatures.getAllProvidedPorts(statechart)) {
+			for (FunctionDeclaration interfaceFunctionDeclaration : StatechartModelDerivedFeatures.getAllFunctionDeclarations(port)) {
+				if (!StatechartModelDerivedFeatures.hasDefinition(interfaceFunctionDeclaration) &&
+						!StatechartModelDerivedFeatures.hasMatchingFunctionDeclaration(interfaceFunctionDeclaration, functionDefinitions)) {
+					validationResultMessages.add(
+							new ValidationResultMessage(ValidationResult.ERROR,
+								"The following function declaration has no definition: " + interfaceFunctionDeclaration.getName(),
+									new ReferenceInfo(InterfaceModelPackage.Literals.PORT__INTERFACE_REALIZATION, port)));
+				}
+			}
+		}
+		
+		return validationResultMessages;
+	}
+	
+	@Override
+	public Collection<ValidationResultMessage> checkFunctionAccessExpression(FunctionAccessExpression functionAccessExpression) {
+		Collection<ValidationResultMessage> validationResultMessages = super.checkFunctionAccessExpression(functionAccessExpression);
+		
+		ReferenceExpression reference = statechartUtil.getAccessReference(functionAccessExpression);
+		if (reference instanceof PortDeclarationReferenceExpression portDeclarationReferenceExpression) {
+			Port port = portDeclarationReferenceExpression.getPort();
+			if (StatechartModelDerivedFeatures.isProvided(port)) {
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR,
+						"Functions cannot be referenced on provided ports; reference the implementation instead",
+							new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND)));
+			}
+		}
+		
 		return validationResultMessages;
 	}
 	

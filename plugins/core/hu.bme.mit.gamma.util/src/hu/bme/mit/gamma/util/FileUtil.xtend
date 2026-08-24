@@ -12,7 +12,6 @@ package hu.bme.mit.gamma.util
 
 import java.io.File
 import java.io.FileWriter
-import java.util.Collections
 import java.util.List
 import java.util.Map
 import java.util.Scanner
@@ -296,6 +295,11 @@ class FileUtil {
 		}
 	}
 	
+	def Map.Entry<String, Integer> getFileName(String folder, String fileName, String fileExtension) {
+		val file = new File(folder)
+		return file.getFileName(fileName, fileExtension)
+	}
+	
 	/**
 	 * Returns the next valid name for the file that is suffixed by indices.
 	 */
@@ -315,10 +319,10 @@ class FileUtil {
 		if (usedIds.empty) {
 			return Map.entry(fileName + "0." + fileExtension, 0)
 		}
-		Collections.sort(usedIds)
-		val biggestId = usedIds.get(usedIds.size - 1)
+		val biggestId = usedIds.max
+		val nextId = biggestId + 1
 		return Map.entry(
-				fileName + (biggestId + 1) + "." + fileExtension, (biggestId + 1))
+				fileName + nextId + "." + fileExtension, nextId)
 	}
 	
 	def List<File> sortIndexedFiles(Iterable<File> files) {

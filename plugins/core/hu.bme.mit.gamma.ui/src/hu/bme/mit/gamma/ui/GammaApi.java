@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,9 +10,12 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.ui;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -20,6 +23,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -80,10 +84,13 @@ import hu.bme.mit.gamma.ui.util.DefaultResourceSetCreator;
 import hu.bme.mit.gamma.ui.util.DefaultTaskHook;
 import hu.bme.mit.gamma.ui.util.ResourceSetCreator;
 import hu.bme.mit.gamma.ui.util.TaskHook;
+import hu.bme.mit.gamma.util.InterruptableCallable;
 
 public class GammaApi {
 	//
-	protected Logger logger = Logger.getLogger("GammaLogger");
+	protected boolean startParallelExecution = true;
+	protected final int MAX_THREAD_NUM = Runtime.getRuntime().availableProcessors();
+	protected final Logger logger = Logger.getLogger("GammaLogger");
 	//
 	
 	/**
@@ -112,6 +119,9 @@ public class GammaApi {
 			IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
 			IFile file = workspaceRoot.getFile(new Path(fileURI.toPlatformString(true)));
 			IProject project = file.getProject();
+			
+			executeParallelTasks(fileWorkspaceRelativePath, resourceSetCreator, hook);
+			
 			// Multiple compilations due to the dependencies between models
 			final int MAX_ITERATION_COUNT = 6;
 			for (int i = 0; i < MAX_ITERATION_COUNT; ++i) {
@@ -125,8 +135,7 @@ public class GammaApi {
 				// if we remove containers from the element tree that contain references to other resources
 				// they will be broken - theoretically, this call should not require too much resource
 				EcoreUtil.resolveAll(resourceSet);
-				if (content instanceof GenModel) {
-					GenModel genmodel = (GenModel) content;
+				if (content instanceof GenModel genmodel) {
 					// WARNING: workspace location and imported project locations are not to be confused
 					// Sorting: InterfaceCompilation < StatechartCompilation < else does not work as the generated models are not reloaded
 					List<Task> tasks = orderTasks(genmodel, i);
@@ -135,6 +144,9 @@ public class GammaApi {
 						hook.startTaskProcess(task);
 						//
 						for (int j = 0; j < hook.getIterationCount(); j++) {
+							if (Thread.interrupted()) {
+								throw new InterruptedException();
+							}
 							// Iteration start
 							hook.startIteration();
 							//
@@ -316,10 +328,53 @@ public class GammaApi {
 					logger.warning("The given resource does not contain a GenModel: " + resource);
 				}
 			}
-		} catch (InterruptedException e) {
+		} catch (InterruptedException | OperationCanceledException e) {
 			String threadName = Thread.currentThread().getName();
 			logger.info("The task run by this thread has been cancelled: " + threadName);
 			System.out.println("The task run by this thread has been cancelled: " + threadName);
+		}
+	}
+
+	private void executeParallelTasks(String fileWorkspaceRelativePath,
+			ResourceSetCreator resourceSetCreator, TaskHook hook) throws InterruptedException {
+		if (startParallelExecution) {
+			// Parallel execution started 'only' from the root
+			startParallelExecution = false;
+			
+			URI fileUri = URI.createPlatformResourceURI(fileWorkspaceRelativePath, true);
+			ResourceSet resourceSet = resourceSetCreator.createResourceSet();
+			Resource resource = resourceSet.getResource(fileUri, true);
+			EObject content = resource.getContents().get(0);
+			if (content instanceof GenModel genmodel) {
+				Set<GenModel> parellelExecs = GenmodelDerivedFeatures.getAllParallelExecutions(genmodel);
+				if (!parellelExecs.isEmpty()) {
+					List<InterruptableCallable<?>> callables = new ArrayList<>();
+					for (GenModel parellelExec : parellelExecs) {
+						Resource execResource = parellelExec.eResource();
+						URI uri = execResource.getURI();
+						String platformString = uri.toPlatformString(true);
+						
+						InterruptableCallable<Object> callable = new InterruptableCallable<Object>() {
+							public Object call() throws Exception {
+								int i = callables.indexOf(this);
+								logger.info(i + ": starting parallel execution of " + platformString + "...");
+								run(platformString, resourceSetCreator, hook);
+								logger.info(i + ": parallel execution of " + platformString + " has finished");
+								return null;
+							}
+							public void cancel() {}
+						};
+						callables.add(callable);
+					}
+					
+					int threadCount = Integer.min(MAX_THREAD_NUM, parellelExecs.size());
+					try (ExecutorService executor = Executors.newFixedThreadPool(threadCount)) {
+						executor.invokeAll(callables); // Blocking call
+					}
+				}
+			}
+			
+			startParallelExecution = true;
 		}
 	}
 
@@ -329,31 +384,31 @@ public class GammaApi {
 	 * This way the user does not have to compile two or three times.
 	 */
 	private List<Task> orderTasks(GenModel genmodel, int iteration) {
-		List<Task> allTasks = GenmodelDerivedFeatures.getAllTasks(genmodel);
+		Set<Task> allTasks = GenmodelDerivedFeatures.getAllTasks(genmodel);
 		switch (iteration) {
 			case 0: 
 				return allTasks.stream()
 						.filter(it -> it instanceof InterfaceCompilation)
-						.collect(Collectors.toList());
+						.toList();
 			case 1: 
 				return allTasks.stream()
 						.filter(it -> it instanceof StatechartCompilation)
-						.collect(Collectors.toList());
+						.toList();
 			case 2: 
 				return allTasks.stream()
 						.filter(it -> it instanceof EventPriorityTransformation ||
 								it instanceof PhaseStatechartGeneration)
-						.collect(Collectors.toList());
+						.toList();
 			case 3: 
 				return allTasks.stream()
 						.filter(it -> it instanceof AnalysisModelTransformation ||
 								it instanceof ModelMutation ||
 								it instanceof CodeGeneration)
-						.collect(Collectors.toList());
+						.toList();
 			case 4: 
 				return allTasks.stream()
 						.filter(it -> it instanceof Slicing)
-						.collect(Collectors.toList());
+						.toList();
 			case 5: 
 				return allTasks.stream()
 						.filter(it -> it instanceof TestGeneration || it instanceof Verification ||
@@ -362,8 +417,8 @@ public class GammaApi {
 								it instanceof TraceReplayModelGeneration ||
 								it instanceof StatechartContractTestGeneration || it instanceof StatechartContractGeneration ||
 								it instanceof SafetyAssessment || it instanceof MutationBasedTestGeneration ||
-								it instanceof RegionDecomposition
-						).collect(Collectors.toList());
+								it instanceof RegionDecomposition)
+						.toList();
 			default: 
 				throw new IllegalArgumentException("Not known iteration variable: " + iteration);
 		}

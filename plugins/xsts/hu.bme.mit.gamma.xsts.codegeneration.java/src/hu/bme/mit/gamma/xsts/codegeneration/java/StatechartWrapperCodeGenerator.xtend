@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,7 +12,8 @@ package hu.bme.mit.gamma.xsts.codegeneration.java
 
 import hu.bme.mit.gamma.codegeneration.java.util.InternalEventHandlerCodeGenerator
 import hu.bme.mit.gamma.codegeneration.java.util.TypeSerializer
-import hu.bme.mit.gamma.statechart.interface_.EventDirection
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration
+import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.xsts.model.XSTS
 
@@ -32,10 +33,10 @@ class StatechartWrapperCodeGenerator {
 	final XSTS xSts
 
 	final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
-	final extension PortDiagnoser portDiagnoser = PortDiagnoser.INSTANCE
 	final extension ValueDeclarationAccessor valueDeclarationAccessor = ValueDeclarationAccessor.INSTANCE
 	final extension InternalEventHandlerCodeGenerator internalEventHandler = InternalEventHandlerCodeGenerator.INSTANCE
-
+	final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
+	
 	new(String basePackageName, String statechartPackageName, StatechartDefinition gammaStatechart, XSTS xSts) {
 		this.BASE_PACKAGE_NAME = basePackageName
 		this.STATECHART_PACKAGE_NAME = statechartPackageName
@@ -43,7 +44,7 @@ class StatechartWrapperCodeGenerator {
 		this.gammaStatechart = gammaStatechart
 		this.xSts = xSts
 	}
-
+	
 	protected def createStatechartWrapperClass() '''
 		package «STATECHART_PACKAGE_NAME»;
 		
@@ -75,7 +76,7 @@ class StatechartWrapperCodeGenerator {
 			«gammaStatechart.createInternalPortHandlingAttributes»
 			
 			public «CLASS_NAME»(«FOR parameter : gammaStatechart.parameterDeclarations SEPARATOR ', '»«parameter.type.serialize» «parameter.name»«ENDFOR») {
-				«CLASS_NAME.toFirstLower» = new «gammaStatechart.wrappedStatemachineClassName»(«FOR parameter : gammaStatechart.parameterDeclarations SEPARATOR ', '»«parameter.name»«ENDFOR»);
+				«CLASS_NAME.toFirstLower» = new «gammaStatechart.wrappedStatemachineClassName»(«FOR parameter : gammaStatechart.parameterDeclarations»«parameter.name», «ENDFOR»this);
 			}
 			
 			//
@@ -157,13 +158,13 @@ class StatechartWrapperCodeGenerator {
 			«FOR port : gammaStatechart.ports SEPARATOR System.lineSeparator»
 				public class «port.name.toFirstUpper» implements «port.interfaceRealization.interface.name.toFirstUpper»Interface.«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpper» {
 					private List<«port.interfaceRealization.interface.name.toFirstUpper»Interface.Listener.«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpper»> listeners = new LinkedList<«port.interfaceRealization.interface.name.toFirstUpper»Interface.Listener.«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpper»>();
-					«FOR event : port.getEvents(EventDirection.IN)»
+					«FOR event : port.inputEvents»
 						@Override
 						public void raise«event.name.toFirstUpper»(«FOR parameter : event.parameterDeclarations SEPARATOR ', '»«parameter.type.serialize» «parameter.name»«ENDFOR») {
-						getInsertQueue().add(new Event("«port.name».«event.name»"«IF !event.parameterDeclarations.empty», «FOR parameter : event.parameterDeclarations SEPARATOR ', '»«parameter.name»«ENDFOR»«ENDIF»));
+							getInsertQueue().add(new Event("«port.name».«event.name»"«IF !event.parameterDeclarations.empty», «FOR parameter : event.parameterDeclarations SEPARATOR ', '»«parameter.name»«ENDFOR»«ENDIF»));
 						}
 					«ENDFOR»
-					«FOR event : port.getEvents(EventDirection.OUT)»
+					«FOR event : port.outputEvents»
 						@Override
 						public boolean isRaised«event.name.toFirstUpper»() {
 							return «CLASS_NAME.toFirstLower».get«event.getOutputName(port).toFirstUpper»();
@@ -174,6 +175,17 @@ class StatechartWrapperCodeGenerator {
 								return «CLASS_NAME.toFirstLower.accessOut(port, parameter)»;
 							}
 						«ENDFOR»
+					«ENDFOR»
+					«IF port.provided»
+						«FOR function : port.allFunctionDeclarations»
+							«function.serializeFunction»
+						«ENDFOR»
+					«ENDIF»
+					«FOR boundVariable : port.allVariableDeclarations»
+						@Override
+						public void set«boundVariable.name.toFirstUpper»(«boundVariable.type.serialize» «boundVariable.name») {
+							«CLASS_NAME.toFirstLower.writeIn(boundVariable, port)»
+						}
 					«ENDFOR»
 					@Override
 					public void registerListener(«port.interfaceRealization.interface.name.toFirstUpper»Interface.Listener.«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpper» listener) {
@@ -199,9 +211,9 @@ class StatechartWrapperCodeGenerator {
 				runCycle();
 			}
 			
-		public «gammaStatechart.wrappedStatemachineClassName» get«CLASS_NAME.toFirstUpper»(){
-			return «CLASS_NAME.toFirstLower»;
-		}
+			public «gammaStatechart.wrappedStatemachineClassName» get«CLASS_NAME.toFirstUpper»(){
+				return «CLASS_NAME.toFirstLower»;
+			}
 			
 			public void runComponent() {
 				Queue<Event> eventQueue = getProcessQueue();
@@ -209,7 +221,7 @@ class StatechartWrapperCodeGenerator {
 					«GAMMA_EVENT_CLASS» event = eventQueue.remove();
 					switch (event.getEvent()) {
 						«FOR port : gammaStatechart.ports»
-							«FOR event : port.getEvents(EventDirection.IN)»
+							«FOR event : port.inputEvents»
 								case "«port.name».«event.name»": 
 									«CLASS_NAME.toFirstLower».set«event.getInputName(port).toFirstUpper»(true);
 									«FOR parameter : event.parameterDeclarations»
@@ -243,11 +255,16 @@ class StatechartWrapperCodeGenerator {
 			
 			public void notifyListeners() {
 				«FOR port : gammaStatechart.ports»
-					«FOR event : port.getEvents(EventDirection.OUT)»
+					«FOR event : port.outputEvents»
 						if («port.name.toFirstLower».isRaised«event.name.toFirstUpper»()) {
-							for («port.interfaceRealization.interface.name.toFirstUpper»Interface.Listener.«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpper» listener : «port.name.toFirstLower».getRegisteredListeners()) {
+							for (var listener : «port.name.toFirstLower».getRegisteredListeners()) {
 								listener.raise«event.name.toFirstUpper»(«FOR parameter : event.parameterDeclarations SEPARATOR ", "»«CLASS_NAME.toFirstLower.accessOut(port, parameter)»«ENDFOR»);
 							}
+						}
+					«ENDFOR»
+					«FOR boundVariable : port.allVariableDeclarations»
+						for (var listener : «port.name.toFirstLower».getRegisteredListeners()) {
+							listener.set«boundVariable.name.toFirstUpper»(get«port.name.toFirstUpper»_«boundVariable.name»()); // Bound variable
 						}
 					«ENDFOR»
 				«ENDFOR»
@@ -274,6 +291,13 @@ class StatechartWrapperCodeGenerator {
 				}
 			«ENDFOR»
 			
+			«FOR portVariable : gammaStatechart.allPortVariableDeclarations SEPARATOR System.lineSeparator»
+				«val port = portVariable.key»
+				«val variable = portVariable.value»
+				public «variable.type.serialize» get«port.name.toFirstUpper»_«variable.name»() {
+					return «CLASS_NAME.toFirstLower.access(variable, port)»;
+				}
+			«ENDFOR»
 			«gammaStatechart.createInternalPortHandlingSetters»
 			
 			«gammaStatechart.createInternalEventHandlingCode»
@@ -293,6 +317,35 @@ class StatechartWrapperCodeGenerator {
 				return «CLASS_NAME.toFirstLower».toString();
 			}
 		}
+	'''
+	
+	private def serializeFunction(FunctionDeclaration function) '''
+		@Override
+		public «function.type.serialize» «function.name»(«FOR parameter : function.parameterDeclarations SEPARATOR ", "»«parameter.type.serialize» «parameter.name»«ENDFOR») {
+			«val functionCall = '''«CLASS_NAME.toFirstLower».«function.name»(«
+					FOR parameter : function.parameterDeclarations SEPARATOR ", "»«parameter.typeDefinition.accessIn(parameter.name).join(", ")»«ENDFOR»)'''»
+			«IF function.isVoid»
+				«functionCall»;
+			«ELSE»
+				«val type = function.typeDefinition»
+				return «IF type.record»new «type.typeDeclaration.name»(«functionCall»)«ELSE»«functionCall»«ENDIF»;
+			«ENDIF»
+		}
+		«IF function.hasRecordParameterDeclaration /* Flattened version */»
+			«var i = 0»
+			«var j = i»
+			@Override
+			public «function.type.serialize» «function.name»(«FOR parameter : function.parameterDeclarations SEPARATOR ", "»«FOR nativeType : parameter.type.nativeTypes SEPARATOR ", "»«nativeType.serialize» «parameter.name»_«i++»«ENDFOR»«ENDFOR») {
+				«val functionCall_ = '''«CLASS_NAME.toFirstLower».«function.name»(«
+						FOR parameter : function.parameterDeclarations SEPARATOR ", "»«FOR nativeType : parameter.type.nativeTypes SEPARATOR ", "»«parameter.name»_«j++»«ENDFOR»«ENDFOR»)'''»
+				«IF function.isVoid»
+					«functionCall_»;
+				«ELSE»
+					«val type = function.typeDefinition»
+					return «IF type.record»new «type.typeDeclaration.name»(«functionCall_»)«ELSE»«functionCall»«ENDIF»;
+				«ENDIF»
+			}
+		«ENDIF»
 	'''
 	
 	def getClassName() {

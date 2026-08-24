@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.UnaryExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
@@ -35,6 +36,7 @@ import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.util.ElementSerializer
+import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.Cycle
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
@@ -82,7 +84,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 	
 	public static final String EXECUTED_TRANSITION_VARIABLE_BEGINNING = "__id_"
 	public static final String EXECUTED_TRANSITION_VARIABLE_END = "_"
-	public static final String EXECUTED_TRANSITION_MESSAGE_BEGINNING = "Transition executed: "
+	public static final String EXECUTED_TRANSITION_MESSAGE_BEGINNING = TraceModelDerivedFeatures.TRANSITION_EXEC_PREFIX
 	
 	public static final String SENT_INTERACTION_VARIABLE_BEGINNING = EXECUTED_TRANSITION_VARIABLE_BEGINNING + "first_"
 	public static final String RECEIVED_INTERACTION_VARIABLE_BEGINNING = EXECUTED_TRANSITION_VARIABLE_BEGINNING + "second_"
@@ -148,7 +150,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 			newStep.asserts += assert.transformAssert
 		}
 		// Handling removed (reduced) variables (if any)
-		newStep.handleRemovedVariables
+		newStep.handleRemovedStatesAndVariables
 		
 		return newStep
 	}
@@ -256,6 +258,24 @@ class UnfoldedExecutionTraceBackAnnotator {
 		return variableState
 	}
 	
+	protected def dispatch Expression transformAssert(ComponentInstancePortVariableReferenceExpression assert) {
+		val instance = assert.instance.lastInstance as SynchronousComponentInstance
+		val port = assert.port
+		val variable = assert.variableDeclaration
+		val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
+		val originalPort = originalInstance.getOriginalPort(port)
+		val originalVariables = originalPort.allVariableDeclarations
+		val originalVariable = originalVariables.findFirst[it.name == variable.name]
+		
+		val variableState = statechartUtil.createPortVariableReference(
+				originalInstance, originalPort, originalVariable)
+		if (originalVariable === null) {
+			dummyAsserts += variableState
+		}
+		
+		return variableState
+	}
+	
 	protected def dispatch Expression transformAssert(RaiseEventAct assert) {
 		return assert.transformAct as RaiseEventAct // Same as act
 	}
@@ -266,7 +286,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 			// Works if the interfaces/types are loaded into different resources
 			// even when resource set and URI type (absolute/platform) must match
 			it.event = originalTopComponent.getOriginalEvent(assert.event)
-			it.parameter = it.event.parameterDeclarations.get(assert.parameter.index)
+			it.declaration = it.event.parameterDeclarations.get(assert.parameterDeclaration.index)
 		]
 	}
 	
@@ -348,9 +368,12 @@ class UnfoldedExecutionTraceBackAnnotator {
 	
 	//
 	
-	protected def void handleRemovedVariables(Step step) {
+	protected def void handleRemovedStatesAndVariables(Step step) {
 		val variableInstances = step.asserts
 				.map[it.getSelfAndAllContentsOfType(ComponentInstanceVariableReferenceExpression)]
+				.flatten
+		val stateInstances = step.asserts
+				.map[it.getSelfAndAllContentsOfType(ComponentInstanceStateReferenceExpression)]
 				.flatten
 		
 		val instances = originalTopComponent.allSimpleInstanceReferences
@@ -361,16 +384,32 @@ class UnfoldedExecutionTraceBackAnnotator {
 				val presentInstanceVariables = variableInstances.filter[it.instance.name == instance.name]
 				val presentVariables = presentInstanceVariables.map[it.variableDeclaration]
 				
-				val unpresentVariables = statechartVariables.filter[!presentVariables.contains(it)]
-				for (unpresentVariable : unpresentVariables) {
+				val absentVariables = statechartVariables.filter[!presentVariables.contains(it)]
+				for (absentVariable : absentVariables) {
 					// We know what to do only if the variable is unwritten
-					if (unpresentVariable.unwritten) {
+					if (absentVariable.unwritten) {
 						val unwrittenVariable = instance.clone
-								.createVariableReference(unpresentVariable)
-						val value = unpresentVariable.initialValue
+								.createVariableReference(absentVariable)
+						val value = absentVariable.initialValue
 						
 						val assertion = unwrittenVariable.createEqualityExpression(value)
 						step.asserts += assertion
+					}
+				}
+				
+				val statechartRegions = statechart.allRegions
+				val presentRegions = stateInstances.filter[it.instance.name == instance.name].map[it.region]
+				
+				val absentRegions = statechartRegions.filter[!presentRegions.contains(it)]
+				for (absentRegion : absentRegions) {
+					val states = absentRegion.states
+					// We know what to do only if there is one state in the region
+					if (states.size == 1 &&
+							(absentRegion.topRegion || presentRegions.contains(absentRegion.parentState))) { // Could be more sophisticated
+						val initialStateAssertion = instance.clone
+								.createStateReference(states.head)
+								
+						step.asserts += initialStateAssertion
 					}
 				}
 			}
@@ -432,7 +471,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 					else {
 						// Sender of 'interaction' coverage
 						val newComponent = trace.component
-						for (senderInstance : newComponent.allSimpleInstances) {
+						for (senderInstance : newComponent.allSynchronousSimpleInstances) {
 							val senderStatechart = senderInstance.getStatechart
 							
 							val allStates = senderStatechart.allStates

@@ -70,6 +70,7 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	protected new() {}
 	//
 	public static final String LANGUAGE_IML = "language IML"
+	public static final String DOC_METADATA = "doc"
 	public static final String I_R_CAST = "Real.of_int"
 	//
 	protected final extension MessageQueueUtil messageQueueUtil = MessageQueueUtil.INSTANCE
@@ -257,6 +258,9 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 		if (string.startsWith(LANGUAGE_IML)) {
 			val serialization = string.substring(LANGUAGE_IML.length).trim
 			return serialization
+		}
+		if (string.startsWith(DOC_METADATA)) {
+			return '''(* «string» *)'''
 		}
 		return ""
 	}

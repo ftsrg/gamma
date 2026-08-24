@@ -18,6 +18,7 @@ class EventAttributeTransformer {
 	public static final EventAttributeTransformer INSTANCE =  new EventAttributeTransformer
 	protected new() {}
 	//
+	
 	protected def EventDirection transform(hu.bme.mit.gamma.statechart.interface_.EventDirection direction) {
 		switch (direction) {
 			case OUT: {

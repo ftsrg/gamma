@@ -1,0 +1,25 @@
+package variables
+
+import "Interfaces/Interfaces.gcd"
+
+@Asynchronous
+statechart AsyncVariables_1 [
+	port Execute : requires Execute
+	port VariableExecute : provides VariableExecute
+] {
+	var myInt : integer := 3
+	var localPortRecord : ComplexRecord
+	region main {
+		initial Initial
+		state _A
+		state _B
+		state _C
+	}
+	
+	transition from Initial to _A
+	transition from _A to _B when Execute.^execute / raise VariableExecute.^execute;
+			myInt := ::VariableExecute::portInt + 27; ::VariableExecute::portRecord.b.b := myInt; ::VariableExecute::otherPortInt := ::VariableExecute::otherPortInt + 1;
+	transition from _B to _C when Execute.^execute / raise VariableExecute.^execute; ::VariableExecute::portRecord.a := ::VariableExecute::portRecord.a + 3.2;
+			::VariableExecute::portInt := myInt + 49; ::VariableExecute::portRecord.a := ::VariableExecute::portRecord.a * 3; ::VariableExecute::otherPortInt := ::VariableExecute::otherPortInt - -1;
+			localPortRecord := ::VariableExecute::portRecord;
+}

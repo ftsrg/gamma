@@ -6,14 +6,16 @@
         eType="ecore:EClass http://www.eclipse.org/emf/2002/Ecore#//EObject"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="packageImports" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Package"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="tasks" upperBound="-1"
-        eType="#//Task" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="traceImports" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.trace.model/model/trace.ecore#//ExecutionTrace"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="genmodelImports" upperBound="-1"
-        eType="#//GenModel"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="scenarioImports" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.scenario.model/model/scenario.ecore#//ScenarioPackage"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="inclusions" upperBound="-1"
+        eType="#//GenModel"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="parallelExecutions" upperBound="-1"
+        eType="#//GenModel"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="tasks" upperBound="-1"
+        eType="#//Task" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Task" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="fileName" unique="false"
@@ -99,6 +101,8 @@
     <eLiterals name="NUXMV" value="4" literal="NUXMV"/>
     <eLiterals name="OCRA" value="5" literal="OCRA"/>
     <eLiterals name="IML" value="6"/>
+    <eLiterals name="SMART" value="8" literal="SMART"/>
+    <eLiterals name="SMART_ALL" value="9" literal="SMART_ALL"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="YakinduCompilation" abstract="true"
       eSuperTypes="#//Task">
@@ -117,6 +121,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="UnstableStateCoverage" eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="TrapStateCoverage" eSuperTypes="#//Coverage"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DeadlockStateCoverage" eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="DeadlockCoverage" eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="CompletenessCoverage" eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="NonDeterministicTransitionCoverage"
@@ -124,6 +129,10 @@
   <eClassifiers xsi:type="ecore:EClass" name="QueueOverflowCoverage" eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="TransitionCoverage" eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="StateCoverage" eSuperTypes="#//Coverage"/>
+  <eClassifiers xsi:type="ecore:EClass" name="OrthogonalStateCombinationCoverage"
+      eSuperTypes="#//Coverage"/>
+  <eClassifiers xsi:type="ecore:EClass" name="OrthogonalLeafStateCombinationCoverage"
+      eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="Coverage" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EReference" name="include" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceReferenceExpression"
@@ -224,6 +233,10 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="optimize" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="backAnnotateToOriginal"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="serializeResults" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
+        defaultValueLiteral="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="serializeTraces" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
+        defaultValueLiteral="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TraceGeneration" eSuperTypes="#//Task">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="fullTraces" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"

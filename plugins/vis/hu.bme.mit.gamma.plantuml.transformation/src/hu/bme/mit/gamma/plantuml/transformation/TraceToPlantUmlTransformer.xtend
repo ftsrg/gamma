@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -98,6 +98,9 @@ class TraceToPlantUmlTransformer {
 		«IF step.needsOutEventGroup»end«ENDIF»
 		
 		hnote over System
+		«FOR transitionExecution : step.asserts.filter(OpaqueExpression).filter[it.transitionExecutionExpression]»
+			<color Green>«transitionExecution.expression.removeLongest("/", "of").addItalicStyle /* Removing effects */»
+		«ENDFOR»
 		«FOR config : step.instanceStateConfigurations
 						.groupBy[it.instance?.serialize].entrySet
 						.sortBy[it.key]»
@@ -113,9 +116,6 @@ class TraceToPlantUmlTransformer {
 		«ENDFOR»
 		«FOR trapAssert : step.asserts.filter(OpaqueExpression).filter[it.expression.startsWith(TRAP_STATE_MESSAGE_PREFIX)]»
 			<color Red>«trapAssert.expression.replace(TRAP_STATE_MESSAGE_PREFIX, "Nondeterministic behavior triggered").addItalicStyle»
-		«ENDFOR»
-		«FOR trapAssert : step.asserts.filter(OpaqueExpression).filter[it.expression.startsWith(TRANSITION_EXECUTION_MESSAGE_PREFIX)]»
-			<color Green>«trapAssert.expression.remove("when", "of").addItalicStyle»
 		«ENDFOR»
 		endhnote
 	'''

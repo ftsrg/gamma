@@ -25,7 +25,9 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpr
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceTransitionReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage
 import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
@@ -84,7 +86,7 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 				return Scopes.scopeFor(instances)
 			}
 		}
-		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_PORT_REFERENCE_EXPRESSION__PORT) {
+		if (reference == InterfaceModelPackage.Literals.PORT_REFERENCE_EXPRESSION__PORT) {
 			val componentInstanceReference = context as ComponentInstancePortReferenceExpression
 			val componentInstance = componentInstanceReference.instance.lastInstance
 			if (componentInstance !== null) {
@@ -92,7 +94,7 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 				return Scopes.scopeFor(ports)
 			}
 		}
-		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_VARIABLE_REFERENCE_EXPRESSION__VARIABLE_DECLARATION) {
+		if (reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			val componentInstanceReference = context as ComponentInstanceVariableReferenceExpression
 			val componentInstance = componentInstanceReference.instance.lastInstance
 			if (componentInstance !== null) {
@@ -103,7 +105,7 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 				}
 			}
 		}
-		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_STATE_REFERENCE_EXPRESSION__REGION) {
+		if (reference == StatechartModelPackage.Literals.STATE_REFERENCE_EXPRESSION__REGION) {
 			val componentInstanceReference = context as ComponentInstanceStateReferenceExpression
 			val componentInstance = componentInstanceReference.instance.lastInstance
 			if (componentInstance !== null) {
@@ -113,7 +115,7 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 				}
 			}
 		}
-		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_STATE_REFERENCE_EXPRESSION__STATE) {
+		if (reference == StatechartModelPackage.Literals.STATE_REFERENCE_EXPRESSION__STATE) {
 			val componentInstanceReference = context as ComponentInstanceStateReferenceExpression
 			val componentInstance = componentInstanceReference.instance.lastInstance
 			if (componentInstance !== null) {
@@ -163,7 +165,7 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			return Scopes.scopeFor(genmodel.scenarioImports.flatMap[it.scenarios])
 		}
 		// Expression scoping
-		if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+		if (reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			val genmodel = ecoreUtil.getSelfOrContainerOfType(context, GenModel)
 			val imports = genmodel.packageImports
 			if (!imports.empty) {

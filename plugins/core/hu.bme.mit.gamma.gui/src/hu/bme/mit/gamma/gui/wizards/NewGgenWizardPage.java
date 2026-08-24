@@ -33,7 +33,7 @@ import org.eclipse.ui.dialogs.ContainerSelectionDialog;
  * as the file name. The page will only accept file name without the extension
  * OR with the extension that matches the expected one (gcd).
  */
-public class NewGammaAsynchronousAdapterWizardPage extends WizardPage {
+public class NewGgenWizardPage extends WizardPage {
 	private Text containerText;
 
 	private Text fileText;
@@ -45,10 +45,10 @@ public class NewGammaAsynchronousAdapterWizardPage extends WizardPage {
 	 * 
 	 * @param pageName
 	 */
-	public NewGammaAsynchronousAdapterWizardPage(ISelection selection) {
-		super("wizardPage");
-		setTitle("Multi-page Editor File");
-		setDescription("This wizard creates a new Gamma Asynchronous Adapter Model with *.gcd extension.");
+	public NewGgenWizardPage(ISelection selection) {
+		super("New Gamma Generator Model");
+		setTitle("New Gamma Generator Model");
+		setDescription("This wizard creates a new Gamma generator model with *.ggen extension.");
 		this.selection = selection;
 	}
 
@@ -106,7 +106,7 @@ public class NewGammaAsynchronousAdapterWizardPage extends WizardPage {
 				containerText.setText(container.getFullPath().toString());
 			}
 		}
-		fileText.setText("Adapter.gcd");
+		fileText.setText("Genmodel.ggen");
 	}
 
 	/**
@@ -155,8 +155,9 @@ public class NewGammaAsynchronousAdapterWizardPage extends WizardPage {
 		int dotLoc = fileName.lastIndexOf('.');
 		if (dotLoc != -1) {
 			String ext = fileName.substring(dotLoc + 1);
-			if (ext.equalsIgnoreCase("gcd") == false) {
-				updateStatus("File extension must be \"gcd\"");
+			String extension = "ggen";
+			if (ext.equalsIgnoreCase(extension) == false) {
+				updateStatus("File extension must be \"" + extension + "\"");
 				return;
 			}
 		}

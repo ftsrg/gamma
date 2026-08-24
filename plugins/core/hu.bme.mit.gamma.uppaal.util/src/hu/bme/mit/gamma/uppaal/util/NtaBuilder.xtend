@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.uppaal.util
 
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import java.util.Collection
 import java.util.List
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
@@ -25,6 +26,7 @@ import uppaal.declarations.DeclarationsFactory
 import uppaal.declarations.Function
 import uppaal.declarations.Variable
 import uppaal.declarations.VariableContainer
+import uppaal.declarations.VariableDeclaration
 import uppaal.declarations.system.SystemFactory
 import uppaal.expressions.AssignmentExpression
 import uppaal.expressions.CompareOperator
@@ -566,6 +568,12 @@ class NtaBuilder {
 		]
 	}
 	
+	def createReturnStatement(Expression expression) {
+		return createReturnStatement => [
+			it.returnExpression = expression
+		]
+	}
+	
 	def createVoidFunction(String name, Block block) {
 		return nta.void.createTypeReference
 				.createFunction(name, block)
@@ -586,8 +594,20 @@ class NtaBuilder {
 	}
 	
 	def createFunctionCallExpression(Function function) {
+		return function.createFunctionCallExpression(#[])
+	}
+	
+	def createFunctionCallExpression(Function function, Collection<? extends Expression> arguments) {
 		return createFunctionCallExpression => [
 			it.function = function
+			it.argument += arguments
+		]
+	}
+	
+	def createParameter(VariableDeclaration variable) {
+		return createParameter => [
+			it.variableDeclaration = variable
+			// CallType
 		]
 	}
 	

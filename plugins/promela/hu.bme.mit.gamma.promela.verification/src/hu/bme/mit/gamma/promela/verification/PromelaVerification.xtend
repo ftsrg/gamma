@@ -93,4 +93,8 @@ SPACE	optimize for space not speed
 		return PromelaPropertySerializer.INSTANCE
 	}
 	
+	override getBackendName() {
+		return "Spin"
+	}
+
 }

@@ -150,11 +150,11 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 						StatechartDefinition contract = stateContractAnnotation.getContractStatechart();
 						ExecutionTrace clonedAdaptiveTrace = ecoreUtil.clone(adaptiveTrace);
 						Constraint constraint = testGeneration.getModelTransformation().getConstraint();
-						int schedulingConstraint = 0;
+						long schedulingConstraint = 0;
 						if (constraint instanceof OrchestratingConstraint) {
 							OrchestratingConstraint orchestratingConstraint = (OrchestratingConstraint) constraint;
 							TimeSpecification minimumPeriod = orchestratingConstraint.getMinimumPeriod();
-							schedulingConstraint = statechartUtil.evaluateMilliseconds(minimumPeriod);
+							schedulingConstraint = statechartUtil.evaluateForSmallestUnit(minimumPeriod, adaptiveTrace.getImport());
 						}
 						ScenarioStatechartTraceGenerator traceGenerator = new ScenarioStatechartTraceGenerator(
 								contract, stateContractAnnotation.getArguments(), schedulingConstraint);

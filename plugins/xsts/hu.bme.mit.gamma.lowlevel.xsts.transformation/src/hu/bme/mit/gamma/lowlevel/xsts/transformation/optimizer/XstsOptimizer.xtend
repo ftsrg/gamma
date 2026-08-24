@@ -74,8 +74,8 @@ class XstsOptimizer {
 		
 		for (function : xSts.functionDeclarations.filter(ProcedureDeclaration)) {
 			val body = function.body
-			val optimizedBody = body.optimizeAction
-			function.body = optimizedBody.wrapIfNeeded
+			val optimizedBody = body?.optimizeAction
+			function.body = optimizedBody?.wrapIfNeeded
 		}
 		
 		// Finally, removing unreferenced transient variables

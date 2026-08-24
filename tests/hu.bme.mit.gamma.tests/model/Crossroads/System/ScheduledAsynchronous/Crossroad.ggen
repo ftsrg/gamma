@@ -56,6 +56,7 @@ verification {
 	property-file : ".Crossroad-XSTS.gpd"
 	test-language : java
 	optimize-traces : true
+	serialize-results : false
 }
 
 verification {
@@ -64,4 +65,5 @@ verification {
 	property-file : ".Crossroad-SMV.gpd"
 	test-language : java
 	optimize-traces : true
+	serialize-results : false
 }

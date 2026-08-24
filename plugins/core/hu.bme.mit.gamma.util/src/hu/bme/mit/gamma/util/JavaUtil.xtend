@@ -28,6 +28,11 @@ class JavaUtil {
 	protected new() {}
 	//
 	public static final String DELIM_CHAR = "_"
+	public static final String WHITESPACE_PATTERN = "\\s"
+	public static final String WHITESPACES_PATTERN = "\\s+"
+	public static final String ALFA_NUMERICAL_CHAR_PATTERN = "[A-Za-z0-9]"
+	public static final String ID_CHAR_PATTERN = "[_A-Za-z0-9]"
+	public static final String ID_PATTERN = "[_A-Za-z]" + ID_CHAR_PATTERN + "*"
 	//
 
 	def <E, T> List<T> filterIntoList(Iterable<E> collection, Class<T> clazz) {
@@ -59,11 +64,7 @@ class JavaUtil {
 	}
 	
 	def <T> T getLastElement(Iterable<T> collection) {
-		var T last = null
-		for (element : collection) {
-			last = element
-		}
-		return last
+		return collection.lastOrNull
 	}
 	
 	def <T> T getBeforeLastElement(Iterable<T> collection) {
@@ -151,6 +152,55 @@ class JavaUtil {
 		return !lhs.containsAny(rhs)
 	}
 	
+	def <T> Collection<Collection<T>> combine(Iterable<Collection<T>> collection) {
+		val newCollection = <Collection<T>>newArrayList
+		
+		if (collection.empty) {
+			return newCollection
+		}
+		if (collection.size == 1) {
+			newCollection += collection.head.map[newArrayList(it)]
+			return newCollection
+		}
+		
+		val head = collection.head
+		val tail = collection.tail
+		val combinedTail = tail.combine
+		
+		for (element : head) {
+			for (combinedTailList : combinedTail) {
+				val newCombinedTailList = newArrayList
+				newCombinedTailList += element
+				newCombinedTailList += combinedTailList
+				
+				newCollection += newCombinedTailList
+			}
+		}
+		
+		return newCollection
+	}
+	
+	def <T> Collection<Collection<T>> combine(Iterable<Collection<T>> a, Iterable<Collection<T>> b) {
+		if (a.nullOrEmpty) {
+			return b.toList
+		}
+		if (b.nullOrEmpty) {
+			return a.toList
+		}
+		
+		val lists = <Collection<T>>newArrayList
+		for (_a : a) {
+			for (_b : b) {
+				val newList = <T>newArrayList
+				newList += _a
+				newList += _b
+				lists += newList
+			}
+		}
+		return lists
+	}
+	
+	
 	def <T> Set<T> union(T lhs, Iterable<? extends T> rhs) {
 		return #[lhs].union(rhs)
 	}
@@ -177,7 +227,7 @@ class JavaUtil {
 		if (collection.size !== 1) {
 			throw new IllegalArgumentException("Not one element: " + collection)
 		}
-		return collection.lastElement
+		return collection.head
 	}
 	
 	def <K, V> List<V> getOrCreateList(Map<K, List<V>> map, K key) {
@@ -267,6 +317,19 @@ class JavaUtil {
 		return pairs
 	}
 	
+	def <T> List<Entry<T, T>> zip(Iterable<? extends T> a, Iterable<? extends T> b) {
+		val it_1 = a.iterator
+		val it_2 = b.iterator
+		
+		val pairs = <Entry<T, T>>newArrayList
+		
+		while (it_1.hasNext && it_2.hasNext) {
+		    pairs += Map.entry(it_1.next, it_2.next)
+		}
+		
+		return pairs
+	}
+	
 	//
 	
 	def String getCommonPrefix(String a, String b) {
@@ -315,14 +378,26 @@ class JavaUtil {
 		return string
 	}
 	
+	def removeLongest(String string, String start, String end) {
+		val i = string.indexOf(start)
+		val j = string.lastIndexOf(end)
+		
+		if (0 < i && 0 < j) {
+			val result = string.substring(0, i) + string.substring(j)
+			return result
+		}
+		
+		return string
+	}
+	
 	def isAlfaNumerical(char character) {
 		val String string = character.toString
-		return string.matches("[A-Za-z0-9]")
+		return string.matches(ALFA_NUMERICAL_CHAR_PATTERN)
 	}
 	
 	def isIdChar(char character) {
 		val String string = character.toString
-		return string.matches("[_A-Za-z0-9]")
+		return string.matches(ID_CHAR_PATTERN)
 	}
 	
 	def toId(String string) {
@@ -383,8 +458,7 @@ class JavaUtil {
 		if (string.nullOrEmpty) {
 			return false
 		}
-		val pattern = "[_A-Za-z][_A-Za-z0-9]*"
-		return string.matches(pattern)
+		return string.matches(ID_PATTERN)
 	}
 	
 	def countChar(String string, String _char) {

@@ -5,15 +5,15 @@
 You will need Java 21 to setup Gamma.
 
 Gamma has been implemented as a set of Eclipse plugins. To use the framework, you will need an Eclipse with the following plugins installed:
-* Eclipse Modeling Framework SDK 2.42.0,
-* Xtext Complete SDK 2.39.0 (it contains Xtend, there is no need for the additional download of Xtend),
+* Eclipse Modeling Framework SDK 2.46.0,
+* Xtext Complete SDK 2.43.0 (it contains Xtend, there is no need for the additional download of Xtend),
 * VIATRA SDK 2.9.1,
 * PlantUML 1.1.32,
 * (Optional) Ecore Diagram Tools/Sirius (if you want to have a graphical representation of the EMF metamodels of Gamma).
 
 We recommend starting from an Eclipse IDE for Java and DSL Developers as it contains EMF and Xtext so only VIATRA and PlantUML need to be downloaded.
 
-- Download a new Eclipse IDE for [Java and DSL Developers package](https://www.eclipse.org/downloads/packages/release/2025-06/r/eclipse-ide-java-and-dsl-developers). Note that Yakindu (see below) will not work with the _2023-12_ or newer Eclipse releases due to compatibility reasons.
+- Download a new Eclipse IDE for [Java and DSL Developers package](https://www.eclipse.org/downloads/packages/release/2026-06/r/eclipse-ide-java-and-dsl-developers). Note that Yakindu (see below) will not work with the _2023-12_ or newer Eclipse releases due to compatibility reasons.
 - Run Eclipse. If an error message is thrown about the unavailability of Java (this happens if Java is not added to your path), you have to specifiy the path to your Java installation (`javaw.exe` in the `bin` folder) for Eclipse. Open the `eclipse.ini` file in the root folder of your Eclipse with a text editor and add the following two lines right above the `-vmargs` line:
 ```
 -vm

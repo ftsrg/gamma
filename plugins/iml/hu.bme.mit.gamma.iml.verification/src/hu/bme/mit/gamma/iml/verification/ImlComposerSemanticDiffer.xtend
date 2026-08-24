@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2025 Contributors to the Gamma project
+ * Copyright (c) 2025-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -14,11 +14,9 @@ import java.io.File
 
 class ImlComposerSemanticDiffer extends ImlSemanticDiffer {
 	//
-	protected final String C = "c"
-	protected final String O = "o"
-	protected final String V = "v"
-	protected final String T = "t"
-	protected final String R = "r"
+	protected static final String C = "c"
+	protected static final String O = "o"
+	protected static final String V = "v"
 	protected final String COMPOSITE_DIFF_FUNCTION_NAME = DIFF_FUNCTION_NAME + "_" + NEW_DIFF_FUNCTION_NAME
 	//
 	

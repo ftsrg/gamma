@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
+import hu.bme.mit.gamma.expression.model.AbstractDirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.AddExpression;
 import hu.bme.mit.gamma.expression.model.AndExpression;
@@ -73,6 +74,7 @@ import hu.bme.mit.gamma.expression.model.NullaryExpression;
 import hu.bme.mit.gamma.expression.model.OpaqueExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ParameterDeclarationAnnotation;
+import hu.bme.mit.gamma.expression.model.ParameterReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
@@ -115,7 +117,7 @@ public class ExpressionUtil {
 	// The following methods are worth extending in subclasses
 	
 	public Declaration getDeclaration(Expression expression) {
-		if (expression instanceof DirectReferenceExpression reference) {
+		if (expression instanceof AbstractDirectReferenceExpression reference) {
 			return reference.getDeclaration();
 		}
 		if (expression instanceof RecordAccessExpression access) {
@@ -146,7 +148,10 @@ public class ExpressionUtil {
 	}
 	
 	public ReferenceExpression getAccessReference(Expression expression) {
-		if (expression instanceof DirectReferenceExpression reference) {
+		if (expression instanceof AbstractDirectReferenceExpression reference) {
+			return reference;
+		}
+		if (expression instanceof ParameterReferenceExpression reference) {
 			return reference;
 		}
 		if (expression instanceof ArrayAccessExpression access) {
@@ -164,8 +169,8 @@ public class ExpressionUtil {
 			// Also below branch...
 		}
 		if (expression instanceof AccessExpression access) {
-			return getAccessReference(
-					access.getOperand());
+			Expression operand = access.getOperand();
+			return getAccessReference(operand);
 		}
 		if (expression instanceof TupleReferenceExpression tuple) {
 			return tuple;
@@ -176,7 +181,7 @@ public class ExpressionUtil {
 	
 	public Declaration getAccessedDeclaration(Expression expression) {
 		ReferenceExpression reference = getAccessReference(expression);
-		if (reference instanceof DirectReferenceExpression directReference) {
+		if (reference instanceof AbstractDirectReferenceExpression directReference) {
 			return directReference.getDeclaration();
 		}
 		throw new IllegalArgumentException("Not supported element: " + expression);
@@ -1111,7 +1116,16 @@ public class ExpressionUtil {
 	}
 	
 	public BigDecimal toBigDec(double value) {
-		return BigDecimal.valueOf(value);
+		BigDecimal decimal = BigDecimal.valueOf(value);
+		if (decimal.toString().contains("E")) { // Xtext serializer cannot handle this form
+			String plainString = decimal.toPlainString();
+			decimal = new BigDecimal(plainString);
+		}
+		if (!decimal.toString().contains(".")) { // Needed by grammar
+			String plainString = decimal.toPlainString() + ".0";
+			decimal = new BigDecimal(plainString);
+		}
+		return decimal;
 	}
 	
 	public DecimalLiteralExpression toDecimalLiteral(double value) {
@@ -1198,22 +1212,31 @@ public class ExpressionUtil {
 			throw new IllegalArgumentException("Not known literal: " + literalExpression);
 		}
 	}
-
 	
-	public VariableDeclaration createVariableDeclaration(Type type, String name) {
+	public VariableDeclaration createBooleanVariableDeclaration(CharSequence name) {
+		BooleanTypeDefinition type = factory.createBooleanTypeDefinition();
+		return createVariableDeclarationWithDefaultInitialValue(type, name);
+	}
+	
+	public VariableDeclaration createIntegerVariableDeclaration(CharSequence name) {
+		IntegerTypeDefinition type = factory.createIntegerTypeDefinition();
+		return createVariableDeclarationWithDefaultInitialValue(type, name);
+	}
+	
+	public VariableDeclaration createVariableDeclaration(Type type, CharSequence name) {
 		return createVariableDeclaration(type, name, null);
 	}
 	
 	public VariableDeclaration createVariableDeclarationWithDefaultInitialValue(
-			Type type, String name) {
+			Type type, CharSequence name) {
 		return createVariableDeclaration(type, name,
 				ExpressionModelDerivedFeatures.getDefaultExpression(type));
 	}
 	
-	public VariableDeclaration createVariableDeclaration(Type type, String name, Expression expression) {
+	public VariableDeclaration createVariableDeclaration(Type type, CharSequence name, Expression expression) {
 		VariableDeclaration variableDeclaration = factory.createVariableDeclaration();
 		variableDeclaration.setType(type);
-		variableDeclaration.setName(name);
+		variableDeclaration.setName(name.toString());
 		variableDeclaration.setExpression(expression);
 		return variableDeclaration;
 	}
@@ -1286,14 +1309,18 @@ public class ExpressionUtil {
 		List<Expression> operands = tuple.getOperands();
 		
 		for (Type subtype : tupleType.getTypes()) {
+			Expression value = expressions.peek();
 			TypeDefinition subtypeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(subtype);
-			if (subtypeDefinition instanceof TupleTypeDefinition subtupleType) {
+			if (typeDeterminator.equalsType(subtype, value)) { // Primitive or tuple
+				operands.add(
+						expressions.remove());
+			}
+			else if (subtypeDefinition instanceof TupleTypeDefinition subtupleType) {
 				operands.add(
 						createTupleLiteralExpression(expressions, subtupleType));
 			}
 			else {
-				operands.add(
-						expressions.remove());
+				throw new IllegalArgumentException("Unknown tuple literal type: " + subtype);
 			}
 		}
 		
@@ -1407,6 +1434,20 @@ public class ExpressionUtil {
 		return ifThenElseExpression;
 	}
 	
+	public Expression weaveIfNeeded(Collection<? extends IfThenElseExpression> expressions) {
+		if (expressions.size() > 1) {
+			return weave(expressions);
+		}
+		if (expressions.size() == 1) {
+			IfThenElseExpression next = expressions.iterator().next();
+			if (next.getElse() == null) {
+				return next.getThen(); // Nothing else makes sense
+			}
+			return next;
+		}
+		return null;
+	}
+	
 	public IfThenElseExpression weave(Collection<? extends IfThenElseExpression> expressions) {
 		// Maybe there is a single if-then-else expression
 		if (expressions.size() == 1) {
@@ -1465,6 +1506,14 @@ public class ExpressionUtil {
 		
 		IfThenElseExpression weavedIfThenElse = weave(ifThenElses);
 		return weavedIfThenElse;
+	}
+	
+	public void eliminateElseBranch(Expression expression) {
+		EObject container = expression.eContainer();
+		if (container instanceof IfThenElseExpression ifThenElseExpression) {
+			Expression then = ifThenElseExpression.getThen();
+			ecoreUtil.replace(then, ifThenElseExpression);
+		}
 	}
 	
 	public FunctionAccessExpression createFunctionAccessExpression(FunctionDeclaration function, List<? extends Expression> arguments) {

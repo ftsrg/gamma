@@ -16,7 +16,7 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.interface_.Event
-import hu.bme.mit.gamma.statechart.interface_.EventReference
+import hu.bme.mit.gamma.statechart.interface_.OccurrenceReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
@@ -44,7 +44,7 @@ class ReferenceToXstsVariableMapper {
 		this.xSts = xSts
 	}
 	
-	dispatch def getVariables(EventReference eventReference) {
+	dispatch def getVariables(OccurrenceReferenceExpression eventReference) {
 		// Currently other event references are not supported
 		return #[]
 	}

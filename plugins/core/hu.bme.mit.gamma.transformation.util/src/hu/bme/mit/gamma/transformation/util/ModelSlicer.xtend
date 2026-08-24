@@ -26,6 +26,8 @@ import java.util.AbstractMap.SimpleEntry
 import java.util.Collection
 import java.util.Map.Entry
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+
 class ModelSlicer {
 		
 	protected final PropertyPackage propertyPackage

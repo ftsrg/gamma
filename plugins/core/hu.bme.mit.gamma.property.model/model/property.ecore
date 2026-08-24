@@ -10,6 +10,8 @@
         eType="#//CommentableStateFormula" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="contracts" upperBound="-1"
         eType="#//Contract" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="coverages" upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="CommentableStateFormula" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//CommentableElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="formula" lowerBound="1"

@@ -18,9 +18,9 @@
       </wizard>
       <wizard
             category="hu.bme.mit.gamma.ui"
-            class="hu.bme.mit.gamma.gui.wizards.NewGammaAsynchronousAdapterWizard"
+            class="hu.bme.mit.gamma.gui.wizards.NewGclAsynchronousAdapterWizard"
             icon="icons/gamma-icon-16.png"
-            id="hu.bme.mit.gamma.ui.wizards.NewGammaAsynchronousAdapterWizard"
+            id="hu.bme.mit.gamma.ui.wizards.NewGclAsynchronousAdapterWizard"
             name="Gamma Asynchronous Adapter"
             project="false">
       </wizard>
@@ -43,11 +43,29 @@
       </wizard>
       <wizard
             category="hu.bme.mit.gamma.ui"
-            class="hu.bme.mit.gamma.gui.wizards.NewGammaPropertyWizard"
+            class="hu.bme.mit.gamma.gui.wizards.NewGgenWizard"
             descriptionImage="icons/gamma-icon-16.png"
             icon="icons/gamma-icon-16.png"
-            id="hu.bme.mit.gamma.ui.wizards.NewGammaPropertyWizard"
+            id="hu.bme.mit.gamma.ui.wizards.NewGgenWizard"
+            name="Gamma Generator Model"
+            project="false">
+      </wizard>
+      <wizard
+            category="hu.bme.mit.gamma.ui"
+            class="hu.bme.mit.gamma.gui.wizards.NewGplWizard"
+            descriptionImage="icons/gamma-icon-16.png"
+            icon="icons/gamma-icon-16.png"
+            id="hu.bme.mit.gamma.ui.wizards.NewGplWizard"
             name="Gamma Property"
+            project="false">
+      </wizard>
+      <wizard
+            category="hu.bme.mit.gamma.ui"
+            class="hu.bme.mit.gamma.gui.wizards.NewGtlWizard"
+            descriptionImage="icons/gamma-icon-16.png"
+            icon="icons/gamma-icon-16.png"
+            id="hu.bme.mit.gamma.ui.wizards.NewGtlWizard"
+            name="Gamma Trace"
             project="false">
       </wizard>
    </extension>
@@ -62,13 +80,19 @@
              id="hu.bme.mit.gamma.ui.wizards.NewGclStatechartWizard">
        </newWizardShortcut>
        <newWizardShortcut
-             id="hu.bme.mit.gamma.ui.wizards.NewGammaAsynchronousAdapterWizard">
+             id="hu.bme.mit.gamma.ui.wizards.NewGclAsynchronousAdapterWizard">
        </newWizardShortcut>
        <newWizardShortcut
              id="hu.bme.mit.gamma.ui.wizards.NewGclInterfaceWizard">
        </newWizardShortcut>
        <newWizardShortcut
-             id="hu.bme.mit.gamma.ui.wizards.NewGammaPropertyWizard">
+             id="hu.bme.mit.gamma.ui.wizards.NewGgenWizard">
+       </newWizardShortcut>
+       <newWizardShortcut
+             id="hu.bme.mit.gamma.ui.wizards.NewGplWizard">
+       </newWizardShortcut>
+       <newWizardShortcut
+             id="hu.bme.mit.gamma.ui.wizards.NewGtlWizard">
        </newWizardShortcut>
     </perspectiveExtension>
  </extension>
@@ -98,7 +122,7 @@
     <commonWizard
           menuGroupId="hu.bme.mit.gamma"
           type="new"
-          wizardId="hu.bme.mit.gamma.ui.wizards.NewGammaAsynchronousAdapterWizard">
+          wizardId="hu.bme.mit.gamma.ui.wizards.NewGclAsynchronousAdapterWizard">
        <enablement>
           <or>
              <adapt
@@ -161,7 +185,7 @@
     <commonWizard
           menuGroupId="hu.bme.mit.gamma"
           type="new"
-          wizardId="hu.bme.mit.gamma.ui.wizards.NewGammaPropertyWizard">
+          wizardId="hu.bme.mit.gamma.ui.wizards.NewGgenWizard">
        <enablement>
           <or>
              <adapt
@@ -177,7 +201,48 @@
        </enablement>
     </commonWizard>
  </extension>
- 
+ <extension
+       point="org.eclipse.ui.navigator.navigatorContent">
+    <commonWizard
+          menuGroupId="hu.bme.mit.gamma"
+          type="new"
+          wizardId="hu.bme.mit.gamma.ui.wizards.NewGplWizard">
+       <enablement>
+          <or>
+             <adapt
+                   type="org.eclipse.core.resources.IFile">
+             </adapt>
+             <adapt
+                   type="org.eclipse.core.resources.IFolder">
+             </adapt>
+             <adapt
+                   type="org.eclipse.core.resources.IProject">
+             </adapt>
+          </or>
+       </enablement>
+    </commonWizard>
+ </extension>
+ <extension
+       point="org.eclipse.ui.navigator.navigatorContent">
+    <commonWizard
+          menuGroupId="hu.bme.mit.gamma"
+          type="new"
+          wizardId="hu.bme.mit.gamma.ui.wizards.NewGtlWizard">
+       <enablement>
+          <or>
+             <adapt
+                   type="org.eclipse.core.resources.IFile">
+             </adapt>
+             <adapt
+                   type="org.eclipse.core.resources.IFolder">
+             </adapt>
+             <adapt
+                   type="org.eclipse.core.resources.IProject">
+             </adapt>
+          </or>
+       </enablement>
+    </commonWizard>
+ </extension>
  
  <extension
        point="org.eclipse.ui.perspectives">

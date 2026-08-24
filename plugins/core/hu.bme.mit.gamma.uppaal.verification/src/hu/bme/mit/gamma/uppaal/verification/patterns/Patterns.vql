@@ -57,7 +57,7 @@ private pattern componentDeclarationEvents(type : Component, port : Port, realiz
 	Port.interfaceRealization(port, interfaceRealization);
 	InterfaceRealization.realizationMode(interfaceRealization, realizationMode);
 	InterfaceRealization.interface(interfaceRealization, interface);
-	Interface.events(interface, eventDeclaration);
+	Interface.eventDeclarations(interface, eventDeclaration);
 	EventDeclaration.event(eventDeclaration, event);
 }
 

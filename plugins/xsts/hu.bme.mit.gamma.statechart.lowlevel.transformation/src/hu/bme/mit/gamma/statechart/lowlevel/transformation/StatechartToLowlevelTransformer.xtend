@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.interface_.Event
+import hu.bme.mit.gamma.statechart.interface_.EventAnyPortParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
@@ -56,6 +57,7 @@ import java.util.List
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
@@ -87,16 +89,16 @@ class StatechartToLowlevelTransformer {
 	}
 	
 	new(TimeUnit baseTimeUnit) {
-		this(true, true, 7, baseTimeUnit)
+		this(true, true, baseTimeUnit)
 	}
 	
-	new(boolean functionInlining, boolean addReturnGuards, int maxRecursionDepth, TimeUnit baseTimeUnit) {
+	new(boolean functionInlining, boolean addReturnGuards, TimeUnit baseTimeUnit) {
 		this.trace = new Trace
 		this.typeTransformer = new TypeTransformer(this.trace)
-		this.expressionTransformer = new ExpressionTransformer(this.trace, functionInlining, addReturnGuards, maxRecursionDepth, baseTimeUnit)
+		this.expressionTransformer = new ExpressionTransformer(this.trace, functionInlining, addReturnGuards, baseTimeUnit)
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
-		this.actionTransformer = new ActionTransformer(this.trace, functionInlining, addReturnGuards, maxRecursionDepth, baseTimeUnit)
-		this.triggerTransformer = new TriggerTransformer(this.trace, functionInlining, maxRecursionDepth, baseTimeUnit)
+		this.actionTransformer = new ActionTransformer(this.trace, functionInlining, addReturnGuards, baseTimeUnit)
+		this.triggerTransformer = new TriggerTransformer(this.trace, functionInlining, baseTimeUnit)
 		this.pseudoStateTransformer = new PseudoStateTransformer(this.trace)
 	}
 	
@@ -108,6 +110,8 @@ class StatechartToLowlevelTransformer {
 		// Eliminating merge states
 		val mergeStateEliminator = new MergeStateEliminator(statechart)
 		mergeStateEliminator.execute
+		// Transform event any port parameter here as later, record and array accesses complicate things
+		statechart.preprocessEventAnyPortParameters
 		//
 		return statechart.transformComponent as hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
 	}
@@ -306,6 +310,9 @@ class StatechartToLowlevelTransformer {
 					lowlevelStatechart.internalEventDeclarations += lowlevelEventDeclarations
 				}
 			}
+			for (variableDeclaration : port.allVariableDeclarations) {
+				lowlevelStatechart.variableDeclarations += variableDeclaration.transform(port)
+			}
 		}
 		for (region : statechart.regions) {
 			lowlevelStatechart.regions += region.transform
@@ -335,7 +342,34 @@ class StatechartToLowlevelTransformer {
 			lowlevelStatechart.invariants += statechartInvariants.map[it.transformSimpleExpression]
 		}
 		
+		// Interface function definitions
+		val functionDeclarations = statechart.functionDeclarations
+		for (interfacefunctionDeclaration : statechart.allProvidedInterfaceFunctionDeclarations) {
+			val functionDefinition = interfacefunctionDeclaration.getMatchingFunctionDeclaration(functionDeclarations)
+			if (!trace.isMapped(functionDefinition)) {
+				val extension functionTransformer = new FunctionTransformer(trace, ADD_RETURN_GUARDS)
+				functionDefinition.transformAndStoreFunction
+			}
+		}
+		
 		return lowlevelStatechart
+	}
+	
+	protected def preprocessEventAnyPortParameters(StatechartDefinition statechart) {
+		for (reference : statechart.getAllContentsOfType(EventAnyPortParameterReferenceExpression)) {
+			val event = reference.event
+			val parameter = reference.parameterDeclaration
+			
+			val ifThenElses = newArrayList
+			
+			val ports = statechart.allPortsWithInput
+					.filter[it.inputEvents.contains(event)]
+			for (port : ports) {
+				ifThenElses += statechartUtil.createIfRaisedThenExpression(port, parameter)
+			}
+			val unfoldedReference = ifThenElses.weaveIfNeeded
+			unfoldedReference.replace(reference)
+		}
 	}
 
 	protected def transform(SchedulingOrder order) {
@@ -465,10 +499,8 @@ class StatechartToLowlevelTransformer {
 			lowlevelGuardList += gammaTrigger.transformTrigger // Trigger guard
 		}
 		var guard = transition.guard
-		if (guard !== null) {
-			if (!guard.elseOrDefault) {
-				lowlevelGuardList += guard.transformExpression
-			}
+		if (guard !== null && !guard.elseOrDefault) {
+			lowlevelGuardList += guard.transformExpression
 			// We do not transform the else guard: priority is already set during the creation of the transition
 		}
 		// The expressions are in an AND relation

@@ -131,11 +131,11 @@ private pattern parentInterfaces(interface : Interface, parent : Interface) {
 
 private pattern eventsOfPorts(port : Port, event : gif::Event) {
 	Port.interfaceRealization.interface(port, interface);
-	Interface.events.event(interface, event);
+	Interface.eventDeclarations.event(interface, event);
 } or {
 	Port.interfaceRealization.interface(port, interface);
 	find parentInterfaces+(interface, parentInterface);
-	Interface.events.event(parentInterface, event);
+	Interface.eventDeclarations.event(parentInterface, event);
 }
 
 // Constants
@@ -168,7 +168,7 @@ pattern queuesOfEvents(queue : MessageQueue, port : Port, event : gif::Event) {
 	find eventsOfPorts(port, event);
 }
 
-pattern sourceOfEventPassings(queue : MessageQueue, sourceEventReference : EventReference) {
+pattern sourceOfEventPassings(queue : MessageQueue, sourceEventReference : OccurrenceReferenceExpression) {
 	MessageQueue.eventPassings(queue, eventPassing);
 	EventPassing.source(eventPassing, sourceEventReference);
 }

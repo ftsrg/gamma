@@ -111,6 +111,9 @@ class ImlVerifier extends AbstractVerifier {
 			traceResult = new Result(result, trace)
 			
 			logger.info("Quitting Imandra session")
+		} catch (Exception e) {
+			logger.warning("Exception thrown: " + e)
+			throw e
 		} finally {
 			resultReader?.close
 			errorReader?.cancel
@@ -134,6 +137,10 @@ class ImlVerifier extends AbstractVerifier {
 	override getUnavailableBackendMessage() {
 		return "The Imandra Python API is unavailable; see installation instructions at " +
 				"'https://github.com/ftsrg/gamma/tree/dev/plugins/iml#setup'"
+	}
+	
+	override protected getAnalysisLanguage() {
+		return "IML"
 	}
 	
 }

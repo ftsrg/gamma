@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -115,7 +115,7 @@ class GammaFileNamer {
 	def String getFileExtension(String analysisLanguage) {
 		val name = analysisLanguage.toUpperCase
 		switch (name) {
-			case "UPPAAL", case "XSTS_UPPAAL": {
+			case "XTA", case name.contains("UPPAAL"): {
 				return UPPAAL_MODEL_EXTENSION
 			}
 			case "THETA", case "XSTS": {
@@ -132,6 +132,9 @@ class GammaFileNamer {
 			}
 			case "IMANDRA", case "IML": {
 				return IML_MODEL_EXTENSION
+			}
+			case "SMART", case "SMART-ALL": {
+				return ""
 			}
 			default:
 				throw new IllegalArgumentException("Not known language: " + analysisLanguage)

@@ -33,6 +33,7 @@
     <genClasses ecoreClass="model.ecore#//Package">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//Package/imports"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//Package/typeDeclarations"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//Package/functionDeclarations"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//Package/components"/>
     </genClasses>
     <genClasses ecoreClass="model.ecore#//Component">

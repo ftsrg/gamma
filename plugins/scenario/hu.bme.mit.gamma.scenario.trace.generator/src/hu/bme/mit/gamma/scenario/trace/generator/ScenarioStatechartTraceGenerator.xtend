@@ -55,11 +55,11 @@ class ScenarioStatechartTraceGenerator {
 
 	StatechartDefinition statechart = null
 	List<Expression> arguments = newArrayList
-	var Integer schedulingConstraint = 0
+	var Long schedulingConstraint = Long.valueOf(0)
 
 	protected String absoluteParentFolder
 
-	new(StatechartDefinition statechart, List<? extends Expression> arguments, Integer schedulingConstraint) {
+	new(StatechartDefinition statechart, List<? extends Expression> arguments, Long schedulingConstraint) {
 		this.statechart = statechart
 		this.arguments += arguments
 		this.schedulingConstraint = schedulingConstraint
@@ -88,7 +88,7 @@ class ScenarioStatechartTraceGenerator {
 		val compInstanceRef = new ComponentInstanceReferences(newArrayList,newArrayList)
 		val transformator = new Gamma2XstsTransformerSerializer(statechart, arguments, absoluteParentFolder, name, schedulingConstraint, schedulingConstraint,
 			true, false, false, true, TransitionMerging.HIERARCHICAL, null, 
-			new AnnotatablePreprocessableElements(null, null, null, null, null, null, null, compInstanceRef, null, null, null,
+			new AnnotatablePreprocessableElements(null, null, null, null, null, null, null, null, null, null, compInstanceRef, null, null, null,
 				InteractionCoverageCriterion.EVERY_INTERACTION, InteractionCoverageCriterion.EVERY_INTERACTION, null,
 				DataflowCoverageCriterion.ALL_USE, null, DataflowCoverageCriterion.ALL_USE), null, null)
 		transformator.execute
@@ -96,12 +96,12 @@ class ScenarioStatechartTraceGenerator {
 		val xStsFile = new File(absoluteParentFolder + File.separator + fileNamer.getXtextXStsFileName(name))
 		
 		val targetStateName = isNegativeTest ? 
-			scenarioStatechartUtil.hotViolation : 
-			scenarioStatechartUtil.accepting
+			scenarioStatechartUtil.hotViolation : scenarioStatechartUtil.accepting
 		val traces = 
 		if (USE_OWN_TRAVERSAL) {
 			deriveTracesWithOwn(targetStateName, component, xStsFile)
-		} else {
+		}
+		else {
 			deriveTracesWithBuiltIn(targetStateName, component, xStsFile)
 		}
 		
@@ -110,14 +110,15 @@ class ScenarioStatechartTraceGenerator {
 		
 		for (trace : filteredTraces) {
 			trace.variableDeclarations += statechart.variableDeclarations.clone.filter[!it.name.startsWith("__id_")]
-			backAnnotateNegsChecksAndAssigns(component, trace)
-			val refs = getAllContentsOfType(trace, DirectReferenceExpression).filter[it.declaration instanceof VariableDeclaration]
+			component.backAnnotateNegsChecksAndAssigns(trace)
+			val refs = trace.getAllContentsOfType(DirectReferenceExpression).filter[it.declaration instanceof VariableDeclaration]
 			for (oldRef : refs) {
 				val newRef = oldRef.clone
 				newRef.declaration = trace.variableDeclarations.findFirst[it.name == oldRef.declaration.name]
 				ecoreUtil.changeAndReplace(newRef, oldRef,trace)
 			}
-			trace.steps.forEach[it.asserts.removeIf([it instanceof ComponentInstanceStateReferenceExpression])]
+			trace.steps.forEach[
+					it.asserts.removeIf[it instanceof ComponentInstanceStateReferenceExpression]]
 		}
 
 		for (trace : filteredTraces) {
@@ -138,7 +139,7 @@ class ScenarioStatechartTraceGenerator {
 				for (similarSet : similarTracesSet) {// traces should be at least 2 step long
 					val steps = trace.steps.subList(0,trace.steps.size-2)
 					if (!added && similarSet.exists[steps.isCovered(it.steps.subList(0, it.steps.size - 2)) 
-						&& it.steps.subList(0, it.steps.size - 2).isCovered(steps)]) {
+								&& it.steps.subList(0, it.steps.size - 2).isCovered(steps)]) {
 						similarSet += trace
 						added = true
 					}
@@ -210,4 +211,5 @@ class ScenarioStatechartTraceGenerator {
 		}
 		return traces
 	}
+	
 }

@@ -1,0 +1,35 @@
+package functions
+
+import "Interfaces/Interfaces.gcd"
+
+statechart PortFunctions_4 [
+	port FunctionExecute_1 : requires FunctionExecute
+	port FunctionExecute_2 : requires FunctionExecute
+] {
+	var _int : integer := 2
+	var _bool : boolean
+	var rec : Rec0rd := #Rec0rd{a := true, b := 5}
+	region main {
+		initial Initial
+		state _X
+		
+		state _Y
+		state _Z
+		state _A
+	}
+	
+	transition from Initial to _X
+	transition from _X to _Y when FunctionExecute_1.^execute / {
+		var a : integer := _int;
+		if (::FunctionExecute_1::getValue() < 1000) {
+			var c : ComplexRecord := ::FunctionExecute_1::getComplexRecord();
+			::FunctionExecute_2::setValue(_int + 69 + c.b.b);
+			_bool := true;
+			::FunctionExecute_1::setComplexRecord(#ComplexRecord{a := -1.2, b:= #Rec0rd{a := true, b := c.b.b + 13}});
+		}
+		_int := _int + ::FunctionExecute_1::factorial(4) / a;
+	}
+	transition from _Y to _Z when FunctionExecute_2.^execute / _int := ::FunctionExecute_2::getValue(); ::FunctionExecute_1::setRecord(#Rec0rd{a := false, b := 10});
+	transition from _Z to _A when FunctionExecute_1.^execute [_int != -396] / _int := _int + ::FunctionExecute_2::getValue(); rec := ::FunctionExecute_1::getRecord(); rec.b := rec.b + 1;
+	
+}

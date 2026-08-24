@@ -116,17 +116,16 @@ class ModelSerializer {
 				}
 				
 			«ENDIF»
-			«IF !havocs.empty»
-				«TYPE» «ENV_HAVOC_RECORD_TYPE_NAME» = {
-					«FOR envHavoc : havocs»
-						«envHavoc.serializeEnvFieldDeclaration»
-					«ENDFOR»
-					«FOR choice : choices»
-						«choice.customizeChoice» : int;
-					«ENDFOR»
-				}
-				
-			«ENDIF»
+			«TYPE» «ENV_HAVOC_RECORD_TYPE_NAME» = {
+				«FOR envHavoc : havocs»
+					«envHavoc.serializeEnvFieldDeclaration»
+				«ENDFOR»
+				«IF havocs.empty» _ph : bool; (* Placeholder *) «ENDIF»
+				«FOR choice : choices»
+					«choice.customizeChoice» : int;
+				«ENDFOR»
+			}
+			
 			«IF needNonDet»
 				«TYPE» «NONDET_BRANCH_TYPE_NAME» = «FOR i : 0 ..< choices.map[it.actions.size].max SEPARATOR ' | '»«i.branchLiteralName»«ENDFOR»
 			«ENDIF»

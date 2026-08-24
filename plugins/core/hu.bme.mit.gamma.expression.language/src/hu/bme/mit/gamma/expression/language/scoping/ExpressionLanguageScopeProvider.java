@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.expression.language.scoping;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
@@ -21,11 +22,15 @@ import org.eclipse.xtext.scoping.impl.SimpleScope;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.ExpressionPackage;
+import hu.bme.mit.gamma.expression.model.FieldDeclaration;
+import hu.bme.mit.gamma.expression.model.NamedElement;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
@@ -55,10 +60,13 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 			if (literal == null) {
 				RecordAccessExpression access = ecoreUtil.getSelfOrContainerOfType(context, RecordAccessExpression.class);
 				Expression recordTypeExpression = access.getOperand();
-				TypeDefinition typeDefinition = typeDeterminator.getTypeDefinition(recordTypeExpression);
-				if (typeDefinition instanceof RecordTypeDefinition recordType) {
-					return Scopes.scopeFor(recordType.getFieldDeclarations());
-				}
+				try {
+					TypeDefinition typeDefinition = typeDeterminator.getTypeDefinition(recordTypeExpression);
+					if (typeDefinition instanceof RecordTypeDefinition recordType) {
+						return Scopes.scopeFor(recordType.getFieldDeclarations());
+					}
+				} catch (RuntimeException e) {} // Not fully constructed element
+				
 				return super.getScope(context, reference);
 			}
 			else {
@@ -66,26 +74,29 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 			}
 			RecordTypeDefinition recordType = (RecordTypeDefinition)
 					ExpressionModelDerivedFeatures.getTypeDefinition(typeDeclaration);
-			return Scopes.scopeFor(recordType.getFieldDeclarations());
+			List<FieldDeclaration> fieldDeclarations = recordType.getFieldDeclarations();
+			return Scopes.scopeFor(fieldDeclarations);
 		}
-		if (context instanceof ExpressionPackage &&
-				reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
-			ExpressionPackage expressionPackage = (ExpressionPackage) context;
+		if (context instanceof ExpressionPackage expressionPackage &&
+				reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			Collection<Declaration> declarations = new ArrayList<Declaration>();
-			declarations.addAll(expressionPackage.getConstantDeclarations());
-			declarations.addAll(expressionPackage.getFunctionDeclarations());
+			declarations.addAll(
+					expressionPackage.getConstantDeclarations());
+			declarations.addAll(
+					expressionPackage.getFunctionDeclarations());
 			// Parameter declarations could be added too, but what for?
 			return Scopes.scopeFor(declarations);
 		} // Order is important, as ExpressionPackage is a ParametricElement
-		if (context instanceof ParametricElement &&
-				reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+		if (context instanceof ParametricElement parametricElement &&
+				reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			IScope parentScope = getParentScope(context, reference);
-			ParametricElement parametricElement = (ParametricElement) context;
-			return Scopes.scopeFor(parametricElement.getParameterDeclarations(), parentScope);
+			List<ParameterDeclaration> parameterDeclarations = parametricElement.getParameterDeclarations();
+			return Scopes.scopeFor(parameterDeclarations, parentScope);
 		}
-		if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+		if (reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			// Right now, this might not be necessary as parametric elements are contained directly by packages
-			return getParentScope(context, reference);
+			IScope parentScope_ = getParentScope(context, reference);
+			return parentScope_;
 		}
 		if (reference == ExpressionModelPackage.Literals.TYPE_REFERENCE__REFERENCE) {
 			// Util override is crucial because of this
@@ -100,12 +111,14 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 				try {
 					EnumerationTypeDefinition enumeration = (EnumerationTypeDefinition)
 							ExpressionModelDerivedFeatures.getTypeDefinition(typeReference);
-					return Scopes.scopeFor(enumeration.getLiterals());
+					List<EnumerationLiteralDefinition> literals = enumeration.getLiterals();
+					return Scopes.scopeFor(literals);
 				} catch (IllegalArgumentException e) {
 					// LazyLinkingResource bug: 'type == null'
 				}
 			}
 		}
+		
 		return super.getScope(context, reference);
 	}
 	
@@ -129,6 +142,46 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 			parentScope = new SimpleScope(parentScope, scope.getAllElements());
 		}
 		return parentScope;
+	}
+	
+	protected IScope embedScopes2(Collection<Iterable<? extends EObject>> collections) {
+		Collection<IScope> scopes = new ArrayList<IScope>();
+		
+		for (Iterable<? extends EObject> iterable : collections) {
+			IScope scope = Scopes.scopeFor(iterable);
+			scopes.add(scope);
+		}
+		
+		return embedScopes(scopes);
+	}
+	
+	//
+	
+	protected EObject checkParent(NamedElement parent) {
+		EObject setParent = getSelfOrFirstSubelementWithNamedElements(parent);
+		if (setParent == null) {
+			return parent;
+		}
+		return setParent;
+	}
+	
+	protected EObject getSelfOrFirstSubelementWithNamedElements(EObject context) {
+		List<EObject> contents = context.eContents();
+		if (contents.stream().anyMatch(it ->  it instanceof NamedElement)) {
+			return context;
+		}
+		
+		List<EObject> subelements = new ArrayList<EObject>(contents);
+		subelements.addAll(
+				context.eCrossReferences());
+		for (EObject object : subelements) {
+			EObject content = getSelfOrFirstSubelementWithNamedElements(object);
+			if (content != null) {
+				return content;
+			}
+		}
+		
+		return null;
 	}
 	
 }

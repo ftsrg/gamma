@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020-2024 Contributors to the Gamma project
+ * Copyright (c) 2020-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,7 +12,6 @@ package hu.bme.mit.gamma.uppaal.util
 
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Set
-import java.util.logging.Level
 import java.util.logging.Logger
 import org.eclipse.emf.ecore.EObject
 import uppaal.declarations.DataVariableDeclaration
@@ -169,7 +168,7 @@ class NtaOptimizer {
 				integerVariable.variable.head.initializer = null
 			}
 			else {
-				logger.log(Level.INFO, "Deleting trivial local variable: " + variable.name)
+				logger.info("Deleting trivial local variable: " + variable.name)
 				integerVariable.remove
 			}
 		}
@@ -179,6 +178,7 @@ class NtaOptimizer {
 		
 		val removableLiteralStatements = <EObject>newArrayList
 		removableLiteralStatements += literalExpressions
+				.reject[it.text.startsWith("/* doc ")] // Keeping docs
 				.map[it.eContainer]
 				.filter(ExpressionStatement)
 		removableLiteralStatements += literalExpressions

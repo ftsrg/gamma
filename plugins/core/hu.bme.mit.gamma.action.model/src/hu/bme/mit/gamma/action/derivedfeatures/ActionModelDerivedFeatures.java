@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.action.derivedfeatures;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +37,8 @@ import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
+import hu.bme.mit.gamma.expression.model.LambdaDeclaration;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 
@@ -52,7 +55,7 @@ public class ActionModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 
 	public static boolean isPure(FunctionDeclaration function) {
-		if (isLambda(function)) {
+		if (!hasDefinition(function) || isLambda(function)) {
 			return true;
 		}
 		
@@ -105,6 +108,66 @@ public class ActionModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 			}
 		}
 		return false;
+	}
+	
+	public static boolean hasDefinition(FunctionDeclaration functionDeclaration) {
+		if (functionDeclaration instanceof LambdaDeclaration lambdaDeclaration) {
+			return ExpressionModelDerivedFeatures.hasDefinition(lambdaDeclaration);
+		}
+		if (functionDeclaration instanceof ProcedureDeclaration procedureDeclaration) {
+			return hasDefinition(procedureDeclaration);
+		}
+		throw new IllegalArgumentException("Unknown function: " + functionDeclaration);
+	}
+	
+	public static boolean hasDefinition(ProcedureDeclaration procedureDeclaration) {
+		Block body = procedureDeclaration.getBody();
+		return body != null;
+	}
+	
+	public static FunctionDeclaration getMatchingFunctionDeclaration(FunctionDeclaration functionDeclaration,
+				Iterable<? extends FunctionDeclaration> functionDefinitions) {
+		List<ParameterDeclaration> declarationParameters = functionDeclaration.getParameterDeclarations();
+		for (FunctionDeclaration functionDefinition : functionDefinitions) {
+			List<ParameterDeclaration> definitionParameters = functionDefinition.getParameterDeclarations();
+			boolean match = functionDeclaration.getName().equals(functionDefinition.getName()) &&
+					ecoreUtil.helperEquals(functionDeclaration.getType(), functionDefinition.getType()) &&
+					ecoreUtil.helperEquals(declarationParameters.stream().map(it -> it.getType()).toList(), definitionParameters.stream().map(it -> it.getType()).toList());
+			if (match) {
+				return functionDefinition;
+			}
+		}
+		
+		return functionDeclaration; // Returning the original function (may have a definition)
+	}
+	
+	public static FunctionDeclaration getMatchingUnfoldedFunctionDeclaration(FunctionDeclaration functionDeclaration,
+			Iterable<? extends FunctionDeclaration> functionDefinitions) {
+		final boolean CHECK_RETURN_TYPE = false; //  Tuple vs. Record
+		List<ParameterDeclaration> declarationParameters = functionDeclaration.getParameterDeclarations();
+		for (FunctionDeclaration functionDefinition : functionDefinitions) {
+			List<ParameterDeclaration> definitionParameters = functionDefinition.getParameterDeclarations();
+			boolean match = functionDeclaration.getName().equals(functionDefinition.getName()) &&
+					!CHECK_RETURN_TYPE || ecoreUtil.helperEquals(complexTypeUtil.getNativeTypes(functionDeclaration.getType()), complexTypeUtil.getNativeTypes(functionDefinition.getType())) &&
+					ecoreUtil.helperEquals(complexTypeUtil.getNativeTypes(declarationParameters), complexTypeUtil.getNativeTypes(definitionParameters));
+			if (match) {
+				return functionDefinition;
+			}
+		}
+		
+		return functionDeclaration; // Returning the original function (may have a definition)
+	}
+	
+	public static boolean hasMatchingFunctionDeclaration(FunctionDeclaration functionDeclaration,
+			Collection<? extends FunctionDeclaration> functionDefinitions) {
+		FunctionDeclaration matchingFunctionDeclaration = getMatchingFunctionDeclaration(functionDeclaration, functionDefinitions);
+		return functionDefinitions.contains(matchingFunctionDeclaration);
+	}
+	
+	public static boolean hasMatchingUnfoldedFunctionDeclaration(FunctionDeclaration functionDeclaration,
+			Collection<? extends FunctionDeclaration> functionDefinitions) {
+		FunctionDeclaration matchingFunctionDeclaration = getMatchingUnfoldedFunctionDeclaration(functionDeclaration, functionDefinitions);
+		return functionDefinitions.contains(matchingFunctionDeclaration);
 	}
 	
 	//

@@ -126,7 +126,7 @@ class TriggerTransformer {
 					transition.extendGuard(guard)
 				}
 			}
-			else if (transition.trigger === null) {
+			if (transition.trigger === null) {
 				// The old transition has to have a trigger
 				transition.trigger = statechartModelFactory.createOnCycleTrigger
 			}

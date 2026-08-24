@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -27,14 +27,14 @@ class TriggerTransformer {
 	// Auxiliary objects
 	protected final extension ExpressionTransformer eventReferenceTransformer
 	// Factory objects
-	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
+	protected final extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	// Trace
 	protected final Trace trace
 	
-	new(Trace trace, boolean functionInlining, int maxRecursionDepth, TimeUnit baseTimeUnit) {
+	new(Trace trace, boolean functionInlining, TimeUnit baseTimeUnit) {
 		this.trace = trace
 		this.eventReferenceTransformer = new ExpressionTransformer(
-				this.trace, functionInlining, true, maxRecursionDepth, baseTimeUnit)
+				this.trace, functionInlining, true, baseTimeUnit)
 	}
 	
 	protected def dispatch Expression transformTrigger(BinaryTrigger trigger) {
@@ -69,7 +69,7 @@ class TriggerTransformer {
 				throw new IllegalArgumentException("Not known trigger: " + trigger)
 		}
 	}
-
+	
 	protected def dispatch Expression transformTrigger(UnaryTrigger trigger) {
 		val type = trigger.type
 		switch (type) {
@@ -107,7 +107,7 @@ class TriggerTransformer {
 			it.operands += triggerGuards
 		]
 	}
-
+	
 	protected def dispatch Expression transformTrigger(EventTrigger trigger) {
 		return trigger.eventReference.transformEventReference
 	}

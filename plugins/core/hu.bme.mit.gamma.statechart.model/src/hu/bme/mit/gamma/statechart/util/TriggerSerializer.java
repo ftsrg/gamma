@@ -11,8 +11,8 @@
 package hu.bme.mit.gamma.statechart.util;
 
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger;
-import hu.bme.mit.gamma.statechart.interface_.EventReference;
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger;
+import hu.bme.mit.gamma.statechart.interface_.OccurrenceReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.Trigger;
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger;
 import hu.bme.mit.gamma.statechart.statechart.BinaryType;
@@ -42,7 +42,7 @@ public class TriggerSerializer {
 	}
 	
 	protected String _serialize(EventTrigger trigger) {
-		EventReference eventReference = trigger.getEventReference();
+		OccurrenceReferenceExpression eventReference = trigger.getEventReference();
 		return serializer.serialize(eventReference);
 	}
 	

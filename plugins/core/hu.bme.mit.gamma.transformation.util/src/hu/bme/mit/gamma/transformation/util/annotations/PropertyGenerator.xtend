@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -49,6 +49,7 @@ import java.util.Map
 import java.util.Set
 import org.eclipse.emf.ecore.EObject
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class PropertyGenerator {
@@ -65,11 +66,11 @@ class PropertyGenerator {
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
-
+	
 	new(boolean isSimpleComponentReference) {
 		this.isSimpleComponentReference = isSimpleComponentReference
 	}
-
+	
 	def PropertyPackage initializePackage(Component component) {
 		val propertyPackage = factory.createPropertyPackage
 		val _package = component.containingPackage
@@ -79,7 +80,7 @@ class PropertyGenerator {
 		
 		return propertyPackage
 	}
-
+	
 	def List<CommentableStateFormula> createStateReachability(Iterable<? extends SynchronousComponentInstance> instances) {
 		var List<CommentableStateFormula> formulas = newArrayList
 		for (SynchronousComponentInstance instance : instances) {
@@ -108,17 +109,59 @@ class PropertyGenerator {
 	
 	def List<CommentableStateFormula> createStateReachabilityFormulas(Iterable<? extends State> states) {
 		val formulas = newArrayList
+		
 		for (state : states) {
+			formulas += state.createStateReachabilityFormula
+		}
+		
+		return formulas
+	}
+	
+	def CommentableStateFormula createStateReachabilityFormula(State state) {
 			val instance = state.containingComponent.referencingComponentInstance
-			val stateReference = compositeFactory.createComponentInstanceStateReferenceExpression
-			val parentRegion = StatechartModelDerivedFeatures.getParentRegion(state)
-			stateReference.setInstance(instance.createInstanceReference)
-			stateReference.setRegion(parentRegion)
-			stateReference.setState(state)
-			val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(stateReference))
+			val parentRegion = state.parentRegion
+			val stateReference = instance.createInstanceReference
+					.createStateReference(state)
+			val stateFormula = propertyUtil.createEF(
+					propertyUtil.createAtomicFormula(stateReference))
 			val commentableStateFormula = propertyUtil.createCommentableStateFormula(
 					'''«instance.name».«parentRegion.name».«state.name»''', stateFormula)
-			formulas += commentableStateFormula
+			return commentableStateFormula
+	}
+	
+	def List<CommentableStateFormula> createOrthogonalStateCombinationReachability(
+			Iterable<? extends SynchronousComponentInstance> instances) {
+		return instances.createOrthogonalStateCombinationReachability(false)
+	}
+	
+	def List<CommentableStateFormula> createOrthogonalStateCombinationReachability(
+			Iterable<? extends SynchronousComponentInstance> instances, boolean targetLeafStates) {
+		val formulas = newArrayList
+		
+		for (SynchronousComponentInstance instance : instances) {
+			val allStateCombinations = newArrayList
+			val type = instance.type
+			if (type instanceof StatechartDefinition) {
+				allStateCombinations += (targetLeafStates) ?
+					type.allOrthogonalLeafStateCombinations : type.allOrthogonalStateCombinations
+			}
+			
+			for (stateCombination : allStateCombinations
+						.reverseView /* Farthest first to support optimization */
+						.filter[it.size > 1] /* Multi-element combinations */) {
+				val stateReferences = newArrayList
+				for (state : stateCombination) {
+					stateReferences += instance.createInstanceReference
+							.createStateReference(state)
+				}
+				val comment = stateCombination.map[it.id].join(" and ")
+				val reachabilityFormula = stateReferences.wrapIntoAndExpression
+						.createAtomicFormula
+						.createEF
+				val formula = comment.createCommentableStateFormula(reachabilityFormula)
+				
+				formulas += formula
+			}
 		}
 		
 		return formulas
@@ -128,11 +171,9 @@ class PropertyGenerator {
 		val formulas = newArrayList
 		for (state : states) { // A G(state -> (X !(state)))
 			val instance = state.containingComponent.referencingComponentInstance
-			val stateReference = compositeFactory.createComponentInstanceStateReferenceExpression
-			val parentRegion = StatechartModelDerivedFeatures.getParentRegion(state)
-			stateReference.setInstance(instance.createInstanceReference)
-			stateReference.setRegion(parentRegion)
-			stateReference.setState(state)
+			val parentRegion = state.parentRegion
+			val stateReference = instance.createInstanceReference
+					.createStateReference(state)
 			val stateReferenceFormula = propertyUtil.createAtomicFormula(stateReference)
 			val notStateReferenceFormula = stateReferenceFormula.clone => [
 				it.expression = propertyUtil.createNotExpression(it.expression)
@@ -158,11 +199,9 @@ class PropertyGenerator {
 		val formulas = newArrayList
 		for (state : states) { // A G(state -> (G state)) - note that 'loop transitions' can still fire!
 			val instance = state.containingComponent.referencingComponentInstance
-			val stateReference = compositeFactory.createComponentInstanceStateReferenceExpression
-			val parentRegion = StatechartModelDerivedFeatures.getParentRegion(state)
-			stateReference.setInstance(instance.createInstanceReference)
-			stateReference.setRegion(parentRegion)
-			stateReference.setState(state)
+			val parentRegion = state.parentRegion
+			val stateReference = instance.createInstanceReference
+					.createStateReference(state)
 			val stateReferenceFormula = propertyUtil.createAtomicFormula(stateReference)
 			val stateReferenceFormula2 = stateReferenceFormula.clone
 			
@@ -182,7 +221,7 @@ class PropertyGenerator {
 		return formulas
 	}
 	
-	def List<CommentableStateFormula> createDeadlockInvariance(TransitionAnnotations transitionAnnotations) {
+	def List<CommentableStateFormula> createDeadlockStateInvariance(TransitionAnnotations transitionAnnotations) {
 		val formulas = newArrayList
 		
 		val transitions = transitionAnnotations.transitions
@@ -191,17 +230,15 @@ class PropertyGenerator {
 			val consideredStates = leafState.ancestorsAndSelf
 			val allOutgoingTransitions = transitions.filter[consideredStates.contains(it.sourceState)].toSet
 			val variables = allOutgoingTransitions.map[transitionAnnotations.getVariable(it)].toSet
-			
+			// CTL should be used for real deadlock check: 'E F(state && A G (!outgoingTransitionFireable1 && .. && !outgoingTransitionFireableN))'
 			if (!variables.empty) {  // A G(state -> (G (!outgoingTransitionFireable1 && .. && !outgoingTransitionFireableN))
 				val unfireableTransitionsExpression = propertyUtil.wrapIntoAndExpression( // (!outgoingTransitionFireable1 && .. && !outgoingTransitionFireableN)
 						variables.map[it.createVariableReference.createNotExpression].toList)
 				
-				val stateReference = compositeFactory.createComponentInstanceStateReferenceExpression
 				val instance = leafState.containingComponent.referencingComponentInstance
 				val parentRegion = StatechartModelDerivedFeatures.getParentRegion(leafState)
-				stateReference.setInstance(instance.createInstanceReference)
-				stateReference.setRegion(parentRegion)
-				stateReference.setState(leafState)
+				val stateReference = instance.createInstanceReference
+						.createStateReference(leafState)
 				val stateReferenceFormula = propertyUtil.createAtomicFormula(stateReference)
 				val unfireableTransitionsFormula = propertyUtil.createAtomicFormula(unfireableTransitionsExpression)
 				
@@ -217,6 +254,31 @@ class PropertyGenerator {
 						'''Is «instance.name».«parentRegion.name».«leafState.name» a deadlock state?''', stateFormula)
 				formulas += commentableStateFormula
 			}
+		}
+		
+		return formulas
+	}
+	
+	def List<CommentableStateFormula> createDeadlockInvariance(TransitionAnnotations transitionAnnotations) {
+		val formulas = newArrayList
+		
+		val transitions = transitionAnnotations.transitions
+		if (!transitions.empty) {
+			val variableReferences = newArrayList
+			for (transition : transitions) {
+				val instance = transition.containingComponent.referencingComponentInstance
+				val variable = transitionAnnotations.getVariable(transition)
+				val variableReference = instance.createInstanceReference
+							.createVariableReference(variable)
+				variableReferences += variableReference
+			}
+			val variableReference = variableReferences.wrapIntoOrExpression
+			val stateFormula = variableReference.createAtomicFormula
+					.createF.createAG
+			// AG F (outgoingTransitionFireable1 || ... || outgoingTransitionFireableN)
+			val commentableStateFormula = propertyUtil.createCommentableStateFormula(
+					'''Is there deadlock in the model?''', stateFormula)
+			formulas += commentableStateFormula
 		}
 		
 		return formulas
@@ -303,7 +365,7 @@ class PropertyGenerator {
 		}
 		return formulas
 	}
-
+	
 	def protected Set<Expression> getValues(ParameterDeclaration parameter) {
 		val typeDefinition = StatechartModelDerivedFeatures.getTypeDefinition(parameter.type)
 		if (typeDefinition instanceof BooleanTypeDefinition) {
@@ -319,7 +381,7 @@ class PropertyGenerator {
 		}
 		return Collections.emptySet
 	}
-
+	
 	def List<CommentableStateFormula> createTransitionReachability(TransitionAnnotations transitionAnnotations) {
 		val List<CommentableStateFormula> formulas = newArrayList
 		if (transitionAnnotations.empty) {
@@ -350,7 +412,7 @@ class PropertyGenerator {
 		}
 		return formulas
 	}
-
+	
 	def protected ComponentInstanceVariableReferenceExpression createVariableReference(
 			VariableDeclaration variable) {
 		val statechart = StatechartModelDerivedFeatures.getContainingStatechart(variable)
@@ -359,7 +421,7 @@ class PropertyGenerator {
 				instance.createInstanceReference, variable)
 		return reference
 	}
-
+	
 	def List<CommentableStateFormula> createTransitionPairReachability(
 			List<? extends TransitionPairAnnotation> transitionPairAnnotations) {
 		val List<CommentableStateFormula> formulas = newArrayList
@@ -391,7 +453,7 @@ class PropertyGenerator {
 		}
 		return formulas
 	}
-
+	
 	def List<CommentableStateFormula> createInteractionReachability(InteractionAnnotations interactionAnnotations) {
 		val List<CommentableStateFormula> formulas = newArrayList
 		val sameIdExpressions = newHashMap
@@ -507,7 +569,6 @@ class PropertyGenerator {
 		return reference.createEqualityExpression(literal)
 	}
 	
-	
 	def protected ComponentInstanceReferenceExpression createInstanceReference(ComponentInstance instance) {
 		if (isSimpleComponentReference) {
 			return propertyUtil.createInstanceReference(instance)
@@ -516,7 +577,7 @@ class PropertyGenerator {
 			return propertyUtil.createInstanceReferenceChain(instance)
 		}
 	}
-
+	
 	// Comments
 	
 	def protected String getInstanceId(EObject object) {
@@ -528,7 +589,7 @@ class PropertyGenerator {
 			return ""
 		}
 	}
-
+	
 	def dispatch protected String getId(RaiseEventAction action) {
 		val transition = ecoreUtil.getContainerOfType(action, Transition)
 		if (transition === null) {
@@ -541,11 +602,11 @@ class PropertyGenerator {
 		}
 		return getId(transition)
 	}
-
+	
 	def dispatch protected String getId(StateNode state) {
 		return '''«getInstanceId(state)».«state.parentRegion.name».«state.name»'''
 	}
-
+	
 	def dispatch protected String getId(Transition transition) {
 		return '''«transition.sourceState.id» --> «transition.targetState.id»'''
 	}
@@ -560,7 +621,7 @@ class PropertyGenerator {
 		val transitionOrState = reference.containingTransitionOrState
 		val port = reference.port
 		val event = reference.event
-		val parameter = reference.parameter
+		val parameter = reference.parameterDeclaration
 		return '''«transitionOrState.id»::«port.name».«event.name»::«parameter.name»'''
 	}
 	

@@ -32,7 +32,8 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1, 1, 2).after(f.getGenModelAccess().getPackageImportsAssignment_0_0_1_0());
         c.setLinewrap(1, 1, 2).after(f.getGenModelAccess().getScenarioImportsAssignment_0_0_1_1_1());
         c.setLinewrap(1, 1, 2).after(f.getGenModelAccess().getTraceImportsAssignment_0_0_1_2_1());
-        c.setLinewrap(1, 1, 2).after(f.getGenModelAccess().getGenmodelImportsAssignment_0_1_1());
+        c.setLinewrap(1, 1, 2).after(f.getGenModelAccess().getInclusionsAssignment_0_1_1());
+        c.setLinewrap(1, 1, 2).after(f.getGenModelAccess().getParallelExecutionsAssignment_0_2_2());
         c.setLinewrap(1, 1, 2).after(f.getGenModelAccess().getTasksAssignment_1());
 //        c.setLinewrap(1, 1, 2).after(f.getGenModelAccess().getStatechartImportsAssignment_0_0_1_1_1());
 //        // Interface compilation
@@ -139,8 +140,11 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getVerificationAccess().getProgrammingLanguagesAssignment_3_12_2());
         c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_11());
         c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_13());
-        c.setLinewrap(1).after(f.getVerificationAccess().getTestFolderAssignment_3_15_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getTimeoutAssignment_3_16_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_14());
+        c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_15());
+        c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_16());
+        c.setLinewrap(1).after(f.getVerificationAccess().getTestFolderAssignment_3_17_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getTimeoutAssignment_3_18_2());
         // Model mutation
         c.setLinewrap(1).after(f.getModelMutationAccess().getTargetFolderAssignment_3_0_2());
         c.setLinewrap(1).after(f.getModelMutationAccess().getModelAssignment_2());

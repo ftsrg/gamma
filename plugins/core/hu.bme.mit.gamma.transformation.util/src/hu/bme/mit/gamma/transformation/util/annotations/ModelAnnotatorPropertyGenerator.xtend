@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.transformation.util.annotations
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Port
@@ -27,13 +28,14 @@ import org.eclipse.xtend.lib.annotations.Data
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class ModelAnnotatorPropertyGenerator {
-	
+	//
 	protected final Component newTopComponent
 	
 	protected final AnnotatablePreprocessableElements annotableElements
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension UnfoldingTraceability traceability = UnfoldingTraceability.INSTANCE
+	//
 	
 	new(Component newTopComponent, AnnotatablePreprocessableElements annotableElements) {
 		this.newTopComponent = newTopComponent
@@ -49,14 +51,21 @@ class ModelAnnotatorPropertyGenerator {
 		// State coverage
 		val testedComponentsForStates = getIncludedSynchronousInstances(
 				annotableElements.testedComponentsForStates, newTopComponent)
+		val testedComponentsForOrthogonalStateCombinations = getIncludedSynchronousInstances(
+				annotableElements.testedComponentsForOrthogonalStateCombinations, newTopComponent)
+		val testedComponentsForOrthogonalLeafStateCombinations = getIncludedSynchronousInstances(
+				annotableElements.testedComponentsForOrthogonalLeafStateCombinations, newTopComponent)
 		// Unstable state coverage
 		val testedComponentsForUnstableStates = getIncludedSynchronousInstances(
 				annotableElements.testedComponentsForUnstableStates, newTopComponent)
-				.map[it.type].filter(StatechartDefinition).map[it.allStates].flatten
+					.map[it.type].filter(StatechartDefinition).map[it.allStates].flatten
 		// Trap state coverage
 		val testedComponentsForTrapStates = getIncludedSynchronousInstances(
 				annotableElements.testedComponentsForTrapStates, newTopComponent)
-				.map[it.type].filter(StatechartDefinition).map[it.allStates].flatten
+					.map[it.type].filter(StatechartDefinition).map[it.allStates].flatten
+		// Deadlock state coverage
+		val testedComponentsForDeadlockStates = getIncludedSynchronousInstances(
+				annotableElements.testedComponentsForDeadlockStates, newTopComponent)
 		// Deadlock coverage
 		val testedComponentsForDeadlock = getIncludedSynchronousInstances(
 				annotableElements.testedComponentsForDeadlock, newTopComponent)
@@ -100,8 +109,11 @@ class ModelAnnotatorPropertyGenerator {
 				annotableElements.testedComponentsForInteractionDataflow, newTopComponent)
 		
 		if (!testedComponentsForStates.nullOrEmpty ||
+				!testedComponentsForOrthogonalStateCombinations.nullOrEmpty ||
+				!testedComponentsForOrthogonalLeafStateCombinations.nullOrEmpty ||
 				!testedComponentsForUnstableStates.nullOrEmpty ||
 				!testedComponentsForTrapStates.nullOrEmpty ||
+				!testedComponentsForDeadlockStates.nullOrEmpty ||
 				!testedComponentsForDeadlock.nullOrEmpty ||
 				!testedComponentsForCompleteness.nullOrEmpty ||
 				!testedComponentsForNondeterministicTransitions.nullOrEmpty ||
@@ -113,8 +125,8 @@ class ModelAnnotatorPropertyGenerator {
 				!testedTransitionsForInteractions.nullOrEmpty ||
 				!dataflowTestedVariables.nullOrEmpty ||
 				!testedPortsForInteractionDataflow.nullOrEmpty) {
-			val annotator = new StatechartAnnotator(newPackage,
-				new AnnotatableElements(
+			val annotator = new StatechartAnnotator(newPackage, new AnnotatableElements(
+					testedComponentsForDeadlockStates,
 					testedComponentsForDeadlock,
 					testedComponentsForCompleteness,
 					testedComponentsForNondeterministicTransitions,
@@ -136,13 +148,18 @@ class ModelAnnotatorPropertyGenerator {
 			val formulas = generatedPropertyPackage.formulas
 			
 			formulas += propertyGenerator.createStateReachability(testedComponentsForStates)
+			formulas += propertyGenerator.createOrthogonalStateCombinationReachability(
+					testedComponentsForOrthogonalStateCombinations)
+			formulas += propertyGenerator.createOrthogonalStateCombinationReachability(
+					testedComponentsForOrthogonalLeafStateCombinations, true)
 			
 			formulas += propertyGenerator.createUnstableStateInvariance(testedComponentsForUnstableStates)
 			formulas += propertyGenerator.createTrapStateInvariance(testedComponentsForTrapStates)
+			formulas += propertyGenerator.createDeadlockStateInvariance(annotator.getDeadlockStateTransitionVariables)
 			formulas += propertyGenerator.createDeadlockInvariance(annotator.getDeadlockTransitionVariables)
 			formulas += propertyGenerator.createTransitionReachability(annotator.getCompletenessTransitionVariables)// Completeness transition coverage
 			formulas += propertyGenerator.createStateReachabilityFormulas(annotator.trapStates) // Nondeterministic transition coverage
-			formulas += propertyGenerator.createQueueOverflowInvariance(testedComponentsForQueueOverflow) // Nondeterministic transition coverage
+			formulas += propertyGenerator.createQueueOverflowInvariance(testedComponentsForQueueOverflow)
 			
 			formulas += propertyGenerator.createTransitionReachability(
 							annotator.getTransitionVariables)
@@ -155,8 +172,9 @@ class ModelAnnotatorPropertyGenerator {
 					annotator.dataflowCoverageCriterion)
 			formulas += propertyGenerator.createInteractionDataflowReachability(
 					annotator.getInteractionDefUses, annotator.interactionDataflowCoverageCriterion)
-			// Saving the property package and serializing the properties has to be done by the caller!
+			// Saving the property package and serializing the properties must be done by the caller!
 		}
+		
 		return new Result(generatedPropertyPackage)
 	}
 
@@ -206,10 +224,10 @@ class ModelAnnotatorPropertyGenerator {
 		return ports
 	}
 	
-	protected def List<Port> getPorts(List<SynchronousComponentInstance> instances) {
+	protected def List<Port> getPorts(List<? extends ComponentInstance> instances) {
 		val ports = newArrayList
 		for (instance : instances) {
-			val type = instance.getType
+			val type = instance.derivedType
 			ports += type.allPorts
 		}
 		return ports
@@ -224,7 +242,7 @@ class ModelAnnotatorPropertyGenerator {
 		var includedStates = traceability.getNewSimpleInstanceStates(
 			stateReferences.include, component).toList
 		if (includedStates.empty) {
-			includedStates = component.allSimpleInstances.map[it.type]
+			includedStates = component.allSimpleInstances.map[it.derivedType]
 				.filter(StatechartDefinition).map[it.allStates].flatten.toList
 		}
 		val excludedStates = traceability.getNewSimpleInstanceStates(
@@ -242,7 +260,7 @@ class ModelAnnotatorPropertyGenerator {
 		var includedTransitions = traceability.getNewSimpleInstanceTransitions(
 			transitionReferences.include, component).toList
 		if (includedTransitions.empty) {
-			includedTransitions = component.allSimpleInstances.map[it.type]
+			includedTransitions = component.allSimpleInstances.map[it.derivedType]
 				.filter(StatechartDefinition).map[it.transitions].flatten.toList
 		}
 		val excludedTransitions = traceability.getNewSimpleInstanceTransitions(
@@ -269,7 +287,7 @@ class ModelAnnotatorPropertyGenerator {
 		if (includedInstances.empty && includedVariables.empty) {
 			// If both includes are empty, then we include all the new instances
 			val newSimpleInstances = component.allSimpleInstances
-			variables += newSimpleInstances.map[it.type].filter(StatechartDefinition)
+			variables += newSimpleInstances.map[it.derivedType].filter(StatechartDefinition)
 				.map[it.variableDeclarations].flatten
 		}
 		// The semantics is defined here: including has priority over excluding
@@ -280,10 +298,10 @@ class ModelAnnotatorPropertyGenerator {
 		return variables
 	}
 	
-	protected def getVariables(List<SynchronousComponentInstance> instances) {
+	protected def getVariables(List<? extends ComponentInstance> instances) {
 		val variables = newArrayList
 		for (instance : instances) {
-			val type = instance.getType
+			val type = instance.derivedType
 			if (type instanceof StatechartDefinition) {
 				variables += type.variableDeclarations
 			}

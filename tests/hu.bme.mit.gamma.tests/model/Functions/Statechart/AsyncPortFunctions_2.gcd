@@ -1,0 +1,35 @@
+package functions
+
+import "Interfaces/Interfaces.gcd"
+
+@Asynchronous
+statechart AsyncPortFunctions_2 [
+	port FunctionExecute : requires FunctionExecute
+] {
+	var _int : integer := 2
+	var _bool : boolean
+	var rec : Rec0rd := #Rec0rd{a := true, b := 5}
+	region main {
+		initial Initial
+		state _X
+		
+		state _Y
+		state _Z
+		state _A
+	}
+	
+	transition from Initial to _X
+	transition from _X to _Y when FunctionExecute.^execute / {
+		var a : integer := _int;
+		if (::FunctionExecute::getValue() < 1000) {
+			var c : ComplexRecord := ::FunctionExecute::getComplexRecord();
+			::FunctionExecute::setValue(_int + 69 + c.b.b);
+			_bool := true;
+			::FunctionExecute::setComplexRecord(#ComplexRecord{a := -1.2, b:= #Rec0rd{a := true, b := c.b.b + 13}});
+		}
+		_int := _int + ::FunctionExecute::factorial(4) / a;
+	}
+	transition from _Y to _Z when FunctionExecute.^execute / _int := ::FunctionExecute::getValue(); ::FunctionExecute::setRecord(#Rec0rd{a := false, b := 10});
+	transition from _Z to _A when FunctionExecute.^execute / _int := ::FunctionExecute::getValue(); rec := ::FunctionExecute::getRecord(); rec.b := rec.b + 1;
+	
+}

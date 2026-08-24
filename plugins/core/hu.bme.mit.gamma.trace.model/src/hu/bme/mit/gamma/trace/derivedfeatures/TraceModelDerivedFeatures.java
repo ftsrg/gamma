@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -25,8 +25,10 @@ import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
+import hu.bme.mit.gamma.expression.model.OpaqueExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
+import hu.bme.mit.gamma.expression.model.VariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
@@ -38,6 +40,7 @@ import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.State;
+import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer;
 import hu.bme.mit.gamma.trace.model.Act;
 import hu.bme.mit.gamma.trace.model.Cycle;
@@ -52,6 +55,8 @@ import hu.bme.mit.gamma.trace.model.TimeElapse;
 import hu.bme.mit.gamma.trace.model.TimeUnitAnnotation;
 
 public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
+	//
+	public static final String TRANSITION_EXEC_PREFIX = "Transition executed: ";
 	//
 	protected static final ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE;
 	//
@@ -193,6 +198,15 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return ecoreUtil.clone(generalElapsedTime);
 	}
 	
+	public static boolean isTransitionExecutionExpression(Expression expression) {
+		if (expression instanceof OpaqueExpression opaque) {
+			String TRANSITION_EXEC_PREFIX = "Transition executed: ";
+			String text = opaque.getExpression();
+			return text.startsWith(TRANSITION_EXEC_PREFIX);
+		}
+		return false;
+	}
+	
 	public static Expression getLowermostAssert(Expression assertion) {
 		if (assertion instanceof NotExpression negatedAssert) {
 			return getLowermostAssert(negatedAssert.getOperand());
@@ -201,14 +215,14 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 	
 	public static Expression getPrimaryAssert(Expression assertion) {
-		List<ComponentInstanceVariableReferenceExpression> variableReferences =
-				ecoreUtil.getSelfAndAllContentsOfType(assertion, ComponentInstanceVariableReferenceExpression.class);
+		List<VariableReferenceExpression> variableReferences =
+				ecoreUtil.getSelfAndAllContentsOfType(assertion, VariableReferenceExpression.class);
 		if (variableReferences.size() == 1) {
 			return variableReferences.get(0);
 		}
 		
-		List<ComponentInstanceStateReferenceExpression> stateReferences =
-				ecoreUtil.getSelfAndAllContentsOfType(assertion, ComponentInstanceStateReferenceExpression.class);
+		List<StateReferenceExpression> stateReferences =
+				ecoreUtil.getSelfAndAllContentsOfType(assertion, StateReferenceExpression.class);
 		if (stateReferences.size() == 1) {
 			return stateReferences.get(0);
 		}
@@ -378,9 +392,9 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		
 		if (!considerInjectedVariables) {
 			lhsAsserts.removeIf(it -> ecoreUtil.getSelfAndAllContentsOfType(it,	ComponentInstanceVariableReferenceExpression.class)
-					.stream().anyMatch(ref -> isInjected(ref.getVariableDeclaration())));
+					.stream().anyMatch(ref -> isInjected(StatechartModelDerivedFeatures.getVariableDeclaration(ref))));
 			rhsAsserts.removeIf(it -> ecoreUtil.getSelfAndAllContentsOfType(it,	ComponentInstanceVariableReferenceExpression.class)
-					.stream().anyMatch(ref -> isInjected(ref.getVariableDeclaration())));
+					.stream().anyMatch(ref -> isInjected(StatechartModelDerivedFeatures.getVariableDeclaration(ref))));
 		}
 		
 		int size = lhsAsserts.size();

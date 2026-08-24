@@ -77,6 +77,8 @@ abstract class AbstractVerifier {
 	
 	protected abstract def String getUnavailableBackendMessage()
 	
+	protected abstract def String getAnalysisLanguage()
+	
 	//
 	
 	def Result verifyQuery(Object traceability, String parameters, File modelFile, String query) {
@@ -115,7 +117,7 @@ abstract class AbstractVerifier {
 	}
 	
 	protected def getTemporaryQueryFilename(File modelFile) {
-		return fileNamer.getHiddenSerializedPropertyFileName(modelFile.name)
+		return fileNamer.getHiddenSerializedPropertyFileName(modelFile.name + "-" + analysisLanguage)
 	}
 	
 	def isTimeoutSet() {

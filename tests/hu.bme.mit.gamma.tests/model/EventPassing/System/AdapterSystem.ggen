@@ -41,6 +41,7 @@ verification {
 	test-language : java
 	optimize : true
 	back-annotate-to-original : true
+	serialize-results : false
 }
 
 analysis {
@@ -59,4 +60,5 @@ verification {
 	optimize : true
 	optimize-model : true
 //	back-annotate-to-original : true // Not working with new names
+	serialize-results : false
 }

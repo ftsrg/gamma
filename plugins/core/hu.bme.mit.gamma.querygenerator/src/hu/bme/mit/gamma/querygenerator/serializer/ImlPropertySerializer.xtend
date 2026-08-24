@@ -165,33 +165,6 @@ class ImlPropertySerializer extends ThetaPropertySerializer {
 	
 	//
 	
-//	protected def tailorFormula(QuantifiedFormula formula) {
-//		if (formula instanceof QuantifiedFormula) {
-//			val clonedFormula = formula.clone // So no side-effect
-//			val pathFormulas = clonedFormula.relevantTemporalPathFormulas
-//			val unaryOperandPathFormulas = pathFormulas.filter(UnaryOperandPathFormula)
-//			val quantifier = clonedFormula.quantifier
-//			//
-//			if (quantifier == PathQuantifier.EXISTS) { // E
-//				val globals = unaryOperandPathFormulas.filter[it.operator == UnaryPathOperator.GLOBAL]
-//				for (global : globals) { // G cannot be after E, but: G p === !F!p
-//					global.changeToDual
-//				}
-//				return clonedFormula
-//			}
-//			else { // A
-//				val futures = unaryOperandPathFormulas.filter[it.operator == UnaryPathOperator.FUTURE]
-//				for (future : futures) { // F cannot be after A, but: F p === !G!p
-//					future.changeToDual
-//				}
-//				return clonedFormula
-//			}
-//		}
-//		return formula
-//	}
-	
-	//
-	
 	protected def getRelevantTemporalPathFormulas(PathFormula formula) {
 		// We consider levels of F, G, X and U operators in-between A and E quantifiers
 		// to support multiple level of A/E nesting (CTL*)
@@ -211,10 +184,10 @@ class ImlPropertySerializer extends ThetaPropertySerializer {
 		val containingTemporalPathFormulas = formula.getAllContainersOfType(TemporalPathFormula)
 		
 		val operator = if (formula instanceof UnaryOperandPathFormula) {
-			formula.operator.seriliaze
+			formula.operator.serialize
 		}
 		else if (formula instanceof BinaryOperandPathFormula) {
-			formula.operator.seriliaze
+			formula.operator.serialize
 		}
 		else {
 			throw new IllegalArgumentException("Not known formula: " + formula)
