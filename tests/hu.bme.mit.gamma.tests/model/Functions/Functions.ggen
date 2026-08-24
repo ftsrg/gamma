@@ -1,2 +1,2 @@
-include "System/Functions.ggen"
-include "System/PortFunctions.ggen"
+parallel exec "System/Functions.ggen"
+parallel exec "System/PortFunctions.ggen"
