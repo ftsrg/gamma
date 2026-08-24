@@ -29,9 +29,8 @@ import hu.bme.mit.gamma.ui.GammaApi;
 
 public class CommandHandler extends AbstractHandler {
 	
-	protected static Map<String, Future<?>> futures = new HashMap<String, Future<?>>();
-	protected static ExecutorService executor = Executors.newFixedThreadPool(
-			Runtime.getRuntime().availableProcessors());
+	protected static final Map<String, Future<?>> futures = new HashMap<String, Future<?>>();
+	protected static final ExecutorService executor = Executors.newFixedThreadPool(GammaApi.MAX_THREAD_NUM);
 	
 	protected final Logger logger = Logger.getLogger("GammaLogger");
 	

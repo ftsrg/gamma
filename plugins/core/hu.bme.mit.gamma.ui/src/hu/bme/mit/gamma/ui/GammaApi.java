@@ -89,7 +89,7 @@ import hu.bme.mit.gamma.util.InterruptableCallable;
 public class GammaApi {
 	//
 	protected boolean startParallelExecution = true;
-	protected final int MAX_THREAD_NUM = Runtime.getRuntime().availableProcessors();
+	public static final int MAX_THREAD_NUM = Integer.max(1, Runtime.getRuntime().availableProcessors() - 2);
 	protected final Logger logger = Logger.getLogger("GammaLogger");
 	//
 	
