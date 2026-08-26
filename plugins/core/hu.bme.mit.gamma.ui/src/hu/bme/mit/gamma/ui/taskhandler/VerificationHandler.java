@@ -228,6 +228,9 @@ public class VerificationHandler extends TaskHandler {
 		if (languages.contains(AnalysisLanguage.SMART_ALL)) {
 			languages = getAllSmartAnalysisLanguages();
 		}
+		else if (languages.isEmpty()) {
+			languages.add(AnalysisLanguage.SMART);
+		}
 		
 		if (languages.size() <= 1) {
 			executeOnce(verification); // Default mode (single language or smart, non smart-all)
