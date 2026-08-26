@@ -231,19 +231,11 @@ public class VerificationHandler extends TaskHandler {
 		
 		if (languages.size() <= 1) {
 			executeOnce(verification); // Default mode (single language or smart, non smart-all)
+			return;
 		}
 		
 		ExecutionMode executionMode = verification.getExecutionMode();
-		if (executionMode == ExecutionMode.SEQUENTIAL) {
-			for (AnalysisLanguage analysisLanguage : languages) {
-				verification.getAnalysisLanguages().clear();
-				verification.getAnalysisLanguages().add(analysisLanguage);
-				executeOnce(verification);
-			}
-			// No need for additional result serialization
-			return;
-		}
-		else if (executionMode == ExecutionMode.PARALLEL) {
+		if (executionMode == ExecutionMode.SEQUENTIAL || executionMode == ExecutionMode.PARALLEL) {
 			// Parallel execution
 			List<InterruptableCallable<VerificationHandler>> callables = new ArrayList<>();
 			
@@ -253,7 +245,8 @@ public class VerificationHandler extends TaskHandler {
 				callables.add(callable);
 			}
 			
-			try (ExecutorService executor = Executors.newFixedThreadPool(languages.size())) {
+			int threadNum = (executionMode == ExecutionMode.PARALLEL) ? languages.size() : 1 /* Sequential */;
+			try (ExecutorService executor = Executors.newFixedThreadPool(threadNum)) {
 				var results = executor.invokeAll(callables); // Blocking call
 				for (Future<VerificationHandler> future : results) {
 					VerificationHandler handler = future.resultNow();
@@ -305,6 +298,9 @@ public class VerificationHandler extends TaskHandler {
 					}
 				}
 			}
+		}
+		else {
+			throw new IllegalArgumentException("Not known execution mode: " + executionMode);
 		}
 		
 		setAll(verification);
