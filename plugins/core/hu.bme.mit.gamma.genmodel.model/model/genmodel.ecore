@@ -119,6 +119,11 @@
     <eLiterals name="RANDOM"/>
     <eLiterals name="FAIR" value="1"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="ExecutionMode">
+    <eLiterals name="RACING"/>
+    <eLiterals name="PARALLEL" value="1"/>
+    <eLiterals name="SEQUENTIAL" value="2"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="UnstableStateCoverage" eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="TrapStateCoverage" eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="DeadlockStateCoverage" eSuperTypes="#//Coverage"/>
@@ -222,6 +227,8 @@
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="analysisLanguages" lowerBound="1"
         upperBound="-1" eType="#//AnalysisLanguage"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="executionMode" eType="#//ExecutionMode"
+        defaultValueLiteral="RACING"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="queryFiles" upperBound="-1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="verificationArguments"

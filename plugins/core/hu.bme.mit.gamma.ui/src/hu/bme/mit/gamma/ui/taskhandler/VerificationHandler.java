@@ -45,6 +45,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
+import hu.bme.mit.gamma.genmodel.model.ExecutionMode;
 import hu.bme.mit.gamma.genmodel.model.GenmodelModelFactory;
 import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
@@ -222,6 +223,7 @@ public class VerificationHandler extends TaskHandler {
 	
 	public void execute(Verification verification) throws IOException, InterruptedException {
 		List<AnalysisLanguage> languages = verification.getAnalysisLanguages();
+		ExecutionMode executionMode = verification.getExecutionMode();
 		
 		boolean needsPreprocess = languages.contains(AnalysisLanguage.SMART_ALL) || languages.size() > 1;
 		if (needsPreprocess) {

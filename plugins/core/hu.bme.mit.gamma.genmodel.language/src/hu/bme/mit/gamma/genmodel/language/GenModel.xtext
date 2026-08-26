@@ -374,6 +374,10 @@ enum DataflowCoverageCriterion returns DataflowCoverageCriterion:
 	ALL_DEF = 'all-def' | ALL_C_USE = 'all-c-use' | ALL_P_USE = 'all-p-use' | ALL_USE = 'all-use'
 ;
 
+enum ExecutionMode returns ExecutionMode:
+	RACING = 'racing' | PARALLEL = 'parallel' | SEQUENTIAL = "sequential"
+;
+
 Verification returns Verification:
 	{Verification} 'verification' '{'
 		(
@@ -385,6 +389,7 @@ Verification returns Verification:
 			'optimize-model' ':' ('false' | (optimizeModel?='true' ('optimize-out-events' ':' ('false' | optimizeOutEvents?='true'))?)) |
 			'svg-file' ':' svgFileName+=STRING |
 			'language' ':' analysisLanguages+=AnalysisLanguage |
+			'execution-mode' ':' executionMode=ExecutionMode |
 			'query-file' ':' queryFiles+=STRING | // Queries
 			'verification-argument' ':' verificationArguments+=STRING | // Potentially multiple - portfolio
 			'property-file' ':' propertyPackages+=[property::PropertyPackage | STRING] | // Property models

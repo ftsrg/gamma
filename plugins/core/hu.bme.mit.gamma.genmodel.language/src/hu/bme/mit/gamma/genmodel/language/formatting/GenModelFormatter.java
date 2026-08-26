@@ -131,20 +131,21 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getVerificationAccess().getAlternatives_3_5_2());
         c.setLinewrap(1).after(f.getVerificationAccess().getSvgFileNameAssignment_3_6_2());
         c.setLinewrap(1).after(f.getVerificationAccess().getAnalysisLanguagesAssignment_3_7_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getQueryFilesAssignment_3_8_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getVerificationArgumentsAssignment_3_9_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getPropertyPackagesAssignment_3_10_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getPackageNameAssignment_3_11_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getExecutionModeAssignment_3_8_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getQueryFilesAssignment_3_9_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getVerificationArgumentsAssignment_3_10_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getPropertyPackagesAssignment_3_11_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getPackageNameAssignment_3_12_2());
         c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_9());
         c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_10());
-        c.setLinewrap(1).after(f.getVerificationAccess().getProgrammingLanguagesAssignment_3_12_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getProgrammingLanguagesAssignment_3_13_2());
         c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_11());
         c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_13());
         c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_14());
         c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_15());
         c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_16());
-        c.setLinewrap(1).after(f.getVerificationAccess().getTestFolderAssignment_3_17_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getTimeoutAssignment_3_18_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getTestFolderAssignment_3_18_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getTimeoutAssignment_3_19_2());
         // Model mutation
         c.setLinewrap(1).after(f.getModelMutationAccess().getTargetFolderAssignment_3_0_2());
         c.setLinewrap(1).after(f.getModelMutationAccess().getModelAssignment_2());
