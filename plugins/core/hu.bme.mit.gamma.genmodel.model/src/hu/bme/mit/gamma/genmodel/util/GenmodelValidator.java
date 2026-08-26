@@ -206,9 +206,9 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		List<AnalysisLanguage> languages = verification.getAnalysisLanguages();
 		int languagesSize = languages.size();
 		if (languagesSize < 1) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-				"At least one formal language must be specified",
-					new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__ANALYSIS_LANGUAGES)));
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO, 
+				"If no formal language is specified, then smart verification will be run",
+					new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME)));
 			return validationResultMessages;
 		}
 		AnalysisLanguage language = languages.getFirst();

@@ -225,8 +225,8 @@
   <eClassifiers xsi:type="ecore:EClass" name="Verification" eSuperTypes="#//AbstractComplementaryTestGeneration">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="svgFileName" upperBound="-1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="analysisLanguages" lowerBound="1"
-        upperBound="-1" eType="#//AnalysisLanguage"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="analysisLanguages" upperBound="-1"
+        eType="#//AnalysisLanguage"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="executionMode" eType="#//ExecutionMode"
         defaultValueLiteral="RACING"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="queryFiles" upperBound="-1"

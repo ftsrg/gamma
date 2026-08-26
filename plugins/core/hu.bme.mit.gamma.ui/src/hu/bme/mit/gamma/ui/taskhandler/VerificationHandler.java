@@ -222,17 +222,19 @@ public class VerificationHandler extends TaskHandler {
 	//
 	
 	public void execute(Verification verification) throws IOException, InterruptedException {
-		List<AnalysisLanguage> originalLanguages = new ArrayList<AnalysisLanguage>(
-				verification.getAnalysisLanguages());
-		List<AnalysisLanguage> languages = new ArrayList<AnalysisLanguage>(originalLanguages);
-		if (languages.contains(AnalysisLanguage.SMART_ALL)) {
-			languages = getAllSmartAnalysisLanguages();
-		}
-		else if (languages.isEmpty()) {
-			languages.add(AnalysisLanguage.SMART);
+		List<AnalysisLanguage> analysisLanguages = verification.getAnalysisLanguages();
+		List<AnalysisLanguage> originalLanguages = new ArrayList<AnalysisLanguage>(analysisLanguages);
+		if (analysisLanguages.isEmpty()) {
+			logger.info("Setting smart verification");
+			analysisLanguages.add(AnalysisLanguage.SMART);
 		}
 		
-		if (languages.size() <= 1) {
+		List<AnalysisLanguage> specificLanguagesView = new ArrayList<AnalysisLanguage>(analysisLanguages);
+		if (specificLanguagesView.contains(AnalysisLanguage.SMART_ALL)) {
+			specificLanguagesView = getAllSmartAnalysisLanguages();
+		}
+		
+		if (specificLanguagesView.size() <= 1) {
 			executeOnce(verification); // Default mode (single language or smart, non smart-all)
 			return;
 		}
@@ -242,13 +244,13 @@ public class VerificationHandler extends TaskHandler {
 			// Parallel execution
 			List<InterruptableCallable<VerificationHandler>> callables = new ArrayList<>();
 			
-			for (AnalysisLanguage analysisLanguage : languages) {
+			for (AnalysisLanguage analysisLanguage : specificLanguagesView) {
 				var wrap = wrap(verification, analysisLanguage);
 				InterruptableCallable<VerificationHandler> callable = wrap.getKey();
 				callables.add(callable);
 			}
 			
-			int threadNum = (executionMode == ExecutionMode.PARALLEL) ? languages.size() : 1 /* Sequential */;
+			int threadNum = (executionMode == ExecutionMode.PARALLEL) ? specificLanguagesView.size() : 1 /* Sequential */;
 			try (ExecutorService executor = Executors.newFixedThreadPool(threadNum)) {
 				var results = executor.invokeAll(callables); // Blocking call
 				for (Future<VerificationHandler> future : results) {
@@ -261,7 +263,7 @@ public class VerificationHandler extends TaskHandler {
 			if (verification.isOptimize() || GenmodelDerivedFeatures.getFormulaCount(verification) <= 1) {
 				// Racing: all properties jointly
 				List<InterruptableCallable<VerificationHandler>> verificationCalls = new ArrayList<InterruptableCallable<VerificationHandler>>();
-				for (AnalysisLanguage analysisLanguage : languages) {
+				for (AnalysisLanguage analysisLanguage : specificLanguagesView) {
 					Entry<InterruptableCallable<VerificationHandler>, Verification> entry = wrap(verification, analysisLanguage);
 					InterruptableCallable<VerificationHandler> verificationCall = entry.getKey();
 					verificationCalls.add(verificationCall);
@@ -283,7 +285,7 @@ public class VerificationHandler extends TaskHandler {
 						formulas2.clear();
 						formulas2.add(formula);
 						
-						for (AnalysisLanguage analysisLanguage : languages) {
+						for (AnalysisLanguage analysisLanguage : specificLanguagesView) {
 							Entry<InterruptableCallable<VerificationHandler>, Verification> entry = wrap(verification, analysisLanguage);
 							InterruptableCallable<VerificationHandler> verificationCall = entry.getKey();
 							Verification verification2 = entry.getValue();
@@ -308,8 +310,8 @@ public class VerificationHandler extends TaskHandler {
 		
 		setAll(verification);
 		doSetSerialization();
-		verification.getAnalysisLanguages().clear();
-		verification.getAnalysisLanguages().addAll(originalLanguages); // Restore original
+		analysisLanguages.clear();
+		analysisLanguages.addAll(originalLanguages); // Restore original
 	}
 	
 	protected void executeOnce(Verification verification) throws IOException, InterruptedException {
