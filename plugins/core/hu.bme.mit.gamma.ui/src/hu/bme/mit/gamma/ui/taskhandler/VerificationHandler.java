@@ -552,6 +552,8 @@ public class VerificationHandler extends TaskHandler {
 		if (verificationPostprocessor != null) {
 			verificationPostprocessor.execute(allResults);
 		}
+		
+		serializer.removeUniqueFolder(); // Side effect
 	}
 	
 	//
