@@ -1024,11 +1024,12 @@ public class VerificationHandler extends TaskHandler {
 				while (iterator.hasPrevious()) {
 					try {
 						File jsonFile = iterator.previous();
-						FileReader reader = new FileReader(jsonFile);
-						VerificationResult result = gson.fromJson(reader, VerificationResult.class);
-						String query = result.getQuery();
-						if (query.equals(comment)) {
-							return jsonFile; // Depends on iteration order (see sorting/reversing above)
+						try (FileReader reader = new FileReader(jsonFile)) {
+							VerificationResult result = gson.fromJson(reader, VerificationResult.class);
+							String query = result.getQuery();
+							if (query.equals(comment)) {
+								return jsonFile; // Depends on iteration order (see sorting/reversing above)
+							}
 						}
 					} catch (Exception e) {}
 				}
