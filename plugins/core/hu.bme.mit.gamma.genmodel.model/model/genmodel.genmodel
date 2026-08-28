@@ -192,6 +192,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Verification/backAnnotateToOriginal"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Verification/serializeResults"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Verification/serializeTraces"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Verification/serializeUniqueFolders"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//TraceGeneration">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//TraceGeneration/fullTraces"/>

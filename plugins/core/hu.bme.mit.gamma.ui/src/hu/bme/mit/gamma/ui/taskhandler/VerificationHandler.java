@@ -120,6 +120,7 @@ public class VerificationHandler extends TaskHandler {
 	
 	protected final boolean setSerializeResults; // Set externally: denotes whether JSON results are serialized
 	protected final boolean setSerializeTraces; // Set externally: denotes whether traces are serialized
+	protected boolean serializeUniqueFolders; // Comes in Verification: denotes whether subfolders are created for results
 	protected boolean serializeResults; // Comes in Verification: denotes whether JSON results are serialized
 	protected boolean serializeTraces; // Comes in Verification: denotes whether traces are serialized
 	protected boolean serializeTest; // Denotes whether test code is generated
@@ -538,11 +539,8 @@ public class VerificationHandler extends TaskHandler {
 	}
 	
 	protected void doSetSerialization() throws IOException {
-		// Creates unique folder names
-		final boolean speedUpSerialization = true;
-		if (speedUpSerialization) {
-			serializer.setId();
-			serializer.setUinqueFolderName();
+		if (serializeUniqueFolders) {
+			serializer.setupUniqueFolder(); // Side effect
 		}
 		
 		if (serializeResults && setSerializeResults) {
@@ -772,6 +770,7 @@ public class VerificationHandler extends TaskHandler {
 			// Setting the attribute, the test folder is a RELATIVE path now from the project
 			this.testFolderUri = URI.decode(projectLocation + File.separator + testFolders.get(0));
 		}
+		this.serializeUniqueFolders = verification.isSerializeUniqueFolders();
 		this.serializeResults = verification.isSerializeResults();
 		this.serializeTraces = verification.isSerializeTraces();
 		Resource resource = verification.eResource();
@@ -930,17 +929,27 @@ public class VerificationHandler extends TaskHandler {
 		
 		//
 		
-		public void setId() {
+		public void setupUniqueFolder() {
+			setId();
+			setUniqueFolderName();
+		}
+		
+		public void removeUniqueFolder() {
+			this.id = null;
+			this.uniqueFolderName = null;
+		}
+		
+		protected void setId() {
 			setId(0);
 		}
 		
-		public void setId(Integer value) {
+		protected void setId(Integer value) {
 			this.id = value;
 		}
 		
-		public void setUinqueFolderName() {
+		protected void setUniqueFolderName() {
 			Date date = new Date();
-			uniqueFolderName = date.toString().replace(" ", "_").replace(":", "_");
+			this.uniqueFolderName = date.toString().replace(" ", "_").replace(":", "_");
 		}
 		
 		//

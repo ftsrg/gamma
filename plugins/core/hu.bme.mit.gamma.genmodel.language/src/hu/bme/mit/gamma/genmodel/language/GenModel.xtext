@@ -399,6 +399,7 @@ Verification returns Verification:
 			'back-annotate-to-original' ':' ('false' | backAnnotateToOriginal?='true') |
 			'serialize-results' ':' serializeResults=BOOLEAN |
 			'serialize-traces' ':' serializeTraces=BOOLEAN |
+			('serialize-unique-folders' ':' ('false' | serializeUniqueFolders?='true')) |
 			'test-folder' ':' testFolder+=STRING |
 			'timeout' ':' timeout=TimeSpecification
 		)*

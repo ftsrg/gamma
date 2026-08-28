@@ -144,8 +144,10 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_14());
         c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_15());
         c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_16());
-        c.setLinewrap(1).after(f.getVerificationAccess().getTestFolderAssignment_3_18_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getTimeoutAssignment_3_19_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_17());
+        c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_18());
+        c.setLinewrap(1).after(f.getVerificationAccess().getTestFolderAssignment_3_19_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getTimeoutAssignment_3_20_2());
         // Model mutation
         c.setLinewrap(1).after(f.getModelMutationAccess().getTargetFolderAssignment_3_0_2());
         c.setLinewrap(1).after(f.getModelMutationAccess().getModelAssignment_2());
