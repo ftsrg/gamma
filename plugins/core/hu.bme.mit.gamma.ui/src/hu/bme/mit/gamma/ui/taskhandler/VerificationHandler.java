@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -537,6 +538,13 @@ public class VerificationHandler extends TaskHandler {
 	}
 	
 	protected void doSetSerialization() throws IOException {
+		// Creates unique folder names
+		final boolean speedUpSerialization = true;
+		if (speedUpSerialization) {
+			serializer.setId();
+			serializer.setUinqueFolderName();
+		}
+		
 		if (serializeResults && setSerializeResults) {
 			serializeResults();
 		}
@@ -913,9 +921,29 @@ public class VerificationHandler extends TaskHandler {
 		public static ExecutionTraceSerializer INSTANCE = new ExecutionTraceSerializer();
 		protected ExecutionTraceSerializer() {}
 		//
+		protected Integer id = null;
+		protected String uniqueFolderName = null;
+		//
 		protected final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 		protected final FileUtil fileUtil = FileUtil.INSTANCE;
 		protected final ModelSerializer serializer = ModelSerializer.INSTANCE;
+		
+		//
+		
+		public void setId() {
+			setId(0);
+		}
+		
+		public void setId(Integer value) {
+			this.id = value;
+		}
+		
+		public void setUinqueFolderName() {
+			Date date = new Date();
+			uniqueFolderName = date.toString().replace(" ", "_").replace(":", "_");
+		}
+		
+		//
 		
 		public void serialize(String traceFolderUri, String traceFileName, ExecutionTrace trace, IFile file, ProgrammingLanguage programmingLanguage) throws IOException {
 			this.serialize(traceFolderUri, traceFileName, null, null, null, trace, file, programmingLanguage);
@@ -940,8 +968,9 @@ public class VerificationHandler extends TaskHandler {
 				id = getNextIndex(traceFolderUri, traceFileName);
 			}
 			
+			String folderPath = traceFolderUri + (uniqueFolderName != null ? (File.separator + uniqueFolderName) : "") ;
 			String fileName = baseFileName + id + "." + GammaFileNamer.EXECUTION_XTEXT_EXTENSION;
-			serializer.saveModel(trace, traceFolderUri, fileName);
+			serializer.saveModel(trace, folderPath, fileName);
 			
 			// SVG
 			if (svgFileName != null) {
@@ -998,6 +1027,10 @@ public class VerificationHandler extends TaskHandler {
 		}
 		
 		protected Integer getCorrespondingIndex(File traceFolder, ExecutionTrace trace) {
+			if (id != null) { // Set externally
+				return id++;
+			}
+			
 			File jsonFile = getCorrespondingJsonFile(traceFolder, trace);
 			if (jsonFile != null) {
 				return fileUtil.getIndex(jsonFile);
@@ -1007,6 +1040,10 @@ public class VerificationHandler extends TaskHandler {
 		}
 		
 		protected Integer getNextIndex(String folder, String fileName) {
+			if (id != null) { // Set externally
+				return id++;
+			}
+			
 			Entry<String, Integer> fileNamePair = fileUtil.getFileName(folder,
 					fileName, GammaFileNamer.VERIFICATION_RESULT_EXTENSION);
 			Entry<String, Integer> fileNamePair2 = fileUtil.getFileName(folder,
@@ -1026,7 +1063,8 @@ public class VerificationHandler extends TaskHandler {
 				VerificationResult result) throws IOException {
 			int id = getNextIndex(resultFolderUri, resultFileName);
 			String jsonResult = gson.toJson(result);
-			String path = resultFolderUri + File.separator + resultFileName + id + "." + GammaFileNamer.VERIFICATION_RESULT_EXTENSION;
+			String folderPath = resultFolderUri + (uniqueFolderName != null ? (File.separator + uniqueFolderName) : "");
+			String path = folderPath + File.separator + resultFileName + id + "." + GammaFileNamer.VERIFICATION_RESULT_EXTENSION;
 			fileUtil.saveString(path, jsonResult);
 		}
 		

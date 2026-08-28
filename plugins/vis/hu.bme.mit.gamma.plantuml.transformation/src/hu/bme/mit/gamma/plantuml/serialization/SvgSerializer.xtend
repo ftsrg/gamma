@@ -24,7 +24,8 @@ class SvgSerializer {
 	def serialize(String plantUmlString) {
 		  try (val os = new ByteArrayOutputStream) {
 			val reader = new SourceStringReader(plantUmlString)
-			reader.outputImage(os, new FileFormatOption(FileFormat.SVG)).description
+			val fileFormatOption = new FileFormatOption(FileFormat.SVG)
+			reader.outputImage(os, fileFormatOption).description
 			val svg = new String(os.toByteArray, Charset.forName("UTF-8"))
 			return svg
 		  }
