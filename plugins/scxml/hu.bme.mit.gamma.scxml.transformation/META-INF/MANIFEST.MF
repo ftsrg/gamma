@@ -1,0 +1,26 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: SCXML To Gamma Transformation
+Bundle-SymbolicName: hu.bme.mit.gamma.scxml.transformation;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Automatic-Module-Name: hu.bme.mit.gamma.scxml.transformation
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Require-Bundle: ac.soton.scxml,
+ hu.bme.mit.gamma.statechart.model,
+ com.google.guava,
+ org.eclipse.xtext.xbase.lib,
+ org.eclipse.xtend.lib,
+ org.eclipse.xtend.lib.macro,
+ hu.bme.mit.gamma.expression.language,
+ com.google.inject;bundle-version="3.0.0",
+ hu.bme.mit.gamma.expression.model,
+ org.eclipse.xtext
+Export-Package: hu.bme.mit.gamma.scxml.transformation
+Import-Package: hu.bme.mit.gamma.statechart.language.parser,
+ org.antlr.runtime,
+ org.eclipse.xtext,
+ org.eclipse.xtext.nodemodel,
+ org.eclipse.xtext.parser,
+ org.eclipse.xtext.scoping,
+ org.eclipse.xtext.scoping.impl,
+ org.eclipse.xtext.util

@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: SCXML To Gamma Transformer Commandhandler
+Bundle-SymbolicName: hu.bme.mit.gamma.scxml.transformation.commandhandler;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Automatic-Module-Name: hu.bme.mit.gamma.scxml.transformation.commandhandler
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Require-Bundle: org.eclipse.core.commands,
+ ac.soton.scxml,
+ hu.bme.mit.gamma.scxml.transformation,
+ org.eclipse.core.resources,
+ org.eclipse.emf.common,
+ org.eclipse.emf.ecore,
+ org.eclipse.jface,
+ org.eclipse.ui.workbench,
+ org.eclipse.m2e.maven.runtime,
+ hu.bme.mit.gamma.statechart.model,
+ hu.bme.mit.gamma.statechart.language.ui,
+ org.eclipse.equinox.registry
+Export-Package: hu.bme.mit.gamma.scxml.transformation.commandhandler;uses:="org.eclipse.core.commands,hu.bme.mit.gamma.util,hu.bme.mit.gamma.statechart.util"
