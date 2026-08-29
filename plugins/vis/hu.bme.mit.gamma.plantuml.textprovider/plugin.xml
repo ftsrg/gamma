@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?eclipse version="3.4"?>
+<?eclipse version="3.5"?>
 <plugin>
    <extension
          point="net.sourceforge.plantuml.eclipse.diagramIntentProvider">
@@ -9,4 +9,131 @@
             providerClass="hu.bme.mit.gamma.plantuml.commandhandler.TextProvider">
       </diagramIntentProvider>
    </extension>
+   <!-- PlantUML View -->
+   <extension point="org.eclipse.ui.commands">
+        <command defaultHandler="hu.bme.mit.gamma.plantuml.commandhandler.CoordinationLayoutHandler"
+                  id="hu.bme.mit.gamma.plantuml.coordinationLayoutCommand" name="Additional Diagram Settings">
+	      	<commandParameter
+	    		id="org.eclipse.ui.commands.radioStateParameter"
+	    		name="Radio Name"
+	    		optional="false">
+	      	</commandParameter>
+		    <state id="org.eclipse.ui.commands.radioState">
+		      <class class="org.eclipse.ui.handlers.RadioState">
+		          <parameter
+		    		name="default"
+		    		value="COORDINATION">
+		          </parameter>
+		          <parameter
+		    		name="persisted"
+		    		value="true">
+		          </parameter>
+		      </class>
+		    </state>
+        </command>
+	</extension>
+	<extension point="org.eclipse.ui.menus">
+        <menuContribution locationURI="toolbar:net.sourceforge.plantuml.eclipse.views.PlantUmlView?after=additions">
+        	<command commandId="hu.bme.mit.gamma.plantuml.coordinationLayoutCommand" 
+        			 id="hu.bme.mit.gamma.plantuml.toolbar.coordinationLayoutCommand" style="pulldown"
+                     tooltip="Additional Diagram Settings">
+            </command>
+		</menuContribution>
+		<menuContribution locationURI="menu:hu.bme.mit.gamma.plantuml.toolbar.coordinationLayoutCommand">
+            <command
+	    		commandId="hu.bme.mit.gamma.plantuml.coordinationLayoutCommand"
+	    		id="hu.bme.mit.gamma.plantuml.toolbar.coordinationLayoutRadio1"
+	    		label="Coordination"
+	    		style="radio">
+	            <parameter
+	    			name="org.eclipse.ui.commands.radioStateParameter"
+	    			value="COORDINATION">
+	            </parameter>
+	        </command>
+	        <command
+			    commandId="hu.bme.mit.gamma.plantuml.coordinationLayoutCommand"
+			    id="hu.bme.mit.gamma.plantuml.toolbar.coordinationLayoutRadio2"
+			    label="Composition"
+			    style="radio">
+				<parameter
+				    name="org.eclipse.ui.commands.radioStateParameter"
+				    value="COMPOSITION">
+				</parameter>
+	        </command>
+	        <command
+			    commandId="hu.bme.mit.gamma.plantuml.coordinationLayoutCommand"
+			    id="hu.bme.mit.gamma.plantuml.toolbar.coordinationLayoutRadio3"
+			    label="Coordination + Composition"
+			    style="radio">
+		        <parameter
+				    name="org.eclipse.ui.commands.radioStateParameter"
+				    value="COORDINATION_COMPOSITION">
+		        </parameter>
+	        </command>
+         </menuContribution>
+    </extension>
+
+   <!-- PlantUML SvgView -->
+   <extension point="org.eclipse.ui.commands">
+        <command defaultHandler="hu.bme.mit.gamma.plantuml.commandhandler.CoordinationLayoutHandler"
+                  id="hu.bme.mit.gamma.plantuml.coordinationLayoutCommandSvg" name="Additional Diagram Settings">
+	      	<commandParameter
+	    		id="org.eclipse.ui.commands.radioStateParameter"
+	    		name="Radio Name"
+	    		optional="false">
+	      	</commandParameter>
+		    <state id="org.eclipse.ui.commands.radioState">
+		      <class class="org.eclipse.ui.handlers.RadioState">
+		          <parameter
+		    		name="default"
+		    		value="COORDINATION">
+		          </parameter>
+		          <parameter
+		    		name="persisted"
+		    		value="true">
+		          </parameter>
+		      </class>
+		    </state>
+        </command>
+	</extension>
+	<extension point="org.eclipse.ui.menus">
+        <menuContribution locationURI="toolbar:net.sourceforge.plantuml.eclipse.views.PlantUmlSvgView?after=additions">
+        	<command commandId="hu.bme.mit.gamma.plantuml.coordinationLayoutCommandSvg" 
+        			 id="hu.bme.mit.gamma.plantuml.toolbar.coordinationLayoutCommandSvg" style="pulldown"
+                     tooltip="Additional Diagram Settings">
+            </command>
+		</menuContribution>
+		<menuContribution locationURI="menu:hu.bme.mit.gamma.plantuml.toolbar.coordinationLayoutCommandSvg">
+            <command
+	    		commandId="hu.bme.mit.gamma.plantuml.coordinationLayoutCommand"
+	    		id="hu.bme.mit.gamma.plantuml.toolbar.coordinationLayoutRadio1"
+	    		label="Coordination"
+	    		style="radio">
+	            <parameter
+	    			name="org.eclipse.ui.commands.radioStateParameter"
+	    			value="COORDINATION">
+	            </parameter>
+	        </command>
+	        <command
+			    commandId="hu.bme.mit.gamma.plantuml.coordinationLayoutCommand"
+			    id="hu.bme.mit.gamma.plantuml.toolbar.coordinationLayoutRadio2"
+			    label="Composition"
+			    style="radio">
+				<parameter
+				    name="org.eclipse.ui.commands.radioStateParameter"
+				    value="COMPOSITION">
+				</parameter>
+	        </command>
+	        <command
+			    commandId="hu.bme.mit.gamma.plantuml.coordinationLayoutCommand"
+			    id="hu.bme.mit.gamma.plantuml.toolbar.coordinationLayoutRadio3"
+			    label="Coordination + Composition"
+			    style="radio">
+		        <parameter
+				    name="org.eclipse.ui.commands.radioStateParameter"
+				    value="COORDINATION_COMPOSITION">
+		        </parameter>
+	        </command>
+         </menuContribution>
+    </extension>
 </plugin>

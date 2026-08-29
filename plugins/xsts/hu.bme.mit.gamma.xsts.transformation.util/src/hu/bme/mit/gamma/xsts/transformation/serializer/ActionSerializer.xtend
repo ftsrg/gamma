@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.xsts.transformation.serializer
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
+import hu.bme.mit.gamma.xsts.model.DelayAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.FunctionCallAction
 import hu.bme.mit.gamma.xsts.model.HavocAction
@@ -136,6 +137,10 @@ class ActionSerializer {
 				«subaction.serialize»
 			«ENDFOR»
 «««		}
+	'''
+	
+	def dispatch String serialize(DelayAction action) '''
+		__delay;
 	'''
 	
 }

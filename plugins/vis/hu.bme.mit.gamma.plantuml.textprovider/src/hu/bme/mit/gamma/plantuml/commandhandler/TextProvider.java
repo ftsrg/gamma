@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.commands.Command;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.emf.common.util.URI;
@@ -24,12 +25,16 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.handlers.RadioState;
 
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.plantuml.transformation.AdapterToPlantUmlTransformer;
 import hu.bme.mit.gamma.plantuml.transformation.CompositeToPlantUmlTransformer;
+import hu.bme.mit.gamma.plantuml.transformation.CoordinationToPlantUmlTransformer;
 import hu.bme.mit.gamma.plantuml.transformation.InterfaceToPlantUmlTransformer;
 import hu.bme.mit.gamma.plantuml.transformation.StatechartToPlantUmlTransformer;
 import hu.bme.mit.gamma.plantuml.transformation.TraceToPlantUmlTransformer;
@@ -38,6 +43,7 @@ import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.statechart.statechart.CoordinationStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import net.sourceforge.plantuml.eclipse.utils.WorkbenchPartDiagramIntentProviderContext;
@@ -121,8 +127,17 @@ public class TextProvider extends AbstractDiagramIntentProvider {
 			List<Interface> interfaces = _package.getInterfaces();
 			if (!components.isEmpty()) {
 				Component component = components.get(0);
-				if (component instanceof StatechartDefinition statechart) {
-					StatechartToPlantUmlTransformer transformer = new StatechartToPlantUmlTransformer(statechart);
+				if (component instanceof CoordinationStatechartDefinition statechartDefinition) {
+					ICommandService commandService =
+						    PlatformUI.getWorkbench().getService(ICommandService.class);
+					Command command = commandService.getCommand("hu.bme.mit.gamma.plantuml.coordinationLayoutCommand");
+					String state = (String)command.getState(RadioState.STATE_ID).getValue();
+					CoordinationToPlantUmlTransformer transformer = new CoordinationToPlantUmlTransformer(
+							statechartDefinition, state);
+					return transformer.execute();
+				} else if (component instanceof StatechartDefinition statechartDefinition) {
+					StatechartToPlantUmlTransformer transformer = new StatechartToPlantUmlTransformer(
+							statechartDefinition);
 					return transformer.execute();
 				}
 				else if (component instanceof CompositeComponent composite) {

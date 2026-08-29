@@ -1,0 +1,26 @@
+package coordination_tests
+// import interfaces_package
+
+import "Interfaces/Interfaces.gcd"
+
+statechart SimpleStatechart (
+	// Declaration of parameters
+) [
+	// Declaration of ports
+	port inPort : requires SimpleInterface
+	port outPort : provides SimpleInterface
+] {
+	// Definition of states, regions and transitions
+	timeout c1
+	
+	
+	region main_region_1 {
+		initial init_1
+		state state_1 {
+			entry / set c1 := 5 s;
+		}
+	}
+	transition from init_1 to state_1
+	transition from state_1 to state_1 when inPort.simpleEvent
+	transition from state_1 to state_1 when timeout c1 / raise outPort.simpleEvent;
+}

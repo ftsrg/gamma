@@ -95,22 +95,29 @@ import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger;
 import hu.bme.mit.gamma.statechart.statechart.BinaryType;
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
 import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
+import hu.bme.mit.gamma.statechart.statechart.CoordinationStatechartDefinition;
+import hu.bme.mit.gamma.statechart.statechart.CoordinationTransition;
 import hu.bme.mit.gamma.statechart.statechart.EntryState;
 import hu.bme.mit.gamma.statechart.statechart.EventAnyPortReference;
 import hu.bme.mit.gamma.statechart.statechart.InitialState;
+import hu.bme.mit.gamma.statechart.statechart.OnCycleTrigger;
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.Region;
+import hu.bme.mit.gamma.statechart.statechart.SequentialCoordinationReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StateNode;
 import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory;
 import hu.bme.mit.gamma.statechart.statechart.SynchronousStatechartDefinition;
+import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration;
+import hu.bme.mit.gamma.statechart.statechart.TimeoutReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger;
 import hu.bme.mit.gamma.statechart.statechart.UnaryType;
+import hu.bme.mit.gamma.statechart.statechart.UnorderedCoordinationReferenceExpression;
 
 public class StatechartUtil extends ActionUtil {
 	// Singleton
@@ -441,6 +448,10 @@ public class StatechartUtil extends ActionUtil {
 		unaryTrigger.setType(type);
 		unaryTrigger.setOperand(trigger);
 		return unaryTrigger;
+	}
+	
+	public OnCycleTrigger createOnCycleTrigger() {
+		return statechartFactory.createOnCycleTrigger();
 	}
 	
 	public void extendGuard(Transition transition, Expression guard) {
@@ -1427,4 +1438,55 @@ public class StatechartUtil extends ActionUtil {
 		ecoreUtil.removeAll(element.getRegions());
 	}
 	
+	// Coordination
+	
+	public void addCoordinationVariableAnnotation(VariableDeclaration variable) {
+		addAnnotation(variable, statechartFactory.createCoordinationVariableDeclarationAnnotation());
+	}
+	
+	public CoordinationTransition createSequentialCoordinationTransition(StateNode source, StateNode target,
+			List<ComponentInstanceReferenceExpression> coordinatedComponents) {
+		CoordinationTransition transition = statechartFactory.createCoordinationTransition();
+		transition.setSourceState(source);
+		transition.setTargetState(target);
+		SequentialCoordinationReferenceExpression expression = statechartFactory
+				.createSequentialCoordinationReferenceExpression();
+		expression.getInstances().addAll(ecoreUtil.clone(coordinatedComponents));
+
+		transition.setCoordinatedComponent(expression);
+
+		CoordinationStatechartDefinition statechart = (CoordinationStatechartDefinition) StatechartModelDerivedFeatures
+				.getContainingStatechart(source);
+		if (statechart != null) {
+			statechart.getCoordinationTransitions().add(transition);
+		}
+		return transition;
+	}
+
+	public CoordinationTransition createUnorderedCoordinationTransition(StateNode source, StateNode target,
+			List<ComponentInstanceReferenceExpression> coordinatedComponents) {
+		CoordinationTransition transition = statechartFactory.createCoordinationTransition();
+		transition.setSourceState(source);
+		transition.setTargetState(target);
+		UnorderedCoordinationReferenceExpression expression = statechartFactory
+				.createUnorderedCoordinationReferenceExpression();
+		expression.getInstances().addAll(coordinatedComponents);
+		transition.setCoordinatedComponent(expression);
+
+		CoordinationStatechartDefinition statechart = (CoordinationStatechartDefinition) StatechartModelDerivedFeatures
+				.getContainingStatechart(source);
+		if (statechart != null) {
+			statechart.getCoordinationTransitions().add(transition);
+		}
+		return transition;
+	}
+	
+	// TimeoutReferenceExpression
+	
+	public TimeoutReferenceExpression createTimeoutReferenceExpression(TimeoutDeclaration timeout) {
+		TimeoutReferenceExpression expression = statechartFactory.createTimeoutReferenceExpression();
+		expression.setTimeout(timeout);
+		
+		return expression;
+	}
 }

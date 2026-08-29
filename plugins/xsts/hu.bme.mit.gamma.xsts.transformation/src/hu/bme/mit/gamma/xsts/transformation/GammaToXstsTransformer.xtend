@@ -31,6 +31,8 @@ import hu.bme.mit.gamma.statechart.interface_.SchedulingConstraintAnnotation
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.GammaToLowlevelTransformer
 import hu.bme.mit.gamma.transformation.util.preprocessor.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.model.DelayAction
+import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.SystemInEventGroup
 import hu.bme.mit.gamma.xsts.model.SystemInEventParameterGroup
 import hu.bme.mit.gamma.xsts.model.SystemOutEventGroup
@@ -244,6 +246,14 @@ class GammaToXstsTransformer {
 			// Denoting variable as scheduled clock variable
 			xStsClockVariable.addScheduledClockAnnotation
 		}
+		
+		val inAction = xSts.inEventTransition.action
+		if (inAction instanceof SequentialAction) {
+			for (delayAction : inAction.actions.filter[it instanceof DelayAction]) {
+				xStsClockSettingAction.clone.replace(delayAction)
+			}
+		}
+		
 		// Putting it in merged transition as it does not work in environment action
 		xStsClockSettingAction.actions += xSts.mergedAction
 		

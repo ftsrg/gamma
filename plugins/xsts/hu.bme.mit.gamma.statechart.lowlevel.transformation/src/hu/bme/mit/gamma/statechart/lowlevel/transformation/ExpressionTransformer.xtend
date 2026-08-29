@@ -534,7 +534,7 @@ class ExpressionTransformer {
 	
 	//
 	
-	private def Expression getValueOfTimeout(TimeoutDeclaration timeoutDeclaration) {
+	protected def Expression getValueOfTimeout(TimeoutDeclaration timeoutDeclaration) {
 		val statechart = timeoutDeclaration.containingStatechart
 		val timeoutSettings = statechart.getAllContentsOfType(SetTimeoutAction)
 		val correctTimeoutSetting = timeoutSettings.filter[it.timeoutDeclaration == timeoutDeclaration]

@@ -40,6 +40,7 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.TupleReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.statechart.statechart.CoordinationVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.util.Triple;
 import hu.bme.mit.gamma.xsts.model.AbstractAssignmentAction;
 import hu.bme.mit.gamma.xsts.model.Action;
@@ -49,6 +50,7 @@ import hu.bme.mit.gamma.xsts.model.AssignmentAction;
 import hu.bme.mit.gamma.xsts.model.AssumeAction;
 import hu.bme.mit.gamma.xsts.model.AsynchronousSystemAnnotation;
 import hu.bme.mit.gamma.xsts.model.AtomicAction;
+import hu.bme.mit.gamma.xsts.model.DelayAction;
 import hu.bme.mit.gamma.xsts.model.EmptyAction;
 import hu.bme.mit.gamma.xsts.model.EnvironmentalInvariantAnnotation;
 import hu.bme.mit.gamma.xsts.model.FunctionCallAction;
@@ -695,6 +697,10 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return variableList;
 	}
 	
+	private static Set<VariableDeclaration> _getReadVariables(DelayAction action) {
+		return Collections.emptySet();
+	}
+	
 	private static Set<VariableDeclaration> _getExternallyReadVariables(AssignmentAction action) {
 		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
 		
@@ -829,6 +835,10 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		
 		return variableList;
 	}
+	
+	private static Set<VariableDeclaration> _getWrittenVariables(DelayAction action) {
+		return Collections.emptySet(); // Empty, as this is a declaration, not a "writing"
+	}
 
 	public static Set<VariableDeclaration> getReadVariables(Action action) {
 		if (action instanceof AssignmentAction _action) {
@@ -867,6 +877,10 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		else if (action instanceof OpaqueAction) {
 			return Set.of();
 		}
+		else if (action instanceof DelayAction _action) {
+			return _getReadVariables(_action);
+		}
+		
 		else {
 			throw new IllegalArgumentException("Unhandled action type: " + action);
 		}
@@ -905,6 +919,9 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		}
 		else if (action instanceof OpaqueAction) {
 			return Set.of();
+		}
+		else if (action instanceof DelayAction _action) {
+			return _getReadVariables(_action);
 		}
 		else {
 			throw new IllegalArgumentException("Unhandled action type: " + action);
@@ -946,6 +963,9 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		}
 		else if (action instanceof OpaqueAction) {
 			return Set.of();
+		}
+		else if (action instanceof DelayAction _action) {
+			return _getWrittenVariables(_action);
 		}
 		else {
 			throw new IllegalArgumentException("Unhandled action type: " + action);
@@ -1464,5 +1484,13 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 				Set<VariableDeclaration>>(
 			literalVariableAssignments, variableVariableAssignments, notLiteralVariables);
 	}
+
+	// Coordination
+	
+	public static List<VariableDeclaration> getCoordinationVariables(XSTS xSts) {
+		return filterVariablesByAnnotation(xSts.getVariableDeclarations(),
+				CoordinationVariableDeclarationAnnotation.class);
+	}
 	
 }
+

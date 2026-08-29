@@ -697,6 +697,16 @@ public class ExpressionUtil {
 		return referred;
 	}
 	
+	public EnumerationLiteralDefinition getEnumerationLiteralDefinitionByName(EnumerationTypeDefinition typeDefinition, String name) {
+		for (EnumerationLiteralDefinition literal : typeDefinition.getLiterals()) {
+			String enumLiteralName = literal.getName();
+			if (enumLiteralName.equals(name)) {
+				return literal;
+			}
+		}
+		throw new IllegalArgumentException("No EnumerationLiteralDefinition found in: " + typeDefinition + " for name: " + name);
+	}
+	
 	// Extract parameters
 	
 	public List<ConstantDeclaration> extractParameters(ParametricElement parametricElement,
@@ -1768,6 +1778,12 @@ public class ExpressionUtil {
 		return literalExpression;
 	}
 	
+	public EnumerationLiteralExpression createEnumerationLiteralExpression(
+			EnumerationTypeDefinition typeDefinition, String name) {
+		EnumerationLiteralDefinition enumLiteralDefinition = getEnumerationLiteralDefinitionByName(typeDefinition, name);
+		return createEnumerationLiteralExpression(enumLiteralDefinition);
+	}
+		
 	public SubtractExpression createSubtractExpression(Expression lhs, Expression rhs) {
 		SubtractExpression subtractExpression = factory.createSubtractExpression();
 		subtractExpression.setLeftOperand(lhs);

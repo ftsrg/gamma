@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.statechart.util.ExpressionTypeDeterminator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+import hu.bme.mit.gamma.statechart.statechart.TimeoutReferenceExpression
 
 class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSerializer {
 	// Singleton
@@ -43,7 +44,11 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	override String _serialize(EnumerationLiteralExpression expression) '''«expression.reference.name»'''
 	
 	override String serialize(Expression expression) {
-		return super.serialize(expression)
+		if (expression instanceof TimeoutReferenceExpression) {
+			return expression.serialize
+		} else {
+			return super.serialize(expression)
+		}
 	}
 	
 	override String _serialize(TrueExpression expression) '''TRUE'''
@@ -88,5 +93,7 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 		
 		return smvArrayLiteral.toString
 	}
+	
+	def String serialize(TimeoutReferenceExpression expression) '''«expression.timeout.name»'''
 	
 }

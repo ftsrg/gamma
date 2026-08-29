@@ -113,6 +113,7 @@ import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
 import hu.bme.mit.gamma.statechart.statechart.ComplexTrigger;
+import hu.bme.mit.gamma.statechart.statechart.CoordinationTransition;
 import hu.bme.mit.gamma.statechart.statechart.EntryState;
 import hu.bme.mit.gamma.statechart.statechart.ForkState;
 import hu.bme.mit.gamma.statechart.statechart.InitialState;
@@ -758,6 +759,10 @@ public class StatechartModelValidator extends ActionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkTransitionTriggers(Transition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		if (transition instanceof CoordinationTransition) {
+			// TODO
+			return validationResultMessages;		
+		}
 		if (!StatechartModelDerivedFeatures.needsTrigger(transition)) {
 			return validationResultMessages;
 		}
@@ -1616,11 +1621,12 @@ public class StatechartModelValidator extends ActionModelValidator {
 		}
 		Collection<Port> unusedPorts = StatechartModelDerivedFeatures.getUnusedPorts(instance);
 		if (!unusedPorts.isEmpty()) {
-			validationResultMessages.add(
-				new ValidationResultMessage(ValidationResult.WARNING, 
-					"The following ports are used neither in a system port binding nor a channel: " +
-						unusedPorts.stream().map(it -> it.getName()).collect(Collectors.toSet()),
-							new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)));
+			for (Port port : unusedPorts) {
+				var msg = new ValidationResultMessage(ValidationResult.WARNING, 
+					"The following port are used neither in a system port binding nor a channel: " + instance.getName() + "." + port.getName(),
+						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME));
+				validationResultMessages.add(msg);
+			}
 		}
 		return validationResultMessages;
 	}
