@@ -37,6 +37,7 @@ import static hu.bme.mit.gamma.uppaal.util.XstsNamings.*
 import static extension de.uni_paderborn.uppaal.derivedfeatures.UppaalModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension java.lang.Math.*
+import hu.bme.mit.gamma.expression.model.Expression
 
 class CfaActionTransformer {
 	
@@ -52,6 +53,8 @@ class CfaActionTransformer {
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	
+	protected final extension ClockGuardTransformer clockGuardTransformer = ClockGuardTransformer.INSTANCE
 	
 	new(NtaBuilder ntaBuilder, Traceability traceability) {
 		this.ntaBuilder = ntaBuilder
@@ -143,11 +146,7 @@ class CfaActionTransformer {
 	}
 	
 	protected def dispatch Location transformAction(AssumeAction action, Location source) {
-		val edge = source.createEdgeCommittedSource(nextCommittedLocationName)
-		val uppaalExpression = action.assumption.transform
-		edge.guard = uppaalExpression
-		
-		return edge.target
+		return action.assumption.transformGuard(source)
 	}
 	
 	protected def dispatch Location transformAction(SequentialAction action, Location source) {
@@ -187,23 +186,19 @@ class CfaActionTransformer {
 		
 		val condition = action.condition
 		
-		val positiveCondition = condition.transform
+		val positiveCondition = condition
 		val negativeCondition = condition.clone
-				.createNotExpression.transform
+				.createNotExpression
 		
-		val thenEdge = source.createEdgeCommittedSource(nextCommittedLocationName)
-		thenEdge.guard = positiveCondition
-		val thenEdgeTarget = thenEdge.target
+		val thenGuardTarget = positiveCondition.transformGuard(source)
 		
 		val thenAction = action.then
-		val thenActionTarget = thenAction.transformAction(thenEdgeTarget)
+		val thenActionTarget = thenAction.transformAction(thenGuardTarget)
 		
-		val elseEdge = source.createEdgeCommittedSource(nextCommittedLocationName)
-		elseEdge.guard = negativeCondition
-		val elseEdgeTarget = elseEdge.target
+		val elseGuardTarget = negativeCondition.transformGuard(source)
 		
 		val elseAction = action.^else
-		val elseActionTarget = (elseAction !== null) ? elseAction.transformAction(elseEdgeTarget) : elseEdgeTarget
+		val elseActionTarget = (elseAction !== null) ? elseAction.transformAction(elseGuardTarget) : elseGuardTarget
 		
 		elseActionTarget.createEdge(thenActionTarget)
 		
@@ -270,6 +265,20 @@ class CfaActionTransformer {
 		for (transientVariable : transientVariables) {
 			edge.update += transientVariable.createResetingAssignmentExpression
 		}
+	}
+	
+	protected def Location transformGuard(Expression guard, Location source){
+		val target = createLocation(source.parentTemplate) => [
+			it.name = nextCommittedLocationName
+			it.locationTimeKind = LocationKind.COMMITED
+		]
+		val transformedGuards = guard.splitByDisjunction.map[transform]
+		for (transformedGuard : transformedGuards) {
+			source.createEdge(target) => [
+				it.guard = transformedGuard
+			]
+		}
+		return target
 	}
 	
 //	// Variable binding
