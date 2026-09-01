@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024-2025 Contributors to the Gamma project
+ * Copyright (c) 2024-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -27,6 +27,9 @@ public class Application implements IApplication {
 	protected final String WORKSPACE_ARG = "workspace";
 	protected final String SESSION_ARG = "session";
 	protected final String EXIT_SESSION_ARG = "exit";
+	protected final String HELP_ARG = "help";
+	protected final String _H_ARG = "-h";
+	protected final String _HELP_ARG = "--help";
 	//
 	protected final Logger logger = Logger.getLogger("GammaLogger");
 	//
@@ -109,6 +112,8 @@ public class Application implements IApplication {
 			IApplicationContext context, String[] appArgs, Level level) {
 		String argument = appArgs[0];
 		switch (argument) {
+			case HELP_ARG, _HELP_ARG, _H_ARG:
+				return new HelpHandler(context, appArgs, level);
 			case WORKSPACE_ARG:
 				return new WorkspaceGenerator(context, appArgs, level);
 			case "import":
@@ -118,13 +123,14 @@ public class Application implements IApplication {
 			case "exit":
 				return new DummyHandler(context, appArgs, level);
 			default:
-				throw new IllegalArgumentException("Invalid argument for operation type: " + argument +
-						"; use one of the following: " + serializeAcceptedArguments());
+				String message = "Invalid argument for operation type: " + argument +"; use one of the following: " + serializeAcceptedArguments();
+				System.err.println(message);
+				throw new IllegalArgumentException(message);
 		}
 	}
 
 	protected String[] getAcceptedArguments() {
-		return new String[] { WORKSPACE_ARG, "import", "gamma", SESSION_ARG, EXIT_SESSION_ARG };
+		return new String[] { WORKSPACE_ARG, "import", "gamma", SESSION_ARG, EXIT_SESSION_ARG, HELP_ARG };
 	}
 	
 	private Level parseLogLevel(String[] appArgs) {
