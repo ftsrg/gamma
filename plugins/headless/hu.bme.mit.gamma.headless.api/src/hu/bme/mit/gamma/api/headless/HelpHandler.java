@@ -22,7 +22,7 @@ public class HelpHandler extends HeadlessApplicationCommandHandler {
 
 	public void execute() throws Throwable {
 		final String message = """
-			Use: 'eclipse -data workspace-folder scope log-level ggen-file [task] [backend]', e.g., './eclipse.exe -data ./ws gamma info ./Genmodelfile.ggen'
+			Use: 'eclipse -data workspace-folder scope log-level ggen-file', e.g., './eclipse.exe -data ./ws gamma info ./Genmodelfile.ggen'
 		""";
 		System.out.println(message);
 	}
