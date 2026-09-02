@@ -10,20 +10,31 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.api.headless;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 
 import org.eclipse.equinox.app.IApplicationContext;
 
 public class HelpHandler extends HeadlessApplicationCommandHandler {
-
+	
 	public HelpHandler(IApplicationContext context, String[] appArgs, Level level) {
 		super(context, appArgs, level);
 	}
-
+	
 	public void execute() throws Throwable {
-		final String message = """
-			Use: 'eclipse -data workspace-folder scope log-level ggen-file', e.g., './eclipse.exe -data ./ws gamma info ./Genmodelfile.ggen'
-		""";
-		System.out.println(message);
+		InputStream inputStream = HelpHandler.class.getClassLoader().getResourceAsStream("docs/headless-gamma-arguments.md");
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+			String line = null;
+			while ((line = reader.readLine()) != null) {
+				System.out.println(line);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
+	
 }
