@@ -40,19 +40,7 @@ class TraceToPlantUmlTransformer {
 	
 	def String execute() '''
 		@startuml
-		hide footbox
-		skinparam shadowing false
-		skinparam ArrowColor #0b910b
-		skinparam SequenceLifeLineBorderColor #0b910b
-		skinparam SequenceLifeLineBackgroundColor #3ec43e
-		skinparam ParticipantBorderColor #043204
-		skinparam ParticipantBackgroundColor #3ec43e
-		skinparam NoteBackgroundColor #ffe7a4
-		skinparam NoteBorderColor #914e0b
-		skinparam SequenceDividerBackgroundColor #8cdc8c
-		skinparam SequenceDividerBorderColor #0b910b
-		skinparam SequenceGroupBackgroundColor #8cdc8c
-		skinparam SequenceGroupBorderColor #043204
+		«generateSkinparams»
 		
 		title «trace.name» of «trace.component.name»
 		
@@ -70,6 +58,22 @@ class TraceToPlantUmlTransformer {
 			end loop
 		«ENDIF»
 		@enduml
+	'''
+	
+	protected def generateSkinparams() '''
+		hide footbox
+		skinparam shadowing false
+		skinparam ArrowColor #0b910b
+		skinparam SequenceLifeLineBorderColor #0b910b
+		skinparam SequenceLifeLineBackgroundColor #3ec43e
+		skinparam ParticipantBorderColor #043204
+		skinparam ParticipantBackgroundColor #3ec43e
+		skinparam NoteBackgroundColor #ffe7a4
+		skinparam NoteBorderColor #914e0b
+		skinparam SequenceDividerBackgroundColor #8cdc8c
+		skinparam SequenceDividerBorderColor #0b910b
+		skinparam SequenceGroupBackgroundColor #8cdc8c
+		skinparam SequenceGroupBorderColor #043204
 	'''
 	
 	protected def serialize(Step step) '''

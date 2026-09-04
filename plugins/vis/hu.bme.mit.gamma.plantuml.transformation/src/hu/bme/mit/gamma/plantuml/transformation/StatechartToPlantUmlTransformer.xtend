@@ -234,7 +234,7 @@ class StatechartToPlantUmlTransformer {
 									«ENDIF»
 								«ENDFOR»
 						«ENDFOR»
-						«FOR inner: region.stateNodes»
+						«FOR inner: region.stateNodes /* ? */»
 						«ENDFOR»
 						«IF regionsDispatch(state).length > 1 && region !== regionsDispatch(state).lastOrNull»
 							--
@@ -250,7 +250,7 @@ class StatechartToPlantUmlTransformer {
 			return result
 		}
 	}
-
+	
 	/**
 	 * stateActionsSearch(StateNode)
 	 * 
@@ -261,7 +261,7 @@ class StatechartToPlantUmlTransformer {
 	 */
 	protected def stateActionsSearch(StateNode statenode) {
 		val state = statenode as State
-		if (!(state.entryActions.empty) || !(state.exitActions.empty) || !(state.invariants.empty)) {
+		if (!state.entryActions.empty || !state.exitActions.empty || !state.invariants.empty) {
 			val result = '''
 				«IF !(state.invariants.empty)»
 					«FOR invariant: state.invariants»
@@ -286,7 +286,7 @@ class StatechartToPlantUmlTransformer {
 			return result
 		}
 	}
-
+	
 	/**
 	 * regionsDispatch(StateNode)
 	 * 
@@ -306,7 +306,7 @@ class StatechartToPlantUmlTransformer {
 			}
 		}
 	}
-
+	
 	/**
 	 * mainRegionSearch(StatechartDefitnition)
 	 * 
@@ -351,22 +351,12 @@ class StatechartToPlantUmlTransformer {
 		'''
 		return mainString
 	}
-
+	
 	protected def isLastRegion(EList<Region> regions, Region region) {
 		val size = regions.size
-		return if (regions.contains(region)) {
-			if (regions.indexOf(region) == size - 1) {
-				true
-			}
-			else {
-				false
-			}
-		}
-		else {
-			false
-		}
+		return regions.contains(region) && regions.indexOf(region) == size - 1
 	}
-
+	
 	/**
 	 * stateSearch(Transition)
 	 * 
@@ -387,7 +377,8 @@ class StatechartToPlantUmlTransformer {
 		var arrow = ""
 		if (source instanceof EntryState || (source.parentRegion.orthogonal && target.state)) {
 			arrow = "->"
-		} else {
+		}
+		else {
 			arrow = "-->"
 		}
 		return '''
@@ -398,19 +389,15 @@ class StatechartToPlantUmlTransformer {
 
 	protected def getSourceText(Transition transition) {
 		val source = transition.sourceState
-		switch (source) {
-			InitialState: {
-				return '''[*]'''
-			}
-			ShallowHistoryState: {
-				return '''[H]'''
-			}
-			DeepHistoryState: {
-				return '''[H]''' // PlantUML does not distinguish between the two history states
-			}
-			default: {
-				return source.name
-			}
+		return switch (source) {
+			InitialState:
+				'''[*]'''
+			ShallowHistoryState:
+				'''[H]'''
+			DeepHistoryState:
+				'''[H]''' // PlantUML does not distinguish between the two history states
+			default:
+				source.name
 		}
 	}
 
@@ -427,13 +414,13 @@ class StatechartToPlantUmlTransformer {
 		return '''
 			legend top
 			 	«FOR parameter : parameterDeclarations»
-			 		param «parameter.name»: «parameter.type.serialize»
+			 		param «parameter.name» : «parameter.type.serialize»
 				«ENDFOR»
 				«FOR constant : constantDeclarations»
-					const «constant.name»: «constant.type.serialize» = «constant.expression.serialize»
+					const «constant.name» : «constant.type.serialize» = «constant.expression?.serialize»
 				«ENDFOR»
 				«FOR variable : variableDeclarations»
-					var «variable.name»: «variable.type.serialize»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»
+					var «variable.name» : «variable.type.serialize»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»
 				«ENDFOR»
 				«FOR timeout : timeoutDeclarations»
 					timeout «timeout.name»

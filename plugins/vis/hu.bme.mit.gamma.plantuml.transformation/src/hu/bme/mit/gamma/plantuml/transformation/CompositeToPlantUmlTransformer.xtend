@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -25,15 +25,11 @@ class CompositeToPlantUmlTransformer {
 	protected final CompositeComponent composite
 
 	enum LayoutType {
-		UMLComponentDiagramStyle,
-		UMLCompositeStructureDiagramStyle,
-		SysMLInternalBlockDiagramStyle
+		UMLComponentDiagramStyle, UMLCompositeStructureDiagramStyle, SysMLInternalBlockDiagramStyle
 	}
 
 	enum LineStyle {
-		Orthogonal,
-		Polyline,
-		Curved
+		Orthogonal, Polyline, Curved
 	}
 
 	// layout variables
@@ -46,14 +42,15 @@ class CompositeToPlantUmlTransformer {
 	// Selected Layout
 	protected final LayoutType layoutType = LayoutType.SysMLInternalBlockDiagramStyle
 
-	def String generateSkinparams(
-		int padding,
-		int verticalSpacing,
-		int horizontalSpacing,
-		boolean leftToRightDirection,
-		boolean topToBottomDirection,
-		LineStyle lineStyle
-	) '''
+	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	//
+	
+	new(CompositeComponent composite) {
+		this.composite = composite
+	}
+
+	protected def String generateSkinparams(int padding, int verticalSpacing, int horizontalSpacing,
+				boolean leftToRightDirection, boolean topToBottomDirection, LineStyle lineStyle) '''
 		skinparam shadowing false
 		!theme plain
 		«IF lineStyle == LineStyle.Orthogonal»
@@ -72,49 +69,39 @@ class CompositeToPlantUmlTransformer {
 		skinparam ranksep «horizontalSpacing»
 		skinparam padding «padding»
 	'''
-
-	protected extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
-
-	new(CompositeComponent composite) {
-		this.composite = composite
-	}
-
+	
 	private def getKindString(CompositeComponent composite) {
-		if (composite instanceof SynchronousCompositeComponent) {
-			return "synchronous"
+		return if (composite instanceof SynchronousCompositeComponent) {
+			"synchronous"
 		}
 		else if (composite instanceof CascadeCompositeComponent) {
-			return "cascade"
+			"cascade"
 		}
 		else if (composite instanceof AsynchronousCompositeComponent) {
-			return "asynchronous"
+			"asynchronous"
 		}
 		else if (composite instanceof ScheduledAsynchronousCompositeComponent) {
-			return "scheduled-asynchronous"
+			"scheduled-asynchronous"
 		}
 		else {
-			return composite.class.name
+			composite.class.name
 		}
 	}
 
 	def String execute() {
-		switch (layoutType) {
-			case LayoutType.UMLComponentDiagramStyle: {
-				return executeUMLComponentDiagramStyle
-			}
-			case LayoutType.UMLCompositeStructureDiagramStyle: {
-				return executeUMLCompositeStructureDiagramStyle
-			}
-			case LayoutType.SysMLInternalBlockDiagramStyle: {
-				return executeSysMLInternalBlockDiagramStyle
-			}
-			default: {
-				return executeSysMLInternalBlockDiagramStyle
-			}
+		return switch (layoutType) {
+			case LayoutType.UMLComponentDiagramStyle:
+				executeUMLComponentDiagramStyle
+			case LayoutType.UMLCompositeStructureDiagramStyle:
+				executeUMLCompositeStructureDiagramStyle
+			case LayoutType.SysMLInternalBlockDiagramStyle:
+				executeSysMLInternalBlockDiagramStyle
+			default:
+				executeSysMLInternalBlockDiagramStyle
 		}
 	}
 
-	def String executeUMLComponentDiagramStyle() '''
+	protected def String executeUMLComponentDiagramStyle() '''
 		@startuml
 		skinparam shadowing false
 		
@@ -151,10 +138,10 @@ class CompositeToPlantUmlTransformer {
 		@enduml
 	'''
 
-	def String executeUMLCompositeStructureDiagramStyle() '''
+	protected def String executeUMLCompositeStructureDiagramStyle() '''
 		@startuml
 		skinparam defaultTextAlignment center
-		«generateSkinparams(4,20,60,true,false,LineStyle.Polyline)»
+		«generateSkinparams(4, 20, 60, true, false, LineStyle.Polyline)»
 		
 		component "«composite.name»"<<«composite.kindString»>> {
 			
@@ -200,7 +187,7 @@ class CompositeToPlantUmlTransformer {
 		@enduml
 	'''
 
-	def String executeSysMLInternalBlockDiagramStyle() '''
+	protected def String executeSysMLInternalBlockDiagramStyle() '''
 		@startuml
 		<style>
 		title {
@@ -213,7 +200,7 @@ class CompositeToPlantUmlTransformer {
 		skinparam defaultTextAlignment center
 		skinparam ComponentStereotypeFontSize 10
 		skinparam componentStyle rectangle
-		«generateSkinparams(2,40,70,false,false,LineStyle.Curved)»
+		«generateSkinparams(2, 40, 70, false, false, LineStyle.Curved)»
 		
 		component "«composite.name»"<<«composite.kindString»>> {
 			
@@ -234,32 +221,31 @@ class CompositeToPlantUmlTransformer {
 		
 			
 			«FOR port : composite.ports»
-			«IF port.interfaceRealization.realizationMode == RealizationMode.REQUIRED»
-				portin "«port.name»\n ~«port.interface.name»" as «port.name»
-			«ENDIF»
-			«IF port.interfaceRealization.realizationMode == RealizationMode.PROVIDED»
-				portout "«port.name»:\n «port.interface.name»" as «port.name»
-			«ENDIF»
+				«IF port.interfaceRealization.realizationMode == RealizationMode.REQUIRED»
+					portin "«port.name»\n ~«port.interface.name»" as «port.name»
+				«ENDIF»
+				«IF port.interfaceRealization.realizationMode == RealizationMode.PROVIDED»
+					portout "«port.name»:\n «port.interface.name»" as «port.name»
+				«ENDIF»
 			«ENDFOR»
 			
 			«FOR binding : composite.portBindings»
-			«IF binding.instancePortReference.port.interfaceRealization.realizationMode == RealizationMode.REQUIRED»
-				«binding.compositeSystemPort.name» . «binding.instancePortReference.instance.name»__«binding.instancePortReference.port.name»
-			«ENDIF»
-			«IF binding.instancePortReference.port.interfaceRealization.realizationMode == RealizationMode.PROVIDED»
-				«binding.instancePortReference.instance.name»__«binding.instancePortReference.port.name» .. «binding.compositeSystemPort.name»
-			«ENDIF»
-			'«composite.name» "«binding.compositeSystemPort.name»" #.# "«binding.instancePortReference.port.name»" «binding.instancePortReference.instance.name»
+				«IF binding.instancePortReference.port.interfaceRealization.realizationMode == RealizationMode.REQUIRED»
+					«binding.compositeSystemPort.name» . «binding.instancePortReference.instance.name»__«binding.instancePortReference.port.name»
+				«ENDIF»
+				«IF binding.instancePortReference.port.interfaceRealization.realizationMode == RealizationMode.PROVIDED»
+					«binding.instancePortReference.instance.name»__«binding.instancePortReference.port.name» .. «binding.compositeSystemPort.name»
+				«ENDIF»
+				'«composite.name» "«binding.compositeSystemPort.name»" #.# "«binding.instancePortReference.port.name»" «binding.instancePortReference.instance.name»
 			«ENDFOR»
 			
 			
 			«FOR channel : composite.channels»
-			«FOR requiredPort : channel.requiredPorts»
-				«channel.providedPort.instance.name»__«channel.providedPort.port.name» ---> «requiredPort.instance.name»__«requiredPort.port.name» 
-			«ENDFOR»
+				«FOR requiredPort : channel.requiredPorts»
+					«channel.providedPort.instance.name»__«channel.providedPort.port.name» ---> «requiredPort.instance.name»__«requiredPort.port.name» 
+				«ENDFOR»
 			«ENDFOR»
 		}
-		
 		
 		@enduml
 	'''

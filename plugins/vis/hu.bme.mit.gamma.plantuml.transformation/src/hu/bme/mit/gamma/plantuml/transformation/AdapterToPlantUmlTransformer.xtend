@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -83,22 +83,7 @@ class AdapterToPlantUmlTransformer {
 
 	def String execute() '''
 		@startuml
-		skinparam shadowing false
-		
-		skinparam shadowing false
-		!theme plain
-		left to right direction
-		skinparam nodesep 30
-		skinparam ranksep 30
-		
-		skinparam padding 5
-		
-		
-		skinparam interface<<Invisible>> {
-		  borderColor Transparent
-		  backgroundColor Transparent
-		  stereotypeFontColor Transparent
-		}
+		«generateSkinparams»
 		
 		component "«adapter.name»"<<Asynchronous Adapter>> {
 			
@@ -164,6 +149,25 @@ class AdapterToPlantUmlTransformer {
 		«ENDIF»
 		}
 		@enduml
+	'''
+	
+	protected def generateSkinparams() '''
+		skinparam shadowing false
+		
+		skinparam shadowing false
+		!theme plain
+		left to right direction
+		skinparam nodesep 30
+		skinparam ranksep 30
+		
+		skinparam padding 5
+		
+		
+		skinparam interface<<Invisible>> {
+		  borderColor Transparent
+		  backgroundColor Transparent
+		  stereotypeFontColor Transparent
+		}
 	'''
 
 }
