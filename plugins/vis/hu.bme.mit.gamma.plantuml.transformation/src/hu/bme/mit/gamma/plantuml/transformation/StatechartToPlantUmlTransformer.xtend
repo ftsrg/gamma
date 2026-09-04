@@ -412,17 +412,21 @@ class StatechartToPlantUmlTransformer {
 
 	protected def listVariablesInNote(StatechartDefinition statechart) {
 		val parameterDeclarations = statechart.parameterDeclarations
+		val constantDeclarations = statechart.containingPackage?.constantDeclarations
 		val variableDeclarations = statechart.variableDeclarations
 		val timeoutDeclarations = statechart.timeoutDeclarations
 		val invariants = statechart.invariants
 		
-		if (variableDeclarations.empty && timeoutDeclarations.empty && parameterDeclarations.empty && invariants.empty) {
+		if ((variableDeclarations + constantDeclarations + timeoutDeclarations + parameterDeclarations + invariants).empty) {
 			return ''''''
 		}
 		return '''
 			legend top
 			 	«FOR parameter : parameterDeclarations»
 			 		param «parameter.name»: «parameter.type.serialize»
+				«ENDFOR»
+				«FOR constant : constantDeclarations»
+					const «constant.name»: «constant.type.serialize» = «constant.expression.serialize»
 				«ENDFOR»
 				«FOR variable : variableDeclarations»
 					var «variable.name»: «variable.type.serialize»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»
