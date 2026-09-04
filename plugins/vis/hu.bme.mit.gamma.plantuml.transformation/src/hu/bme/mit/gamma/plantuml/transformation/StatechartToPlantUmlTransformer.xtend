@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -179,8 +179,7 @@ class StatechartToPlantUmlTransformer {
 		return "state " + mergeState.name + " <<choice>>"
 	}
 
-	protected def dispatch transformPseudoState(EntryState entryState) {
-	}
+	protected def dispatch transformPseudoState(EntryState entryState) {}
 
 ///////////////////// ACTION DISPATCH /////////////////////
 	// Handling the different instances of actions
@@ -245,7 +244,8 @@ class StatechartToPlantUmlTransformer {
 				
 			'''
 			return result
-		} else {
+		}
+		else {
 			val result = null
 			return result
 		}
@@ -280,7 +280,8 @@ class StatechartToPlantUmlTransformer {
 				«ENDIF»
 			'''
 			return result
-		} else {
+		}
+		else {
 			val result = null
 			return result
 		}
@@ -296,11 +297,12 @@ class StatechartToPlantUmlTransformer {
 	protected def regionsDispatch(StateNode state) {
 		if (!(state instanceof PseudoState)) {
 			val statecomp = state as CompositeElement
-			if (!(statecomp.getRegions().isEmpty())) {
-				val region = statecomp.getRegions()
-				return region
-			} else {
-				return null
+			val regions = statecomp.regions
+			return if (!regions.empty) {
+				regions
+			}
+			else {
+				null
 			}
 		}
 	}
@@ -352,14 +354,16 @@ class StatechartToPlantUmlTransformer {
 
 	protected def isLastRegion(EList<Region> regions, Region region) {
 		val size = regions.size
-		if (regions.contains(region)) {
+		return if (regions.contains(region)) {
 			if (regions.indexOf(region) == size - 1) {
-				return true
-			} else {
-				return false
+				true
 			}
-		} else {
-			return false
+			else {
+				false
+			}
+		}
+		else {
+			false
 		}
 	}
 

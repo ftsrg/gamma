@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -13,7 +13,6 @@ package hu.bme.mit.gamma.plantuml.commandhandler;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IPath;
@@ -25,6 +24,7 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 
+import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
@@ -138,15 +138,16 @@ public class TextProvider extends AbstractDiagramIntentProvider {
 				List<EnumerationTypeDefinition> enums = _package.getTypeDeclarations().stream()
 						.filter(typeDecalration -> typeDecalration.getType() instanceof EnumerationTypeDefinition)
 						.map(typeDecalration -> (EnumerationTypeDefinition) typeDecalration.getType())
-						.collect(Collectors.toList());
+						.toList();
 				List<RecordTypeDefinition> structs = _package.getTypeDeclarations().stream()
 						.filter(typeDecalration -> typeDecalration.getType() instanceof RecordTypeDefinition)
 						.map(typeDecalration -> (RecordTypeDefinition) typeDecalration.getType())
-						.collect(Collectors.toList());
+						.toList();
+				List<ConstantDeclaration> constants = _package.getConstantDeclarations();
 				List<FunctionDeclaration> functions = _package.getFunctionDeclarations();
 				
 				InterfaceToPlantUmlTransformer transformer = new InterfaceToPlantUmlTransformer(
-						interfaces, enums, structs, functions);
+						interfaces, enums, structs, constants, functions);
 				return transformer.execute();
 			}
 		}
