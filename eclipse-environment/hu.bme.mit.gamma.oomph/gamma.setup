@@ -60,7 +60,7 @@
       storageURI="scope://Workspace"/>
   <setupTask
       xsi:type="git:GitCloneTask"
-      id="hu.bme.mit.gamma.oomph"
+      id="git.clone.hu.bme.mit.gamma.oomph"
       remoteURI="https://github.com/ftsrg/gamma.git"
       checkoutBranch="${scope.project.stream.name}">
     <description>Clone the Gamma repository; the checked out branch follows the selected stream (${scope.project.stream.name}). This task defines the ${git.clone.hu.bme.mit.gamma.oomph.location} variable used by the targlet's source locator.</description>
