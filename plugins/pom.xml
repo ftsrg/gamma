@@ -169,6 +169,29 @@
         <extensions>true</extensions>
       </plugin>
       <plugin>
+        <!--
+          Compiles the 962 .xtend sources into xtend-gen, which build.properties
+          lists as a source folder and which is not in version control. Bound to
+          generate-sources so it runs before tycho-compiler; the EMF and Xtext
+          sources it depends on come from ../generate.sh, which has to have run
+          first.
+        -->
+        <groupId>org.eclipse.xtend</groupId>
+        <artifactId>xtend-maven-plugin</artifactId>
+        <version>${xtext-version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+              <goal>xtend-install-debug-info</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>xtend-gen</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.eclipse.tycho</groupId>
         <artifactId>target-platform-configuration</artifactId>
         <version>${tycho-version}</version>
