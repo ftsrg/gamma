@@ -1,28 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <groupId>hu.bme.mit</groupId>
   <artifactId>hu.bme.mit.gamma</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>2.13.0-SNAPSHOT</version>
   <packaging>pom</packaging>
-  
+
+  <name>Gamma Statechart Composition Framework</name>
+
+  <!--
+    Tycho *pomless* build: .mvn/extensions.xml enables tycho-build, which
+    derives each module's artifactId, version and packaging from its
+    MANIFEST.MF. There are deliberately no per-plugin pom.xml files, so bundle
+    versions cannot drift away from Maven versions the way they did before
+    (the old poms still said 2.3.1-SNAPSHOT against a 2.13.0 bundle version).
+
+    Generated sources are not in version control - no src-gen or xtend-gen is
+    tracked - so a clean checkout must run the MWE2 workflows in
+    setup/hu.bme.mit.gamma.setup before this build can compile.
+  -->
+
   <properties>
-    <tycho-version>1.7.0</tycho-version>
-	<xtext.version>2.21.0</xtext.version>
-	<viatra.version>2.3.1</viatra.version>
-	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <tycho-version>4.0.13</tycho-version>
+    <xtext-version>2.38.0</xtext-version>
+    <java.version>21</java.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
-  
+
   <modules>
+    <module>c/hu.bme.mit.gamma.xsts.codegeneration.c</module>
+    <module>c/hu.bme.mit.gamma.xsts.codegeneration.c.commandhandler</module>
     <module>core/de.uni_paderborn.uppaal</module>
     <module>core/hu.bme.mit.gamma.action.language</module>
     <module>core/hu.bme.mit.gamma.action.language.ide</module>
     <module>core/hu.bme.mit.gamma.action.language.ui</module>
     <module>core/hu.bme.mit.gamma.action.model</module>
-    <module>core/hu.bme.mit.gamma.codegenerator.java</module>
-    <module>core/hu.bme.mit.gamma.codegenerator.java.commandhandler</module>
-    <module>core/hu.bme.mit.gamma.codegenerator.java.util</module>
+    <module>core/hu.bme.mit.gamma.codegeneration.java</module>
+    <module>core/hu.bme.mit.gamma.codegeneration.java.commandhandler</module>
+    <module>core/hu.bme.mit.gamma.codegeneration.java.util</module>
+    <module>core/hu.bme.mit.gamma.composition.xsts.uppaal.transformation</module>
     <module>core/hu.bme.mit.gamma.dialog</module>
     <module>core/hu.bme.mit.gamma.eventpriority.transformation</module>
     <module>core/hu.bme.mit.gamma.expression.language</module>
@@ -34,7 +53,9 @@
     <module>core/hu.bme.mit.gamma.genmodel.language.ide</module>
     <module>core/hu.bme.mit.gamma.genmodel.language.ui</module>
     <module>core/hu.bme.mit.gamma.genmodel.model</module>
+    <module>core/hu.bme.mit.gamma.gui</module>
     <module>core/hu.bme.mit.gamma.language.util</module>
+    <module>core/hu.bme.mit.gamma.property.concretization.commandhandler</module>
     <module>core/hu.bme.mit.gamma.property.language</module>
     <module>core/hu.bme.mit.gamma.property.language.ide</module>
     <module>core/hu.bme.mit.gamma.property.language.ui</module>
@@ -42,6 +63,7 @@
     <module>core/hu.bme.mit.gamma.querygenerator</module>
     <module>core/hu.bme.mit.gamma.querygenerator.gui</module>
     <module>core/hu.bme.mit.gamma.querygenerator.gui.commandhandler</module>
+    <module>core/hu.bme.mit.gamma.serializer.commandhandler</module>
     <module>core/hu.bme.mit.gamma.statechart.contract.testgeneration.java</module>
     <module>core/hu.bme.mit.gamma.statechart.contract.tracegeneration</module>
     <module>core/hu.bme.mit.gamma.statechart.language</module>
@@ -55,6 +77,7 @@
     <module>core/hu.bme.mit.gamma.trace.language.ide</module>
     <module>core/hu.bme.mit.gamma.trace.language.ui</module>
     <module>core/hu.bme.mit.gamma.trace.model</module>
+    <module>core/hu.bme.mit.gamma.trace.testgeneration.c</module>
     <module>core/hu.bme.mit.gamma.trace.testgeneration.commandhandler</module>
     <module>core/hu.bme.mit.gamma.trace.testgeneration.java</module>
     <module>core/hu.bme.mit.gamma.transformation.util</module>
@@ -67,14 +90,31 @@
     <module>core/hu.bme.mit.gamma.uppaal.util</module>
     <module>core/hu.bme.mit.gamma.uppaal.verification</module>
     <module>core/hu.bme.mit.gamma.util</module>
-    <module>core/hu.bme.mit.gamma.validation</module>
     <module>core/hu.bme.mit.gamma.verification.util</module>
-    <module>core/hu.bme.mit.gamma.yakindu.interface.transformation.commandhandler</module>
-    <module>core/hu.bme.mit.gamma.yakindu.transformation</module>
-    <module>core/hu.bme.mit.gamma.yakindu.transformation.traceability</module>
+    <module>headless/hu.bme.mit.gamma.headless.api</module>
+    <module>iml/hu.bme.mit.gamma.iml.verification</module>
+    <module>iml/hu.bme.mit.gamma.xsts.iml.transformation</module>
+    <module>mutation/hu.bme.mit.gamma.mutation</module>
+    <module>nuxmv/hu.bme.mit.gamma.nuxmv.verification</module>
+    <module>nuxmv/hu.bme.mit.gamma.xsts.nuxmv.transformation</module>
+    <module>ocra/hu.bme.mit.gamma.ocra.verification</module>
+    <module>ocra/hu.bme.mit.gamma.xsts.ocra.transformation</module>
     <module>promela/hu.bme.mit.gamma.promela.verification</module>
     <module>promela/hu.bme.mit.gamma.xsts.promela.transformation</module>
-    <module>setup</module>
+    <module>safety/hu.bme.mit.gamma.fei.language</module>
+    <module>safety/hu.bme.mit.gamma.fei.language.ide</module>
+    <module>safety/hu.bme.mit.gamma.fei.language.ui</module>
+    <module>safety/hu.bme.mit.gamma.fei.model</module>
+    <module>safety/hu.bme.mit.gamma.fei.xsap.transformation</module>
+    <module>safety/hu.bme.mit.gamma.xsap.visualizer</module>
+    <module>scenario/hu.bme.mit.gamma.scenario.language</module>
+    <module>scenario/hu.bme.mit.gamma.scenario.language.ide</module>
+    <module>scenario/hu.bme.mit.gamma.scenario.language.ui</module>
+    <module>scenario/hu.bme.mit.gamma.scenario.model</module>
+    <module>scenario/hu.bme.mit.gamma.scenario.statechart.generator</module>
+    <module>scenario/hu.bme.mit.gamma.scenario.statechart.util</module>
+    <module>scenario/hu.bme.mit.gamma.scenario.trace.generator</module>
+    <module>setup/hu.bme.mit.gamma.setup</module>
     <module>vis/hu.bme.mit.gamma.plantuml.textprovider</module>
     <module>vis/hu.bme.mit.gamma.plantuml.transformation</module>
     <module>xsts/hu.bme.mit.gamma.lowlevel.xsts.transformation</module>
@@ -89,63 +129,38 @@
     <module>xsts/hu.bme.mit.gamma.xsts.transformation.util</module>
     <module>xsts/hu.bme.mit.gamma.xsts.uppaal.transformation</module>
   </modules>
-  
+
   <repositories>
     <repository>
-      <id>2020-03</id>
+      <id>eclipse-2026-06</id>
       <layout>p2</layout>
-      <url>http://download.eclipse.org/releases/2020-03</url>
+      <url>https://download.eclipse.org/releases/2026-06</url>
     </repository>
-	<repository>
-      <id>PlantUML</id>
+    <repository>
+      <!-- VIATRA is not part of the release train -->
+      <id>viatra</id>
       <layout>p2</layout>
-      <url>https://hallvard.github.io/plantuml/plantuml.lib/1.2019.11/</url>
+      <url>https://download.eclipse.org/viatra/updates/release/2.9.1</url>
     </repository>
-	<repository>
-      <id>PlantUML_Eclipse</id>
+    <repository>
+      <!-- VIATRA requires org.eclipse.collections, dropped after 2025-06 -->
+      <id>eclipse-2025-06</id>
       <layout>p2</layout>
-      <url>https://hallvard.github.io/plantuml/plantuml.eclipse/1.1.24/</url>
+      <url>https://download.eclipse.org/releases/2025-06</url>
     </repository>
-	<repository>
-      <id>VIATRA</id>
+    <repository>
+      <id>plantuml</id>
       <layout>p2</layout>
-      <url>http://download.eclipse.org/viatra/updates/release/${viatra.version}</url>
+      <url>https://hallvard.github.io/plantuml/</url>
     </repository>
-	<repository>
-      <id>YAKINDU</id>
+    <repository>
+      <id>cbi-license</id>
       <layout>p2</layout>
-      <url>http://updates.yakindu.com/statecharts/releases/3.5.10/</url>
+      <url>https://download.eclipse.org/cbi/updates/license</url>
     </repository>
-  </repositories>  
-  
+  </repositories>
+
   <build>
-    <pluginManagement>
-      <plugins>
-        <!-- xtend-maven-plugin is in pluginManagement instead of in plugins
-        so that it doesn't run before the exec-maven-plugin's *.mwe2 gen;
-        this way we can list it after. 
-        -->
-          
-        <plugin>
-          <groupId>org.eclipse.xtend</groupId>
-          <artifactId>xtend-maven-plugin</artifactId>
-          <version>${xtext.version}</version>
-          <executions>
-            <execution>
-              <goals>
-                <goal>compile</goal>
-                <goal>xtend-install-debug-info</goal>
-                <goal>testCompile</goal>
-                <goal>xtend-test-install-debug-info</goal>
-              </goals>
-            </execution>
-          </executions>
-          <configuration>
-            <outputDirectory>xtend-gen</outputDirectory>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
     <plugins>
       <plugin>
         <groupId>org.eclipse.tycho</groupId>
@@ -153,28 +168,14 @@
         <version>${tycho-version}</version>
         <extensions>true</extensions>
       </plugin>
-
       <plugin>
         <groupId>org.eclipse.tycho</groupId>
         <artifactId>target-platform-configuration</artifactId>
         <version>${tycho-version}</version>
         <configuration>
+          <executionEnvironment>JavaSE-21</executionEnvironment>
           <environments>
-            <environment>
-              <os>linux</os>
-              <ws>gtk</ws>
-              <arch>x86_64</arch>
-            </environment>
-            <environment>
-              <os>win32</os>
-              <ws>win32</ws>
-              <arch>x86_64</arch>
-            </environment>
-            <environment>
-              <os>macosx</os>
-              <ws>cocoa</ws>
-              <arch>x86_64</arch>
-            </environment>
+            <environment><os>linux</os><ws>gtk</ws><arch>x86_64</arch></environment>
           </environments>
         </configuration>
       </plugin>
