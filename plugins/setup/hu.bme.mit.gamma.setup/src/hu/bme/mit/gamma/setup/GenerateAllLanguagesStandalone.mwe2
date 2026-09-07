@@ -1,0 +1,40 @@
+/********************************************************************************
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
+module hu.bme.mit.gamma.setup.GenerateAllLanguagesStandalone
+
+import org.eclipse.emf.mwe.utils.*
+import org.eclipse.emf.ecore.resource.impl.*
+
+/*
+ * Same as GenerateAllLanguages, but usable outside a running Eclipse.
+ *
+ * The individual language generators point platformUri at a single category
+ * folder, which is enough in the IDE because Eclipse maps every project in the
+ * workspace anyway. Standalone, only that one folder gets mapped, so a
+ * generator that reaches across categories - GenerateFaultExtensionLanguage
+ * loads hu.bme.mit.gamma.fei.model from safety/ while mapping core/ - fails
+ * with "path is unmapped". Registering the whole plugins/ tree first fixes
+ * that: StandaloneSetup.scanFolder recurses, and the later per-generator
+ * registrations simply re-add what is already there.
+ */
+var repositoryRootPath = "../.."
+
+Workflow {
+    bean = ResourceSetImpl : resourceSet {}
+    bean = StandaloneSetup { resourceSet = resourceSet
+        platformUri = "${repositoryRootPath}"
+        scanClassPath = true
+    }
+
+    component = @generators.languages.GenerateExpressionLanguage {}
+    component = @generators.languages.GenerateActionLanguage {}
+    component = @generators.languages.GenerateStatechartLanguage {}
+    component = @generators.languages.GenerateTraceLanguage {}
+    component = @generators.languages.GeneratePropertyLanguage {}
+    component = @generators.languages.GenerateGenmodelLanguage {}
+    component = @generators.languages.GenerateScenarioLanguage {}
+    component = @generators.languages.GenerateFaultExtensionLanguage {}
+}
