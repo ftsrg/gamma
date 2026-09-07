@@ -130,6 +130,10 @@
         <repository
             url="https://download.eclipse.org/releases/2026-06"/>
         <repository
+            url="http://download.eclipse.org/viatra/updates/release/2.9.1"/> <!-- Do NOT delete: VIATRA is not in the 2026-06 train -->
+        <repository
+            url="https://download.eclipse.org/releases/2025-06"/> <!-- Do NOT delete: VIATRA needs org.eclipse.collections, dropped after 2025-06 -->
+        <repository
             url="https://download.eclipse.org/cbi/updates/license"/>
       </repositoryList>
       <repositoryList
