@@ -90,7 +90,9 @@ class ModelAnnotatorPropertyGenerator {
 		if (!testedPortsForOutEvents.nullOrEmpty) {
 			// Only system out events are covered as other internal events might be removed
 			testedPortsForOutEvents.retainAll(newTopComponent.allBoundSimplePorts)
-			importablePackages += testedPortsForOutEvents.map[it.interface.allEvents].flatten
+			val allEvents = testedPortsForOutEvents.map[it.interface.allEvents].flatten
+			importablePackages += allEvents.map[it.containingPackage]
+			importablePackages += allEvents
 				.map[it.parameterDeclarations].flatten
 				.map[it.type].filter(TypeReference).map[it.reference.containingPackage]
 		}

@@ -2275,6 +2275,36 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return getOutputEvents(allPorts);
 	}
 	
+	public static List<Entry<Port, Event>> getInputEvents2(Component component) {
+		List<Entry<Port, Event>> allInputEvents = new ArrayList<>();
+
+		List<Port> allPorts = getAllPorts(component);
+		for (Port port : allPorts) {
+			List<Event> inputEvents = getInputEvents(port);
+			for (Event event : inputEvents) {
+				allInputEvents.add(
+						Map.entry(port, event));
+			}
+		}
+		
+		return allInputEvents;
+	}
+	
+	public static List<Entry<Port, Event>> getOutputEvents2(Component component) {
+		List<Entry<Port, Event>> allOutputEvents = new ArrayList<>();
+
+		List<Port> allPorts = getAllPorts(component);
+		for (Port port : allPorts) {
+			List<Event> outputEvents = getOutputEvents(port);
+			for (Event event : outputEvents) {
+				allOutputEvents.add(
+						Map.entry(port, event));
+			}
+		}
+		
+		return allOutputEvents;
+	}
+	
 	public static Port getBoundCompositePort(Port port) {
 		Package _package = getContainingPackage(port);
 		List<PortBinding> portBindings = ecoreUtil.getAllContentsOfType(_package, PortBinding.class);

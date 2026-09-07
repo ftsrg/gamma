@@ -82,6 +82,12 @@ abstract class VerificationPostprocessor {
 		return instanceReferences
 	}
 	
+	def getTopComponent() {
+		val allComponents = traces.map[it.component].toSet
+		val topComponent = allComponents.onlyElement
+		return topComponent
+	}
+	
 	//
 	
 	def getId(ComponentInstanceStateReferenceExpression reference) {
