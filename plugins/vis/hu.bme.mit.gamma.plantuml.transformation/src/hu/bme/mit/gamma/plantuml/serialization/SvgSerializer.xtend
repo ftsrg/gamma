@@ -30,5 +30,5 @@ class SvgSerializer {
 			return svg
 		  }
 	 }
-
+	
 }

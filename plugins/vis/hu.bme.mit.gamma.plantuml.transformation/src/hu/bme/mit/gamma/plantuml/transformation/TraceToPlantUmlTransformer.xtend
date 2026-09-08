@@ -34,6 +34,7 @@ class TraceToPlantUmlTransformer {
 	protected final String TRAP_STATE_MESSAGE_PREFIX = "Trap state entered"
 	protected final String TRANSITION_EXECUTION_MESSAGE_PREFIX = "Transition executed:"
 	//
+	
 	new(ExecutionTrace trace) {
 		this.trace = trace
 	}
@@ -50,9 +51,10 @@ class TraceToPlantUmlTransformer {
 			«step.serialize»
 		«ENDFOR»
 		
-		«IF trace.cycle !== null»
+		«val cycle = trace.cycle»
+		«IF cycle !== null»
 			loop
-			«FOR step : trace.cycle.steps»
+			«FOR step : cycle.steps»
 				«step.serialize»
 			«ENDFOR»
 			end loop

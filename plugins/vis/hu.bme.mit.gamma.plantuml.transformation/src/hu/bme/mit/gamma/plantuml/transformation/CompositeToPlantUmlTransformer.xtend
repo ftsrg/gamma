@@ -91,9 +91,9 @@ class CompositeToPlantUmlTransformer {
 	def String execute() {
 		return switch (layoutType) {
 			case LayoutType.UMLComponentDiagramStyle:
-				executeUMLComponentDiagramStyle
+				executeUmlComponentDiagramStyle
 			case LayoutType.UMLCompositeStructureDiagramStyle:
-				executeUMLCompositeStructureDiagramStyle
+				executeUmlCompositeStructureDiagramStyle
 			case LayoutType.SysMLInternalBlockDiagramStyle:
 				executeSysMLInternalBlockDiagramStyle
 			default:
@@ -101,7 +101,7 @@ class CompositeToPlantUmlTransformer {
 		}
 	}
 
-	protected def String executeUMLComponentDiagramStyle() '''
+	protected def String executeUmlComponentDiagramStyle() '''
 		@startuml
 		skinparam shadowing false
 		
@@ -138,7 +138,7 @@ class CompositeToPlantUmlTransformer {
 		@enduml
 	'''
 
-	protected def String executeUMLCompositeStructureDiagramStyle() '''
+	protected def String executeUmlCompositeStructureDiagramStyle() '''
 		@startuml
 		skinparam defaultTextAlignment center
 		«generateSkinparams(4, 20, 60, true, false, LineStyle.Polyline)»
@@ -191,7 +191,7 @@ class CompositeToPlantUmlTransformer {
 		@startuml
 		<style>
 		title {
-		  FontSize 12
+			FontSize 12
 		}
 		</style>
 		

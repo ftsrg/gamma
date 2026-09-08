@@ -71,8 +71,7 @@ class InterfaceToPlantUmlTransformer {
 			note "«
 			FOR constant : constants SEPARATOR "\\n" 
 				»const «constant.name» : «constant.type.serialize» = «constant.expression.serialize»«
-				ENDFOR
-			»" as constants
+			ENDFOR»" as constants
 		«ENDIF»
 		
 		«FOR function : functions»

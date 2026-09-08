@@ -14,7 +14,7 @@ import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
 
 class ExpressionSerializer extends hu.bme.mit.gamma.statechart.util.ExpressionSerializer {
 	// Singleton
-	public static final ExpressionSerializer INSTANCE = new ExpressionSerializer();
+	public static final ExpressionSerializer INSTANCE = new ExpressionSerializer()
 	protected new() {}
 	//
 	

@@ -31,37 +31,33 @@ class AdapterToPlantUmlTransformer {
 	new(AsynchronousAdapter adapter) {
 		this.adapter = adapter
 	}
-
+	
 	//
-	dispatch def getSimpleConnection(AnyPortEventReference source, OccurrenceReferenceExpression target, String queueName) {
-		return '''
-			«IF target === null»
-				c_«source.getPort.name» ...> «queueName» : "any"
-				«queueName» ...> comp_«source.getPort.name» : "any"
-			«ELSEIF target instanceof AnyPortEventReference»
-				c_«target.getPort.name» ...> «queueName» : "any"
-				«queueName» ...> comp_«source.getPort.name» : "any"
-			«ELSEIF target instanceof PortEventReference»
-				c_«target.getPort.name» ...> «queueName» : "«target.event.name»"
-				«queueName» ...> comp_«source.getPort.name» : "any"
-			«ENDIF»
-		'''
-	}
+	dispatch def getSimpleConnection(AnyPortEventReference source, OccurrenceReferenceExpression target, String queueName) '''
+		«IF target === null»
+			c_«source.getPort.name» ...> «queueName» : "any"
+			«queueName» ...> comp_«source.getPort.name» : "any"
+		«ELSEIF target instanceof AnyPortEventReference»
+			c_«target.getPort.name» ...> «queueName» : "any"
+			«queueName» ...> comp_«source.getPort.name» : "any"
+		«ELSEIF target instanceof PortEventReference»
+			c_«target.getPort.name» ...> «queueName» : "«target.event.name»"
+			«queueName» ...> comp_«source.getPort.name» : "any"
+		«ENDIF»
+	'''
 
-	dispatch def getSimpleConnection(PortEventReference source, OccurrenceReferenceExpression target, String queueName) {
-		return '''
-			«IF target === null»
-				c_«source.getPort.name» ..> «queueName» : "any"
-				«queueName» ..> comp_«source.getPort.name» : "«source.event.name»"
-			«ELSEIF target instanceof AnyPortEventReference»
-				c_«target.getPort.name» ..> «queueName» : "any"
-				«queueName» ..> comp_«source.getPort.name» : "«source.event.name»"
-			«ELSEIF target instanceof PortEventReference»
-				c_«target.getPort.name» ..> «queueName» : "«target.event.name»"
-				«queueName» ..> comp_«source.getPort.name» : "«source.event.name»"
-			«ENDIF»
-		'''
-	}
+	dispatch def getSimpleConnection(PortEventReference source, OccurrenceReferenceExpression target, String queueName) '''
+		«IF target === null»
+			c_«source.getPort.name» ..> «queueName» : "any"
+			«queueName» ..> comp_«source.getPort.name» : "«source.event.name»"
+		«ELSEIF target instanceof AnyPortEventReference»
+			c_«target.getPort.name» ..> «queueName» : "any"
+			«queueName» ..> comp_«source.getPort.name» : "«source.event.name»"
+		«ELSEIF target instanceof PortEventReference»
+			c_«target.getPort.name» ..> «queueName» : "«target.event.name»"
+			«queueName» ..> comp_«source.getPort.name» : "«source.event.name»"
+		«ENDIF»
+	'''
 	
 	dispatch def getSimpleConnection(ClockTickReference source, OccurrenceReferenceExpression target, String queueName) '''
 		c_«source.clock.name» ..> «queueName»
@@ -161,7 +157,6 @@ class AdapterToPlantUmlTransformer {
 		skinparam ranksep 30
 		
 		skinparam padding 5
-		
 		
 		skinparam interface<<Invisible>> {
 		  borderColor Transparent
