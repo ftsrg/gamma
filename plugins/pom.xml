@@ -12,20 +12,21 @@
   <name>Gamma Statechart Composition Framework</name>
 
   <!--
-    Tycho *pomless* build: .mvn/extensions.xml enables tycho-build, which
-    derives each module's artifactId, version and packaging from its
-    MANIFEST.MF. There are deliberately no per-plugin pom.xml files, so bundle
-    versions cannot drift away from Maven versions the way they did before
-    (the old poms still said 2.3.1-SNAPSHOT against a 2.13.0 bundle version).
+    Every plugin has its own pom declaring artifactId = Bundle-SymbolicName and
+    the version from its MANIFEST.MF. Those two must agree or Tycho refuses to
+    build, which is what broke the previous incarnation of this reactor: the
+    poms still said 2.3.1-SNAPSHOT against 2.13.0 bundles. Keep them in step
+    with tycho-versions:set-version when bumping a version, and
+    tycho-versions:update-pom to repair drift.
 
     Generated sources are not in version control - no src-gen or xtend-gen is
-    tracked - so a clean checkout must run the MWE2 workflows in
-    setup/hu.bme.mit.gamma.setup before this build can compile.
+    tracked - so a clean checkout must run ./generate.sh before this build can
+    compile.
   -->
-
   <properties>
     <tycho-version>4.0.13</tycho-version>
     <xtext-version>2.38.0</xtext-version>
+    <viatra-version>2.9.1</viatra-version>
     <java.version>21</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
@@ -129,6 +130,14 @@
     <module>xsts/hu.bme.mit.gamma.xsts.transformation.util</module>
     <module>xsts/hu.bme.mit.gamma.xsts.uppaal.transformation</module>
   </modules>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <!-- viatra-maven-plugin is published to Eclipse's Nexus, not Maven Central -->
+      <id>eclipse-releases</id>
+      <url>https://repo.eclipse.org/content/groups/releases</url>
+    </pluginRepository>
+  </pluginRepositories>
 
   <repositories>
     <repository>

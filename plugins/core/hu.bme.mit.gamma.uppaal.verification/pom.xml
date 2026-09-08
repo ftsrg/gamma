@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>hu.bme.mit</groupId>
+    <artifactId>hu.bme.mit.gamma</artifactId>
+    <version>2.13.0-SNAPSHOT</version>
+    <relativePath>../../</relativePath>
+  </parent>
+  <artifactId>hu.bme.mit.gamma.uppaal.verification</artifactId>
+  <version>2.13.0-SNAPSHOT</version>
+  <packaging>eclipse-plugin</packaging>
+
+  <build>
+    <plugins>
+      <plugin>
+        <!--
+          Generates the VIATRA query code this plugin's .vql patterns describe.
+          The metamodel list is the set of EPackages those patterns import, so
+          it is genuinely per project - which is why this plugin has a pom of
+          its own rather than being configured in the parent.
+        -->
+        <groupId>org.eclipse.viatra</groupId>
+        <artifactId>viatra-maven-plugin</artifactId>
+        <version>${viatra-version}</version>
+        <executions>
+          <execution>
+            <goals><goal>generate</goal></goals>
+            <configuration>
+              <outputDirectory>src-gen</outputDirectory>
+              <metamodels>
+            <metamodel><packageClass>hu.bme.mit.gamma.expression.model.ExpressionModelPackage</packageClass></metamodel>
+            <metamodel><packageClass>hu.bme.mit.gamma.statechart.composite.CompositeModelPackage</packageClass></metamodel>
+            <metamodel><packageClass>hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage</packageClass></metamodel>
+            <metamodel><packageClass>hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage</packageClass></metamodel>
+            <metamodel><packageClass>hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityPackage</packageClass></metamodel>
+            <metamodel><packageClass>uppaal.core.CorePackage</packageClass></metamodel>
+            <metamodel><packageClass>uppaal.declarations.DeclarationsPackage</packageClass></metamodel>
+            <metamodel><packageClass>uppaal.expressions.ExpressionsPackage</packageClass></metamodel>
+            <metamodel><packageClass>uppaal.templates.TemplatesPackage</packageClass></metamodel>
+            <metamodel><packageClass>uppaal.types.TypesPackage</packageClass></metamodel>
+              </metamodels>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
