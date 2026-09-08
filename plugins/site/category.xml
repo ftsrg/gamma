@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <bundle id="de.uni_paderborn.uppaal" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.action.language" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.action.language.ide" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.action.language.ui" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.action.model" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.codegeneration.java" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.codegeneration.java.commandhandler" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.codegeneration.java.util" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.composition.xsts.uppaal.transformation" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.dialog" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.eventpriority.transformation" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.expression.language" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.expression.language.ide" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.expression.language.ui" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.expression.model" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.fei.language" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.fei.language.ide" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.fei.language.ui" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.fei.model" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.fei.xsap.transformation" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.genmodel.commandhandler" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.genmodel.language" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.genmodel.language.ide" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.genmodel.language.ui" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.genmodel.model" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.gui" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.headless.api" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.iml.verification" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.language.util" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.lowlevel.xsts.transformation" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.mutation" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.nuxmv.verification" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.ocra.verification" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.promela.verification" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.property.concretization.commandhandler" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.property.language" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.property.language.ide" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.property.language.ui" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.property.model" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.querygenerator" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.querygenerator.gui" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.querygenerator.gui.commandhandler" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.scenario.language" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.scenario.language.ide" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.scenario.language.ui" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.scenario.model" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.scenario.statechart.generator" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.scenario.statechart.util" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.scenario.trace.generator" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.serializer.commandhandler" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.setup" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.statechart.contract.testgeneration.java" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.statechart.contract.tracegeneration" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.statechart.language" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.statechart.language.ide" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.statechart.language.ui" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.statechart.lowlevel.model" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.statechart.lowlevel.transformation" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.statechart.lowlevel.transformation.commandhandler" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.statechart.model" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.statechart.phase.transformation" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.statechart.plantuml.textprovider" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.statechart.plantuml.transformation" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.statechart.traverser" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.theta.verification" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.trace.environment.transformation" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.trace.language" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.trace.language.ide" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.trace.language.ui" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.trace.model" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.trace.testgeneration.c" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.trace.testgeneration.commandhandler" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.trace.testgeneration.java" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.transformation.util" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.ui" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.uppaal.composition.transformation" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.uppaal.composition.transformation.commandhandler" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.uppaal.serializer" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.uppaal.transformation" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.uppaal.transformation.traceability" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.uppaal.util" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.uppaal.verification" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.util" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.verification.util" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.xsap.visualizer" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.xsts.codegeneration.c" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.xsts.codegeneration.c.commandhandler" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.xsts.codegeneration.java" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.xsts.iml.transformation" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.xsts.model" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.xsts.nuxmv.transformation" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.xsts.ocra.transformation" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.xsts.promela.transformation" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.xsts.transformation" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.xsts.transformation.util" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <bundle id="hu.bme.mit.gamma.xsts.uppaal.transformation" version="0.0.0">
+      <category name="gamma"/>
+   </bundle>
+   <category-def name="gamma" label="Gamma Statechart Composition Framework"/>
+</site>

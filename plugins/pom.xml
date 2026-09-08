@@ -129,6 +129,7 @@
     <module>xsts/hu.bme.mit.gamma.xsts.transformation</module>
     <module>xsts/hu.bme.mit.gamma.xsts.transformation.util</module>
     <module>xsts/hu.bme.mit.gamma.xsts.uppaal.transformation</module>
+    <module>site</module>
   </modules>
 
   <pluginRepositories>
@@ -190,6 +191,15 @@
         <version>${xtext-version}</version>
         <executions>
           <execution>
+            <!--
+              process-sources, not the goal's default generate-sources: the
+              VIATRA query code is generated in generate-sources by the seven
+              plugins that configure viatra-maven-plugin, and .xtend sources
+              reference it. Plugins inherited from the parent run before a
+              module's own, so leaving Xtend on the default phase makes it
+              compile before those queries exist.
+            -->
+            <phase>process-sources</phase>
             <goals>
               <goal>compile</goal>
               <goal>xtend-install-debug-info</goal>
