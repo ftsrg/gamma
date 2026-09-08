@@ -13,6 +13,26 @@
   <version>2.13.0-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 
+
+  <!--
+    Declared so useProjectDependencies gives the plugin something to load: under
+    Tycho the OSGi dependencies never become Maven dependencies, and VIATRA's
+    generator resolves the metamodel EPackages by class name from its own
+    classloader, not from Tycho's resolved target platform.
+  -->
+  <dependencies>
+    <dependency>
+      <groupId>hu.bme.mit</groupId>
+      <artifactId>hu.bme.mit.gamma.expression.model</artifactId>
+      <version>2.13.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>hu.bme.mit</groupId>
+      <artifactId>hu.bme.mit.gamma.statechart.model</artifactId>
+      <version>2.13.0-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+
   <build>
     <plugins>
       <plugin>
@@ -30,6 +50,7 @@
             <goals><goal>generate</goal></goals>
             <configuration>
               <outputDirectory>src-gen</outputDirectory>
+              <useProjectDependencies>true</useProjectDependencies>
               <metamodels>
             <metamodel><packageClass>hu.bme.mit.gamma.expression.model.ExpressionModelPackage</packageClass></metamodel>
             <metamodel><packageClass>hu.bme.mit.gamma.statechart.composite.CompositeModelPackage</packageClass></metamodel>
