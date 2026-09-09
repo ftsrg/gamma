@@ -12,6 +12,8 @@ package hu.bme.mit.gamma.verification.util
 
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.property.model.StateFormula
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
@@ -105,6 +107,19 @@ abstract class VerificationPostprocessor {
 		val stateReference = originalInstance.createStateReference(originalState)
 		
 		return stateReference
+	}
+	
+	protected def getOriginal(ComponentInstanceQueueSizeReferenceExpression reference, Component originalTopComponent) {
+		val instance = reference.instance
+		val lastInstance = instance.lastInstance as AsynchronousComponentInstance
+		val queue = reference.queue
+		
+		val originalInstance = lastInstance.getOriginalSimpleInstanceReference(originalTopComponent)
+		val originalQueue = originalInstance.getOriginalQueue(queue)
+		
+		val queueSizeReference = originalInstance.createQueueSizeReference(originalQueue)
+		
+		return queueSizeReference
 	}
 	
 	protected def selectState(StateFormula property) {

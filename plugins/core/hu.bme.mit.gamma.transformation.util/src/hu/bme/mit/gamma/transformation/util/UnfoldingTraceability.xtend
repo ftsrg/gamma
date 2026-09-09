@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,12 +15,15 @@ import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.NamedElement
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceTransitionReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
@@ -432,6 +435,19 @@ class UnfoldingTraceability {
 		throw new IllegalStateException("Not found original instance for " + newInstance)
 	}
 	
+	def getOriginalSimpleInstanceReference(
+			AsynchronousComponentInstance newInstance, Component originalType) {
+		checkState(newInstance.isAdapter)
+		
+		val originalSimpleInstances = originalType.allAsynchronousSimpleInstanceReferences
+		for (originalSimpleInstance : originalSimpleInstances) {
+			if (originalSimpleInstance.contains(newInstance)) {
+				return originalSimpleInstance
+			}
+		}
+		throw new IllegalStateException("Not found original instance for " + newInstance)
+	}
+	
 	def getOriginalScheduledInstanceReferences(Component originalType) {
 		return originalType.allScheduledInstanceReferences
 	}
@@ -493,6 +509,26 @@ class UnfoldingTraceability {
 			}
 		}
 		throw new IllegalArgumentException("Not found state: " + newState)
+	}
+	
+	def getOriginalQueue(ComponentInstanceReferenceExpression originalInstance, MessageQueue newQueue) {
+		val statechartInstance = originalInstance.lastInstance
+		return statechartInstance.getOriginalQueue(newQueue)
+	}
+	
+	def getOriginalQueue(ComponentInstance originalInstance, MessageQueue newQueue) {
+		val originalType = originalInstance.getStatechart
+		for (originalQueue : originalType.allAsynchronousSimpleInstances
+					.map[it.type].filter(AsynchronousAdapter).map[it.messageQueues].flatten) {
+			if (originalQueue.equal(newQueue)) {
+				return originalQueue
+			}
+		}
+		throw new IllegalArgumentException("Not found queue: " + newQueue)
+	}
+	
+	private def equal(MessageQueue lhs, MessageQueue rhs) {
+		return lhs.containingComponent.name == rhs.containingComponent.name && lhs.name == rhs.name
 	}
 	
 	def getOriginalTransition(ComponentInstanceReferenceExpression originalInstance, Transition newTransition) {

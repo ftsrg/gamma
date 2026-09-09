@@ -1110,6 +1110,33 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return instanceReferences;
 	}
 	
+	public static List<ComponentInstanceReferenceExpression> getAllAsynchronousSimpleInstanceReferences(
+			ComponentInstance instance) {
+		Component type = getDerivedType(instance);
+		return getAllAsynchronousSimpleInstanceReferences(type);
+	}
+	
+	public static List<ComponentInstanceReferenceExpression> getAllAsynchronousSimpleInstanceReferences(Component component) {
+		List<ComponentInstanceReferenceExpression> instanceReferences = new ArrayList<ComponentInstanceReferenceExpression>();
+		
+		if (component instanceof AbstractAsynchronousCompositeComponent asynchronousCompositeComponent) {
+			for (AsynchronousComponentInstance instance : asynchronousCompositeComponent.getComponents()) {
+				if (isStatechart(instance)) {
+					ComponentInstanceReferenceExpression instanceReference =
+							statechartUtil.createInstanceReference(instance);
+					instanceReferences.add(instanceReference);
+				}
+				else {
+					List<ComponentInstanceReferenceExpression> childReferences = getAllAsynchronousSimpleInstanceReferences(instance);
+					instanceReferences.addAll(
+							statechartUtil.prepend(childReferences, instance));
+				}
+			}
+		}
+		
+		return instanceReferences;
+	}
+	
 	public static List<ComponentInstanceReferenceExpression> getAllScheduledInstanceReferences(Component component) {
 		List<ComponentInstanceReferenceExpression> instanceReferences = new ArrayList<ComponentInstanceReferenceExpression>();
 		

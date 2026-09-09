@@ -107,10 +107,13 @@ import hu.bme.mit.gamma.verification.util.DeterminismCheckPostprocessor;
 import hu.bme.mit.gamma.verification.util.InteractionCheckPostprocessor;
 import hu.bme.mit.gamma.verification.util.OrthogonalLeafStateCombinationCheckPostprocessor;
 import hu.bme.mit.gamma.verification.util.OrthogonalStateCombinationCheckPostprocessor;
+import hu.bme.mit.gamma.verification.util.OutEventCheckPostprocessor;
+import hu.bme.mit.gamma.verification.util.QueueOverflowCheckPostprocessor;
 import hu.bme.mit.gamma.verification.util.StateReachabilityCheckPostprocessor;
 import hu.bme.mit.gamma.verification.util.TransitionExecutabilityCheckPostprocessor;
 import hu.bme.mit.gamma.verification.util.TransitionPairExecutabilityCheckPostprocessor;
 import hu.bme.mit.gamma.verification.util.TrapStateCheckPostprocessor;
+import hu.bme.mit.gamma.verification.util.UnstableStateCheckPostprocessor;
 import hu.bme.mit.gamma.verification.util.VerificationPostprocessor;
 import hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures;
 import hu.bme.mit.gamma.xsts.model.XSTS;
@@ -838,19 +841,19 @@ public class VerificationHandler extends TaskHandler {
 					case "State": return new StateReachabilityCheckPostprocessor();
 					case "Transition": return new TransitionExecutabilityCheckPostprocessor();
 					case "TransitionPair": return new TransitionPairExecutabilityCheckPostprocessor();
-					case "OutEvent" : return null;
+					case "OutEvent" : return new OutEventCheckPostprocessor();
 					case "Interaction" : return new InteractionCheckPostprocessor();
 					case "InteractionDataflow" : return null;
 					case "Dataflow" : return null;
 					case "TrapState" : return new TrapStateCheckPostprocessor(null);
-					case "UnstableState" : return null;
+					case "UnstableState" : return new UnstableStateCheckPostprocessor(null);
 					case "OrthogonalLeafStateCombination" : return new OrthogonalStateCombinationCheckPostprocessor(null);
 					case "OrthogonalStateCombination" : return new OrthogonalLeafStateCombinationCheckPostprocessor(null);
 					case "DeadlockState" : return new DeadlockStateCheckPostprocessor(null);
 					case "Deadlock" : return new DeadlockCheckPostprocessor();
 					case "NonDeterministicTransition" : return new DeterminismCheckPostprocessor();
 					case "Completeness" : return new CompletenessCheckPostprocessor(null);
-					case "QueueOverflow" : return null;
+					case "QueueOverflow" : return new QueueOverflowCheckPostprocessor(null);
 					
 					default: return null;
 				}

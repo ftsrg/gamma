@@ -328,7 +328,7 @@ class PropertyGenerator {
 					}
 					else {
 						for (parameter : parameters) {
-							val parameterValues = getValues(parameter)
+							val parameterValues = parameter.values
 							// Only bool and enum
 							if (parameterValues.empty) {
 								// E.g., integers - plain event
@@ -338,7 +338,9 @@ class PropertyGenerator {
 										propertyUtil.createAtomicFormula(eventReference))
 								val commentableStateFormula = propertyUtil.createCommentableStateFormula(
 										'''«instance.name».«port.name».«outEvent.name»''', stateFormula)
-								formulas += commentableStateFormula
+								if (!formulas.exists[it.helperEquals(commentableStateFormula)]) {
+									formulas += commentableStateFormula
+								}
 							}
 							else {
 								for (value : parameterValues) {
