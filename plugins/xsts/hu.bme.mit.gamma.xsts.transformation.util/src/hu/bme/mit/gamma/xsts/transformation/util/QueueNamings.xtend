@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -28,6 +28,8 @@ class QueueNamings {
 	
 	public static final String SIZE_MASTER_PREFIX = SIZE + MASTER_PREFIX
 	public static final String SIZE_SLAVE_PREFIX = SIZE + SLAVE_PREFIX
+	
+	public static final String OVERFLOW_PREFIX = "overflow_"
 	//
 	protected final static extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	//
@@ -39,6 +41,9 @@ class QueueNamings {
 		MessageQueue queue, ComponentInstance instance) '''«MASTER_PREFIX»«queue.name»«OF»«instance.name»'''
 	def static String getMasterSizeVariableName(
 		MessageQueue queue, ComponentInstance instance) '''«SIZE_MASTER_PREFIX»«queue.name.toFirstUpper»«OF»«instance.name»'''
+	
+	def static String getOverflowVariableName(
+		MessageQueue queue, ComponentInstance instance) '''«OVERFLOW_PREFIX»«queue.name.toFirstUpper»«OF»«instance.name»'''
 	
 	def static String getSlaveQueueName(ParameterDeclaration parameterDeclaration,
 			Port port, ComponentInstance instance) // For traceability reasons, parameterDeclaration is needed

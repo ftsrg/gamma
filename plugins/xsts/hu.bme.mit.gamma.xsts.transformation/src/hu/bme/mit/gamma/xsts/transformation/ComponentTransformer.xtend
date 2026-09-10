@@ -216,6 +216,9 @@ class ComponentTransformer {
 					createIntegerTypeDefinition
 						.createVariableDeclaration(masterSizeVariableName)
 				
+				val overflowVariableName = queue.getOverflowVariableName(adapterInstance)
+				val masterOverflowVariable = overflowVariableName.createBooleanVariableDeclaration
+				
 				val slaveQueuesMap = newLinkedHashMap
 				val typeSlaveQueuesMap = newLinkedHashMap // Reusing slave queues for same types if possible
 				for (portEvent : events) {
@@ -249,7 +252,7 @@ class ComponentTransformer {
 							
 							val isInternal = parameter.isInternal
 							
-							val messageQueueStruct = new MessageQueueStruct(slaveQueue, slaveSizeVariable, isInternal)
+							val messageQueueStruct = new MessageQueueStruct(slaveQueue, slaveSizeVariable, null, isInternal)
 							slaveQueues += messageQueueStruct
 							typeSlaveQueues += messageQueueStruct
 							logger.info( '''Created a slave queue for «port.name».«event.name»::«parameter.name»''')
@@ -266,7 +269,7 @@ class ComponentTransformer {
 				}
 				
 				val messageQueueMapping = new MessageQueueMapping(storedClocks, storedPortEvents, eventIdType,
-						new MessageQueueStruct(masterQueue, masterSizeVariable, false), slaveQueuesMap, typeSlaveQueuesMap)
+						new MessageQueueStruct(masterQueue, masterSizeVariable, masterOverflowVariable, false), slaveQueuesMap, typeSlaveQueuesMap)
 				queueTraceability.put(queue, messageQueueMapping)
 				val slaveQueueMappings = messageQueueMapping.typeSlaveQueues
 			
@@ -275,7 +278,6 @@ class ComponentTransformer {
 				// Namings.customize* covers the same naming behavior as QueueNamings + valueDeclarationTransformer
 				
 				val xStsMasterQueueVariable = valueDeclarationTransformer.transform(masterQueue).onlyElement
-//				xStsMasterQueueVariable.addStrictControlAnnotation
 				xSts.variableDeclarations += xStsMasterQueueVariable
 				xSts.masterMessageQueueGroup.variables += xStsMasterQueueVariable
 				val isQueueEnvironmental = queue.isEnvironmentalAndCheck(systemPorts)
@@ -291,6 +293,9 @@ class ComponentTransformer {
 					xSts.messageQueueSizeGroup.variables += xStsMasterSizeVariable
 					xStsMasterSizeVariable.addStrictControlAnnotation // Needed for loops
 				}
+				
+				val xStsMasterOverflowVariable = valueDeclarationTransformer.transform(masterOverflowVariable).onlyElement
+				// TODO metadata
 				
 				val slaveQueuesCollection = slaveQueueMappings.values
 				val slaveQueueStructs = slaveQueuesCollection.flatten
@@ -907,11 +912,14 @@ class ComponentTransformer {
 						val masterQueueStruct = queueMapping.masterQueue
 						val masterQueue = masterQueueStruct.arrayVariable
 						val masterSizeVariable = masterQueueStruct.sizeVariable
+						val masterOverflowVariable = masterQueueStruct.overflowVariable
 						val slaveQueues = queueMapping.slaveQueues.get(connectedPortEvent)
 						
 						val xStsMasterQueue = variableTrace.getAll(masterQueue).onlyElement
 						val xStsMasterSizeVariable = (masterSizeVariable === null) ? null :
 								variableTrace.getAll(masterSizeVariable).onlyElement
+						val xStsMasterOverflowVariable = (masterOverflowVariable === null) ? null :
+								variableTrace.getAll(masterOverflowVariable).onlyElement
 						
 						val xStsEventIdType = xStsMasterQueue.elementTypeDefinition as EnumerationTypeDefinition
 						val eventId = xStsEventIdType.addOrGetEventIdLiteral(eventIntegerId)
@@ -955,6 +963,15 @@ class ComponentTransformer {
 							}
 						}
 						
+						val checkOverflow = true
+						if (checkOverflow) {
+							// // if (size >= capacity) { overflow := true; }
+							val isMasterQueueFull = xStsMasterQueue.isMasterQueueFull(xStsMasterSizeVariable)
+							val setXStsOverflowVariable = xStsMasterOverflowVariable.createAssignmentAction(createTrueExpression)
+							thenAction.actions += isMasterQueueFull.createIfAction(setXStsOverflowVariable)
+							xSts.variableDeclarations += xStsMasterOverflowVariable // Adding to XSTS now
+						}
+						
 						if (eventDiscardStrategy == DiscardStrategy.INCOMING) {
 							// if (size < capacity) { "add elements into master and slave queues" }
 							val isMasterQueueNotFull = xStsMasterQueue.isMasterQueueNotFull(xStsMasterSizeVariable)
@@ -989,6 +1006,7 @@ class ComponentTransformer {
 				eventDispatchAction.actions += ifExpression.createIfAction(thenAction)
 			}
 		}
+		
 		return eventDispatchAction
 	}
 	

@@ -230,12 +230,12 @@ class GammaToXstsTransformer {
 			val incrementExpression = xStsClockVariable.createReferenceExpression
 				.wrapIntoAddExpression(
 					(xStsDelayVariable === null) ?
-					toIntegerLiteral(minSchedulingConstraint) : xStsDelayVariable.createReferenceExpression)
+					minSchedulingConstraint.toIntegerLiteral : xStsDelayVariable.createReferenceExpression)
 			val rhs = (maxValue === null) ? incrementExpression :
 				createIfThenElseExpression => [
 					it.condition = createLessExpression => [
 						it.leftOperand = createReferenceExpression(xStsClockVariable)
-						it.rightOperand = toIntegerLiteral(maxValue)
+						it.rightOperand = maxValue.toIntegerLiteral
 					]
 					it.then = incrementExpression
 					it.^else = createReferenceExpression(xStsClockVariable)
@@ -283,7 +283,7 @@ class GammaToXstsTransformer {
 		if (minSchedulingConstraint !== null && minSchedulingConstraint == maxSchedulingConstraint) {
 			if (!_package.annotations.exists[it instanceof SchedulingConstraintAnnotation]) {
 				_package.annotations += createSchedulingConstraintAnnotation => [
-					it.schedulingConstraint = toIntegerLiteral(minSchedulingConstraint)
+					it.schedulingConstraint = minSchedulingConstraint.toIntegerLiteral
 				]
 				_package.save
 			}
