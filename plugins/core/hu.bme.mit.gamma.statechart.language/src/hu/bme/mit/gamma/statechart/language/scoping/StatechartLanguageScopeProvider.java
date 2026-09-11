@@ -545,7 +545,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					}
 				}
 				else if (type instanceof AsynchronousAdapter adapter) {
-					if (Objects.equal(reference, CompositeModelPackage.Literals.COMPONENT_INSTANCE_QUEUE_SIZE_REFERENCE_EXPRESSION__QUEUE)) {
+					if (Objects.equal(reference, CompositeModelPackage.Literals.MESSAGE_QUEUE_REFERENCE_EXPRESSION__QUEUE)) {
 						return Scopes.scopeFor(adapter.getMessageQueues());
 					}
 				}

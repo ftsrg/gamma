@@ -17,7 +17,8 @@ import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.VariableReferenceExpression;
 import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueOverflowExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeExpression;
 import hu.bme.mit.gamma.statechart.interface_.OccurrenceReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
@@ -48,8 +49,11 @@ public class ExpressionTypeDeterminator extends ExpressionTypeDeterminator2 {
 				expression instanceof VariableReferenceExpression) {
 			return super.getType(expression);
 		}
-		else if (expression instanceof ComponentInstanceQueueSizeReferenceExpression) {
+		else if (expression instanceof ComponentInstanceQueueSizeExpression) {
 			return factory.createIntegerTypeDefinition();
+		}
+		else if (expression instanceof ComponentInstanceQueueOverflowExpression) {
+			return factory.createBooleanTypeDefinition();
 		}
 		else if (expression instanceof ComponentInstanceElementReferenceExpression) {
 			return factory.createBooleanTypeDefinition();

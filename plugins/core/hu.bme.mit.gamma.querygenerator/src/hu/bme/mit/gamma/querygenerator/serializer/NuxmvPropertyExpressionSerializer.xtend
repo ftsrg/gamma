@@ -21,7 +21,7 @@ import hu.bme.mit.gamma.expression.model.ImplyExpression
 import hu.bme.mit.gamma.expression.model.OrExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.XorExpression
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeExpression
 
 import static hu.bme.mit.gamma.xsts.transformation.util.QueueNamings.*
 
@@ -57,7 +57,7 @@ class NuxmvPropertyExpressionSerializer extends ThetaPropertyExpressionSerialize
 	
 	// Unique - do not delete!
 	
-	protected override get1CapacityQueueEmptyExpression(ComponentInstanceQueueSizeReferenceExpression expression) {
+	protected override get1CapacityQueueEmptyExpression(ComponentInstanceQueueSizeExpression expression) {
 		val instance = expression.instance
 		val queue = expression.queue
 		val queueName = queue.getId(instance)

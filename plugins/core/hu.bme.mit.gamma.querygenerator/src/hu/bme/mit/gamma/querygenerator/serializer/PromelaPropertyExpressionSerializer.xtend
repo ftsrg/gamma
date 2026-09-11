@@ -14,7 +14,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.ImplyExpression
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeExpression
 
 import static extension hu.bme.mit.gamma.xsts.promela.transformation.util.Namings.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.QueueNamings.*
@@ -40,7 +40,7 @@ class PromelaPropertyExpressionSerializer extends ThetaPropertyExpressionSeriali
 	
 	// Unique - do not delete!
 	
-	protected override get1CapacityQueueEmptyExpression(ComponentInstanceQueueSizeReferenceExpression expression) {
+	protected override get1CapacityQueueEmptyExpression(ComponentInstanceQueueSizeExpression expression) {
 		val instance = expression.instance
 		val queue = expression.queue
 		val queueName = queue.getId(instance)

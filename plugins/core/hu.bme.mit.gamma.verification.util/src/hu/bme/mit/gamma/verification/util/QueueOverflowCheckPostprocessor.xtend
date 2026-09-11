@@ -11,7 +11,7 @@
 package hu.bme.mit.gamma.verification.util
 
 import hu.bme.mit.gamma.property.model.StateFormula
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueOverflowExpression
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
@@ -22,7 +22,7 @@ class QueueOverflowCheckPostprocessor extends VerificationPostprocessor {
 	//
 	protected final Component originalTopComponent
 	//
-	protected final List<ComponentInstanceQueueSizeReferenceExpression> queueSizeReferences = newArrayList
+	protected final List<ComponentInstanceQueueOverflowExpression> queueSizeReferences = newArrayList
 	//
 	
 	new(Component originalTopComponent) {
@@ -32,7 +32,7 @@ class QueueOverflowCheckPostprocessor extends VerificationPostprocessor {
 	override execute(Result result) {
 		val res = result.result
 		
-		var ComponentInstanceQueueSizeReferenceExpression reference = null
+		var ComponentInstanceQueueOverflowExpression reference = null
 		if (res == ThreeStateBoolean.FALSE) {
 			// Knowing the structure of the property
 			val property = result.property
@@ -60,7 +60,7 @@ class QueueOverflowCheckPostprocessor extends VerificationPostprocessor {
 	}
 	
 	protected def selectQueueSizeReferences(StateFormula property) {
-		val references = property.getAllContentsOfType(ComponentInstanceQueueSizeReferenceExpression)
+		val references = property.getAllContentsOfType(ComponentInstanceQueueOverflowExpression)
 		return references
 	}
 	

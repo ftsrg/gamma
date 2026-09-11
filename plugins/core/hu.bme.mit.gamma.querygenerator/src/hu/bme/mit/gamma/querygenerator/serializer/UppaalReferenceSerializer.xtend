@@ -68,4 +68,8 @@ class UppaalReferenceSerializer implements AbstractReferenceSerializer {
 		throw new UnsupportedOperationException("Queues are not supported")
 	}
 	
+	override getOverflowId(MessageQueue queue, ComponentInstanceReferenceExpression instance) {
+		throw new UnsupportedOperationException("Queues are not supported")
+	}
+	
 }

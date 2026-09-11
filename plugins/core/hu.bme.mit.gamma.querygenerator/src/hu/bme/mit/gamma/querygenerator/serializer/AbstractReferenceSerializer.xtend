@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -35,6 +35,7 @@ abstract interface AbstractReferenceSerializer {
 	def String getId(Event event, Port port, ComponentInstanceReferenceExpression instance)
 	def String getId(MessageQueue queue, ComponentInstanceReferenceExpression instance)
 	def String getSizeId(MessageQueue queue, ComponentInstanceReferenceExpression instance)
+	def String getOverflowId(MessageQueue queue, ComponentInstanceReferenceExpression instance)
 	def List<String> getId(VariableDeclaration variable, ComponentInstanceReferenceExpression instance)
 	def List<String> getId(Event event, Port port, ParameterDeclaration parameter,
 			ComponentInstanceReferenceExpression instance)

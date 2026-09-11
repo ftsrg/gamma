@@ -296,12 +296,12 @@ class PropertyGenerator {
 						.reject[it.isEnvironmental(topPorts)] // Cannot handle these ports now
 				
 				for (queue : queues) {
-					val queueSizeReference = propertyUtil.createQueueSizeReference(
+					val queueSizeReference = propertyUtil.createQueueOverflowReference(
 							instance.createInstanceReference, queue)
-					val queueNotFull = queueSizeReference.createLessExpression(queue.capacity.clone)
-					val formula = queueNotFull.createAtomicFormula.createAG
+					val queueNotOverflown = queueSizeReference.createNotExpression
+					val formula = queueNotOverflown.createAtomicFormula.createAG
 					val commentableStateFormula = propertyUtil.createCommentableStateFormula(
-							'''Can «instance.name».«queue.name» be full?''', formula)
+							'''Does «instance.name».«queue.name» never overflow?''', formula)
 					formulas += commentableStateFormula
 				}
 			}

@@ -49,7 +49,8 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortVariableReferenceExpression;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueOverflowExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
@@ -1269,10 +1270,19 @@ public class StatechartUtil extends ActionUtil {
 		return reference;
 	}
 	
-	public ComponentInstanceQueueSizeReferenceExpression createQueueSizeReference(ComponentInstanceReferenceExpression instance,
+	public ComponentInstanceQueueSizeExpression createQueueSizeReference(ComponentInstanceReferenceExpression instance,
 			MessageQueue queue) {
-		ComponentInstanceQueueSizeReferenceExpression reference =
-				compositeFactory.createComponentInstanceQueueSizeReferenceExpression();
+		ComponentInstanceQueueSizeExpression reference =
+				compositeFactory.createComponentInstanceQueueSizeExpression();
+		reference.setInstance(instance);
+		reference.setQueue(queue);
+		return reference;
+	}
+	
+	public ComponentInstanceQueueOverflowExpression createQueueOverflowReference(ComponentInstanceReferenceExpression instance,
+			MessageQueue queue) {
+		ComponentInstanceQueueOverflowExpression reference =
+				compositeFactory.createComponentInstanceQueueOverflowExpression();
 		reference.setInstance(instance);
 		reference.setQueue(queue);
 		return reference;

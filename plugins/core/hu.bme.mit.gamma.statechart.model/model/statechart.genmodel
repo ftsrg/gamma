@@ -95,15 +95,17 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstanceReferenceExpression/componentInstance"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstanceReferenceExpression/child"/>
     </genClasses>
+    <genClasses image="false" ecoreClass="composite.ecore#//MessageQueueReferenceExpression">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//MessageQueueReferenceExpression/queue"/>
+    </genClasses>
     <genClasses image="false" ecoreClass="composite.ecore#//ComponentInstanceElementReferenceExpression">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstanceElementReferenceExpression/instance"/>
     </genClasses>
     <genClasses ecoreClass="composite.ecore#//ComponentInstanceStateReferenceExpression"/>
     <genClasses ecoreClass="composite.ecore#//ComponentInstanceVariableReferenceExpression"/>
     <genClasses ecoreClass="composite.ecore#//ComponentInstancePortVariableReferenceExpression"/>
-    <genClasses ecoreClass="composite.ecore#//ComponentInstanceQueueSizeReferenceExpression">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstanceQueueSizeReferenceExpression/queue"/>
-    </genClasses>
+    <genClasses ecoreClass="composite.ecore#//ComponentInstanceQueueSizeExpression"/>
+    <genClasses ecoreClass="composite.ecore#//ComponentInstanceQueueOverflowExpression"/>
     <genClasses ecoreClass="composite.ecore#//ComponentInstancePortReferenceExpression"/>
     <genClasses ecoreClass="composite.ecore#//ComponentInstanceEventReferenceExpression"/>
     <genClasses ecoreClass="composite.ecore#//ComponentInstanceEventParameterReferenceExpression"/>

@@ -740,7 +740,8 @@ DeactivateTimeoutAction returns DeactivateTimeoutAction:
 
 ComponentInstanceStateExpression returns CompositeModel::ComponentInstanceElementReferenceExpression:
 	ComponentInstanceStateReferenceExpression | ComponentInstancePortVariableReferenceExpression |
-		ComponentInstanceVariableReferenceExpression | ComponentInstanceQueueSizeReferenceExpression |
+		ComponentInstanceVariableReferenceExpression |
+		ComponentInstanceQueueSizeExpression | ComponentInstanceQueueOverflowExpression |
 		ComponentInstanceEventReferenceExpression | ComponentInstanceEventParameterReferenceExpression
 ;
 
@@ -756,8 +757,12 @@ ComponentInstancePortVariableReferenceExpression returns CompositeModel::Compone
 	'port-variable' instance=ComponentInstanceReferenceExpression '::' port=[InterfaceModel::Port] '::' declaration=[ExpressionModel::VariableDeclaration]
 ;
 
-ComponentInstanceQueueSizeReferenceExpression returns CompositeModel::ComponentInstanceQueueSizeReferenceExpression:
+ComponentInstanceQueueSizeExpression returns CompositeModel::ComponentInstanceQueueSizeExpression:
 	'size' instance=ComponentInstanceReferenceExpression '.' queue=[CompositeModel::MessageQueue]
+;
+
+ComponentInstanceQueueOverflowExpression returns CompositeModel::ComponentInstanceQueueOverflowExpression:
+	'overflow' instance=ComponentInstanceReferenceExpression '.' queue=[CompositeModel::MessageQueue]
 ;
 
 ComponentInstanceEventReferenceExpression returns CompositeModel::ComponentInstanceEventReferenceExpression:

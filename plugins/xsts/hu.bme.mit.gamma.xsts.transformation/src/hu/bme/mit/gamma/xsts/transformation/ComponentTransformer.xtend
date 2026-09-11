@@ -216,7 +216,7 @@ class ComponentTransformer {
 					createIntegerTypeDefinition
 						.createVariableDeclaration(masterSizeVariableName)
 				
-				val overflowVariableName = queue.getOverflowVariableName(adapterInstance)
+				val overflowVariableName = queue.getMasterOverflowVariableName(adapterInstance)
 				val masterOverflowVariable = overflowVariableName.createBooleanVariableDeclaration
 				
 				val slaveQueuesMap = newLinkedHashMap
@@ -295,7 +295,7 @@ class ComponentTransformer {
 				}
 				
 				val xStsMasterOverflowVariable = valueDeclarationTransformer.transform(masterOverflowVariable).onlyElement
-				// TODO metadata
+				xStsMasterOverflowVariable.addResettableAnnotation
 				
 				val slaveQueuesCollection = slaveQueueMappings.values
 				val slaveQueueStructs = slaveQueuesCollection.flatten
@@ -594,6 +594,12 @@ class ComponentTransformer {
 			val sizeVariable = queueStruct.sizeVariable
 			if (sizeVariable !== null) {
 				xStsQueueVariables += variableTrace.getAll(sizeVariable)
+			}
+			
+			val overflowVariable = queueStruct.overflowVariable
+			if (overflowVariable !== null) {
+				xStsQueueVariables += variableTrace.getAll(overflowVariable)
+						.filter[it.containedByXsts]
 			}
 		}
 		for (xStsQueueVariable : xStsQueueVariables) {

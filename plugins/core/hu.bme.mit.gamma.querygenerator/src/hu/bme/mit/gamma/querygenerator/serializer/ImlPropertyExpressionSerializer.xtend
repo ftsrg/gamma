@@ -48,7 +48,7 @@ import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
 import hu.bme.mit.gamma.expression.model.XorExpression
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.property.util.ExpressionTypeDeterminator
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeExpression
 import hu.bme.mit.gamma.xsts.model.FunctionCallAction
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.List
@@ -258,7 +258,7 @@ class ImlPropertyExpressionSerializer extends ThetaPropertyExpressionSerializer 
 	
 	// Unique - do not delete!
 	
-	protected override dispatch serializeStateExpression(ComponentInstanceQueueSizeReferenceExpression expression) {
+	protected override dispatch serializeStateExpression(ComponentInstanceQueueSizeExpression expression) {
 		val instance = expression.instance
 		val queue = expression.queue
 		val capacity = evaluator.evaluate(queue.capacity)
@@ -270,7 +270,7 @@ class ImlPropertyExpressionSerializer extends ThetaPropertyExpressionSerializer 
 					.createIfThenElseExpression(0.toIntegerLiteral, 1.toIntegerLiteral)._serialize
 	}
 	
-	protected override get1CapacityQueueEmptyExpression(ComponentInstanceQueueSizeReferenceExpression expression) {
+	protected override get1CapacityQueueEmptyExpression(ComponentInstanceQueueSizeExpression expression) {
 		val instance = expression.instance
 		val queue = expression.queue
 		val queueName = queue.getId(instance)

@@ -113,6 +113,10 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="child" eType="#//ComponentInstanceReferenceExpression"
         containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="MessageQueueReferenceExpression" abstract="true"
+      eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="queue" lowerBound="1" eType="#//MessageQueue"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="DiscardStrategy">
     <eLiterals name="INCOMING"/>
     <eLiterals name="OLDEST" value="1"/>
@@ -128,10 +132,10 @@
       eSuperTypes="#//ComponentInstanceElementReferenceExpression ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentInstancePortVariableReferenceExpression"
       eSuperTypes="#//ComponentInstanceElementReferenceExpression interface.ecore#//PortReferenceExpression ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableReferenceExpression"/>
-  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceQueueSizeReferenceExpression"
-      eSuperTypes="#//ComponentInstanceElementReferenceExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="queue" lowerBound="1" eType="#//MessageQueue"/>
-  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceQueueSizeExpression"
+      eSuperTypes="#//ComponentInstanceElementReferenceExpression #//MessageQueueReferenceExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceQueueOverflowExpression"
+      eSuperTypes="#//ComponentInstanceElementReferenceExpression #//MessageQueueReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentInstancePortReferenceExpression"
       eSuperTypes="#//ComponentInstanceElementReferenceExpression interface.ecore#//PortReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceEventReferenceExpression"

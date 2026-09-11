@@ -68,6 +68,12 @@ class Namings {
 		return queue.getMasterSizeVariableName(lastInstance)
 	}
 	
+	static def String customizeOverflowVariableName(MessageQueue queue, ComponentInstanceReferenceExpression instance) {
+		val lastInstance = instance.lastInstance.clone // Hacking
+		lastInstance.name = instance.FQN
+		return queue.getMasterOverflowVariableName(lastInstance)
+	}
+	
 	static def String customizeMasterQueueName(MessageQueue queue, ComponentInstanceReferenceExpression instance) {
 		val lastInstance = instance.lastInstance.clone // Hacking
 		lastInstance.name = instance.FQN

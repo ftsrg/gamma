@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,7 +17,8 @@ import hu.bme.mit.gamma.property.util.PropertyUtil
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueOverflowExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
@@ -84,7 +85,13 @@ abstract class PropertyExpressionSerializer extends ExpressionSerializer {
 		return '''«event.getId(port, parameter, instance).head»'''
 	}
 	
-	protected def dispatch serializeStateExpression(ComponentInstanceQueueSizeReferenceExpression expression) {
+	protected def dispatch serializeStateExpression(ComponentInstanceQueueOverflowExpression expression) {
+		val instance = expression.instance
+		val queue = expression.queue
+		return queue.getOverflowId(instance)
+	}
+	
+	protected def dispatch serializeStateExpression(ComponentInstanceQueueSizeExpression expression) {
 		val instance = expression.instance
 		val queue = expression.queue
 		val capacity = evaluator.evaluate(queue.capacity)
@@ -94,7 +101,7 @@ abstract class PropertyExpressionSerializer extends ExpressionSerializer {
 					.createIfThenElseExpression(0.toIntegerLiteral, 1.toIntegerLiteral).serialize + ")"
 	}
 	
-	protected def get1CapacityQueueEmptyExpression(ComponentInstanceQueueSizeReferenceExpression expression) {
+	protected def get1CapacityQueueEmptyExpression(ComponentInstanceQueueSizeExpression expression) {
 		val instance = expression.instance
 		val queue = expression.queue
 		val queueName = queue.getId(instance)
