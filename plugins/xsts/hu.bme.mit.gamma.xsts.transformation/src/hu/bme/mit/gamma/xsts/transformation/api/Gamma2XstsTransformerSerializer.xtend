@@ -46,6 +46,7 @@ class Gamma2XstsTransformerSerializer {
 	protected final boolean optimizeArray
 	protected final boolean optimizeMessageQueues
 	protected final boolean optimizeEnvironmentalMessageQueues
+	protected final boolean checkQueueOverflow
 	protected final TransitionMerging transitionMerging
 	// Slicing
 	protected final PropertyPackage slicingProperties
@@ -90,8 +91,8 @@ class Gamma2XstsTransformerSerializer {
 			PropertyPackage initialState, InitialStateSetting initialStateSetting) {
 		this(component, arguments, targetFolderUri, fileName, minSchedulingConstraint, maxSchedulingConstraint,
 			true, false,
-			optimize, optimizeArray, optimizeMessageQueues, optimizeEnvironmentalMessageQueues, transitionMerging,
-			slicingProperties, annotatableElements, initialState, initialStateSetting)
+			optimize, optimizeArray, optimizeMessageQueues, optimizeEnvironmentalMessageQueues,
+			transitionMerging, slicingProperties, annotatableElements, initialState, initialStateSetting)
 	}
 	
 	new(Component component, List<? extends Expression> arguments,
@@ -114,6 +115,7 @@ class Gamma2XstsTransformerSerializer {
 		this.inlineLowlevelFunctions = inlineFunctions && !component.hasInterfaceFunctionDeclarationsInStatecharts
 		this.inlineXStsFunctions = inlineFunctions && !inlineLowlevelFunctions
 		this.addReturnGuards = addReturnGuards
+		this.checkQueueOverflow = annotatableElements.checkQueueOverflow
 		this.optimize = optimize
 		this.optimizeArray = optimizeArray
 		this.optimizeMessageQueues = optimizeMessageQueues
@@ -141,14 +143,14 @@ class Gamma2XstsTransformerSerializer {
 				annotatableElements,
 				targetFolderUri, fileName)
 		slicerAnnotatorAndPropertyGenerator.execute
-		val gammaToXSTSTransformer = new GammaToXstsTransformer(
+		val gammaToXstsTransformer = new GammaToXstsTransformer(
 			minSchedulingConstraint, maxSchedulingConstraint,
-			inlineLowlevelFunctions, inlineXStsFunctions, addReturnGuards,
+			inlineLowlevelFunctions, inlineXStsFunctions, addReturnGuards, checkQueueOverflow,
 			true, true, optimizeArray,
 			optimizeMessageQueues, optimizeEnvironmentalMessageQueues,
 			transitionMerging, initialState, initialStateSetting)
 		// Normal transformation
-		val xSts = gammaToXSTSTransformer.execute(newGammaPackage)
+		val xSts = gammaToXstsTransformer.execute(newGammaPackage)
 		// EMF
 		xSts.normalSave(targetFolderUri, fileName.emfXStsFileName)
 		// String

@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.querygenerator.commandhandler;
 
 import java.io.File;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -51,7 +50,7 @@ public class CommandHandler extends AbstractHandler {
 					if (selection.getFirstElement() instanceof IFile) {
 						IFile file = (IFile) selection.getFirstElement();
 						ResourceSet resourceSet = new ResourceSetImpl();
-						logger.log(Level.INFO, "Resource set created for displaying model elements on GUI: " + resourceSet);
+						logger.info("Resource set created for displaying model elements on GUI: " + resourceSet);
 						String fullPath = file.getFullPath().toString();
 						// Decoding so spaces do not stir trouble
 						fullPath = URI.decode(fullPath);
@@ -72,23 +71,23 @@ public class CommandHandler extends AbstractHandler {
 							resource = resourceSet.getResource(flattenedFileUri, true);
 						} catch (Exception e) {
 							// .gsm file is not found
-							logger.log(Level.INFO, "The transformed UPPAAL model cannot be found. Starting UPPAAL transformation.");
+							logger.info("The transformed UPPAAL model cannot be found. Starting UPPAAL transformation.");
 							URI originalFileUri = URI.createPlatformResourceURI(fullPath, true);
 							resource = resourceSet.getResource(originalFileUri, true);
 							Package gammaPackage = (Package) resource.getContents().get(0);
 							DefaultCompositionToUppaalTransformer transformer = new DefaultCompositionToUppaalTransformer();
 							String targetFolderUri = file.getParent().getLocation().toString();
 							transformer.transformComponent(gammaPackage, targetFolderUri, file.getName());
-							logger.log(Level.INFO, "UPPAAL transformation has been finished.");
+							logger.info("UPPAAL transformation has been finished.");
 							resourceSet.getResources().clear(); // Has to be done, otherwise the resource content is null
 							resource = resourceSet.getResource(flattenedFileUri, true);
-							logger.log(Level.INFO, "Starting XSTS transformation.");
+							logger.info("Starting XSTS transformation.");
 							Package _package = (Package) resource.getContents().get(0);
 							GammaToXstsTransformer gammaToXSTSTransformer = new GammaToXstsTransformer();
 							File xStsFile = new File(absoluteParentFolder + File.separator + fileNamer.getXtextXStsFileName(fileName));
 							String xStsString = gammaToXSTSTransformer.preprocessAndExecuteAndSerialize(_package, absoluteParentFolder, fileName);
 							fileUtil.saveString(xStsFile, xStsString);
-							logger.log(Level.INFO, "XSTS transformation has been finished.");
+							logger.info("XSTS transformation has been finished.");
 						}
 						if (resource != null) {
 							if (resource.getContents().get(0) instanceof Package) {

@@ -96,4 +96,8 @@ class AnnotatablePreprocessableElements {
 		this.interactionDataflowCoverageCriterion = interactionDataflowCoverageCriterion
 	}
 	
+	def checkQueueOverflow() {
+		return testedComponentsForQueueOverflow?.include !== null
+	}
+	
 }

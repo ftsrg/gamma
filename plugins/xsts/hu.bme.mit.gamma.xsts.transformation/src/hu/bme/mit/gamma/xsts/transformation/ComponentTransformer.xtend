@@ -74,6 +74,7 @@ class ComponentTransformer {
 	protected XSTS xSts
 	// Transformation settings
 	protected final boolean inlineFunctions
+	protected final boolean checkQueueOverflow
 	protected final boolean transformOrthogonalActions
 	protected final boolean optimize
 	protected final boolean optimizeEnvironmentalMessageQueues
@@ -99,11 +100,12 @@ class ComponentTransformer {
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//
 	
-	new(GammaToLowlevelTransformer gammaToLowlevelTransformer, boolean inlineFunctions,
-			boolean transformOrthogonalActions, boolean optimize,
-			boolean optimizeEnvironmentalMessageQueues, TransitionMerging transitionMerging) {
+	new(GammaToLowlevelTransformer gammaToLowlevelTransformer, boolean inlineFunctions, boolean checkQueueOverflow,
+			boolean transformOrthogonalActions, boolean optimize, boolean optimizeEnvironmentalMessageQueues,
+			TransitionMerging transitionMerging) {
 		this.gammaToLowlevelTransformer = gammaToLowlevelTransformer
 		this.inlineFunctions = inlineFunctions
+		this.checkQueueOverflow = checkQueueOverflow
 		this.transformOrthogonalActions = transformOrthogonalActions
 		this.optimize = optimize
 		this.optimizeEnvironmentalMessageQueues = optimizeEnvironmentalMessageQueues
@@ -969,8 +971,7 @@ class ComponentTransformer {
 							}
 						}
 						
-						val checkOverflow = true
-						if (checkOverflow) {
+						if (checkQueueOverflow) {
 							// // if (size >= capacity) { overflow := true; }
 							val isMasterQueueFull = xStsMasterQueue.isMasterQueueFull(xStsMasterSizeVariable)
 							val setXStsOverflowVariable = xStsMasterOverflowVariable.createAssignmentAction(createTrueExpression)
