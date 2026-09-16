@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.UnaryExpression
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
@@ -93,6 +94,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 	public static final String INTERACTION_SENDING_BEGINNING = "Interaction sent by: "
 	public static final String INTERACTION_RECEIVING_BEGINNING = "Interaction received by: "
 	
+	public static final String OF = "Of"
 	public static final String QUEUE_OVERFLOW_VARIABLE_BEGINNING = "overflow_"
 	//
 	
@@ -545,18 +547,27 @@ class UnfoldedExecutionTraceBackAnnotator {
 	protected def extendMetadata(ExecutionTrace trace) {
 		val comment = trace.getAnnotation(ExecutionTraceCommentAnnotation)
 		val string = comment.comment
-		if (string.contains(QUEUE_OVERFLOW_VARIABLE_BEGINNING)) {
+		if (string.contains(QUEUE_OVERFLOW_VARIABLE_BEGINNING) && string.contains(OF)) {
 			val string2 = string.substring(string.indexOf(QUEUE_OVERFLOW_VARIABLE_BEGINNING) + QUEUE_OVERFLOW_VARIABLE_BEGINNING.length)
 			val string3 = javaUtil.substring(string2, [!javaUtil.isIdChar(it)])
 			val id = string2.replace(string3, "")
-			val split = id.split("Of")
-			val queueName = split.head
-			val instanceName = split.last
 			
-			val step = trace.lastStep
-			val metadataMessage = ("Message queue overflowed: " + queueName + " of " + instanceName).createOpaqueExpression
-			step.asserts.addFirst(metadataMessage)
-			metadata += metadataMessage
+			val component = trace.component
+			val asynchronousInstances = component.allAsynchronousSimpleInstanceReferences
+			for (asynchronousInstance : asynchronousInstances) {
+				val lastInstance = asynchronousInstance.lastInstance
+				val adapter = lastInstance.derivedType as AsynchronousAdapter
+				for (queue : adapter.messageQueues) {
+					val queueId = queue.name + OF + asynchronousInstance.getName("_")
+					if (queueId == id) {
+						val step = trace.lastStep
+						val metadataMessage = ("Message queue overflowed: " + queue.name + " of " + asynchronousInstance.name)
+								.createOpaqueExpression
+						step.asserts.addFirst(metadataMessage)
+						metadata += metadataMessage
+					}
+				}
+			}
 		}
 	}
 	

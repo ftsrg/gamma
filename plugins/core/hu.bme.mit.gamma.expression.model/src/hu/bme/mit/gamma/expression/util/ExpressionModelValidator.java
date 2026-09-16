@@ -149,17 +149,18 @@ public class ExpressionModelValidator {
 	}
 	
 	public Collection<ValidationResultMessage> checkTypeDeclaration(TypeDeclaration typeDeclaration) {
-		Type type = typeDeclaration.getType();
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (type instanceof TypeReference) {
-			TypeReference typeReference = (TypeReference) type;
+		
+		Type type = typeDeclaration.getType();
+		if (type instanceof TypeReference typeReference) {
 			TypeDeclaration referencedTypeDeclaration = typeReference.getReference();
 			if (typeDeclaration == referencedTypeDeclaration) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"A type declaration cannot reference itself as a type definition",
+					"A type declaration cannot reference itself as a type definition",
 						new ReferenceInfo(ExpressionModelPackage.Literals.DECLARATION__TYPE)));
 			}
 		}
+		
 		return validationResultMessages;
 	}
 	
@@ -176,6 +177,7 @@ public class ExpressionModelValidator {
 	protected Collection<ValidationResultMessage> checkArgumentTypes(List<Expression> arguments,
 			List<ParameterDeclaration> parameterDeclarations) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
 		if (arguments.size() != parameterDeclarations.size()) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 				"The number of arguments must match the number of parameters", 
@@ -186,15 +188,18 @@ public class ExpressionModelValidator {
 			for (int i = 0; i < arguments.size() && i < parameterDeclarations.size(); ++i) {
 				ParameterDeclaration parameter = parameterDeclarations.get(i);
 				Expression argument = arguments.get(i);
-				validationResultMessages.addAll(checkTypeAndExpressionConformance(parameter.getType(),
-					argument, new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i)));
+				validationResultMessages.addAll(
+					checkTypeAndExpressionConformance(parameter.getType(),
+						argument, new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i)));
 			}
 		}
+		
 		return validationResultMessages;
 	}
 	
 	public Collection<ValidationResultMessage> checkIfThenElseExpression(IfThenElseExpression expression) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
 		if (!typeDeterminator.isBoolean(expression.getCondition())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 				"The condition of the if-then-else expression must be of type boolean, currently it is: " + 
@@ -207,12 +212,14 @@ public class ExpressionModelValidator {
 					"then: " + typeDeterminator.print(expression.getThen()) + " - else: " + typeDeterminator.print(expression.getElse()), 
 					new ReferenceInfo(ExpressionModelPackage.Literals.IF_THEN_ELSE_EXPRESSION__ELSE)));
 		}
+		
 		return validationResultMessages;
 	}
 	
 	public Collection<ValidationResultMessage> checkArrayLiteralExpression(ArrayLiteralExpression expression) {
-		Type referenceType = null;
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		Type referenceType = null;
 		for (Expression e : expression.getOperands()) {
 			Type examinedType = typeDeterminator.getType(e);
 			if (!typeDeterminator.equals(referenceType, examinedType)) {
@@ -226,11 +233,13 @@ public class ExpressionModelValidator {
 				}
 			}
 		}
+		
 		return validationResultMessages;
 	}
 	
 	public Collection<ValidationResultMessage> checkRecordAccessExpression(RecordAccessExpression recordAccess) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
 		Expression operand = recordAccess.getOperand();
 		Type type = typeDeterminator.getType(operand);
 		// The typeDeterminator.getTypeDefinition call would clone the record type and the new record type would
@@ -239,7 +248,7 @@ public class ExpressionModelValidator {
 			TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
 			if (!(typeDefinition instanceof RecordTypeDefinition)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"The referred declaration is not accessible as a record", 
+					"The referred declaration is not accessible as a record", 
 						new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND)));
 				return validationResultMessages;
 			}
@@ -249,10 +258,11 @@ public class ExpressionModelValidator {
 			Declaration referredField = recordAccess.getFieldReference().getFieldDeclaration();
 			if (!fieldDeclarations.contains(referredField)){
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"The record type does not contain any fields with the given name", 
+					"The record type does not contain any fields with the given name", 
 						new ReferenceInfo(ExpressionModelPackage.Literals.RECORD_ACCESS_EXPRESSION__FIELD_REFERENCE)));
 			}
 		}
+		
 		return validationResultMessages;
 	}
 	
@@ -286,6 +296,7 @@ public class ExpressionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkFunctionAccessExpression(FunctionAccessExpression functionAccessExpression) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
 		List<Expression> arguments = functionAccessExpression.getArguments();
 		ReferenceExpression operand = null;
 		try {
@@ -296,7 +307,7 @@ public class ExpressionModelValidator {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.ERROR,
 					"The referenced object is not a valid function declaration", 
-					new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND)));
+						new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND)));
 			return validationResultMessages;
 		}
 		
@@ -305,7 +316,7 @@ public class ExpressionModelValidator {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.ERROR,
 					"The referenced object is not a valid function declaration", 
-					new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND)));
+						new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND)));
 			return validationResultMessages;
 		}
 		
@@ -320,14 +331,15 @@ public class ExpressionModelValidator {
 		}
 		// Check if the types of the arguments are the types of the parameters
 		int i = 0;
-		for (Expression arg : arguments) {
-			Type argumentType = typeDeterminator.getType(arg);
+		for (Expression argument : arguments) {
+			Type argumentType = typeDeterminator.getType(argument);
 			ParameterDeclaration parameter = parameters.get(i);
 			if (!typeDeterminator.equals(parameter.getType(), argumentType)) {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.ERROR,
 						"The types of the arguments and the types of the declared function parameters do not match", 
-						new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)));
+							new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)));
+				
 				return validationResultMessages;
 			}
 			++i;
@@ -355,20 +367,21 @@ public class ExpressionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkArrayAccessExpression(ArrayAccessExpression expression) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
 		Expression operand = expression.getOperand();
 		TypeDefinition typeDefinition = typeDeterminator.getTypeDefinition(operand);
 		if (!(typeDefinition instanceof ArrayTypeDefinition)) {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.ERROR,
 					"The accessed operand is not of type array", 
-					new ReferenceInfo(ExpressionModelPackage.Literals.ARRAY_ACCESS_EXPRESSION__INDEX)));
+						new ReferenceInfo(ExpressionModelPackage.Literals.ARRAY_ACCESS_EXPRESSION__INDEX)));
 			return validationResultMessages;
 		}
 		ArrayTypeDefinition type = (ArrayTypeDefinition) typeDefinition;
 		// check if the argument expression can be evaluated as integer
 		if (!typeDeterminator.isInteger(expression.getIndex())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The index of the accessed element must be of type integer", 
+				"The index of the accessed element must be of type integer", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.ARRAY_ACCESS_EXPRESSION__INDEX)));
 			
 		}
@@ -380,7 +393,7 @@ public class ExpressionModelValidator {
 				int size = expressionEvaluator.evaluateInteger(type.getSize()); 
 				if (index >= size || index < 0) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"Index out of bounds with index " + index + " to size " + size, 
+						"Index out of bounds with index " + index + " to size " + size, 
 							new ReferenceInfo(ExpressionModelPackage.Literals.ARRAY_ACCESS_EXPRESSION__INDEX)));
 				}
 			} catch (Exception exception) {
@@ -417,18 +430,16 @@ public class ExpressionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkBooleanExpression(BooleanExpression expression) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (expression instanceof UnaryExpression) {
+		if (expression instanceof UnaryExpression unaryExpression) {
 			// not
-			UnaryExpression unaryExpression = (UnaryExpression) expression;
 			if (!typeDeterminator.isBoolean(unaryExpression.getOperand())) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 						"The operand of this unary boolean operation is evaluated as a non-boolean value", 
 						new ReferenceInfo(ExpressionModelPackage.Literals.UNARY_EXPRESSION__OPERAND)));
 			}
 		}
-		else if (expression instanceof BinaryExpression) {
+		else if (expression instanceof BinaryExpression binaryExpression) {
 			// equal and imply
-			BinaryExpression binaryExpression = (BinaryExpression) expression;
 			if (!typeDeterminator.isBoolean(binaryExpression.getLeftOperand())) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 						"The left operand of this binary boolean operation is evaluated as a non-boolean value", 
@@ -440,9 +451,8 @@ public class ExpressionModelValidator {
 						new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND)));
 			}
 		}
-		else if (expression instanceof MultiaryExpression) {
+		else if (expression instanceof MultiaryExpression multiaryExpression) {
 			// and or or or xor
-			MultiaryExpression multiaryExpression = (MultiaryExpression) expression;
 			for (int i = 0; i < multiaryExpression.getOperands().size(); ++i) {
 				Expression operand = multiaryExpression.getOperands().get(i);
 				if (!typeDeterminator.isBoolean(operand)) {
@@ -463,8 +473,7 @@ public class ExpressionModelValidator {
 		}
 		else if (expression instanceof BinaryExpression) {
 			// Equivalence
-			if (expression instanceof EquivalenceExpression) {
-				EquivalenceExpression equivalenceExpression = (EquivalenceExpression) expression;
+			if (expression instanceof EquivalenceExpression equivalenceExpression) {
 				Expression lhs = equivalenceExpression.getLeftOperand();
 				Expression rhs = equivalenceExpression.getRightOperand();
 				try {
@@ -477,21 +486,21 @@ public class ExpressionModelValidator {
 								new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND)));
 					}
 				} catch (IllegalArgumentException e) { // For typeDeterminator.getType()
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					validationResultMessages.add(
+						new ValidationResultMessage(ValidationResult.ERROR,
 							e.getMessage(), new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND)));
 				}
 			}
 			// Comparison
-			if (expression instanceof ComparisonExpression) {
-				ComparisonExpression binaryExpression = (ComparisonExpression) expression;
+			if (expression instanceof ComparisonExpression binaryExpression) {
 				if (!typeDeterminator.isNumber(binaryExpression.getLeftOperand())) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"The left operand of this binary predicate expression is evaluated as a non-comparable value", 
+						"The left operand of this binary predicate expression is evaluated as a non-comparable value", 
 							new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__LEFT_OPERAND)));
 				}
 				if (!typeDeterminator.isNumber(binaryExpression.getRightOperand())) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"The right operand of this binary predicate expression is evaluated as a non-comparable value", 
+						"The right operand of this binary predicate expression is evaluated as a non-comparable value", 
 							new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND)));
 				}
 			}
@@ -503,52 +512,49 @@ public class ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkArithmeticExpression(ArithmeticExpression expression) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
-		if (expression instanceof UnaryExpression) {
+		if (expression instanceof UnaryExpression unaryExpression) {
 			// + or -
-			UnaryExpression unaryExpression = (UnaryExpression) expression;
 			if (!typeDeterminator.isNumber(unaryExpression.getOperand())) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"The operand of this unary arithemtic operation is evaluated as a non-number value", 
+					"The operand of this unary arithemtic operation is evaluated as a non-number value", 
 						new ReferenceInfo(ExpressionModelPackage.Literals.UNARY_EXPRESSION__OPERAND)));
 			}
 		}
-		else if (expression instanceof BinaryExpression) {
+		else if (expression instanceof BinaryExpression binaryExpression) {
 			// - or / or mod or div
-			BinaryExpression binaryExpression = (BinaryExpression) expression;
 			if (expression instanceof ModExpression || expression instanceof DivExpression) {
 				// Only integers can be operands
 				if (!typeDeterminator.isInteger(binaryExpression.getLeftOperand())) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"The left operand of this binary arithemtic operation is evaluated as a non-integer value", 
+						"The left operand of this binary arithemtic operation is evaluated as a non-integer value", 
 							new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__LEFT_OPERAND)));
 				}
 				if (!typeDeterminator.isInteger(binaryExpression.getRightOperand())) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"The right operand of this binary arithemtic operation is evaluated as a non-integer value", 
+						"The right operand of this binary arithemtic operation is evaluated as a non-integer value", 
 							new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND)));
 				}
 			}
 			else {
 				if (!typeDeterminator.isNumber(binaryExpression.getLeftOperand())) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"The left operand of this binary arithemtic operation is evaluated as a non-number value", 
+						"The left operand of this binary arithemtic operation is evaluated as a non-number value", 
 							new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__LEFT_OPERAND)));
 				}
 				if (!typeDeterminator.isNumber(binaryExpression.getRightOperand())) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"The right operand of this binary arithemtic operation is evaluated as a non-number value", 
+						"The right operand of this binary arithemtic operation is evaluated as a non-number value", 
 							new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND)));
 				}
 			}
 		}
-		else if (expression instanceof MultiaryExpression) {
+		else if (expression instanceof MultiaryExpression multiaryExpression) {
 			// + or *
-			MultiaryExpression multiaryExpression = (MultiaryExpression) expression;
 			for (int i = 0; i < multiaryExpression.getOperands().size(); ++i) {
 				Expression operand = multiaryExpression.getOperands().get(i);
 				if (!typeDeterminator.isNumber(operand)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"This operand of this multiary arithemtic operation is evaluated as a non-number value", 
+						"This operand of this multiary arithemtic operation is evaluated as a non-number value", 
 							new ReferenceInfo(ExpressionModelPackage.Literals.MULTIARY_EXPRESSION__OPERANDS, i)));
 				}
 			}
@@ -573,7 +579,7 @@ public class ExpressionModelValidator {
 						int variableIndex = ecoreUtil.getIndex(variableDeclaration);
 						if (variableIndex >= elemIndex) {
 							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-									"The declarations referenced in the initial value must be declared before the variable declaration", 
+								"The declarations referenced in the initial value must be declared before the variable declaration", 
 									new ReferenceInfo(ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION)));
 							
 							return validationResultMessages;
@@ -628,14 +634,15 @@ public class ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkArrayTypeDefinition(ArrayTypeDefinition arrayType) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		try {
+			Expression size = arrayType.getSize();
 			// The size of the array must be given as an integer
-			if (!typeDeterminator.isInteger(arrayType.getSize())) {
+			if (!typeDeterminator.isInteger(size)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"The size of the array must be given as an integer",
 						new ReferenceInfo(ExpressionModelPackage.Literals.ARRAY_TYPE_DEFINITION__SIZE)));
 			}
 			// Array initial size must be greater than 0
-			if (expressionEvaluator.evaluateInteger(arrayType.getSize()) <= 0) {
+			if (expressionEvaluator.evaluateInteger(size) <= 0) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"The size of the array must be greater than 0",
 						new ReferenceInfo(ExpressionModelPackage.Literals.ARRAY_TYPE_DEFINITION__SIZE)));
@@ -649,13 +656,11 @@ public class ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkSelfComparison(PredicateExpression expression) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();		
 		// BinaryExpression
-		if (expression instanceof BinaryExpression) {
-			BinaryExpression binaryExpression = (BinaryExpression) expression;
+		if (expression instanceof BinaryExpression binaryExpression) {
 			// The left and the right hand sides same
 			if (ecoreUtil.helperEquals(binaryExpression.getLeftOperand(), binaryExpression.getRightOperand())) {
 				// EquivalenceExpression
-				if (expression instanceof EquivalenceExpression) {
-					EquivalenceExpression equivalenceExpression = (EquivalenceExpression) expression;
+				if (expression instanceof EquivalenceExpression equivalenceExpression) {
 					// EqualityExpression
 					if (equivalenceExpression instanceof EqualityExpression) {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO,
@@ -670,8 +675,7 @@ public class ExpressionModelValidator {
 					}
 				}
 				// ComparisionExpression
-				else if (expression instanceof ComparisonExpression) {
-					ComparisonExpression comparisionExpression = (ComparisonExpression) expression;
+				else if (expression instanceof ComparisonExpression comparisionExpression) {
 					if (comparisionExpression instanceof LessEqualExpression || comparisionExpression instanceof GreaterEqualExpression) {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO,
 							"This expression is always true, because the left and right hand sides are same",
@@ -692,16 +696,17 @@ public class ExpressionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		try {
 			// BinaryExpression
-			if (expression instanceof BinaryExpression) {
-				BinaryExpression binaryExpression = (BinaryExpression) expression;
+			if (expression instanceof BinaryExpression binaryExpression) {
 				// DivideExpression, DivExpression, ModExpression
 				if (expression instanceof DivideExpression || expression instanceof DivExpression ||
 						expression instanceof ModExpression) {
 					// Right hand side is zero
-					if (expressionEvaluator.evaluateInteger(binaryExpression.getRightOperand()) == 0) {
-						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"Division by zero is not allowed",
-								new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND)));
+					Expression rightOperand = binaryExpression.getRightOperand();
+					if (expressionEvaluator.evaluateInteger(rightOperand) == 0) {
+						validationResultMessages.add(
+							new ValidationResultMessage(ValidationResult.ERROR,
+								"Division by zero is not allowed",
+									new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND)));
 					}
 				}
 			}
@@ -717,7 +722,8 @@ public class ExpressionModelValidator {
 		List<TypeDeclaration> visitedNodes = new ArrayList<TypeDeclaration>();
 		visitedNodes.add(typeDeclaration);
 		// Search for self-reference
-		validationResultMessages.addAll(checkRecordSelfReferenceHelp(typeDeclaration, visitedNodes));
+		validationResultMessages.addAll(
+				checkRecordSelfReferenceHelp(typeDeclaration, visitedNodes));
 
 		return validationResultMessages;
 	}
@@ -726,18 +732,17 @@ public class ExpressionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		// RecordTypeDefinition
 		Type type = visitedNodes.get(0).getType();
-		if (type instanceof RecordTypeDefinition) {
+		if (type instanceof RecordTypeDefinition recordTypeDefinition) {
 			// Check all FieldDeclarations
-			RecordTypeDefinition recordTypeDefinition = (RecordTypeDefinition) type;
 			for (FieldDeclaration fieldDeclaration : recordTypeDefinition.getFieldDeclarations()) {
 				// TypeReference
-				Type fieldType = (Type) fieldDeclaration.getType();
-				if (fieldType instanceof TypeReference) {
-					TypeReference fieldTypeReference = (TypeReference) fieldType;
+				Type fieldType = fieldDeclaration.getType();
+				if (fieldType instanceof TypeReference fieldTypeReference) {
 					TypeDeclaration fieldReferencedTypeDeclaration = fieldTypeReference.getReference();
 					// Equal to checked record
 					if (fieldReferencedTypeDeclaration == typeDeclaration) {
-						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						validationResultMessages.add(
+							new ValidationResultMessage(ValidationResult.ERROR,
 								"Record cannot store itself either directly or indirectly, " +
 								visitedNodes.get(0).getName().toUpperCase() + " stores " +
 								typeDeclaration.getName().toUpperCase(),
@@ -746,7 +751,8 @@ public class ExpressionModelValidator {
 					// Check - if it is not equal to the checked record and if it is not a visited record
 					else if (!visitedNodes.contains(fieldReferencedTypeDeclaration)) {
 						visitedNodes.add(0, fieldReferencedTypeDeclaration);
-						validationResultMessages.addAll(checkRecordSelfReferenceHelp(typeDeclaration, visitedNodes));
+						validationResultMessages.addAll(
+								checkRecordSelfReferenceHelp(typeDeclaration, visitedNodes));
 					}
 				}
 			}
@@ -883,15 +889,15 @@ public class ExpressionModelValidator {
 		protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 		//
 		
-		public ReferenceInfo(EStructuralFeature reference){
+		public ReferenceInfo(EStructuralFeature reference) {
 			this(reference, null, null);
 		}
 		
-		public ReferenceInfo(EStructuralFeature reference, Integer index){
+		public ReferenceInfo(EStructuralFeature reference, Integer index) {
 			this(reference, index, null);
 		}
 		
-		public ReferenceInfo(EStructuralFeature reference, EObject source){
+		public ReferenceInfo(EStructuralFeature reference, EObject source) {
 			this(reference, null, source);
 		}
 		

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.genmodel.model.GenmodelModelPackage
 import hu.bme.mit.gamma.genmodel.model.InterfaceMapping
 import hu.bme.mit.gamma.genmodel.model.StatechartContractGeneration
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation
+import hu.bme.mit.gamma.genmodel.util.GenmodelUtil
 import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
@@ -36,7 +37,11 @@ import org.eclipse.xtext.scoping.Scopes
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class GenModelScopeProvider extends AbstractGenModelScopeProvider {
-
+	
+	new() {
+		super.util = GenmodelUtil.INSTANCE
+	}
+	
 	override getScope(EObject context, EReference reference) {
 //		if (context instanceof YakinduCompilation &&
 //				reference == GenmodelModelPackage.Literals.YAKINDU_COMPILATION__STATECHART) {
@@ -95,13 +100,14 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			}
 		}
 		if (reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
-			val componentInstanceReference = context as ComponentInstanceVariableReferenceExpression
-			val componentInstance = componentInstanceReference.instance.lastInstance
-			if (componentInstance !== null) {
-				val type = componentInstance.derivedType
-				if (type instanceof StatechartDefinition) {
-					val variables = type.variableDeclarations
-					return Scopes.scopeFor(variables)
+			if (context instanceof ComponentInstanceVariableReferenceExpression) {
+				val componentInstance = context.instance.lastInstance
+				if (componentInstance !== null) {
+					val type = componentInstance.derivedType
+					if (type instanceof StatechartDefinition) {
+						val variables = type.variableDeclarations
+						return Scopes.scopeFor(variables)
+					}
 				}
 			}
 		}

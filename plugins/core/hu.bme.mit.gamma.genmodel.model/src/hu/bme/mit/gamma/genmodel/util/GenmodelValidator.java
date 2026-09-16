@@ -697,7 +697,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 							"The types of the declaration and the right hand side expression are not the same: " +
 								typeDeterminator.print(declarationType) + " and " + typeDeterminator.print(argument),
-								new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i)));
+								new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i, componentReference)));
 					} 
 				}
 			}

@@ -1121,7 +1121,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		
 		if (component instanceof AbstractAsynchronousCompositeComponent asynchronousCompositeComponent) {
 			for (AsynchronousComponentInstance instance : asynchronousCompositeComponent.getComponents()) {
-				if (isStatechart(instance)) {
+				if (isAdapter(instance) || isStatechart(instance)) {
 					ComponentInstanceReferenceExpression instanceReference =
 							statechartUtil.createInstanceReference(instance);
 					instanceReferences.add(instanceReference);
