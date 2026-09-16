@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.trace.util;
 
 import java.util.Comparator;
+import java.util.List;
 
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.Expression;
@@ -54,11 +55,13 @@ public class AssertSorter implements Comparator<Expression> {
 		if (lhs instanceof ComponentInstanceElementReferenceExpression lhsInstanceReference &&
 				rhs instanceof ComponentInstanceElementReferenceExpression rhsInstanceReference) {
 			// Two instance states: first - instance name, second - state level
-			ComponentInstance lhsInstance = StatechartModelDerivedFeatures.getLastInstance(
-					lhsInstanceReference.getInstance());
-			ComponentInstance rhsInstance = StatechartModelDerivedFeatures.getLastInstance(
-					rhsInstanceReference.getInstance());
-			int nameCompare = lhsInstance.getName().compareTo(rhsInstance.getName());
+			List<ComponentInstance> lhsInstances = StatechartModelDerivedFeatures
+					.getComponentInstanceChain(lhsInstanceReference.getInstance());
+			List<ComponentInstance> rhsInstances = StatechartModelDerivedFeatures
+					.getComponentInstanceChain(rhsInstanceReference.getInstance());
+			String lhsName = lhsInstances.stream().map(it -> it.getName()).reduce("", (a, b) -> a + b);
+			String rhsName = rhsInstances.stream().map(it -> it.getName()).reduce("", (a, b) -> a + b);
+			int nameCompare = lhsName.compareTo(rhsName);
 			if (nameCompare != 0) {
 				return nameCompare;
 			}
@@ -78,8 +81,6 @@ public class AssertSorter implements Comparator<Expression> {
 						rhsRegion.getName());
 			}
 			else {
-				String lhsName = lhsInstance.getName();
-				String rhsName = rhsInstance.getName();
 				if (lhs instanceof VariableReferenceExpression lhsVariableReference &&
 						rhs instanceof VariableReferenceExpression rhsVariableReference &&
 						lhs.eClass().equals(rhs.eClass())) {

@@ -42,7 +42,7 @@ class QueueNamings {
 	def static String getMasterSizeVariableName(
 		MessageQueue queue, ComponentInstance instance) '''«SIZE_MASTER_PREFIX»«queue.name.toFirstUpper»«OF»«instance.name»'''
 	def static String getMasterOverflowVariableName(
-		MessageQueue queue, ComponentInstance instance) '''«OVERFLOW_PREFIX»«queue.name.toFirstUpper»«OF»«instance.name»'''
+		MessageQueue queue, ComponentInstance instance) '''«OVERFLOW_PREFIX»«queue.name»«OF»«instance.name»'''
 	
 	def static String getSlaveQueueName(ParameterDeclaration parameterDeclaration,
 			Port port, ComponentInstance instance) // For traceability reasons, parameterDeclaration is needed

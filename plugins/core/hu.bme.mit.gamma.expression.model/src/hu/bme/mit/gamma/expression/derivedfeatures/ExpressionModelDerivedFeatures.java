@@ -535,6 +535,14 @@ public class ExpressionModelDerivedFeatures {
 		throw new IllegalArgumentException("Not known type: " + type);
 	}
 	
+	public static TypeDefinition getTypeDefinitionOrNull(Type type) {
+		try {
+			return getTypeDefinition(type);
+		} catch (IllegalArgumentException e) {
+			return null;
+		}
+	}
+	
 	public static List<Type> getNativeTypes(TupleTypeDefinition tupleType) {
 		List<Type> types = new ArrayList<Type>();
 		

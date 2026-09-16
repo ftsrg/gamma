@@ -1139,13 +1139,6 @@ class StatechartAnnotator {
 		return variableIds
 	}
 	
-	//
-	
-	def annotateModelForQueueOverflowCoverage() {
-		
-		
-	}
-	
 	// Getters
 	
 	def getInteractions() {

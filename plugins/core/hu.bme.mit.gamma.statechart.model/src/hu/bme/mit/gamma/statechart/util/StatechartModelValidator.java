@@ -204,22 +204,22 @@ public class StatechartModelValidator extends ActionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkUnsupportedVariableTypes(VariableDeclaration variable) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
 		Type type = variable.getType();
-		if (type != null) {
-			TypeDefinition typeDefinition = StatechartModelDerivedFeatures.getTypeDefinition(type);
-			if (!(typeDefinition instanceof IntegerTypeDefinition ||
-					typeDefinition instanceof BooleanTypeDefinition || 
-					typeDefinition instanceof RationalTypeDefinition ||
-					typeDefinition instanceof DecimalTypeDefinition ||
-					typeDefinition instanceof EnumerationTypeDefinition ||
-					typeDefinition instanceof ArrayTypeDefinition ||
-					typeDefinition instanceof RecordTypeDefinition)) {
-				validationResultMessages.add(
-					new ValidationResultMessage(ValidationResult.ERROR, 
-						"This type is not supported in the statechart language", 
-							new ReferenceInfo(ExpressionModelPackage.Literals.DECLARATION__TYPE)));
-			}
+		TypeDefinition typeDefinition = StatechartModelDerivedFeatures.getTypeDefinitionOrNull(type);
+		if (!(typeDefinition instanceof IntegerTypeDefinition ||
+				typeDefinition instanceof BooleanTypeDefinition || 
+				typeDefinition instanceof RationalTypeDefinition ||
+				typeDefinition instanceof DecimalTypeDefinition ||
+				typeDefinition instanceof EnumerationTypeDefinition ||
+				typeDefinition instanceof ArrayTypeDefinition ||
+				typeDefinition instanceof RecordTypeDefinition)) {
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.ERROR, 
+					"This type is not supported in the statechart language", 
+						new ReferenceInfo(ExpressionModelPackage.Literals.DECLARATION__TYPE)));
 		}
+		
 		return validationResultMessages;
 	}
 	

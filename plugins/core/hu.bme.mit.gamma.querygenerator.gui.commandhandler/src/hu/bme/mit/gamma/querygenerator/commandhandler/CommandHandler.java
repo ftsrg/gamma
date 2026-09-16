@@ -44,61 +44,58 @@ public class CommandHandler extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		ISelection sel = HandlerUtil.getActiveMenuSelection(event);
 		try {
-			if (sel instanceof IStructuredSelection) {
-				IStructuredSelection selection = (IStructuredSelection) sel;
-				if (selection.getFirstElement() != null) {
-					if (selection.getFirstElement() instanceof IFile) {
-						IFile file = (IFile) selection.getFirstElement();
-						ResourceSet resourceSet = new ResourceSetImpl();
-						logger.info("Resource set created for displaying model elements on GUI: " + resourceSet);
-						String fullPath = file.getFullPath().toString();
-						// Decoding so spaces do not stir trouble
-						fullPath = URI.decode(fullPath);
-						String relativeParentFolder = fullPath.substring(0, fullPath.lastIndexOf("/"));
-						String absoluteParentFolder = file.getParent().getLocation().toString();
-						// No file extension
-						String fileName = fullPath.substring(fullPath.lastIndexOf("/") + 1, fullPath.lastIndexOf("."));
-						URI flattenedFileUri = null;
-						// Placing it on a .gsm if it is placed on a .gcd
-						// (This command can be placed on either of them)
-						if (fullPath.endsWith(".gcd")) {
-							// .gsm are hidden
-							String newPath = relativeParentFolder + File.separator + "." + fileName + ".gsm";
-							flattenedFileUri = URI.createPlatformResourceURI(newPath, true);
-						}
-						Resource resource = null;
-						try {
-							resource = resourceSet.getResource(flattenedFileUri, true);
-						} catch (Exception e) {
-							// .gsm file is not found
-							logger.info("The transformed UPPAAL model cannot be found. Starting UPPAAL transformation.");
-							URI originalFileUri = URI.createPlatformResourceURI(fullPath, true);
-							resource = resourceSet.getResource(originalFileUri, true);
-							Package gammaPackage = (Package) resource.getContents().get(0);
-							DefaultCompositionToUppaalTransformer transformer = new DefaultCompositionToUppaalTransformer();
-							String targetFolderUri = file.getParent().getLocation().toString();
-							transformer.transformComponent(gammaPackage, targetFolderUri, file.getName());
-							logger.info("UPPAAL transformation has been finished.");
-							resourceSet.getResources().clear(); // Has to be done, otherwise the resource content is null
-							resource = resourceSet.getResource(flattenedFileUri, true);
-							logger.info("Starting XSTS transformation.");
-							Package _package = (Package) resource.getContents().get(0);
-							GammaToXstsTransformer gammaToXSTSTransformer = new GammaToXstsTransformer();
-							File xStsFile = new File(absoluteParentFolder + File.separator + fileNamer.getXtextXStsFileName(fileName));
-							String xStsString = gammaToXSTSTransformer.preprocessAndExecuteAndSerialize(_package, absoluteParentFolder, fileName);
-							fileUtil.saveString(xStsFile, xStsString);
-							logger.info("XSTS transformation has been finished.");
-						}
-						if (resource != null) {
-							if (resource.getContents().get(0) instanceof Package) {
-								AppMain app = new AppMain();
-								// E.g.: F:/eclipse_ws/sc_analysis_comp_oxy/runtime-New_configuration/
-								// hu.bme.mit.inf.gamma.tests/model/TestOneComponent.statechartmodel
-								app.start(file);
-							}
-						}
-						return null;
+			if (sel instanceof IStructuredSelection selection) {
+				Object firstElement = selection.getFirstElement();
+				if (firstElement instanceof IFile file) {
+					ResourceSet resourceSet = new ResourceSetImpl();
+					logger.info("Resource set created for displaying model elements on GUI: " + resourceSet);
+					String fullPath = file.getFullPath().toString();
+					// Decoding so spaces do not stir trouble
+					fullPath = URI.decode(fullPath);
+					String relativeParentFolder = fullPath.substring(0, fullPath.lastIndexOf("/"));
+					String absoluteParentFolder = file.getParent().getLocation().toString();
+					// No file extension
+					String fileName = fullPath.substring(fullPath.lastIndexOf("/") + 1, fullPath.lastIndexOf("."));
+					URI flattenedFileUri = null;
+					// Placing it on a .gsm if it is placed on a .gcd
+					// (This command can be placed on either of them)
+					if (fullPath.endsWith(".gcd")) {
+						// .gsm are hidden
+						String newPath = relativeParentFolder + File.separator + "." + fileName + ".gsm";
+						flattenedFileUri = URI.createPlatformResourceURI(newPath, true);
 					}
+					Resource resource = null;
+					try {
+						resource = resourceSet.getResource(flattenedFileUri, true);
+					} catch (Exception e) {
+						// .gsm file is not found
+						logger.info("The transformed UPPAAL model cannot be found. Starting UPPAAL transformation.");
+						URI originalFileUri = URI.createPlatformResourceURI(fullPath, true);
+						resource = resourceSet.getResource(originalFileUri, true);
+						Package gammaPackage = (Package) resource.getContents().get(0);
+						DefaultCompositionToUppaalTransformer transformer = new DefaultCompositionToUppaalTransformer();
+						String targetFolderUri = file.getParent().getLocation().toString();
+						transformer.transformComponent(gammaPackage, targetFolderUri, file.getName());
+						logger.info("UPPAAL transformation has been finished.");
+						resourceSet.getResources().clear(); // Has to be done, otherwise the resource content is null
+						resource = resourceSet.getResource(flattenedFileUri, true);
+						logger.info("Starting XSTS transformation.");
+						Package _package = (Package) resource.getContents().get(0);
+						GammaToXstsTransformer gammaToXSTSTransformer = new GammaToXstsTransformer();
+						File xStsFile = new File(absoluteParentFolder + File.separator + fileNamer.getXtextXStsFileName(fileName));
+						String xStsString = gammaToXSTSTransformer.preprocessAndExecuteAndSerialize(_package, absoluteParentFolder, fileName);
+						fileUtil.saveString(xStsFile, xStsString);
+						logger.info("XSTS transformation has been finished.");
+					}
+					if (resource != null) {
+						if (resource.getContents().get(0) instanceof Package) {
+							AppMain app = new AppMain();
+							// E.g.: F:/eclipse_ws/sc_analysis_comp_oxy/runtime-New_configuration/
+							// hu.bme.mit.inf.gamma.tests/model/TestOneComponent.statechartmodel
+							app.start(file);
+						}
+					}
+					return null;
 				}
 			}
 		} catch (Exception exception) {

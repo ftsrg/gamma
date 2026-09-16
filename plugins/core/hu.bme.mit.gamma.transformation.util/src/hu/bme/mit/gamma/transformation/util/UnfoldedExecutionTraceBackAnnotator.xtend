@@ -40,6 +40,7 @@ import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.Cycle
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
+import hu.bme.mit.gamma.trace.model.ExecutionTraceCommentAnnotation
 import hu.bme.mit.gamma.trace.model.InstanceSchedule
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Reset
@@ -56,6 +57,7 @@ import static com.google.common.base.Preconditions.checkNotNull
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
 
 class UnfoldedExecutionTraceBackAnnotator {
 	
@@ -90,6 +92,8 @@ class UnfoldedExecutionTraceBackAnnotator {
 	public static final String RECEIVED_INTERACTION_VARIABLE_BEGINNING = EXECUTED_TRANSITION_VARIABLE_BEGINNING + "second_"
 	public static final String INTERACTION_SENDING_BEGINNING = "Interaction sent by: "
 	public static final String INTERACTION_RECEIVING_BEGINNING = "Interaction received by: "
+	
+	public static final String QUEUE_OVERFLOW_VARIABLE_BEGINNING = "overflow_"
 	//
 	
 	new(ExecutionTrace trace, Component originalTopComponent) {
@@ -127,6 +131,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 		
 		// There are injected variables that cannot be back-annotated
 		removeDummyAsserts
+		originalExecutionTrace.extendMetadata
 		handleMetadata
 		// After removing dummy asserts (nulls)
 		if (sortTrace) {
@@ -506,9 +511,6 @@ class UnfoldedExecutionTraceBackAnnotator {
 				}
 			}
 		}
-//		else if (name.startsWith()) {
-//			
-//		}
 		
 		return null
 	}
@@ -538,6 +540,24 @@ class UnfoldedExecutionTraceBackAnnotator {
 	protected def removeDummyAsserts() {
 		dummyAsserts.removeContainmentChains(Expression)
 		dummyAsserts.clear
+	}
+	
+	protected def extendMetadata(ExecutionTrace trace) {
+		val comment = trace.getAnnotation(ExecutionTraceCommentAnnotation)
+		val string = comment.comment
+		if (string.contains(QUEUE_OVERFLOW_VARIABLE_BEGINNING)) {
+			val string2 = string.substring(string.indexOf(QUEUE_OVERFLOW_VARIABLE_BEGINNING) + QUEUE_OVERFLOW_VARIABLE_BEGINNING.length)
+			val string3 = javaUtil.substring(string2, [!javaUtil.isIdChar(it)])
+			val id = string2.replace(string3, "")
+			val split = id.split("Of")
+			val queueName = split.head
+			val instanceName = split.last
+			
+			val step = trace.lastStep
+			val metadataMessage = ("Message queue overflowed: " + queueName + " of " + instanceName).createOpaqueExpression
+			step.asserts.addFirst(metadataMessage)
+			metadata += metadataMessage
+		}
 	}
 	
 	protected def handleMetadata() {
