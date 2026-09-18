@@ -85,17 +85,21 @@ class UnfoldedExecutionTraceBackAnnotator {
 	public static final String TRAP_STATE_ID = "_TrapState_"
 	public static final String TRAP_STATE_MESSAGE_BEGINNING = "Trap state entered in"
 	
-	public static final String EXECUTED_TRANSITION_VARIABLE_BEGINNING = "__id_"
-	public static final String EXECUTED_TRANSITION_VARIABLE_END = "_"
+	public static final String EXECUTED_TRANSITION_VAR_BEGINNING = "__id_"
+	public static final String INJECTED_VAR_END = "_"
+	public static final String EXECUTED_TRANSITION_VAR_END = INJECTED_VAR_END
 	public static final String EXECUTED_TRANSITION_MESSAGE_BEGINNING = TraceModelDerivedFeatures.TRANSITION_EXEC_PREFIX
 	
-	public static final String SENT_INTERACTION_VARIABLE_BEGINNING = EXECUTED_TRANSITION_VARIABLE_BEGINNING + "first_"
-	public static final String RECEIVED_INTERACTION_VARIABLE_BEGINNING = EXECUTED_TRANSITION_VARIABLE_BEGINNING + "second_"
+	public static final String SENT_INTERACTION_VAR_BEGINNING = EXECUTED_TRANSITION_VAR_BEGINNING + "first_"
+	public static final String RECEIVED_INTERACTION_VAR_BEGINNING = EXECUTED_TRANSITION_VAR_BEGINNING + "second_"
 	public static final String INTERACTION_SENDING_BEGINNING = "Interaction sent by: "
 	public static final String INTERACTION_RECEIVING_BEGINNING = "Interaction received by: "
 	
+	public static final String DEF_DATAFLOW_VAR_BEGINNING = EXECUTED_TRANSITION_VAR_BEGINNING + "def_"
+	public static final String USE_DATAFLOW_VAR_BEGINNING = EXECUTED_TRANSITION_VAR_BEGINNING + "use_"
+	
 	public static final String OF = "Of"
-	public static final String QUEUE_OVERFLOW_VARIABLE_BEGINNING = "overflow_"
+	public static final String QUEUE_OVERFLOW_VAR_BEGINNING = "overflow_"
 	//
 	
 	new(ExecutionTrace trace, Component originalTopComponent) {
@@ -451,8 +455,8 @@ class UnfoldedExecutionTraceBackAnnotator {
 		val name = variable.name
 		
 		// All for 'transition', 'transition-pair' and 'interaction' coverage
-		if (name.startsWith(EXECUTED_TRANSITION_VARIABLE_BEGINNING) &&
-				name.endsWith(EXECUTED_TRANSITION_VARIABLE_END)) {
+		if (name.startsWith(EXECUTED_TRANSITION_VAR_BEGINNING) &&
+				name.endsWith(INJECTED_VAR_END)) {
 			val container = assert.eContainer
 			if (container instanceof Step || container instanceof EqualityExpression) {
 				val rhs = (container instanceof EqualityExpression) ? container.rightOperand : 
@@ -469,7 +473,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 						val executedTransition = executedTransitions.head
 						val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
 						
-						val prefix = name.startsWith(RECEIVED_INTERACTION_VARIABLE_BEGINNING) ?
+						val prefix = name.startsWith(RECEIVED_INTERACTION_VAR_BEGINNING) ?
 								INTERACTION_RECEIVING_BEGINNING : EXECUTED_TRANSITION_MESSAGE_BEGINNING
 						val metadataMessage = executedTransition.getMetadata(originalInstance, prefix)
 						
@@ -480,16 +484,17 @@ class UnfoldedExecutionTraceBackAnnotator {
 						val newComponent = trace.component
 						for (senderInstance : newComponent.allSynchronousSimpleInstances) {
 							val senderStatechart = senderInstance.getStatechart
+							val originalSenderInstance = senderInstance.getOriginalSimpleInstanceReference(originalTopComponent)
+							val instanceName = originalSenderInstance.name
 							
 							val allStates = senderStatechart.allStates
 							val allTransitions = senderStatechart.transitions
 							val actions = allStates.map[it.entryActions + it.exitActions].flatten +
 									allTransitions.map[it.effects].flatten
 							val raiseEventActions = actions.map[it.getSelfAndAllContentsOfType(RaiseEventAction)].flatten.toSet
-							val executedActions = raiseEventActions
-									.filter[!it.arguments.empty && it.arguments.lastOrNull.helperEquals(rhs)]
+							val executedActions = raiseEventActions.filter[
+										!it.arguments.empty && it.arguments.lastOrNull.helperEquals(rhs)]
 							if (!executedActions.empty) {
-								val originalSenderInstance = senderInstance.getOriginalSimpleInstanceReference(originalTopComponent)
 								val action = executedActions.head
 								val transitionOrState = action.containingTransitionOrState
 								if (transitionOrState instanceof Transition) {
@@ -500,11 +505,42 @@ class UnfoldedExecutionTraceBackAnnotator {
 								else if (transitionOrState instanceof State) {
 									val stateName = transitionOrState.name
 									val regionName = transitionOrState.parentRegion.name
-									val instanceName = originalSenderInstance.name
 									
 									val metadataMessage = '''«INTERACTION_SENDING_BEGINNING»state «stateName» region «regionName» of «instanceName»'''
 											.createOpaqueExpression
 									
+									return metadataMessage
+								}
+							}
+							// Dataflow
+							if (!rhs.helperEquals(createLiteralZero)) { // '0' is undef variable
+								val assignmentStatements = actions.map[it.getSelfAndAllContentsOfType(AssignmentStatement)].flatten.toSet
+								val executedWriterActions = assignmentStatements.filter[it.lhs.declaration.helperEquals(variable)]
+								if (!executedWriterActions.empty) {
+									val isDef = name.startsWith(DEF_DATAFLOW_VAR_BEGINNING)
+									val lastI = javaUtil.lastBeforeLastIndexOf(name, INJECTED_VAR_END)
+									val message =
+									if (isDef) {
+										val action = executedWriterActions.filter[it.rhs.helperEquals(rhs)].head
+										val transitionOrState = action.containingTransitionOrState
+										val checkVariableName = name.substring(DEF_DATAFLOW_VAR_BEGINNING.length, lastI)
+										'''Variable «checkVariableName» last defined by «transitionOrState» of «instanceName»'''
+									}
+									else {
+										// Use
+										val useAction = javaUtil.getOnlyElement(executedWriterActions)
+										val transitionOrState = useAction.containingTransitionOrState
+										val useRhs = useAction.rhs
+										val defVar = useRhs.declaration
+										val defAction = javaUtil.getOnlyElement(
+												assignmentStatements.filter[it.lhs.declaration.helperEquals(defVar) && rhs.helperEquals(rhs)])
+										val defTransitionOrState = defAction.containingTransitionOrState
+										val checkVariableName = name.substring(USE_DATAFLOW_VAR_BEGINNING.length, lastI)
+										'''Variable «checkVariableName» used by «transitionOrState» as last defined by «defTransitionOrState» of «instanceName»'''
+									}
+									
+									val metadataMessage = message.createOpaqueExpression
+									metadata += metadataMessage
 									return metadataMessage
 								}
 							}
@@ -547,8 +583,8 @@ class UnfoldedExecutionTraceBackAnnotator {
 	protected def extendMetadata(ExecutionTrace trace) {
 		val comment = trace.getAnnotation(ExecutionTraceCommentAnnotation)
 		val string = comment.comment
-		if (string.contains(QUEUE_OVERFLOW_VARIABLE_BEGINNING) && string.contains(OF)) {
-			val string2 = string.substring(string.indexOf(QUEUE_OVERFLOW_VARIABLE_BEGINNING) + QUEUE_OVERFLOW_VARIABLE_BEGINNING.length)
+		if (string.contains(QUEUE_OVERFLOW_VAR_BEGINNING) && string.contains(OF)) {
+			val string2 = string.substring(string.indexOf(QUEUE_OVERFLOW_VAR_BEGINNING) + QUEUE_OVERFLOW_VAR_BEGINNING.length)
 			val string3 = javaUtil.substring(string2, [!javaUtil.isIdChar(it)])
 			val id = string2.replace(string3, "")
 			

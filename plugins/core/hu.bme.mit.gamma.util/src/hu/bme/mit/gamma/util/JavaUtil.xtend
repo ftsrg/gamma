@@ -331,6 +331,13 @@ class JavaUtil {
 	
 	//
 	
+	def int lastBeforeLastIndexOf(String string, String str) {
+		val lastI = string.lastIndexOf(str)
+		val sub = string.substring(0, lastI)
+		val lastBeforeLastI = sub.lastIndexOf(str)
+		return lastBeforeLastI
+	}
+	
 	def String getCommonPrefix(String a, String b) {
 		for (var i = 0; i < a.length && i < b.length; i++) {
 			if (a.charAt(i) != b.charAt(i)) {
