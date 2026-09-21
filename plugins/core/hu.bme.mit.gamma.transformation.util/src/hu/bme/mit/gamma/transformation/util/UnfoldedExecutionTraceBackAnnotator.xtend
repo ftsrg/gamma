@@ -515,17 +515,9 @@ class UnfoldedExecutionTraceBackAnnotator {
 								val assignmentStatements = actions.map[it.getSelfAndAllContentsOfType(AssignmentStatement)].flatten.toSet
 								val executedWriterActions = assignmentStatements.filter[it.lhs.declaration.helperEquals(variable)]
 								if (!executedWriterActions.empty) {
-									val isDef = name.startsWith(DEF_DATAFLOW_VAR_BEGINNING)
+									val isUse = name.startsWith(USE_DATAFLOW_VAR_BEGINNING)
 									val lastI = javaUtil.lastBeforeLastIndexOf(name, INJECTED_VAR_END)
-									val message =
-									if (isDef) {
-										val action = executedWriterActions.filter[it.rhs.helperEquals(rhs)].head
-										val transitionOrState = action.containingTransitionOrState
-										val checkVariableName = name.substring(DEF_DATAFLOW_VAR_BEGINNING.length, lastI)
-										'''Variable «checkVariableName» last defined by «transitionOrState.getMessage(originalSenderInstance)»'''
-									}
-									else {
-										// Use
+									if (isUse) {
 										val useAction = javaUtil.getOnlyElement(executedWriterActions)
 										val transitionOrState = useAction.containingTransitionOrState
 										val useRhs = useAction.rhs
@@ -534,13 +526,20 @@ class UnfoldedExecutionTraceBackAnnotator {
 												assignmentStatements.filter[it.lhs.declaration.helperEquals(defVar) && rhs.helperEquals(rhs)])
 										val defTransitionOrState = defAction.containingTransitionOrState
 										val checkVariableName = name.substring(USE_DATAFLOW_VAR_BEGINNING.length, lastI)
-										'''Variable «checkVariableName» used by «transitionOrState.getMessage(originalSenderInstance)» as last defined by «defTransitionOrState.getMessage(originalSenderInstance)»'''
+										val message = '''Variable «checkVariableName» used by «transitionOrState.getMessage(originalSenderInstance)» as last defined by «defTransitionOrState.getMessage(originalSenderInstance)»'''
+										
+										val metadataMessage = message.createOpaqueExpression
+										metadata += metadataMessage
+										
+										return metadataMessage
 									}
-									
-									val metadataMessage = message.createOpaqueExpression
-									metadata += metadataMessage
-									
-									return metadataMessage
+//									else {
+//										// Def - actually unnecessary
+//										val action = executedWriterActions.filter[it.rhs.helperEquals(rhs)].head
+//										val transitionOrState = action.containingTransitionOrState
+//										val checkVariableName = name.substring(DEF_DATAFLOW_VAR_BEGINNING.length, lastI)
+//										'''Variable «checkVariableName» last defined by «transitionOrState.getMessage(originalSenderInstance)»'''
+//									}
 								}
 							}
 						}
