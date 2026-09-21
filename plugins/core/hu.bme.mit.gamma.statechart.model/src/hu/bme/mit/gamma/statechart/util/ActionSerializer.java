@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -28,8 +28,8 @@ public class ActionSerializer extends hu.bme.mit.gamma.action.util.ActionSeriali
 
 	protected String _serialize(SetTimeoutAction action) {
 		final TimeSpecification time = action.getTime();
-		return action.getTimeoutDeclaration().getName() + " := "
-				+ expressionSerializer.serialize(time.getValue()) + " " + serialize(time.getUnit());
+		return action.getTimeoutDeclaration().getName() + " := " +
+				expressionSerializer.serialize(time.getValue()) + " " + serialize(time.getUnit()) + addDelimeter();
 	}
 
 	protected String serialize(TimeUnit timeUnit) {
@@ -52,7 +52,7 @@ public class ActionSerializer extends hu.bme.mit.gamma.action.util.ActionSeriali
 					expressionSerializer.serialize(argument));
 		}
 		builder.append(")");
-		return builder.toString();
+		return builder.toString() + addDelimeter();
 	}
 
 	public String serialize(Action action) {

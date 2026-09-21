@@ -517,6 +517,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 								if (!executedWriterActions.empty) {
 									val isUse = name.startsWith(USE_DATAFLOW_VAR_BEGINNING)
 									val lastI = javaUtil.lastBeforeLastIndexOf(name, INJECTED_VAR_END)
+									val message = 
 									if (isUse) {
 										val useAction = javaUtil.getOnlyElement(executedWriterActions)
 										val transitionOrState = useAction.containingTransitionOrState
@@ -526,20 +527,20 @@ class UnfoldedExecutionTraceBackAnnotator {
 												assignmentStatements.filter[it.lhs.declaration.helperEquals(defVar) && rhs.helperEquals(rhs)])
 										val defTransitionOrState = defAction.containingTransitionOrState
 										val checkVariableName = name.substring(USE_DATAFLOW_VAR_BEGINNING.length, lastI)
-										val message = '''Variable «checkVariableName» used by «transitionOrState.getMessage(originalSenderInstance)» as last defined by «defTransitionOrState.getMessage(originalSenderInstance)»'''
-										
-										val metadataMessage = message.createOpaqueExpression
-										metadata += metadataMessage
-										
-										return metadataMessage
+										'''Variable «checkVariableName» used by «transitionOrState.getMessage(originalSenderInstance)» as last defined by «defTransitionOrState.getMessage(originalSenderInstance)»'''
 									}
-//									else {
-//										// Def - actually unnecessary
-//										val action = executedWriterActions.filter[it.rhs.helperEquals(rhs)].head
-//										val transitionOrState = action.containingTransitionOrState
-//										val checkVariableName = name.substring(DEF_DATAFLOW_VAR_BEGINNING.length, lastI)
-//										'''Variable «checkVariableName» last defined by «transitionOrState.getMessage(originalSenderInstance)»'''
-//									}
+									else {
+										// Def - actually only the first one would be needed for a particular def
+										val action = executedWriterActions.filter[it.rhs.helperEquals(rhs)].head
+										val transitionOrState = action.containingTransitionOrState
+										val checkVariableName = name.substring(DEF_DATAFLOW_VAR_BEGINNING.length, lastI)
+										'''Variable «checkVariableName» last defined by «transitionOrState.getMessage(originalSenderInstance)»'''
+									}
+									
+									val metadataMessage = message.createOpaqueExpression
+									metadata += metadataMessage
+									
+									return metadataMessage
 								}
 							}
 						}

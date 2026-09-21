@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -52,21 +52,21 @@ public class ActionSerializer {
 	}
 
 	protected String _serialize(final BreakStatement statement) {
-		return "break";
+		return "break" + addDelimeter();
 	}
 
 	protected String _serialize(final ReturnStatement statement) {
-		return "return " + expressionSerializer.serialize(statement.getExpression());
+		return "return " + expressionSerializer.serialize(statement.getExpression()) + addDelimeter();
 	}
 
 	protected String _serialize(final AssignmentStatement statement) {
 		return expressionSerializer.serialize(statement.getLhs()) + " := "
-				+ expressionSerializer.serialize(statement.getRhs());
+				+ expressionSerializer.serialize(statement.getRhs()) + addDelimeter();
 	}
 	
 	protected String _serialize(final HavocStatement statement) {
 		return "havoc " + expressionSerializer.serialize(statement.getLhs()) + " constrain "
-				+ expressionSerializer.serialize(statement.getConstraint());
+				+ expressionSerializer.serialize(statement.getConstraint()) + addDelimeter();
 	}
 
 	protected String _serialize(final ChoiceStatement statement) {
@@ -83,7 +83,7 @@ public class ActionSerializer {
 		ConstantDeclaration constant = statement.getConstantDeclaration();
 		String typeName = typeSerializer.serialize(constant.getType());
 		String expression = expressionSerializer.serialize(constant.getExpression());
-		return "const " + constant.getName() + " : " + typeName + " := " + expression;
+		return "const " + constant.getName() + " : " + typeName + " := " + expression + addDelimeter();
 	}
 
 	protected String _serialize(final VariableDeclarationStatement statement) {
@@ -94,7 +94,7 @@ public class ActionSerializer {
 		if (expression != null) {
 			builder.append(" := " + expressionSerializer.serialize(expression));
 		}
-		return builder.toString();
+		return builder.toString() + addDelimeter();
 	}
 
 	protected String _serialize(final EmptyStatement statement) {
@@ -102,7 +102,7 @@ public class ActionSerializer {
 	}
 
 	protected String _serialize(final ExpressionStatement statement) {
-		return expressionSerializer.serialize(statement.getExpression());
+		return expressionSerializer.serialize(statement.getExpression()) + addDelimeter();
 	}
 
 	protected String _serialize(final ForStatement statement) {
@@ -134,6 +134,8 @@ public class ActionSerializer {
 		}
 		return builder.toString();
 	}
+	
+	protected String addDelimeter() { return ";"; }
 
 	public String serialize(final Action action) {
 		if (action instanceof Block _action) {

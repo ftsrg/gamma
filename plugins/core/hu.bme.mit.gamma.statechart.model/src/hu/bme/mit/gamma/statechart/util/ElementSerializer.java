@@ -63,10 +63,10 @@ public class ElementSerializer {
 	public String serializeSourceAndTargetAndTriggerAndGuard(Transition transition) {
 		String string = serializeSourceAndTargetAndTrigger(transition);
 		Expression guard = transition.getGuard();
-		String guardString = (guard == null) ? "" : javaUtil.deparenthesize(
-				expressionSerializer.serialize(guard));
+		String guardString = (guard == null) ? "" : " [" + javaUtil.deparenthesize(
+				expressionSerializer.serialize(guard)) + "]";
 		
-		return string + " [" + guardString + "]";
+		return string + guardString;
 	}
 	
 	protected String serialize(Trigger trigger) {
