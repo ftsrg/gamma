@@ -52,6 +52,7 @@ import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
 import java.util.logging.Logger
+import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkNotNull
@@ -485,7 +486,6 @@ class UnfoldedExecutionTraceBackAnnotator {
 						for (senderInstance : newComponent.allSynchronousSimpleInstances) {
 							val senderStatechart = senderInstance.getStatechart
 							val originalSenderInstance = senderInstance.getOriginalSimpleInstanceReference(originalTopComponent)
-							val instanceName = originalSenderInstance.name
 							
 							val allStates = senderStatechart.allStates
 							val allTransitions = senderStatechart.transitions
@@ -503,17 +503,15 @@ class UnfoldedExecutionTraceBackAnnotator {
 									return metadataMessage
 								}
 								else if (transitionOrState instanceof State) {
-									val stateName = transitionOrState.name
-									val regionName = transitionOrState.parentRegion.name
-									
-									val metadataMessage = '''«INTERACTION_SENDING_BEGINNING»state «stateName» region «regionName» of «instanceName»'''
+									val metadataMessage = '''«INTERACTION_SENDING_BEGINNING»state «transitionOrState.getMessage(originalSenderInstance)»'''
 											.createOpaqueExpression
 									
 									return metadataMessage
 								}
 							}
 							// Dataflow
-							if (!rhs.helperEquals(createLiteralZero)) { // '0' is undef variable
+							if ((name.startsWith(DEF_DATAFLOW_VAR_BEGINNING) ||	name.startsWith(USE_DATAFLOW_VAR_BEGINNING)) &&
+										!rhs.helperEquals(createLiteralZero)) { // '0' is undef variable
 								val assignmentStatements = actions.map[it.getSelfAndAllContentsOfType(AssignmentStatement)].flatten.toSet
 								val executedWriterActions = assignmentStatements.filter[it.lhs.declaration.helperEquals(variable)]
 								if (!executedWriterActions.empty) {
@@ -524,7 +522,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 										val action = executedWriterActions.filter[it.rhs.helperEquals(rhs)].head
 										val transitionOrState = action.containingTransitionOrState
 										val checkVariableName = name.substring(DEF_DATAFLOW_VAR_BEGINNING.length, lastI)
-										'''Variable «checkVariableName» last defined by «transitionOrState» of «instanceName»'''
+										'''Variable «checkVariableName» last defined by «transitionOrState.getMessage(originalSenderInstance)»'''
 									}
 									else {
 										// Use
@@ -536,11 +534,12 @@ class UnfoldedExecutionTraceBackAnnotator {
 												assignmentStatements.filter[it.lhs.declaration.helperEquals(defVar) && rhs.helperEquals(rhs)])
 										val defTransitionOrState = defAction.containingTransitionOrState
 										val checkVariableName = name.substring(USE_DATAFLOW_VAR_BEGINNING.length, lastI)
-										'''Variable «checkVariableName» used by «transitionOrState» as last defined by «defTransitionOrState» of «instanceName»'''
+										'''Variable «checkVariableName» used by «transitionOrState.getMessage(originalSenderInstance)» as last defined by «defTransitionOrState.getMessage(originalSenderInstance)»'''
 									}
 									
 									val metadataMessage = message.createOpaqueExpression
 									metadata += metadataMessage
+									
 									return metadataMessage
 								}
 							}
@@ -555,12 +554,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 	
 	protected def getMetadata(Transition newTransition,
 			ComponentInstanceReferenceExpression originalInstance, String prefix) {
-		val transition = try {
-			originalInstance.getOriginalTransition(newTransition)
-		} catch (IllegalArgumentException e2) {
-			// Did not find the original transition
-			newTransition
-		}
+		val transition = newTransition.backAnnotateTransition(originalInstance)
 		val instanceName = originalInstance.name
 		
 		val metadataMessage = prefix.getTransitionMessage(transition, instanceName)
@@ -570,8 +564,54 @@ class UnfoldedExecutionTraceBackAnnotator {
 		return metadataMessage
 	}
 	
+	protected def backAnnotateTransition(Transition newTransition, ComponentInstanceReferenceExpression originalInstance) {
+		return try {
+			originalInstance.getOriginalTransition(newTransition)
+		} catch (IllegalArgumentException e) {
+			// Did not find the original transition
+			newTransition
+		}
+	}
+	
+	//
+	
+	protected def getMessage(String prefix, EObject transitionOrState, ComponentInstanceReferenceExpression originalInstance) {
+		val instanceName = originalInstance.name
+		return (transitionOrState instanceof Transition) ?
+				prefix.getTransitionMessage(transitionOrState.backAnnotateTransition(originalInstance), instanceName) :
+				prefix.getStateMessage(transitionOrState as State, instanceName)
+	}
+	
+	protected def getMessage(EObject transitionOrState, ComponentInstanceReferenceExpression originalInstance) {
+		val instanceName = originalInstance.name
+		return (transitionOrState instanceof Transition) ?
+				transitionOrState.backAnnotateTransition(originalInstance).getTransitionMessage(instanceName) :
+				(transitionOrState as State).getStateMessage(instanceName)
+	}
+	
+	protected def getMessage(EObject transitionOrState) {
+		return (transitionOrState instanceof Transition) ?
+				transitionOrState.transitionMessage :
+				(transitionOrState as State).stateMessage
+	}
+	
 	protected def getTransitionMessage(String prefix, Transition transition, String instanceName)
-		'''«prefix»«transition.serialize» of «instanceName»'''
+		'''«prefix»«transition.getTransitionMessage(instanceName)»'''
+	
+	protected def getTransitionMessage(Transition transition, String instanceName)
+		'''«transition.transitionMessage» of «instanceName»'''
+	
+	protected def getTransitionMessage(Transition transition)
+		'''«transition.serialize»'''
+	
+	protected def getStateMessage(String prefix, State newState, String instanceName)
+		'''«prefix»state «newState.name» region «newState.parentRegion.name» of «instanceName»'''
+	
+	protected def getStateMessage(State newState, String instanceName)
+		'''state «newState.stateMessage» of «instanceName»'''
+	
+	protected def getStateMessage(State newState)
+		'''state «newState.name» region «newState.parentRegion.name»'''
 	
 	//
 	
