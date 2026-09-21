@@ -208,7 +208,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					fileNamer.getHiddenEmfPropertyFileName(fileName));
 				PropertyPackage propertyPackage = (PropertyPackage) ecoreUtil.normalLoad(propertyFile);
 				for (Coverage coverage : coverages) {
-					propertyPackage.getCoverages().add(coverage.eClass().getName());
+					String name = coverage.eClass().getName();
+					propertyPackage.getCoverages().add(name);
 				}
 				// ! The object has to be removed from the resource if we want to serialize it
 				ecoreUtil.deleteResource(propertyPackage);

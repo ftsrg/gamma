@@ -990,8 +990,8 @@ class StatechartAnnotator {
 		val raisedEvents = defReferences.map[it.event].toSet // Set, so one event is set only once
 		// Creating event parameters
 		for (event : raisedEvents) {
-			event.extendEventWithParameter(createIntegerTypeDefinition,
-				namings.getInteractionDefVariableName(event))
+			val interactionDefVariableName = namings.getInteractionDefVariableName(event)
+			event.extendEventWithParameter(createIntegerTypeDefinition, interactionDefVariableName)
 			// Parameter is always the last
 		}
 		
@@ -1006,8 +1006,8 @@ class StatechartAnnotator {
 		for (useReference : useReferences) {
 			val event = useReference.event
 			val defVariable = event.parameterDeclarations.lastElement // Parameter is always the last
-			val useVariable = useReference.createUseVariable(interactionUseVariables,
-				namings.getInteractionUseVariableName(useReference))
+			val interactionUseVariableName = namings.getInteractionUseVariableName(useReference)
+			val useVariable = useReference.createUseVariable(interactionUseVariables, interactionUseVariableName)
 			useReference.saveDefUseVariablePair(defVariable, useVariable)
 		}
 		

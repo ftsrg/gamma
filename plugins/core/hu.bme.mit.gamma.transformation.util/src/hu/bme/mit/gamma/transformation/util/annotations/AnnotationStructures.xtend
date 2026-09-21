@@ -26,12 +26,14 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
+import hu.bme.mit.gamma.util.Triple
 import java.util.Collection
 import java.util.Map
 import java.util.Set
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Data
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class AnnotationStructures { }
@@ -209,7 +211,7 @@ class AnnotationNamings {
 	def String getInteractionDefVariableName(Event event)
 		'''«PREFIX»def_«event.name»_«interactionDefId.increment(event)»«POSTFIX»'''
 	def String getInteractionUseVariableName(EventParameterReferenceExpression reference)
-		'''«PREFIX»use_«reference.port.name»_«reference.event.name»_«reference.parameterDeclaration.name»_«interactionUseId.increment(reference)»«POSTFIX»'''
+		'''«PREFIX»use_«reference.port.name»_«reference.event.name»_«reference.parameterDeclaration.name»_«interactionUseId.increment(reference.parameterDeclaration)»«POSTFIX»'''
 }
 
 ///

@@ -310,15 +310,15 @@ public class StatechartModelValidator extends ActionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkParameterName(Event event) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (event.getParameterDeclarations().size() == 1) {
-			final ParameterDeclaration parameterDeclaration = event.getParameterDeclarations().get(0);
-			if (!parameterDeclaration.getName().equals(event.getName() + "Value")) {
-				validationResultMessages.add(
-					new ValidationResultMessage(ValidationResult.INFO,
-						"This parameter should be named " + event.getName() + "Value to be consistent with Yakindu",
-							new ReferenceInfo(ExpressionModelPackage.Literals.PARAMETRIC_ELEMENT__PARAMETER_DECLARATIONS)));
-			}
-		}
+//		if (event.getParameterDeclarations().size() == 1) {
+//			final ParameterDeclaration parameterDeclaration = event.getParameterDeclarations().get(0);
+//			if (!parameterDeclaration.getName().equals(event.getName() + "Value")) {
+//				validationResultMessages.add(
+//					new ValidationResultMessage(ValidationResult.INFO,
+//						"This parameter should be named " + event.getName() + "Value to be consistent with Yakindu",
+//							new ReferenceInfo(ExpressionModelPackage.Literals.PARAMETRIC_ELEMENT__PARAMETER_DECLARATIONS)));
+//			}
+//		}
 		return validationResultMessages;
 	}
 	
