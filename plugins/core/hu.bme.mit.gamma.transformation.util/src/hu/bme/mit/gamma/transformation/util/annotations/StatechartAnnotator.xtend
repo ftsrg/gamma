@@ -1017,8 +1017,7 @@ class StatechartAnnotator {
 		// have to have the correct number of arguments - they get the 0 (reset) id
 		defReferences.extendUnattendedRaiseEventActions
 		
-		// Collecting parameter transfer between ports among which there is a channel
-		// is in the getter method
+		// Collecting parameter transfer between ports among which there is a channel in the getter method
 	}
 	
 	protected def areBothPortsConsidered(Port inPort, Port outPort) {

@@ -481,20 +481,63 @@ class UnfoldedExecutionTraceBackAnnotator {
 						return metadataMessage
 					}
 					else {
-						// Sender of 'interaction' coverage
 						val newComponent = trace.component
+						val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
+						
+						var allStates = statechart.allStates
+						var allTransitions = statechart.transitions
+						var actions = allStates.map[it.entryActions + it.exitActions].flatten +
+								allTransitions.map[it.effects].flatten
+								
+						val isDataflow = name.startsWith(DEF_DATAFLOW_VAR_BEGINNING) || name.startsWith(USE_DATAFLOW_VAR_BEGINNING)
+						// Dataflow
+						if (isDataflow && !rhs.helperEquals(createLiteralZero)) { // '0' is undef variable
+							val assignmentStatements = actions.map[it.getSelfAndAllContentsOfType(AssignmentStatement)].flatten.toSet
+							val executedWriterActions = assignmentStatements.filter[it.lhs.declaration.helperEquals(variable)]
+							if (!executedWriterActions.empty) {
+								val isUse = name.startsWith(USE_DATAFLOW_VAR_BEGINNING)
+								val lastI = javaUtil.lastBeforeLastIndexOf(name, INJECTED_VAR_END)
+								val message = 
+								if (isUse) {
+									val useAction = javaUtil.getOnlyElement(executedWriterActions)
+									val transitionOrState = useAction.containingTransitionOrState
+									val useRhs = useAction.rhs
+									val defVar = useRhs.declaration
+									
+									val defAction = javaUtil.getOnlyElement(
+											assignmentStatements.filter[it.lhs.declaration.helperEquals(defVar) && it.rhs.helperEquals(rhs)])
+									val defTransitionOrState = defAction.containingTransitionOrState
+									val checkVariableName = name.substring(USE_DATAFLOW_VAR_BEGINNING.length, lastI)
+									'''Variable «checkVariableName» used by «transitionOrState.getMessage(originalInstance)» as last defined by «defTransitionOrState.getMessage(originalInstance)»'''
+								}
+								else {
+									// Def - actually only the first one would be needed for a particular def
+									val action = executedWriterActions.filter[it.rhs.helperEquals(rhs)].head
+									val transitionOrState = action.containingTransitionOrState
+									val checkVariableName = name.substring(DEF_DATAFLOW_VAR_BEGINNING.length, lastI)
+									'''Variable «checkVariableName» last defined by «transitionOrState.getMessage(originalInstance)»'''
+								}
+								
+								val metadataMessage = message.createOpaqueExpression
+								metadata += metadataMessage
+								
+								return metadataMessage
+							}
+						}
+						// Sender of 'interaction' coverage
 						for (senderInstance : newComponent.allSynchronousSimpleInstances) {
 							val senderStatechart = senderInstance.getStatechart
 							val originalSenderInstance = senderInstance.getOriginalSimpleInstanceReference(originalTopComponent)
 							
-							val allStates = senderStatechart.allStates
-							val allTransitions = senderStatechart.transitions
-							val actions = allStates.map[it.entryActions + it.exitActions].flatten +
+							allStates = senderStatechart.allStates
+							allTransitions = senderStatechart.transitions
+							actions = allStates.map[it.entryActions + it.exitActions].flatten +
 									allTransitions.map[it.effects].flatten
 							val raiseEventActions = actions.map[it.getSelfAndAllContentsOfType(RaiseEventAction)].flatten.toSet
 							val executedActions = raiseEventActions.filter[
 										!it.arguments.empty && it.arguments.lastOrNull.helperEquals(rhs)]
-							if (!executedActions.empty) {
+							// Interactions
+							if (!isDataflow && !executedActions.empty) {
 								val action = executedActions.head
 								val transitionOrState = action.containingTransitionOrState
 								if (transitionOrState instanceof Transition) {
@@ -505,40 +548,6 @@ class UnfoldedExecutionTraceBackAnnotator {
 								else if (transitionOrState instanceof State) {
 									val metadataMessage = '''«INTERACTION_SENDING_BEGINNING»state «transitionOrState.getMessage(originalSenderInstance)»'''
 											.createOpaqueExpression
-									
-									return metadataMessage
-								}
-							}
-							// Dataflow
-							if ((name.startsWith(DEF_DATAFLOW_VAR_BEGINNING) ||	name.startsWith(USE_DATAFLOW_VAR_BEGINNING)) &&
-										!rhs.helperEquals(createLiteralZero)) { // '0' is undef variable
-								val assignmentStatements = actions.map[it.getSelfAndAllContentsOfType(AssignmentStatement)].flatten.toSet
-								val executedWriterActions = assignmentStatements.filter[it.lhs.declaration.helperEquals(variable)]
-								if (!executedWriterActions.empty) {
-									val isUse = name.startsWith(USE_DATAFLOW_VAR_BEGINNING)
-									val lastI = javaUtil.lastBeforeLastIndexOf(name, INJECTED_VAR_END)
-									val message = 
-									if (isUse) {
-										val useAction = javaUtil.getOnlyElement(executedWriterActions)
-										val transitionOrState = useAction.containingTransitionOrState
-										val useRhs = useAction.rhs
-										val defVar = useRhs.declaration
-										val defAction = javaUtil.getOnlyElement(
-												assignmentStatements.filter[it.lhs.declaration.helperEquals(defVar) && rhs.helperEquals(rhs)])
-										val defTransitionOrState = defAction.containingTransitionOrState
-										val checkVariableName = name.substring(USE_DATAFLOW_VAR_BEGINNING.length, lastI)
-										'''Variable «checkVariableName» used by «transitionOrState.getMessage(originalSenderInstance)» as last defined by «defTransitionOrState.getMessage(originalSenderInstance)»'''
-									}
-									else {
-										// Def - actually only the first one would be needed for a particular def
-										val action = executedWriterActions.filter[it.rhs.helperEquals(rhs)].head
-										val transitionOrState = action.containingTransitionOrState
-										val checkVariableName = name.substring(DEF_DATAFLOW_VAR_BEGINNING.length, lastI)
-										'''Variable «checkVariableName» last defined by «transitionOrState.getMessage(originalSenderInstance)»'''
-									}
-									
-									val metadataMessage = message.createOpaqueExpression
-									metadata += metadataMessage
 									
 									return metadataMessage
 								}
