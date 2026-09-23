@@ -456,8 +456,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 		val name = variable.name
 		
 		// All for 'transition', 'transition-pair' and 'interaction' coverage
-		if (name.startsWith(EXECUTED_TRANSITION_VAR_BEGINNING) &&
-				name.endsWith(INJECTED_VAR_END)) {
+		if (name.startsWith(EXECUTED_TRANSITION_VAR_BEGINNING) && name.endsWith(INJECTED_VAR_END)) {
 			val container = assert.eContainer
 			if (container instanceof Step || container instanceof EqualityExpression) {
 				val rhs = (container instanceof EqualityExpression) ? container.rightOperand : 
@@ -481,22 +480,23 @@ class UnfoldedExecutionTraceBackAnnotator {
 						return metadataMessage
 					}
 					else {
-						val newComponent = trace.component
-						val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
-						
 						var allStates = statechart.allStates
 						var allTransitions = statechart.transitions
 						var actions = allStates.map[it.entryActions + it.exitActions].flatten +
 								allTransitions.map[it.effects].flatten
+						val assignmentStatements = actions.map[it.getSelfAndAllContentsOfType(AssignmentStatement)].flatten.toSet
+						val executedWriterActions = assignmentStatements.filter[it.lhs.declaration.helperEquals(variable)]
 								
 						val isDataflow = name.startsWith(DEF_DATAFLOW_VAR_BEGINNING) || name.startsWith(USE_DATAFLOW_VAR_BEGINNING)
+						val isUse = name.startsWith(USE_DATAFLOW_VAR_BEGINNING)
+						val lastI = javaUtil.lastBeforeLastIndexOf(name, INJECTED_VAR_END)
+						val checkUseVariableName = (isUse) ? name.substring(USE_DATAFLOW_VAR_BEGINNING.length, lastI)
+						
+						val newComponent = trace.component
+						val originalInstance = instance.getOriginalSimpleInstanceReference(originalTopComponent)
 						// Dataflow
 						if (isDataflow && !rhs.helperEquals(createLiteralZero)) { // '0' is undef variable
-							val assignmentStatements = actions.map[it.getSelfAndAllContentsOfType(AssignmentStatement)].flatten.toSet
-							val executedWriterActions = assignmentStatements.filter[it.lhs.declaration.helperEquals(variable)]
 							if (!executedWriterActions.empty) {
-								val isUse = name.startsWith(USE_DATAFLOW_VAR_BEGINNING)
-								val lastI = javaUtil.lastBeforeLastIndexOf(name, INJECTED_VAR_END)
 								val message = 
 								if (isUse) {
 									val useAction = javaUtil.getOnlyElement(executedWriterActions)
@@ -504,11 +504,15 @@ class UnfoldedExecutionTraceBackAnnotator {
 									val useRhs = useAction.rhs
 									val defVar = useRhs.declaration
 									
-									val defAction = javaUtil.getOnlyElement(
-											assignmentStatements.filter[it.lhs.declaration.helperEquals(defVar) && it.rhs.helperEquals(rhs)])
-									val defTransitionOrState = defAction.containingTransitionOrState
-									val checkVariableName = name.substring(USE_DATAFLOW_VAR_BEGINNING.length, lastI)
-									'''Variable «checkVariableName» used by «transitionOrState.getMessage(originalInstance)» as last defined by «defTransitionOrState.getMessage(originalInstance)»'''
+									val defActions = assignmentStatements.filter[it.lhs.declaration.helperEquals(defVar) && it.rhs.helperEquals(rhs)]
+									if (!defActions.empty) {
+										val defAction = javaUtil.getOnlyElement(defActions)
+										val defTransitionOrState = defAction.containingTransitionOrState
+										'''Variable «checkUseVariableName» used by «transitionOrState.getMessage(originalInstance)» as last defined by «defTransitionOrState.getMessage(originalInstance)»'''
+									}
+									else {
+										null // Interaction-dataflow
+									}
 								}
 								else {
 									// Def - actually only the first one would be needed for a particular def
@@ -518,13 +522,14 @@ class UnfoldedExecutionTraceBackAnnotator {
 									'''Variable «checkVariableName» last defined by «transitionOrState.getMessage(originalInstance)»'''
 								}
 								
-								val metadataMessage = message.createOpaqueExpression
-								metadata += metadataMessage
-								
-								return metadataMessage
+								if (message !== null) {
+									val metadataMessage = message.createMetadata
+									
+									return metadataMessage
+								}
 							}
 						}
-						// Sender of 'interaction' coverage
+						// Sender of 'interaction' coverage or interaction dataflow
 						for (senderInstance : newComponent.allSynchronousSimpleInstances) {
 							val senderStatechart = senderInstance.getStatechart
 							val originalSenderInstance = senderInstance.getOriginalSimpleInstanceReference(originalTopComponent)
@@ -536,20 +541,37 @@ class UnfoldedExecutionTraceBackAnnotator {
 							val raiseEventActions = actions.map[it.getSelfAndAllContentsOfType(RaiseEventAction)].flatten.toSet
 							val executedActions = raiseEventActions.filter[
 										!it.arguments.empty && it.arguments.lastOrNull.helperEquals(rhs)]
-							// Interactions
-							if (!isDataflow && !executedActions.empty) {
-								val action = executedActions.head
-								val transitionOrState = action.containingTransitionOrState
-								if (transitionOrState instanceof Transition) {
-									val metadataMessage = transitionOrState.getMetadata(originalSenderInstance, INTERACTION_SENDING_BEGINNING)
-									
-									return metadataMessage
+							val action = executedActions.head
+							val transitionOrState = action?.containingTransitionOrState
+							if (transitionOrState !== null) {
+								if (!isDataflow) {
+									// Interactions
+									if (transitionOrState instanceof Transition) {
+										val metadataMessage = transitionOrState.getMetadata(originalSenderInstance, INTERACTION_SENDING_BEGINNING)
+										
+										return metadataMessage
+									}
+									else if (transitionOrState instanceof State) {
+										val metadataMessage = '''«INTERACTION_SENDING_BEGINNING»«transitionOrState.getMessage(originalSenderInstance)»'''
+												.createMetadata
+										return metadataMessage
+									}
 								}
-								else if (transitionOrState instanceof State) {
-									val metadataMessage = '''«INTERACTION_SENDING_BEGINNING»state «transitionOrState.getMessage(originalSenderInstance)»'''
-											.createOpaqueExpression
-									
-									return metadataMessage
+								else {
+									// Interaction dataflow
+									if (!executedWriterActions.empty) {
+//										if (isUse) {
+											val useAction = javaUtil.getOnlyElement(executedWriterActions)
+											val useTransitionOrState = useAction.containingTransitionOrState
+											// TODO back-annotate parameter name
+											val message = '''Variable «checkUseVariableName» used by «useTransitionOrState.getMessage(originalInstance)» as last defined by «transitionOrState.getMessage(originalInstance)»'''
+//										}
+										// No def variable
+										
+										val metadataMessage = message.createMetadata
+										
+										return metadataMessage
+									}
 								}
 							}
 						}
@@ -567,7 +589,13 @@ class UnfoldedExecutionTraceBackAnnotator {
 		val instanceName = originalInstance.name
 		
 		val metadataMessage = prefix.getTransitionMessage(transition, instanceName)
-					.createOpaqueExpression
+		val metadata = metadataMessage.createMetadata
+		
+		return metadata
+	}
+	
+	protected def createMetadata(CharSequence message) {
+		val metadataMessage = message.createOpaqueExpression
 		metadata += metadataMessage
 		
 		return metadataMessage
@@ -617,7 +645,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 		'''«prefix»state «newState.name» region «newState.parentRegion.name» of «instanceName»'''
 	
 	protected def getStateMessage(State newState, String instanceName)
-		'''state «newState.stateMessage» of «instanceName»'''
+		'''«newState.stateMessage» of «instanceName»'''
 	
 	protected def getStateMessage(State newState)
 		'''state «newState.name» region «newState.parentRegion.name»'''
@@ -647,9 +675,8 @@ class UnfoldedExecutionTraceBackAnnotator {
 					if (queueId == id) {
 						val step = trace.lastStep
 						val metadataMessage = ("Message queue overflowed: " + queue.name + " of " + asynchronousInstance.name)
-								.createOpaqueExpression
+								.createMetadata
 						step.asserts.addFirst(metadataMessage)
-						metadata += metadataMessage
 					}
 				}
 			}
