@@ -10,17 +10,18 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.verification.util
 
+import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
-import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
+import hu.bme.mit.gamma.util.Triple
 import java.util.Collection
 import java.util.List
 import java.util.Map
 import java.util.Map.Entry
 import java.util.regex.Pattern
+import org.eclipse.emf.ecore.EObject
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
@@ -28,37 +29,38 @@ import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerived
 class DataflowCheckPostprocessor extends VerificationPostprocessor {
 	//
 	public static final String metadataBeginning = "Variable "
+	public static final String metadataUsedBy = "used by"
+	public static final String metadataDefBy = "as last defined by"
+	public static final String OF = "of"
 	//
 	protected final List<Collection<? extends
-			Entry<ComponentInstanceReferenceExpression, Transition>>> executedTransitions = newArrayList
+			Entry<ComponentInstanceReferenceExpression, Triple<Declaration, EObject, EObject>>>> defUses = newArrayList
 	//
 	
 	override execute(ExecutionTrace trace) {
 		trace.saveTrace
 		
-		val executedTransitions = <Entry<ComponentInstanceReferenceExpression, Transition>>newArrayList
+		val defUses = <Entry<ComponentInstanceReferenceExpression, Triple<Declaration, EObject, EObject>>>newArrayList
 		
 		val steps = trace.allSteps
 		for (step : steps) {
 			val asserts = step.asserts
 			for (assertion : asserts.filter(OpaqueExpression)
 						.filter[it.expression.startsWith(metadataBeginning)]) {
-				val instanceTransition = trace.parseTransition(assertion)
+				val instanceTransition = trace.parseDefUse(assertion)
 				val instance = instanceTransition.key
 				val transition = instanceTransition.value
 				
-				executedTransitions += instance.createTransitionReference(transition)
 			}
 		}
 		
-		this.executedTransitions += executedTransitions
-		
-		return executedTransitions
+		return defUses
 	}
 	
-	def parseTransition(ExecutionTrace trace, OpaqueExpression expression) {
+	def parseDefUse(ExecutionTrace trace, OpaqueExpression expression) {
 		val string = expression.expression
-		val pattern = Pattern.compile('''«metadataBeginning»(.*) of (.*)''')
+		val pattern = Pattern.compile('''«metadataBeginning»(.*) «metadataUsedBy» (.*) «OF» (.*) «
+					metadataDefBy» (.*) «OF» (.*)''')
 		val matcher = pattern.matcher(string)
 		if (!matcher.find) {
 			throw new IllegalArgumentException("Not found pattern: " + string)
@@ -68,38 +70,43 @@ class DataflowCheckPostprocessor extends VerificationPostprocessor {
 				.filter(ComponentInstanceElementReferenceExpression)
 				.map[it.instance]
 		
-		val transitionString = matcher.group(1).trim
-		val instanceName = matcher.group(2).trim
+		val variableName = matcher.group(1).trim
+		val useStateOrTransitionName = matcher.group(2).trim
+		val instanceName = matcher.group(3).trim
+		val defStateOrTransitionName = matcher.group(4).trim
 		
 		val instance = instances.findFirst[it.name == instanceName].clone
-		val statechart = instance.lastInstance.derivedType as StatechartDefinition
-		val transition = statechart.transitions.findFirst[it.serialize == transitionString]
+		val statechart = instance.lastInstance.getStatechart
+		val variable = statechart.variableDeclarations.findFirst[it.name == variableName]
+		val useStateOrTransition = useStateOrTransitionName.getStateOrTransition(instance)
+		val defStateOrTransition = defStateOrTransitionName.getStateOrTransition(instance)
 		
-		return Map.entry(instance, transition)
+		return Map.entry(instance,
+			new Triple(variable, useStateOrTransition, defStateOrTransition))
 	}
 	
 	//
 	
-	def getId(Entry<ComponentInstanceReferenceExpression, Transition> transitionInstance) {
+	def getId(Entry<ComponentInstanceReferenceExpression, Triple<Declaration, EObject, EObject>> transitionInstance) {
 		val instance = transitionInstance.key
-		val transition = transitionInstance.value
-		return instance.name + "." + transition.serialize
+		val value = transitionInstance.value
+		return instance.name + "." + value.toString
 	}
 	
 	//
 	
-	def getExecutedTransitions() {
-		return executedTransitions
+	def getCoveredDefUses() {
+		return defUses
 	}
 	
-	def getAllExecutedTransitions() {
-		return executedTransitions.flatten
+	def getAllCoveredDefUses() {
+		return defUses.flatten
 	}
 	
-	def getUnexecutedTransitions() {
-		val unexecutedTransitions = newLinkedHashSet
+	def getUncoveredDefUses() {
+		val uncoveredDefUses = newLinkedHashSet
 		
-		val executedTransitionIds = allExecutedTransitions.map[it.id].toSet
+		val coveredDefUseIds = allCoveredDefUses.map[it.id].toSet
 		
 		val instances = super.statechartInstanceReferences
 		for (instance : instances) {
@@ -109,15 +116,13 @@ class DataflowCheckPostprocessor extends VerificationPostprocessor {
 			for (transition : transitions) {
 				val transitionReference = instance.clone
 						.createTransitionReference(transition)
-				if (!executedTransitionIds.contains(transitionReference.id)) {
-					unexecutedTransitions += transitionReference
+				if (!coveredDefUseIds.contains(null /* TODO */)) {
+					uncoveredDefUses += transitionReference
 				}
 			}
 		}
 		
-		return unexecutedTransitions
+		return uncoveredDefUses
 	}
-	
-	//
 	
 }

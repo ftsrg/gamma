@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2025 Contributors to the Gamma project
+ * Copyright (c) 2025-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -14,7 +14,10 @@ import java.util.List;
 
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Trigger;
+import hu.bme.mit.gamma.statechart.statechart.Region;
+import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.util.JavaUtil;
 
@@ -28,6 +31,11 @@ public class ElementSerializer {
 	protected final ActionSerializer actionSerializer = ActionSerializer.INSTANCE;
 	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	//
+	
+	public String serialize(State state) {
+		Region region = StatechartModelDerivedFeatures.getParentRegion(state);
+		return "state " + region.getName() + "." + state.getName();
+	}
 	
 	public String serialize(Transition transition) {
 		String sourceString = serializeSourceAndTargetAndTriggerAndGuard(transition);

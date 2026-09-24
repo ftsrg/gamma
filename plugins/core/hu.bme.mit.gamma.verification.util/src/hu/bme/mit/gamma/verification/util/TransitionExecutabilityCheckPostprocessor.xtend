@@ -119,6 +119,4 @@ class TransitionExecutabilityCheckPostprocessor extends VerificationPostprocesso
 		return unexecutedTransitions
 	}
 	
-	//
-	
 }

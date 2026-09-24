@@ -638,17 +638,15 @@ class UnfoldedExecutionTraceBackAnnotator {
 	protected def getTransitionMessage(Transition transition, String instanceName)
 		'''«transition.transitionMessage» of «instanceName»'''
 	
-	protected def getTransitionMessage(Transition transition)
-		'''«transition.serialize»'''
+	protected def getTransitionMessage(Transition transition) '''«transition.serialize»'''
 	
-	protected def getStateMessage(String prefix, State newState, String instanceName)
-		'''«prefix»state «newState.name» region «newState.parentRegion.name» of «instanceName»'''
+	protected def getStateMessage(String prefix, State state, String instanceName)
+		'''«prefix»«state.getStateMessage(instanceName)»'''
 	
-	protected def getStateMessage(State newState, String instanceName)
-		'''«newState.stateMessage» of «instanceName»'''
+	protected def getStateMessage(State state, String instanceName)
+		'''«state.stateMessage» of «instanceName»'''
 	
-	protected def getStateMessage(State newState)
-		'''state «newState.name» region «newState.parentRegion.name»'''
+	protected def getStateMessage(State state) '''«state.serialize»''' // TODO entry/exit
 	
 	//
 	

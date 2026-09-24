@@ -13,11 +13,14 @@ package hu.bme.mit.gamma.verification.util
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.property.model.StateFormula
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueOverflowExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.util.ElementSerializer
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.util.TraceUtil
@@ -146,6 +149,50 @@ abstract class VerificationPostprocessor {
 	protected def selectStates(StateFormula property) {
 		val states = property.getAllContentsOfType(ComponentInstanceStateReferenceExpression)
 		return states
+	}
+	
+	//
+	
+	protected def getStateOrTransition(String string, ComponentInstanceReferenceExpression instance) {
+		val transition = string.getTransition(instance)
+		if (transition === null) {
+			return string.getState(instance)
+		}
+		return transition
+	}
+	
+	protected def getTransition(String string, ComponentInstanceReferenceExpression instance) {
+		val lastInstance = instance.lastInstance
+		val transition = string.getTransition(lastInstance)
+		return transition
+	}
+	
+	protected def getTransition(String string, ComponentInstance instance) {
+		val statechart = instance.derivedType as StatechartDefinition
+		val transition = string.getTransition(statechart)
+		return transition
+	}
+	
+	protected def getTransition(String string, StatechartDefinition statechart) {
+		val transition = statechart.transitions.findFirst[it.serialize == string]
+		return transition
+	}
+	
+	protected def getState(String string, ComponentInstanceReferenceExpression instance) {
+		val lastInstance = instance.lastInstance
+		val state = string.getState(lastInstance)
+		return state
+	}
+	
+	protected def getState(String string, ComponentInstance instance) {
+		val statechart = instance.derivedType as StatechartDefinition
+		val state = string.getState(statechart)
+		return state
+	}
+	
+	protected def getState(String string, StatechartDefinition statechart) {
+		val state = statechart.allStates.findFirst[it.serialize == string]
+		return state
 	}
 	
 }

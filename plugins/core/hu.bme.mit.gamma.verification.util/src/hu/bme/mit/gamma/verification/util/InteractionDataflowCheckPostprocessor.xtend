@@ -118,6 +118,4 @@ class InteractionDataflowCheckPostprocessor extends VerificationPostprocessor {
 		return unexecutedTransitions
 	}
 	
-	//
-	
 }
