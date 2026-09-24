@@ -10,23 +10,27 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.verification.util
 
-import hu.bme.mit.gamma.expression.model.Declaration
-import hu.bme.mit.gamma.expression.model.OpaqueExpression
+import hu.bme.mit.gamma.action.model.AssignmentStatement
+import hu.bme.mit.gamma.expression.model.EqualityExpression
+import hu.bme.mit.gamma.property.model.StateFormula
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
+import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
-import hu.bme.mit.gamma.util.Triple
+import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
+import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
 import java.util.Collection
 import java.util.List
-import java.util.Map
 import java.util.Map.Entry
-import java.util.regex.Pattern
 import org.eclipse.emf.ecore.EObject
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
 
 class DataflowCheckPostprocessor extends VerificationPostprocessor {
+	//
+	protected final Component originalTopComponent
 	//
 	public static final String metadataBeginning = "Variable "
 	public static final String metadataUsedBy = "used by"
@@ -34,63 +38,81 @@ class DataflowCheckPostprocessor extends VerificationPostprocessor {
 	public static final String OF = "of"
 	//
 	protected final List<Collection<? extends
-			Entry<ComponentInstanceReferenceExpression, Triple<Declaration, EObject, EObject>>>> defUses = newArrayList
+			Entry<ComponentInstanceVariableReferenceExpression, Entry<EObject, EObject>>>> defUses = newArrayList
+	protected final List<Collection<? extends
+			Entry<ComponentInstanceVariableReferenceExpression, Entry<EObject, EObject>>>> uncoveredDefUses = newArrayList
+	
 	//
 	
-	override execute(ExecutionTrace trace) {
-		trace.saveTrace
-		
-		val defUses = <Entry<ComponentInstanceReferenceExpression, Triple<Declaration, EObject, EObject>>>newArrayList
-		
-		val steps = trace.allSteps
-		for (step : steps) {
-			val asserts = step.asserts
-			for (assertion : asserts.filter(OpaqueExpression)
-						.filter[it.expression.startsWith(metadataBeginning)]) {
-				val instanceTransition = trace.parseDefUse(assertion)
-				val instance = instanceTransition.key
-				val transition = instanceTransition.value
-				
-			}
-		}
-		
-		return defUses
+	new(Component originalTopComponent) {
+		this.originalTopComponent = originalTopComponent
 	}
 	
-	def parseDefUse(ExecutionTrace trace, OpaqueExpression expression) {
-		val string = expression.expression
-		val pattern = Pattern.compile('''«metadataBeginning»(.*) «metadataUsedBy» (.*) «OF» (.*) «
-					metadataDefBy» (.*) «OF» (.*)''')
-		val matcher = pattern.matcher(string)
-		if (!matcher.find) {
-			throw new IllegalArgumentException("Not found pattern: " + string)
+	override execute(Result result) {
+		val res = result.result
+		
+		var ComponentInstanceVariableReferenceExpression defUse = null
+		if (res == ThreeStateBoolean.TRUE) {
+//			// Knowing the structure of the property
+//			val property = result.property
+//			state = property.parseDefUse
+//			
+//			val originalState = state.getOriginal(originalTopComponent)
+//			
+//			defUses += originalState
 		}
 		
-		val instances = trace.steps.map[it.asserts].flatten
+		return null
+	}
+	
+	override execute(ExecutionTrace trace) {
+		return null // Nothing to process at this point
+	}
+	
+	//
+	
+	protected def parseDefUse(ExecutionTrace trace, StateFormula property) {
+		val equalExpressions = property.getAllContentsOfType(EqualityExpression)
+		val useExpression = equalExpressions.last
+		
+		val variableInstance = useExpression.leftOperand as ComponentInstanceVariableReferenceExpression
+		val id = useExpression.rightOperand
+		
+		val instance = variableInstance.instance
+		val instanceName = instance.name
+		val useVariable = variableInstance.variableDeclaration
+		
+		val statechart = instance.lastInstance.getStatechart
+		var allStates = statechart.allStates
+		var allTransitions = statechart.transitions
+		var actions = allStates.map[it.entryActions + it.exitActions].flatten +
+				allTransitions.map[it.effects].flatten
+				
+		val assignmentStatements = actions.map[it.getSelfAndAllContentsOfType(AssignmentStatement)].flatten.toSet
+		
+		val executedUseActions = assignmentStatements.filter[it.lhs.declaration.helperEquals(useVariable)]
+		val executedUseAction = executedUseActions.onlyElement // 'use = def'
+		val useRhs = executedUseAction.rhs
+		val useStateOrTransition = executedUseAction.containingTransitionOrState
+		
+		val executedDefActions = assignmentStatements.filter[it.lhs.helperEquals(useRhs) && rhs.helperEquals(id)]
+		val executedDefAction = executedDefActions.onlyElement // 'def = id'
+		val defStateOrTransition = executedUseAction.containingTransitionOrState
+		
+		val defAction = executedDefAction.previous as AssignmentStatement
+		val declaration = defAction.lhs.declaration
+		
+		// Back-annotation
+		
+		val originalInstances = trace.steps.map[it.asserts].flatten
 				.filter(ComponentInstanceElementReferenceExpression)
 				.map[it.instance]
 		
-		val variableName = matcher.group(1).trim
-		val useStateOrTransitionName = matcher.group(2).trim
-		val instanceName = matcher.group(3).trim
-		val defStateOrTransitionName = matcher.group(4).trim
+		val originalInstance = originalInstances.findFirst[it.name == instanceName].clone
+		val originalStatechart = originalInstance.lastInstance.getStatechart
+		val originalVariable = originalStatechart.variables.findFirst[it.name == declaration.name]
 		
-		val instance = instances.findFirst[it.name == instanceName].clone
-		val statechart = instance.lastInstance.getStatechart
-		val variable = statechart.variableDeclarations.findFirst[it.name == variableName]
-		val useStateOrTransition = useStateOrTransitionName.getStateOrTransition(instance)
-		val defStateOrTransition = defStateOrTransitionName.getStateOrTransition(instance)
-		
-		return Map.entry(instance,
-			new Triple(variable, useStateOrTransition, defStateOrTransition))
-	}
-	
-	//
-	
-	def getId(Entry<ComponentInstanceReferenceExpression, Triple<Declaration, EObject, EObject>> transitionInstance) {
-		val instance = transitionInstance.key
-		val value = transitionInstance.value
-		return instance.name + "." + value.toString
+		val checkVariableInstance = originalInstance.createVariableReference(originalVariable)
 	}
 	
 	//
@@ -104,25 +126,11 @@ class DataflowCheckPostprocessor extends VerificationPostprocessor {
 	}
 	
 	def getUncoveredDefUses() {
-		val uncoveredDefUses = newLinkedHashSet
-		
-		val coveredDefUseIds = allCoveredDefUses.map[it.id].toSet
-		
-		val instances = super.statechartInstanceReferences
-		for (instance : instances) {
-			val statechartInstance = instance.lastInstance
-			val statechart = statechartInstance.getStatechart
-			val transitions = statechart.transitions
-			for (transition : transitions) {
-				val transitionReference = instance.clone
-						.createTransitionReference(transition)
-				if (!coveredDefUseIds.contains(null /* TODO */)) {
-					uncoveredDefUses += transitionReference
-				}
-			}
-		}
-		
 		return uncoveredDefUses
+	}
+	
+	def getAllUncoveredDefUses() {
+		return uncoveredDefUses.flatten
 	}
 	
 }
