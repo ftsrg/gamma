@@ -141,7 +141,7 @@ public class VerificationHandler extends TaskHandler {
 	
 	protected AbstractVerification verificationTask = null;
 	protected PropertySerializer propertySerializer = null;
-	protected final VerificationPostprocessor verificationPostprocessor;
+	protected VerificationPostprocessor verificationPostprocessor;
 	
 	protected final List<ExecutionTrace> traces = new ArrayList<ExecutionTrace>();
 	protected final Set<Result> optimizedResults = new LinkedHashSet<Result>();
@@ -880,6 +880,10 @@ public class VerificationHandler extends TaskHandler {
 	
 	public List<ExecutionTrace> getTraces() {
 		return traces;
+	}
+	
+	public void setVerificationPostprocessor(VerificationPostprocessor verificationPostprocessor) {
+		this.verificationPostprocessor = verificationPostprocessor;
 	}
 	
 	public VerificationPostprocessor getVerificationPostprocessor() {

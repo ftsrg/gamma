@@ -82,7 +82,7 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 	}
 	
 	public OptimizerAndVerificationHandler(IFile file, boolean serializeTraces) {
-		this(file, true,  serializeTraces, null);
+		this(file, true, serializeTraces, null);
 	}
 	
 	public OptimizerAndVerificationHandler(IFile file, VerificationPostprocessor verificationPostprocessor) {
@@ -314,6 +314,8 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 			serializerHandler.setAll(verification);
 			serializerHandler.addAllResults(verificationHandler);
 			serializerHandler.doSetSerialization();
+			
+			verificationHandler.setVerificationPostprocessor(verificationPostprocessor);
 		}
 		
 		// Reinstate original state

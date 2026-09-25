@@ -13,13 +13,13 @@ package hu.bme.mit.gamma.verification.util
 import hu.bme.mit.gamma.action.model.AssignmentStatement
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.property.model.StateFormula
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
-import java.util.List
+import java.util.Collection
 import java.util.Map
 import java.util.Map.Entry
 import org.eclipse.emf.ecore.EObject
@@ -41,11 +41,10 @@ class DataflowCheckPostprocessor extends VerificationPostprocessor {
 	public static final String DEF_DATAFLOW_VAR_BEGINNING = EXECUTED_TRANSITION_VAR_BEGINNING + "def_"
 	public static final String USE_DATAFLOW_VAR_BEGINNING = EXECUTED_TRANSITION_VAR_BEGINNING + "use_"
 	//
-	protected final List<
-			Entry<ComponentInstanceVariableReferenceExpression, Entry<EObject, EObject>>> defUses = newArrayList
-	protected final List<
-			Entry<ComponentInstanceVariableReferenceExpression, Entry<EObject, EObject>>> uncoveredDefUses = newArrayList
-	
+	protected final Collection<
+			Entry<ComponentInstanceVariableReferenceExpression, Entry<EObject, EObject>>> defUses = newTreeSet([a, b | (a.key.instance.name + a.value).compareTo(b.key.instance.name + b.value)])
+	protected final Collection<
+			Entry<ComponentInstanceVariableReferenceExpression, Entry<EObject, EObject>>> uncoveredDefUses = newHashSet()//[a, b | (a.key.instance.name + a.value.key + a.value.value).compareTo(b.key.instance.name + b.value.key + b.value.value)])
 	//
 	
 	new(Component originalTopComponent) {
@@ -54,10 +53,9 @@ class DataflowCheckPostprocessor extends VerificationPostprocessor {
 	
 	override execute(Result result) {
 		val res = result.result
-		val trace = result.trace
 		
 		val property = result.property
-		val defUse = trace.parseDefUse(property)
+		val defUse = property.parseDefUse
 		
 		val map = (res == ThreeStateBoolean.TRUE) ? defUses : uncoveredDefUses
 		if (defUse !== null) {
@@ -73,7 +71,7 @@ class DataflowCheckPostprocessor extends VerificationPostprocessor {
 	
 	//
 	
-	protected def parseDefUse(ExecutionTrace trace, StateFormula property) {
+	protected def parseDefUse(StateFormula property) {
 		val equalExpressions = property.getAllContentsOfType(EqualityExpression)
 		val useExpression = equalExpressions.last
 		
@@ -81,7 +79,7 @@ class DataflowCheckPostprocessor extends VerificationPostprocessor {
 		val id = useExpression.rightOperand
 		
 		val instance = variableInstance.instance
-		val instanceName = instance.name
+		val synchronousInstance = instance.lastInstance as SynchronousComponentInstance
 		val useVariable = variableInstance.variableDeclaration
 		val useVariableName = useVariable.name
 		
@@ -90,7 +88,7 @@ class DataflowCheckPostprocessor extends VerificationPostprocessor {
 		var allTransitions = statechart.transitions
 		var actions = allStates.map[it.entryActions + it.exitActions].flatten +
 				allTransitions.map[it.effects].flatten
-				
+			
 		val assignmentStatements = actions.map[it.getSelfAndAllContentsOfType(AssignmentStatement)].flatten.toSet
 		val executedUseActions = assignmentStatements.filter[it.lhs.declaration.helperEquals(useVariable)]
 		if (executedUseActions.empty) {
@@ -101,9 +99,13 @@ class DataflowCheckPostprocessor extends VerificationPostprocessor {
 		val useRhs = executedUseAction.rhs
 		val useStateOrTransition = executedUseAction.containingTransitionOrState // TODO back-annotate
 		
-		val executedDefActions = assignmentStatements.filter[it.lhs.helperEquals(useRhs) && rhs.helperEquals(id)]
+		val executedDefActions = assignmentStatements.filter[it.lhs.helperEquals(useRhs) && it.rhs.helperEquals(id)]
+		if (executedDefActions.empty) {
+			return null
+		}
+		
 		val executedDefAction = executedDefActions.onlyElement // 'def = id'
-		val defStateOrTransition = executedUseAction.containingTransitionOrState // TODO back-annotate
+		val defStateOrTransition = executedDefAction.containingTransitionOrState // TODO back-annotate
 		
 //		val defAction = executedDefAction.previous as AssignmentStatement
 //		val declaration = defAction.lhs.declaration
@@ -113,11 +115,7 @@ class DataflowCheckPostprocessor extends VerificationPostprocessor {
 		
 		// Back-annotation
 		
-		val originalInstances = trace.steps.map[it.asserts].flatten
-				.filter(ComponentInstanceElementReferenceExpression)
-				.map[it.instance]
-		
-		val originalInstance = originalInstances.findFirst[it.name == instanceName].clone
+		val originalInstance = synchronousInstance.getOriginalSimpleInstanceReference(originalTopComponent)
 		val originalStatechart = originalInstance.lastInstance.getStatechart
 		val originalVariable = originalStatechart.variables.findFirst[it.name == declaration.name]
 		
