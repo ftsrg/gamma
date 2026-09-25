@@ -16,12 +16,11 @@ import hu.bme.mit.gamma.property.model.StateFormula
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Component
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
-import java.util.Collection
 import java.util.List
+import java.util.Map
 import java.util.Map.Entry
 import org.eclipse.emf.ecore.EObject
 
@@ -37,10 +36,15 @@ class DataflowCheckPostprocessor extends VerificationPostprocessor {
 	public static final String metadataDefBy = "as last defined by"
 	public static final String OF = "of"
 	//
-	protected final List<Collection<? extends
-			Entry<ComponentInstanceVariableReferenceExpression, Entry<EObject, EObject>>>> defUses = newArrayList
-	protected final List<Collection<? extends
-			Entry<ComponentInstanceVariableReferenceExpression, Entry<EObject, EObject>>>> uncoveredDefUses = newArrayList
+	public static final String EXECUTED_TRANSITION_VAR_BEGINNING = "__id_"
+	public static final String INJECTED_VAR_END = "_"
+	public static final String DEF_DATAFLOW_VAR_BEGINNING = EXECUTED_TRANSITION_VAR_BEGINNING + "def_"
+	public static final String USE_DATAFLOW_VAR_BEGINNING = EXECUTED_TRANSITION_VAR_BEGINNING + "use_"
+	//
+	protected final List<
+			Entry<ComponentInstanceVariableReferenceExpression, Entry<EObject, EObject>>> defUses = newArrayList
+	protected final List<
+			Entry<ComponentInstanceVariableReferenceExpression, Entry<EObject, EObject>>> uncoveredDefUses = newArrayList
 	
 	//
 	
@@ -50,16 +54,14 @@ class DataflowCheckPostprocessor extends VerificationPostprocessor {
 	
 	override execute(Result result) {
 		val res = result.result
+		val trace = result.trace
 		
-		var ComponentInstanceVariableReferenceExpression defUse = null
-		if (res == ThreeStateBoolean.TRUE) {
-//			// Knowing the structure of the property
-//			val property = result.property
-//			state = property.parseDefUse
-//			
-//			val originalState = state.getOriginal(originalTopComponent)
-//			
-//			defUses += originalState
+		val property = result.property
+		val defUse = trace.parseDefUse(property)
+		
+		val map = (res == ThreeStateBoolean.TRUE) ? defUses : uncoveredDefUses
+		if (defUse !== null) {
+			map += defUse
 		}
 		
 		return null
@@ -81,6 +83,7 @@ class DataflowCheckPostprocessor extends VerificationPostprocessor {
 		val instance = variableInstance.instance
 		val instanceName = instance.name
 		val useVariable = variableInstance.variableDeclaration
+		val useVariableName = useVariable.name
 		
 		val statechart = instance.lastInstance.getStatechart
 		var allStates = statechart.allStates
@@ -89,18 +92,24 @@ class DataflowCheckPostprocessor extends VerificationPostprocessor {
 				allTransitions.map[it.effects].flatten
 				
 		val assignmentStatements = actions.map[it.getSelfAndAllContentsOfType(AssignmentStatement)].flatten.toSet
-		
 		val executedUseActions = assignmentStatements.filter[it.lhs.declaration.helperEquals(useVariable)]
+		if (executedUseActions.empty) {
+			return null
+		}
+		
 		val executedUseAction = executedUseActions.onlyElement // 'use = def'
 		val useRhs = executedUseAction.rhs
-		val useStateOrTransition = executedUseAction.containingTransitionOrState
+		val useStateOrTransition = executedUseAction.containingTransitionOrState // TODO back-annotate
 		
 		val executedDefActions = assignmentStatements.filter[it.lhs.helperEquals(useRhs) && rhs.helperEquals(id)]
 		val executedDefAction = executedDefActions.onlyElement // 'def = id'
-		val defStateOrTransition = executedUseAction.containingTransitionOrState
+		val defStateOrTransition = executedUseAction.containingTransitionOrState // TODO back-annotate
 		
-		val defAction = executedDefAction.previous as AssignmentStatement
-		val declaration = defAction.lhs.declaration
+//		val defAction = executedDefAction.previous as AssignmentStatement
+//		val declaration = defAction.lhs.declaration
+		val lastI = javaUtil.lastBeforeLastIndexOf(useVariableName, INJECTED_VAR_END)
+		val variableName = useVariableName.substring(USE_DATAFLOW_VAR_BEGINNING.length, lastI)
+		val declaration = statechart.variableDeclarations.findFirst[it.name == variableName]
 		
 		// Back-annotation
 		
@@ -112,7 +121,9 @@ class DataflowCheckPostprocessor extends VerificationPostprocessor {
 		val originalStatechart = originalInstance.lastInstance.getStatechart
 		val originalVariable = originalStatechart.variables.findFirst[it.name == declaration.name]
 		
-		val checkVariableInstance = originalInstance.createVariableReference(originalVariable)
+		val originalVariableInstance = originalInstance.createVariableReference(originalVariable)
+		
+		return Map.entry(originalVariableInstance, Map.entry(defStateOrTransition, useStateOrTransition))
 	}
 	
 	//
@@ -121,16 +132,8 @@ class DataflowCheckPostprocessor extends VerificationPostprocessor {
 		return defUses
 	}
 	
-	def getAllCoveredDefUses() {
-		return defUses.flatten
-	}
-	
 	def getUncoveredDefUses() {
 		return uncoveredDefUses
-	}
-	
-	def getAllUncoveredDefUses() {
-		return uncoveredDefUses.flatten
 	}
 	
 }

@@ -614,9 +614,9 @@ class PropertyGenerator {
 	}
 	
 	def dispatch protected String getId(DirectReferenceExpression reference) {
-		val transitionOrState = reference.containingTransitionOrState
+		val transitionOrState = reference.containingTransitionOrState // Can also be function
 		val variable = reference.declaration
-		return '''«transitionOrState.id»::«variable.name»'''
+		return '''«transitionOrState?.id»::«variable.name»'''
 	}
 	
 	def dispatch protected String getId(EventParameterReferenceExpression reference) {
@@ -624,7 +624,7 @@ class PropertyGenerator {
 		val port = reference.port
 		val event = reference.event
 		val parameter = reference.parameterDeclaration
-		return '''«transitionOrState.id»::«port.name».«event.name»::«parameter.name»'''
+		return '''«transitionOrState?.id»::«port.name».«event.name»::«parameter.name»'''
 	}
 	
 	def protected String getIds(Iterable<? extends Expression> references) {

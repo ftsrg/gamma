@@ -846,7 +846,7 @@ public class VerificationHandler extends TaskHandler {
 					case "OutEvent" : return new OutEventCheckPostprocessor();
 					case "Interaction" : return new InteractionCheckPostprocessor();
 					case "InteractionDataflow" : return new InteractionDataflowCheckPostprocessor();
-					case "Dataflow" : return new DataflowCheckPostprocessor();
+					case "Dataflow" : return new DataflowCheckPostprocessor(null);
 					case "TrapState" : return new TrapStateCheckPostprocessor(null);
 					case "UnstableState" : return new UnstableStateCheckPostprocessor(null);
 					case "OrthogonalLeafStateCombination" : return new OrthogonalStateCombinationCheckPostprocessor(null);
