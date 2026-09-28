@@ -31,14 +31,8 @@ class DataflowCheckPostprocessor extends VerificationPostprocessor {
 	//
 	protected final Component originalTopComponent
 	//
-	public static final String metadataBeginning = "Variable "
-	public static final String metadataUsedBy = "used by"
-	public static final String metadataDefBy = "as last defined by"
-	public static final String OF = "of"
-	//
 	public static final String EXECUTED_TRANSITION_VAR_BEGINNING = "__id_"
 	public static final String INJECTED_VAR_END = "_"
-	public static final String DEF_DATAFLOW_VAR_BEGINNING = EXECUTED_TRANSITION_VAR_BEGINNING + "def_"
 	public static final String USE_DATAFLOW_VAR_BEGINNING = EXECUTED_TRANSITION_VAR_BEGINNING + "use_"
 	//
 	protected final Collection<
