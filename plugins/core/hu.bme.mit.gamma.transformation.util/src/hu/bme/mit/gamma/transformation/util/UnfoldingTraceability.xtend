@@ -38,6 +38,7 @@ import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
 import java.util.Collection
+import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -564,6 +565,16 @@ class UnfoldingTraceability {
 		}
 		
 		throw new IllegalArgumentException("Not found transition: " + newTransition)
+	}
+	
+	def getOriginalStateOrTransition(ComponentInstanceReferenceExpression originalInstance, EObject object) {
+		if (object instanceof State) {
+			return originalInstance.getOriginalState(object)
+		}
+		if (object instanceof Transition) {
+			return originalInstance.getOriginalTransition(object)
+		}
+		throw new IllegalArgumentException("Unknown: " + object)
 	}
 	
 	def getOriginalVariable(ComponentInstanceReferenceExpression originalInstance, VariableDeclaration newVariable) {

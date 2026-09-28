@@ -22,6 +22,7 @@ import java.util.Optional;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import com.google.common.collect.Maps;
 

@@ -12,6 +12,8 @@ package hu.bme.mit.gamma.statechart.util;
 
 import java.util.List;
 
+import org.eclipse.emf.ecore.EObject;
+
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
@@ -83,6 +85,16 @@ public class ElementSerializer {
 		}
 		String triggerString = " when " + triggerSerializer.serialize(trigger);
 		return triggerString;
+	}
+	
+	public String serialize(EObject stateOrTransition) {
+		if (stateOrTransition instanceof State state) {
+			return serialize(state);
+		}
+		if (stateOrTransition instanceof Transition transition) {
+			return serialize(transition);
+		}
+		throw new IllegalArgumentException("Unknown object: " + stateOrTransition);
 	}
 	
 }

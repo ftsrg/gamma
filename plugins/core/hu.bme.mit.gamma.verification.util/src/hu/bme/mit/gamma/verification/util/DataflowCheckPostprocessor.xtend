@@ -42,9 +42,9 @@ class DataflowCheckPostprocessor extends VerificationPostprocessor {
 	public static final String USE_DATAFLOW_VAR_BEGINNING = EXECUTED_TRANSITION_VAR_BEGINNING + "use_"
 	//
 	protected final Collection<
-			Entry<ComponentInstanceVariableReferenceExpression, Entry<EObject, EObject>>> defUses = newTreeSet([a, b | (a.key.instance.name + a.value).compareTo(b.key.instance.name + b.value)])
+			Entry<ComponentInstanceVariableReferenceExpression, Entry<EObject, EObject>>> defUses = newTreeSet([a, b | (a.key.instance.name + a.value.key.serialize + a.value.value.serialize).compareTo(b.key.instance.name + b.value.key.serialize + b.value.value.serialize)])
 	protected final Collection<
-			Entry<ComponentInstanceVariableReferenceExpression, Entry<EObject, EObject>>> uncoveredDefUses = newHashSet()//[a, b | (a.key.instance.name + a.value.key + a.value.value).compareTo(b.key.instance.name + b.value.key + b.value.value)])
+			Entry<ComponentInstanceVariableReferenceExpression, Entry<EObject, EObject>>> uncoveredDefUses = newTreeSet([a, b | (a.key.instance.name + a.value.key.serialize + a.value.value.serialize).compareTo(b.key.instance.name + b.value.key.serialize + b.value.value.serialize)])
 	//
 	
 	new(Component originalTopComponent) {
@@ -97,7 +97,7 @@ class DataflowCheckPostprocessor extends VerificationPostprocessor {
 		
 		val executedUseAction = executedUseActions.onlyElement // 'use = def'
 		val useRhs = executedUseAction.rhs
-		val useStateOrTransition = executedUseAction.containingTransitionOrState // TODO back-annotate
+		val useStateOrTransition = executedUseAction.containingTransitionOrState
 		
 		val executedDefActions = assignmentStatements.filter[it.lhs.helperEquals(useRhs) && it.rhs.helperEquals(id)]
 		if (executedDefActions.empty) {
@@ -105,23 +105,25 @@ class DataflowCheckPostprocessor extends VerificationPostprocessor {
 		}
 		
 		val executedDefAction = executedDefActions.onlyElement // 'def = id'
-		val defStateOrTransition = executedDefAction.containingTransitionOrState // TODO back-annotate
-		
-//		val defAction = executedDefAction.previous as AssignmentStatement
-//		val declaration = defAction.lhs.declaration
+		val defStateOrTransition = executedDefAction.containingTransitionOrState
+				
+//		val defAction = executedDefAction?.previous as AssignmentStatement
+//		val declaration = defAction?.lhs.declaration
+
 		val lastI = javaUtil.lastBeforeLastIndexOf(useVariableName, INJECTED_VAR_END)
 		val variableName = useVariableName.substring(USE_DATAFLOW_VAR_BEGINNING.length, lastI)
-		val declaration = statechart.variableDeclarations.findFirst[it.name == variableName]
+		val variable = statechart.variableDeclarations.findFirst[it.name == variableName]
 		
 		// Back-annotation
 		
 		val originalInstance = synchronousInstance.getOriginalSimpleInstanceReference(originalTopComponent)
-		val originalStatechart = originalInstance.lastInstance.getStatechart
-		val originalVariable = originalStatechart.variables.findFirst[it.name == declaration.name]
-		
+		val originalVariable = originalInstance.getOriginalVariable(variable)
 		val originalVariableInstance = originalInstance.createVariableReference(originalVariable)
+		val originalDef = originalInstance.getOriginalStateOrTransition(defStateOrTransition)
+		val originalUse = originalInstance.getOriginalStateOrTransition(useStateOrTransition)
 		
-		return Map.entry(originalVariableInstance, Map.entry(defStateOrTransition, useStateOrTransition))
+		return Map.entry(originalVariableInstance,
+				Map.entry(originalDef, originalUse))
 	}
 	
 	//
