@@ -845,7 +845,7 @@ public class VerificationHandler extends TaskHandler {
 					case "TransitionPair": return new TransitionPairExecutabilityCheckPostprocessor();
 					case "OutEvent" : return new OutEventCheckPostprocessor();
 					case "Interaction" : return new InteractionCheckPostprocessor();
-					case "InteractionDataflow" : return new InteractionDataflowCheckPostprocessor();
+					case "InteractionDataflow" : return new InteractionDataflowCheckPostprocessor(null);
 					case "Dataflow" : return new DataflowCheckPostprocessor(null);
 					case "TrapState" : return new TrapStateCheckPostprocessor(null);
 					case "UnstableState" : return new UnstableStateCheckPostprocessor(null);

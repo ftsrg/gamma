@@ -4017,6 +4017,25 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return (StateNode) container;
 	}
 	
+	public static Collection<Action> getAllEffects(StatechartDefinition statechart) {
+		Collection<Action> effects = new ArrayList<Action>();
+		
+		Collection<State> allStates = getAllStates(statechart);
+		for (State state : allStates) {
+			effects.addAll(
+					state.getEntryActions());
+			effects.addAll(
+					state.getExitActions());
+		}
+		List<Transition> transitions = statechart.getTransitions();
+		for (Transition transition : transitions) {
+			effects.addAll(
+					transition.getEffects());
+		}
+		
+		return effects;
+	}
+	
 	public static List<Action> getContainingActionList(EObject object) {
 		EObject container = object.eContainer();
 		if (container instanceof Transition transition) {

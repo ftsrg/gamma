@@ -10,112 +10,38 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.verification.util
 
-import hu.bme.mit.gamma.expression.model.OpaqueExpression
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
+import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
+import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
-import hu.bme.mit.gamma.statechart.statechart.Transition
-import hu.bme.mit.gamma.trace.model.ExecutionTrace
-import java.util.Collection
-import java.util.List
-import java.util.Map
-import java.util.Map.Entry
-import java.util.regex.Pattern
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
 
-class InteractionDataflowCheckPostprocessor extends VerificationPostprocessor {
-	//
-	public static final String metadataBeginning = "Variable "
-	//
-	protected final List<Collection<? extends
-			Entry<ComponentInstanceReferenceExpression, Transition>>> executedTransitions = newArrayList
-	//
+class InteractionDataflowCheckPostprocessor extends AbstractDataflowCheckPostprocessor {
 	
-	override execute(ExecutionTrace trace) {
-		trace.saveTrace
-		
-		val executedTransitions = <Entry<ComponentInstanceReferenceExpression, Transition>>newArrayList
-		
-		val steps = trace.allSteps
-		for (step : steps) {
-			val asserts = step.asserts
-			for (assertion : asserts.filter(OpaqueExpression)
-						.filter[it.expression.startsWith(metadataBeginning)]) {
-				val instanceTransition = trace.parseTransition(assertion)
-				val instance = instanceTransition.key
-				val transition = instanceTransition.value
-				
-				executedTransitions += instance.createTransitionReference(transition)
-			}
-		}
-		
-		this.executedTransitions += executedTransitions
-		
-		return executedTransitions
+	new(Component originalTopComponent) {
+		super(originalTopComponent)
 	}
 	
-	def parseTransition(ExecutionTrace trace, OpaqueExpression expression) {
-		val string = expression.expression
-		val pattern = Pattern.compile('''«metadataBeginning»(.*) of (.*)''')
-		val matcher = pattern.matcher(string)
-		if (!matcher.find) {
-			throw new IllegalArgumentException("Not found pattern: " + string)
-		}
+	protected override filterDefAction(StatechartDefinition statechart, Expression useRhs, Expression id) {
+		val eventParameterReference = useRhs as EventParameterReferenceExpression
+		val port = eventParameterReference.port
+		val event = eventParameterReference.event
+		val parameter = eventParameterReference.parameterDeclaration
+		val i = parameter.index
 		
-		val instances = trace.steps.map[it.asserts].flatten
-				.filter(ComponentInstanceElementReferenceExpression)
-				.map[it.instance]
+		val _package = statechart.containingPackage // Unfolded
+		val statecharts = _package.allStatechartComponents
+		val actions = statecharts.map[allEffects].flatten
+		val raiseEventActions = actions.map[it.getSelfAndAllContentsOfType(RaiseEventAction)]
+				.flatten
+				.filter[it.port.helperEquals(port) && it.event.helperEquals(event) && it.arguments.get(i).helperEquals(id)]
+				.toSet
 		
-		val transitionString = matcher.group(1).trim
-		val instanceName = matcher.group(2).trim
-		
-		val instance = instances.findFirst[it.name == instanceName].clone
-		val statechart = instance.lastInstance.derivedType as StatechartDefinition
-		val transition = statechart.transitions.findFirst[it.serialize == transitionString]
-		
-		return Map.entry(instance, transition)
-	}
-	
-	//
-	
-	def getId(Entry<ComponentInstanceReferenceExpression, Transition> transitionInstance) {
-		val instance = transitionInstance.key
-		val transition = transitionInstance.value
-		return instance.name + "." + transition.serialize
-	}
-	
-	//
-	
-	def getExecutedTransitions() {
-		return executedTransitions
-	}
-	
-	def getAllExecutedTransitions() {
-		return executedTransitions.flatten
-	}
-	
-	def getUnexecutedTransitions() {
-		val unexecutedTransitions = newLinkedHashSet
-		
-		val executedTransitionIds = allExecutedTransitions.map[it.id].toSet
-		
-		val instances = super.statechartInstanceReferences
-		for (instance : instances) {
-			val statechartInstance = instance.lastInstance
-			val statechart = statechartInstance.getStatechart
-			val transitions = statechart.transitions
-			for (transition : transitions) {
-				val transitionReference = instance.clone
-						.createTransitionReference(transition)
-				if (!executedTransitionIds.contains(transitionReference.id)) {
-					unexecutedTransitions += transitionReference
-				}
-			}
-		}
-		
-		return unexecutedTransitions
+		return raiseEventActions
+				.head
 	}
 	
 }
