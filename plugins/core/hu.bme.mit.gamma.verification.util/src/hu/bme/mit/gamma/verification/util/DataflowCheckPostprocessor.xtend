@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.verification.util
 
 import hu.bme.mit.gamma.action.model.AssignmentStatement
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 
@@ -30,6 +31,17 @@ class DataflowCheckPostprocessor extends AbstractDataflowCheckPostprocessor {
 		return assignmentStatements
 				.filter[it.lhs.helperEquals(useRhs) && it.rhs.helperEquals(id)]
 				.head
+	}
+	
+	protected override createDeclarationReference(ComponentInstanceReferenceExpression originalInstance,
+			StatechartDefinition statechart, String useVariableName) {
+		val lastI = javaUtil.lastBeforeLastIndexOf(useVariableName, INJECTED_VAR_END)
+		val variableName = useVariableName.substring(USE_DATAFLOW_VAR_BEGINNING.length, lastI)
+		val variable = statechart.variableDeclarations.findFirst[it.name == variableName]
+		
+		val originalVariable = originalInstance.getOriginalVariable(variable)
+		
+		return originalInstance.createVariableReference(originalVariable)
 	}
 	
 }

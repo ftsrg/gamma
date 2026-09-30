@@ -1313,6 +1313,12 @@ public class StatechartUtil extends ActionUtil {
 	}
 	
 	public ComponentInstanceEventParameterReferenceExpression createParameterReference(
+			ComponentInstanceReferenceExpression instance, Port port, ParameterDeclaration parameter) {
+		Event event = StatechartModelDerivedFeatures.getContainingEvent(parameter);
+		return createParameterReference(instance, port, event, parameter);
+	}
+	
+	public ComponentInstanceEventParameterReferenceExpression createParameterReference(
 			ComponentInstanceReferenceExpression instance, Port port, Event event, ParameterDeclaration parameter) {
 		ComponentInstanceEventParameterReferenceExpression reference =
 				compositeFactory.createComponentInstanceEventParameterReferenceExpression();

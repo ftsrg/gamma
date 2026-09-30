@@ -2317,6 +2317,22 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return allInputEvents;
 	}
 	
+	public static List<Entry<Port, ParameterDeclaration>> getInputEventParameters(Component component) {
+		List<Entry<Port, ParameterDeclaration>> allInputEventParameters = new ArrayList<>();
+		
+		List<Entry<Port,Event>> inputEvents2 = getInputEvents2(component);
+		for (Entry<Port, Event> inputEvent : inputEvents2) {
+			Port port = inputEvent.getKey();
+			Event event = inputEvent.getValue();
+			for (ParameterDeclaration parameter : event.getParameterDeclarations()) {
+				Entry<Port, ParameterDeclaration> inputParameter = Map.entry(port, parameter);
+				allInputEventParameters.add(inputParameter);
+			}
+		}
+		
+		return allInputEventParameters;
+	}
+	
 	public static List<Entry<Port, Event>> getOutputEvents2(Component component) {
 		List<Entry<Port, Event>> allOutputEvents = new ArrayList<>();
 

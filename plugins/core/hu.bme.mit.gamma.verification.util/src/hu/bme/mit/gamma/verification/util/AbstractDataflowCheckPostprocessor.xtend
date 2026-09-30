@@ -15,6 +15,8 @@ import hu.bme.mit.gamma.action.model.AssignmentStatement
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.property.model.StateFormula
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
@@ -39,9 +41,9 @@ abstract class AbstractDataflowCheckPostprocessor extends VerificationPostproces
 	public static final String USE_DATAFLOW_VAR_BEGINNING = EXECUTED_TRANSITION_VAR_BEGINNING + "use_"
 	//
 	protected final Collection<
-			Entry<ComponentInstanceVariableReferenceExpression, Entry<EObject, EObject>>> defUses = newTreeSet([a, b | (a.key.instance.name + a.value.key.serialize + a.value.value.serialize).compareTo(b.key.instance.name + b.value.key.serialize + b.value.value.serialize)])
+			Entry<ComponentInstanceElementReferenceExpression, Entry<EObject, EObject>>> defUses = newTreeSet([a, b | (a.key.instance.name + a.value.key.serialize + a.value.value.serialize).compareTo(b.key.instance.name + b.value.key.serialize + b.value.value.serialize)])
 	protected final Collection<
-			Entry<ComponentInstanceVariableReferenceExpression, Entry<EObject, EObject>>> uncoveredDefUses = newTreeSet([a, b | (a.key.instance.name + a.value.key.serialize + a.value.value.serialize).compareTo(b.key.instance.name + b.value.key.serialize + b.value.value.serialize)])
+			Entry<ComponentInstanceElementReferenceExpression, Entry<EObject, EObject>>> uncoveredDefUses = newTreeSet([a, b | (a.key.instance.name + a.value.key.serialize + a.value.value.serialize).compareTo(b.key.instance.name + b.value.key.serialize + b.value.value.serialize)])
 	//
 	
 	new(Component originalTopComponent) {
@@ -86,7 +88,7 @@ abstract class AbstractDataflowCheckPostprocessor extends VerificationPostproces
 		
 		val statechart = instance.lastInstance.getStatechart
 		var allEffects = statechart.allEffects
-			
+		
 		val assignmentStatements = allEffects.map[it.getSelfAndAllContentsOfType(AssignmentStatement)].flatten.toSet
 		val executedUseActions = assignmentStatements.filter[it.lhs.declaration.helperEquals(useVariable)]
 		if (executedUseActions.empty) {
@@ -103,29 +105,23 @@ abstract class AbstractDataflowCheckPostprocessor extends VerificationPostproces
 		}
 		
 		val defStateOrTransition = executedDefAction.containingTransitionOrState
-				
-//		val defAction = executedDefAction?.previous as AssignmentStatement
-//		val declaration = defAction?.lhs.declaration
-
-		val lastI = javaUtil.lastBeforeLastIndexOf(useVariableName, INJECTED_VAR_END)
-		val variableName = useVariableName.substring(USE_DATAFLOW_VAR_BEGINNING.length, lastI)
-		val variable = statechart.variableDeclarations.findFirst[it.name == variableName]
+		val defInstance = defStateOrTransition.containingStatechart.referencingComponentInstance as SynchronousComponentInstance
+		val originalDefInstance = defInstance.getOriginalSimpleInstanceReference(originalTopComponent)
 		
-		// Back-annotation
+		val originalUseInstance = synchronousInstance.getOriginalSimpleInstanceReference(originalTopComponent)
+		val originalDeclarationInstance = originalUseInstance.createDeclarationReference(statechart, useVariableName)
 		
-		val originalInstance = synchronousInstance.getOriginalSimpleInstanceReference(originalTopComponent)
-		val originalVariable = originalInstance.getOriginalVariable(variable)
-		val originalVariableInstance = originalInstance.createVariableReference(originalVariable)
-		val originalDef = originalInstance.getOriginalStateOrTransition(defStateOrTransition)
-		val originalUse = originalInstance.getOriginalStateOrTransition(useStateOrTransition)
+		val originalDef = originalDefInstance.getOriginalStateOrTransition(defStateOrTransition)
+		val originalUse = originalUseInstance.getOriginalStateOrTransition(useStateOrTransition)
 		
-		return Map.entry(originalVariableInstance,
+		return Map.entry(originalDeclarationInstance,
 				Map.entry(originalDef, originalUse))
 	}
 	
 	//
 	
 	protected abstract def Action filterDefAction(StatechartDefinition statechart, Expression useRhs, Expression id)
+	protected abstract def ComponentInstanceElementReferenceExpression createDeclarationReference(ComponentInstanceReferenceExpression originalInstance, StatechartDefinition statechart, String useVariableName)
 	
 	//
 	
@@ -134,7 +130,7 @@ abstract class AbstractDataflowCheckPostprocessor extends VerificationPostproces
 	}
 	
 	def getUncoveredDefUses() {
-		return defUses //uncoveredDefUses
+		return uncoveredDefUses
 	}
 	
 }

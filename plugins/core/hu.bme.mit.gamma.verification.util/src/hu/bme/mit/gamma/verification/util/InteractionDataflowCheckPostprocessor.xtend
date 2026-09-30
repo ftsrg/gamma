@@ -11,12 +11,12 @@
 package hu.bme.mit.gamma.verification.util
 
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 
-import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class InteractionDataflowCheckPostprocessor extends AbstractDataflowCheckPostprocessor {
@@ -27,21 +27,32 @@ class InteractionDataflowCheckPostprocessor extends AbstractDataflowCheckPostpro
 	
 	protected override filterDefAction(StatechartDefinition statechart, Expression useRhs, Expression id) {
 		val eventParameterReference = useRhs as EventParameterReferenceExpression
-		val port = eventParameterReference.port
 		val event = eventParameterReference.event
-		val parameter = eventParameterReference.parameterDeclaration
-		val i = parameter.index
+//		val parameter = eventParameterReference.parameterDeclaration // Does not exist in original interface
+//		val i = parameter.index
 		
 		val _package = statechart.containingPackage // Unfolded
 		val statecharts = _package.allStatechartComponents
 		val actions = statecharts.map[allEffects].flatten
 		val raiseEventActions = actions.map[it.getSelfAndAllContentsOfType(RaiseEventAction)]
 				.flatten
-				.filter[it.port.helperEquals(port) && it.event.helperEquals(event) && it.arguments.get(i).helperEquals(id)]
+				.filter[/*it.port.helperEquals(port) && sender vs. receiver*/ it.event.helperEquals(event) && it.arguments.lastOrNull.helperEquals(id)]
 				.toSet
 		
 		return raiseEventActions
 				.head
 	}
 	
+	protected override createDeclarationReference(ComponentInstanceReferenceExpression originalInstance,
+			StatechartDefinition statechart, String useVariableName) {
+		
+		val lastI = javaUtil.lastBeforeLastIndexOf(useVariableName, INJECTED_VAR_END)
+		val parameterName = useVariableName.substring(USE_DATAFLOW_VAR_BEGINNING.length, lastI)
+		val eventParameter = statechart.inputEventParameters.findFirst[parameterName ==
+				it.key.name + "_" + it.value.containingEvent.name + "_" + it.value.name] // TODO Namings
+		val port = eventParameter.key
+		val parameter = eventParameter.value
+		
+		return originalInstance.createParameterReference(port, parameter)
+	}
 }

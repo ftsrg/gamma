@@ -540,6 +540,12 @@ public class VerificationHandler extends TaskHandler {
 		allResults.addAll(results);
 		allResults.addAll(optimizedResults);
 		
+		boolean doPostprocessing = verification.isBackAnnotateToOriginal() && verificationPostprocessor == null;
+		if (doPostprocessing) {
+			verificationPostprocessor = createVerificationPostprocessor(verification);
+			verificationPostprocessor.execute(results);
+		}
+		
 		doSetSerialization();
 	}
 	
@@ -837,6 +843,7 @@ public class VerificationHandler extends TaskHandler {
 			PropertyPackage propertyPackage = propertyPackages.getFirst();
 			List<String> coverages = propertyPackage.getCoverages();
 			if (!coverages.isEmpty()) {
+				Component topComponent = getTopComponent();
 				String coverage = coverages.getFirst();
 				String shortCoverage = coverage.replace("Coverage", "");
 				switch (shortCoverage) {
@@ -845,17 +852,17 @@ public class VerificationHandler extends TaskHandler {
 					case "TransitionPair": return new TransitionPairExecutabilityCheckPostprocessor();
 					case "OutEvent" : return new OutEventCheckPostprocessor();
 					case "Interaction" : return new InteractionCheckPostprocessor();
-					case "InteractionDataflow" : return new InteractionDataflowCheckPostprocessor(null);
-					case "Dataflow" : return new DataflowCheckPostprocessor(null);
-					case "TrapState" : return new TrapStateCheckPostprocessor(null);
-					case "UnstableState" : return new UnstableStateCheckPostprocessor(null);
-					case "OrthogonalLeafStateCombination" : return new OrthogonalStateCombinationCheckPostprocessor(null);
-					case "OrthogonalStateCombination" : return new OrthogonalLeafStateCombinationCheckPostprocessor(null);
-					case "DeadlockState" : return new DeadlockStateCheckPostprocessor(null);
+					case "InteractionDataflow" : return new InteractionDataflowCheckPostprocessor(topComponent);
+					case "Dataflow" : return new DataflowCheckPostprocessor(topComponent);
+					case "TrapState" : return new TrapStateCheckPostprocessor(topComponent);
+					case "UnstableState" : return new UnstableStateCheckPostprocessor(topComponent);
+					case "OrthogonalLeafStateCombination" : return new OrthogonalStateCombinationCheckPostprocessor(topComponent);
+					case "OrthogonalStateCombination" : return new OrthogonalLeafStateCombinationCheckPostprocessor(topComponent);
+					case "DeadlockState" : return new DeadlockStateCheckPostprocessor(topComponent);
 					case "Deadlock" : return new DeadlockCheckPostprocessor();
 					case "NonDeterministicTransition" : return new DeterminismCheckPostprocessor();
-					case "Completeness" : return new CompletenessCheckPostprocessor(null);
-					case "QueueOverflow" : return new QueueOverflowCheckPostprocessor(null);
+					case "Completeness" : return new CompletenessCheckPostprocessor(topComponent);
+					case "QueueOverflow" : return new QueueOverflowCheckPostprocessor(topComponent);
 					
 					default: return null;
 				}
@@ -880,6 +887,16 @@ public class VerificationHandler extends TaskHandler {
 	
 	public List<ExecutionTrace> getTraces() {
 		return traces;
+	}
+	
+	public Collection<Component> getTopComponents() {
+		return traces.stream().map(it -> it.getComponent()).toList();
+	}
+	
+	public Component getTopComponent() {
+		Collection<Component> components = new LinkedHashSet<Component>(
+				getTopComponents());
+		return javaUtil.getOnlyElement(components); // TODO empty traces
 	}
 	
 	public void setVerificationPostprocessor(VerificationPostprocessor verificationPostprocessor) {
