@@ -28,15 +28,14 @@ class InteractionDataflowCheckPostprocessor extends AbstractDataflowCheckPostpro
 	protected override filterDefAction(StatechartDefinition statechart, Expression useRhs, Expression id) {
 		val eventParameterReference = useRhs as EventParameterReferenceExpression
 		val event = eventParameterReference.event
-//		val parameter = eventParameterReference.parameterDeclaration // Does not exist in original interface
-//		val i = parameter.index
+		// Parameter does not exist in original interface
 		
 		val _package = statechart.containingPackage // Unfolded
 		val statecharts = _package.allStatechartComponents
 		val actions = statecharts.map[allEffects].flatten
 		val raiseEventActions = actions.map[it.getSelfAndAllContentsOfType(RaiseEventAction)]
 				.flatten
-				.filter[/*it.port.helperEquals(port) && sender vs. receiver*/ it.event.helperEquals(event) && it.arguments.lastOrNull.helperEquals(id)]
+				.filter[/* sender vs. receiver ports */ it.event.helperEquals(event) && it.arguments.lastOrNull.helperEquals(id) /* Global id */]
 				.toSet
 		
 		return raiseEventActions
@@ -55,4 +54,5 @@ class InteractionDataflowCheckPostprocessor extends AbstractDataflowCheckPostpro
 		
 		return originalInstance.createParameterReference(port, parameter)
 	}
+	
 }

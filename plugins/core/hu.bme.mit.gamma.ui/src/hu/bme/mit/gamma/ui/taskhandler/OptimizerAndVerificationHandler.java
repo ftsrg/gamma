@@ -332,5 +332,5 @@ public class OptimizerAndVerificationHandler extends TaskHandler {
 	public List<ExecutionTrace> getTraces() {
 		return verificationHandler.getTraces();
 	}
-
+	
 }

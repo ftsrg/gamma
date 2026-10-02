@@ -639,6 +639,11 @@ class GammaEcoreUtil {
 		val resource = resourceSet.getResource(uri, true)
 		return resource.getContents().get(0)
 	}
+	
+	def EObject normalLoad(String path) {
+		val file = new File(path)
+		return file.normalLoad
+	}
 
 	def EObject normalLoad(File file) {
 		return normalLoad(file.parent, file.name)

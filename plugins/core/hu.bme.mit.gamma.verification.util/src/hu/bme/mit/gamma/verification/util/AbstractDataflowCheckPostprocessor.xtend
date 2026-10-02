@@ -133,4 +133,21 @@ abstract class AbstractDataflowCheckPostprocessor extends VerificationPostproces
 		return uncoveredDefUses
 	}
 	
+	//
+	
+	override toString() '''
+		Coverable def-uses:
+			«FOR defUse : defUses»
+				«defUse.printDefUse»
+			«ENDFOR»
+		Uncoverable def-uses:
+			«FOR defUse : uncoveredDefUses»
+				«defUse.printDefUse»
+			«ENDFOR»
+	'''
+	
+	protected def printDefUse(Entry<ComponentInstanceElementReferenceExpression, Entry<EObject, EObject>> defUse) '''
+		«defUse.key.printElementReference»: «defUse.value.key.serialize» -d-u-o) «defUse.value.value.serialize»
+	'''
+	
 }

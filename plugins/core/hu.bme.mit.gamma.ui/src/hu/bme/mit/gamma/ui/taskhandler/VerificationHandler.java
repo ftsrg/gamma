@@ -77,6 +77,7 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpr
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
+import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
@@ -543,7 +544,6 @@ public class VerificationHandler extends TaskHandler {
 		boolean doPostprocessing = verification.isBackAnnotateToOriginal() && verificationPostprocessor == null;
 		if (doPostprocessing) {
 			verificationPostprocessor = createVerificationPostprocessor(verification);
-			verificationPostprocessor.execute(results);
 		}
 		
 		doSetSerialization();
@@ -562,6 +562,7 @@ public class VerificationHandler extends TaskHandler {
 		}
 		if (verificationPostprocessor != null) {
 			verificationPostprocessor.execute(allResults);
+			serializePostprocessingResults();
 		}
 		
 		serializer.removeUniqueFolder(); // Side effect
@@ -843,7 +844,7 @@ public class VerificationHandler extends TaskHandler {
 			PropertyPackage propertyPackage = propertyPackages.getFirst();
 			List<String> coverages = propertyPackage.getCoverages();
 			if (!coverages.isEmpty()) {
-				Component topComponent = getTopComponent();
+				Component topComponent = getOriginalTopComponent();
 				String coverage = coverages.getFirst();
 				String shortCoverage = coverage.replace("Coverage", "");
 				switch (shortCoverage) {
@@ -899,6 +900,16 @@ public class VerificationHandler extends TaskHandler {
 		return javaUtil.getOnlyElement(components); // TODO empty traces
 	}
 	
+	public Component getOriginalTopComponent() {
+		String path = file.getFullPath().toString();
+		String originalGcdComponentUri = fileNamer.getOriginalGcdComponentUri(path);
+		
+		Package _package = (Package) ecoreUtil.normalLoad(originalGcdComponentUri);
+		Component topComponent = StatechartModelDerivedFeatures.getFirstComponent(_package);
+		
+		return topComponent;
+	}
+	
 	public void setVerificationPostprocessor(VerificationPostprocessor verificationPostprocessor) {
 		this.verificationPostprocessor = verificationPostprocessor;
 	}
@@ -930,6 +941,17 @@ public class VerificationHandler extends TaskHandler {
 			serializer.serialize(targetFolderUri, traceFileName, svgFileName,
 					testFolderUri, testFileName, testedFileName, packageName, trace,
 					file, programmingLanguage);
+		}
+	}
+	
+	public void serializePostprocessingResults() throws IOException {
+		if (verificationPostprocessor != null) {
+			String fileName = "post-process.txt";
+			File file =  new File(targetFolderUri + File.separator + fileName);
+			
+			String result = verificationPostprocessor.toString();
+			
+			fileUtil.saveString(file, result);
 		}
 	}
 	
