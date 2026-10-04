@@ -29,6 +29,8 @@ import hu.bme.mit.gamma.expression.model.ExpressionPackage;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.model.TypeDeclaration;
+import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
 import hu.bme.mit.gamma.fei.model.FaultExtensionInstructions;
 import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
@@ -529,7 +531,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		
 		Set<Package> packageImports = genmodel.getPackageImports().stream().collect(Collectors.toSet());
 		List<Task> tasks = genmodel.getTasks();
-		for (CodeGeneration task : javaUtil.filterIntoList(tasks,CodeGeneration.class)) {
+		for (CodeGeneration task : javaUtil.filterIntoList(tasks, CodeGeneration.class)) {
 			Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(task.getComponent());
 			packageImports.remove(parentPackage);
 		}
@@ -613,7 +615,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		for (Package packageImport : packageImports) {
 			int index = genmodel.getPackageImports().indexOf(packageImport);
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
-					"This package import is not used",
+				"This package import is not used",
 					new ReferenceInfo(GenmodelModelPackage.Literals.GEN_MODEL__PACKAGE_IMPORTS, index)));
 		}
 		return validationResultMessages;
@@ -622,11 +624,17 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	private Set<Package> getUsedPackages(AnalysisModelTransformation analysisModelTransformationTask) {
 		Set<Package> packageImports = new HashSet<Package>();
 		ModelReference modelReference = analysisModelTransformationTask.getModel();
-		if (modelReference instanceof ComponentReference) {
-			ComponentReference componentReference = (ComponentReference)modelReference;
+		if (modelReference instanceof ComponentReference componentReference) {
 			Component component = componentReference.getComponent();
 			Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(component);
 			packageImports.add(parentPackage);
+			for (Expression expression : componentReference.getArguments()) {
+				for (TypeReference reference : ecoreUtil.getSelfAndAllContentsOfType(expression, TypeReference.class)) {
+					TypeDeclaration typeReference = reference.getReference();
+					Package parentPackage_ = StatechartModelDerivedFeatures.getContainingPackage(typeReference);
+					packageImports.add(parentPackage_);
+				}
+			}
 		}
 		for (Coverage coverage : analysisModelTransformationTask.getCoverages()) {
 			List<ComponentInstanceReferenceExpression> allCoverages = new ArrayList<ComponentInstanceReferenceExpression>();
