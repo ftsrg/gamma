@@ -142,8 +142,9 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					return embedScopes(
 							List.of(parentScope, scope));
 				}
-				if (context instanceof StatechartDefinition) { // End
-					return IScope.NULLSCOPE;
+				if (context instanceof StatechartDefinition statechartDefinition) { // End
+					Collection<StateNode> allStateNodes = StatechartModelDerivedFeatures.getAllStateNodes(statechartDefinition);
+					return  Scopes.scopeFor(allStateNodes);
 				}
 				if (context instanceof Region region) { // Middle
 					IScope parentScope = getParentScope(context, reference);

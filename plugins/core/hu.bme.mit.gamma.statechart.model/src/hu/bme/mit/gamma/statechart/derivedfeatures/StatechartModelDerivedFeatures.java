@@ -3217,7 +3217,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static boolean areOrthogonal(Region lhs, Region rhs) {
-		return getContainingCompositeElement(lhs) == getContainingCompositeElement(rhs);
+		return lhs != rhs &&
+				getContainingCompositeElement(lhs) == getContainingCompositeElement(rhs);
 	}
 	
 	public static boolean hasOrthogonalRegions(CompositeElement element) {
