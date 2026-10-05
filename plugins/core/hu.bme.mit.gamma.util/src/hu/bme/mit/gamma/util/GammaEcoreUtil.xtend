@@ -676,9 +676,17 @@ class GammaEcoreUtil {
 
 	def Resource normalSave(ResourceSet resourceSet, EObject rootElem,
 			String parentFolder, String fileName) {
+		return normalSave(resourceSet, rootElem, parentFolder + File.separator + fileName)
+	}
+	
+	def Resource normalSave(ResourceSet resourceSet, EObject rootElem, String fileName) {
 		// Save is always absolute
-		val uri = URI.createFileURI(parentFolder + File.separator + fileName)
+		val uri = URI.createFileURI(fileName)
 		return normalSave(resourceSet, rootElem, uri)
+	}
+	
+	def Resource normalSave(EObject rootElem, File file) {
+		return normalSave(new ResourceSetImpl(), rootElem, file.toString)
 	}
 
 	def Resource normalSave(EObject rootElem, URI uri) {

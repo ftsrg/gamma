@@ -203,10 +203,11 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		}
 		
 		protected void serializeProperties(String fileName, List<Coverage> coverages) throws IOException {
-			try {
-				File propertyFile = new File(targetFolderUri + File.separator +
+			File propertyFile = new File(targetFolderUri + File.separator +
 					fileNamer.getHiddenEmfPropertyFileName(fileName));
-				PropertyPackage propertyPackage = (PropertyPackage) ecoreUtil.normalLoad(propertyFile);
+			PropertyPackage propertyPackage = null;
+			try {
+				propertyPackage = (PropertyPackage) ecoreUtil.normalLoad(propertyFile);
 				for (Coverage coverage : coverages) {
 					String name = coverage.eClass().getName();
 					propertyPackage.getCoverages().add(name);
@@ -216,6 +217,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				serializeProperties(propertyPackage, fileName);
 			} catch (Exception e) {
 				logger.warning("Property file for " + fileName + " could not be serialized");
+//				ecoreUtil.normalSave(propertyPackage, propertyFile);
 			}
 		}
 		
