@@ -400,6 +400,7 @@ Verification returns Verification:
 			'serialize-results' ':' serializeResults=BOOLEAN |
 			'serialize-traces' ':' serializeTraces=BOOLEAN |
 			('serialize-unique-folders' ':' ('false' | serializeUniqueFolders?='true')) |
+			('serialize-postprocessing-results' ':' ('false' | serializePostprocessingResults?='true')) |
 			'test-folder' ':' testFolder+=STRING |
 			'timeout' ':' timeout=TimeSpecification
 		)*

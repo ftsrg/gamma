@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -146,8 +146,9 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_16());
         c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_17());
         c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_18());
-        c.setLinewrap(1).after(f.getVerificationAccess().getTestFolderAssignment_3_19_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getTimeoutAssignment_3_20_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getGroup_3_19());
+        c.setLinewrap(1).after(f.getVerificationAccess().getTestFolderAssignment_3_20_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getTimeoutAssignment_3_21_2());
         // Model mutation
         c.setLinewrap(1).after(f.getModelMutationAccess().getTargetFolderAssignment_3_0_2());
         c.setLinewrap(1).after(f.getModelMutationAccess().getModelAssignment_2());

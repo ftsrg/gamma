@@ -541,7 +541,8 @@ public class VerificationHandler extends TaskHandler {
 		allResults.addAll(results);
 		allResults.addAll(optimizedResults);
 		
-		boolean doPostprocessing = verification.isBackAnnotateToOriginal() && verificationPostprocessor == null;
+		boolean doPostprocessing = verification.isBackAnnotateToOriginal() &&
+				verificationPostprocessor == null && verification.isSerializePostprocessingResults();
 		if (doPostprocessing) {
 			verificationPostprocessor = createVerificationPostprocessor(verification);
 		}

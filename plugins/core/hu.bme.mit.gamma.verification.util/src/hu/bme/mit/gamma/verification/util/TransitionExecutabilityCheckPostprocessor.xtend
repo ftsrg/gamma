@@ -120,6 +120,8 @@ class TransitionExecutabilityCheckPostprocessor extends VerificationPostprocesso
 		return unexecutedTransitions
 	}
 	
+	//
+	
 	override toString() '''
 		Executable transitions:
 			«FOR id : allExecutedTransitions.map[it.printElementReference].toSet.sort»

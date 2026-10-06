@@ -414,4 +414,11 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 	
 	//
 	
+	override toString() '''
+		Non-deterministic transitions:
+			«FOR id : nondeterministicTransitions.map[it.map[it.printElementReference].join(" -n-d- ")].toSet.sort»
+				«id»
+			«ENDFOR»
+	'''
+	
 }

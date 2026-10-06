@@ -246,6 +246,8 @@
         defaultValueLiteral="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="serializeUniqueFolders"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean" defaultValueLiteral="false"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="serializePostprocessingResults"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean" defaultValueLiteral="false"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TraceGeneration" eSuperTypes="#//Task">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="fullTraces" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
