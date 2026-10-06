@@ -80,5 +80,18 @@ class TransitionPairExecutabilityCheckPostprocessor extends VerificationPostproc
 		
 		return unexecutedTransitionPairs
 	}
+	
+	//
+	
+	override toString() '''
+		Executable transition pairs:
+			«FOR id : executedTransitionPairs.map[id].toSet.sort»
+				«id»
+			«ENDFOR»
+		Unexecutable transition pairs:
+			«FOR id : unexecutedTransitionPairs.map[id].toSet.sort»
+				«id»
+			«ENDFOR»
+	'''
 
 }

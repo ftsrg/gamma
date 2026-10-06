@@ -33,4 +33,10 @@ class DeadlockCheckPostprocessor extends VerificationPostprocessor {
 		return deadlock
 	}
 	
+	//
+	
+	override toString() '''
+		The can«IF !deadlock»not«ENDIF» be deadlock
+	'''
+	
 }

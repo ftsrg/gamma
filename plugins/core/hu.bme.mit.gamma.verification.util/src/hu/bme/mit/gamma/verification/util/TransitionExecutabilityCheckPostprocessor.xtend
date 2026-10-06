@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.verification.util
 import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
+import hu.bme.mit.gamma.statechart.statechart.EntryState
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures
@@ -118,5 +119,18 @@ class TransitionExecutabilityCheckPostprocessor extends VerificationPostprocesso
 		
 		return unexecutedTransitions
 	}
+	
+	override toString() '''
+		Executable transitions:
+			«FOR id : allExecutedTransitions.map[it.printElementReference].toSet.sort»
+				«id»
+			«ENDFOR»
+		Unexecutable transitions:
+			«FOR id : unexecutedTransitions
+					.reject[it.value.sourceState instanceof EntryState]
+					.map[it.printElementReference].toSet.sort»
+				«id»
+			«ENDFOR»
+	'''
 	
 }

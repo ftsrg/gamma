@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2025 Contributors to the Gamma project
+ * Copyright (c) 2025-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.statechart.Transition
+import hu.bme.mit.gamma.statechart.util.ElementSerializer
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.transformation.util.UnfoldedExecutionTraceBackAnnotator
 import java.util.Collection
@@ -21,6 +22,7 @@ import java.util.List
 import java.util.Map
 import java.util.Map.Entry
 import java.util.regex.Pattern
+import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Data
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -43,7 +45,7 @@ class InteractionCheckPostprocessor extends VerificationPostprocessor {
 		
 		val steps = trace.allSteps
 		for (step : steps) {
-			var Entry<ComponentInstanceReferenceExpression, ? extends Object> sender = null
+			var Entry<ComponentInstanceReferenceExpression, ? extends EObject> sender = null
 			var Entry<ComponentInstanceReferenceExpression, Transition> receiver = null
 			
 			val asserts = step.asserts
@@ -85,18 +87,16 @@ class InteractionCheckPostprocessor extends VerificationPostprocessor {
 	protected def matchState(String string, String prefix, Component component) {
 		val statechartInstances = component.allSimpleInstanceReferences
 		
-		val statePattern = Pattern.compile('''«prefix»state (.*) region (.*) of (.*)''')
+		val statePattern = Pattern.compile('''«prefix»(.*) of (.*)''')
 		val stateMatcher = statePattern.matcher(string)
 		if (stateMatcher.find) {
 			// Sender is a 'state'
 			val stateName = stateMatcher.group(1).trim
-			val regionName = stateMatcher.group(2).trim
-			val instanceName = stateMatcher.group(3).trim
+			val instanceName = stateMatcher.group(2).trim
 			
 			val instance = statechartInstances.findFirst[it.name == instanceName]
 			val statechart = instance.lastInstance.getStatechart
-			val state = statechart.allStates.findFirst[it.name == stateName &&
-					it.parentRegion.name == regionName]
+			val state = statechart.allStates.findFirst[it.serialize == stateName]
 					
 			return Map.entry(instance, state)
 		}
@@ -117,8 +117,10 @@ class InteractionCheckPostprocessor extends VerificationPostprocessor {
 			val instance = statechartInstances.findFirst[it.name == instanceName]
 			val statechart = instance.lastInstance.getStatechart
 			val transition = statechart.transitions.findFirst[it.serialize == transitionString]
-					
-			return Map.entry(instance, transition)
+			
+			if (instance !== null && transition !== null) {
+				return Map.entry(instance, transition)
+			}
 		}
 		
 		return null
@@ -138,10 +140,27 @@ class InteractionCheckPostprocessor extends VerificationPostprocessor {
 	
 	@Data
 	static class Interaction {
+		//
+		protected final extension ElementSerializer elementSerializer = ElementSerializer.INSTANCE
+		//
 		ComponentInstanceReferenceExpression senderInstance
-		Object sender
+		EObject sender
 		ComponentInstanceReferenceExpression receiverInstance
 		Transition receiver
+		
+		override toString() {
+			return senderInstance.name + "." + sender.serialize + " -i- " + receiverInstance.name + "." + receiver.serialize
+		}
+		
 	}
+	
+	//
+	
+	override toString() '''
+		Coverable interactions:
+			«FOR id : allInteractions.map[it.toString].toSet.sort»
+				«id»
+			«ENDFOR»
+	'''
 	
 }

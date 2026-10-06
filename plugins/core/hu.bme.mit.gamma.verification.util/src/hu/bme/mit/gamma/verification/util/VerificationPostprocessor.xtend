@@ -17,10 +17,12 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceEx
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueOverflowExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.util.ElementSerializer
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.util.TraceUtil
@@ -30,7 +32,9 @@ import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
 import java.util.Collection
 import java.util.List
+import java.util.Map.Entry
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 abstract class VerificationPostprocessor {
@@ -156,9 +160,17 @@ abstract class VerificationPostprocessor {
 	protected def printElementReference(ComponentInstanceElementReferenceExpression elementReference) {
 		val instance = elementReference.instance.name
 		return switch (elementReference) {
+			ComponentInstanceStateReferenceExpression: '''«instance».«elementReference.region.name».«elementReference.state.name»'''
 			ComponentInstanceVariableReferenceExpression: '''«instance».«elementReference.variableDeclaration.name»'''
 			ComponentInstanceEventParameterReferenceExpression: '''«instance».«elementReference.port.name».«elementReference.event.name»::«elementReference.parameterDeclaration.name»'''
+			ComponentInstanceQueueOverflowExpression: '''«instance».«elementReference.queue.name»'''
 		}
+	}
+	
+	protected def printElementReference(Entry<ComponentInstanceReferenceExpression, Transition> elementReference) {
+		val instance = elementReference.key.name
+		val transition = elementReference.value
+		return '''«instance».«transition.serialize»'''
 	}
 	
 }

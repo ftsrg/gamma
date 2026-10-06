@@ -85,4 +85,17 @@ class OrthogonalStateCombinationCheckPostprocessor extends VerificationPostproce
 		return uncoveredOrthogonalStateCombinations
 	}
 	
+	//
+	
+	override toString() '''
+		Reachable orthogonal state combinations:
+			«FOR id : coveredOrthogonalStateCombinations.map[it.map[it.printElementReference].join(", ")].toSet.sort»
+				«id»
+			«ENDFOR»
+		Unreachable orthogonal state combinations:
+			«FOR id : uncoveredOrthogonalStateCombinations.map[it.map[it.printElementReference].join(", ")].toSet.sort»
+				«id»
+			«ENDFOR»
+	'''
+	
 }

@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
 import java.util.List
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class CompletenessCheckPostprocessor extends StateCheckPostprocessor {
@@ -83,5 +84,15 @@ class CompletenessCheckPostprocessor extends StateCheckPostprocessor {
 		
 		return unhandledEvents
 	}
+	
+	//
+	
+	override toString() '''
+		Unhandled events:
+			«FOR id : unhandledEvents.entrySet
+						.map[it.key.printElementReference + ": " + it.value.port.name + "." + it.value.event.name].toSet.sort»
+				«id»
+			«ENDFOR»
+	'''
 	
 }

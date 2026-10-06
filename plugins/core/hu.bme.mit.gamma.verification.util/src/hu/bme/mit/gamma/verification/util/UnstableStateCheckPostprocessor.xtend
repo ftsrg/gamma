@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2025 Contributors to the Gamma project
+ * Copyright (c) 2025-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -22,5 +22,9 @@ class UnstableStateCheckPostprocessor extends StateCheckPostprocessor {
 	protected override selectState(StateFormula property) {  // G (state a -> X(!state a))
 		return super.selectState(property) // Returns the first reference
 	}
+	
+	//
+	
+	protected override getLabel() '''Unstable states'''
 	
 }

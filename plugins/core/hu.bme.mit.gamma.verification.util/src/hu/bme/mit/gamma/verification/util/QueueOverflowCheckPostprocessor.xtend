@@ -70,4 +70,13 @@ class QueueOverflowCheckPostprocessor extends VerificationPostprocessor {
 		return queueSizeReferences
 	}
 	
+	//
+	
+	override toString() '''
+		Coverable interactions:
+			«FOR id : queueSizeReferences.map[it.printElementReference].toSet.sort»
+				«id»
+			«ENDFOR»
+	'''
+	
 }

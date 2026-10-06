@@ -645,19 +645,21 @@ class XstsBackAnnotator {
 		// Potential "AI" restoration of sliced states
 		if (!Thread.currentThread.interrupted) {
 			val instanceStates2 = step.instanceStateConfigurations
-			val component = step.containingExecutionTrace.component
-			val simpleInstances = component.allSimpleInstances
-			for (simpleInstance : simpleInstances) {
-				val noState = !instanceStates2.exists[it.instance.componentInstance == simpleInstance]
-				if (noState) {
-					val statechart = simpleInstance.getStatechart
-					val topRegions = statechart.regions
-					for (topRegion : topRegions) {
-						val potentialState = topRegion.states.filter[!it.composite && it.outgoingTransitions.empty].head
-						if (potentialState !== null) {
-							logger_.warning("Adding sliced state reference to step " + step.index + ": " + simpleInstance.name + "->" + topRegion.name + "." + potentialState.name)
-							val stateReference = simpleInstance.createInstanceReference.createStateReference(potentialState)
-							asserts += stateReference
+			val component = step?.containingExecutionTrace?.component
+			if (component !== null) {
+				val simpleInstances = component?.allSimpleInstances
+				for (simpleInstance : simpleInstances) {
+					val noState = !instanceStates2.exists[it.instance.componentInstance == simpleInstance]
+					if (noState) {
+						val statechart = simpleInstance.getStatechart
+						val topRegions = statechart.regions
+						for (topRegion : topRegions) {
+							val potentialState = topRegion.states.filter[!it.composite && it.outgoingTransitions.empty].head
+							if (potentialState !== null) {
+								logger_.warning("Adding sliced state reference to step " + step.index + ": " + simpleInstance.name + "->" + topRegion.name + "." + potentialState.name)
+								val stateReference = simpleInstance.createInstanceReference.createStateReference(potentialState)
+								asserts += stateReference
+							}
 						}
 					}
 				}

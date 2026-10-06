@@ -83,4 +83,17 @@ class StateReachabilityCheckPostprocessor extends VerificationPostprocessor {
 		return unreachedStates
 	}
 	
+	//
+	
+	override toString() '''
+		Reachable states:
+			«FOR id : allReachedStates.map[it.printElementReference].toSet.sort»
+				«id»
+			«ENDFOR»
+		Unreachable states:
+			«FOR id : unreachedStates.map[it.printElementReference].toSet.sort»
+				«id»
+			«ENDFOR»
+	'''
+	
 }

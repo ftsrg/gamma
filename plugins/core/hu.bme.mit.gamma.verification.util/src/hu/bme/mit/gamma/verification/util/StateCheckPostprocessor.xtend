@@ -55,4 +55,15 @@ abstract class StateCheckPostprocessor extends VerificationPostprocessor {
 		return states
 	}
 	
+	//
+	
+	protected def getLabel() '''States'''
+	
+	override toString() '''
+		«label»:
+			«FOR id : states.map[it.printElementReference].toSet.sort»
+				«id»
+			«ENDFOR»
+	'''
+	
 }

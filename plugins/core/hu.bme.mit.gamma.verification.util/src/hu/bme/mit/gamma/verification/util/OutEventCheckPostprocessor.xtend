@@ -66,5 +66,17 @@ class OutEventCheckPostprocessor extends VerificationPostprocessor {
 		
 		return unraisedEvents
 	}
+	//
+	
+	override toString() '''
+		Raisable event:
+			«FOR id : allRaisedEvents.map[it.key.name + "." + it.value.name].toSet.sort»
+				«id»
+			«ENDFOR»
+		Unraisable event:
+			«FOR id : unraisedEvents.map[it.key.name + "." + it.value.name].toSet.sort»
+				«id»
+			«ENDFOR»
+	'''
 	
 }
