@@ -898,7 +898,7 @@ public class VerificationHandler extends TaskHandler {
 	public Component getTopComponent() {
 		Collection<Component> components = new LinkedHashSet<Component>(
 				getTopComponents());
-		return javaUtil.getOnlyElement(components); // TODO empty traces
+		return javaUtil.getOnlyElement(components);
 	}
 	
 	public Component getOriginalTopComponent() {
