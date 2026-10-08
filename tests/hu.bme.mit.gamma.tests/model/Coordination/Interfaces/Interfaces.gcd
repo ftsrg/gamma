@@ -1,0 +1,5 @@
+package coordination_tests
+
+interface SimpleInterface {
+	out event simpleEvent
+}

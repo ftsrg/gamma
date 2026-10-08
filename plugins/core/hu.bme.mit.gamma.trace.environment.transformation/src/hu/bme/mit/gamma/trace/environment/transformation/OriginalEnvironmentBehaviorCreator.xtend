@@ -85,7 +85,7 @@ class OriginalEnvironmentBehaviorCreator {
 			val inOutCycleState = environmentModel.createRegionWithState(inOutCycleRegionName,
 					inOutCycleInitialStateName, inOutCycleStateName)
 			val inOutCycleTransition = inOutCycleState.createTransition(inOutCycleState)
-			inOutCycleTransition.trigger = createOnCycleTrigger
+			inOutCycleTransition.trigger = statechartModelFactory.createOnCycleTrigger
 			inOutCycleTransition.effects += inOutCycleVariable.createAssignment(
 					inOutCycleVariable.createReferenceExpression.createNotExpression)
 		}
@@ -136,7 +136,7 @@ class OriginalEnvironmentBehaviorCreator {
 		region.stateNodes += lastTargetState
 		
 		val firstTransition = createTransition => [
-			it.trigger = createOnCycleTrigger
+			it.trigger = statechartModelFactory.createOnCycleTrigger
 		]
 		firstTransition.sourceState = internalLastState
 		firstTransition.targetState = lastTargetState

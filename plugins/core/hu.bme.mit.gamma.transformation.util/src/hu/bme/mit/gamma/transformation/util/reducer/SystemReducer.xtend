@@ -20,6 +20,7 @@ import hu.bme.mit.gamma.statechart.composite.SimpleChannel
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.SynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.statechart.CoordinationStatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.EntryState
 import hu.bme.mit.gamma.statechart.statechart.GuardEvaluation
 import hu.bme.mit.gamma.statechart.statechart.OrthogonalRegionSchedulingOrder
@@ -101,7 +102,8 @@ class SystemReducer implements Reducer {
 		}
 		// Statechart optimizing
 		for (statechart : statecharts) {
-			if (statechart.regions.empty || !simpleInstancesMatcher.hasMatch(null, statechart)) {
+			// TODO note: a coordination automaton is not a simple instance we have to handle this somewhere!
+			if ((statechart.regions.empty || !simpleInstancesMatcher.hasMatch(null, statechart)) && !(statechart.isCoordinationStatechart)) {
 				statechart.regions.clear
 				statechart.variableDeclarations.clear
 				statechart.timeoutDeclarations.clear
@@ -172,12 +174,15 @@ class SystemReducer implements Reducer {
 	}
 	
 	private def void removeUnnecessaryStateNodes(Region region) {
+		info("Removing states of region " + region.name + " of " + 
+					region.containingStatechart.name)
 		val consideredStateNodes = region.stateNodes.reject(EntryState).toSet // To avoid concurrent mod exception
 		for (stateNode : consideredStateNodes) {
 			if (stateNode.allIncomingTransitions.empty) {
 				for (outgoingTransitions : stateNode.outgoingTransitions) {
 					outgoingTransitions.removeTransition
 				}
+				info("|- Removing state  " + stateNode.name)
 				stateNode.remove
 			}
 		}

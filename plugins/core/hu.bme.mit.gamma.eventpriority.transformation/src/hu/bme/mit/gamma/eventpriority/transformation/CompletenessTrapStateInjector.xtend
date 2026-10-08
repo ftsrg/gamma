@@ -67,7 +67,7 @@ class CompletenessTrapStateInjector {
 			}
 			else {
 				val defaultGuard = outgoingTransitions.createDefaultGuard
-				trapTransition.trigger = createOnCycleTrigger
+				trapTransition.trigger = statechartFactory.createOnCycleTrigger
 				trapTransition.guard = defaultGuard
 			}
 		}

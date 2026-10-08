@@ -1,0 +1,43 @@
+package coordination_tests
+
+import "Interfaces/Interfaces.gcd"
+import "Statechart/Statechart.gcd"
+
+@Coordination
+coordination-statechart CoordinationNondet (
+	// parameters
+) [
+	// system ports
+	port SystemIn1 : requires SimpleInterface
+	port SystemIn2 : requires SimpleInterface
+	port SystemOut1 : provides SimpleInterface
+	port SystemOut2 : provides SimpleInterface
+] {
+	// system composition
+	component Component1 : SimpleStatechart
+	component Component2 : SimpleStatechart
+	
+	bind SystemIn1 -> Component1.inPort
+	bind SystemIn2 -> Component2.inPort
+	bind SystemOut1 -> Component1.outPort
+	bind SystemOut2 -> Component2.outPort
+} <
+	// system coordination
+	timeout c1
+	
+	region main {
+		initial init
+		state q0 {
+			invariant (time-elapsed(c1) < 4)
+			entry / set c1 := 1 s;
+		}
+		state q1 {
+			invariant (time-elapsed(c1) < 4)
+			entry / set c1 := 1 s;
+		}
+	}
+	
+	transition from init to q0
+	transition from q0 to q1 when timeout c1 execute Component1
+	transition from q0 to q1 when timeout c1 execute Component2
+>

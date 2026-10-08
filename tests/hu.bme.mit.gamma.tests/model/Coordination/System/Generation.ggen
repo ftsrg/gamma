@@ -1,0 +1,63 @@
+import "Coordination-nondet.gcd"
+import "Coordination-seq.gcd"
+import "Coordination-unord.gcd"
+
+analysis {
+	component : CoordinationNondet
+	language : XSTS
+	folder : "model-gen-coordination-timed"
+	optimize : false
+	state-coverage
+}
+
+analysis {
+	component : CoordinationNondet
+	language : XSTS
+	folder : "model-gen-coordination"
+	optimize : false
+	state-coverage
+	constraint : {
+		minimum-orchestrating-period : 0 s
+		maximum-orchestrating-period : 4 s
+	}
+}
+
+analysis {
+	component : CoordinationSeq
+	language : XSTS
+	folder : "model-gen-coordination-timed"
+	optimize : false
+	state-coverage
+}
+
+analysis {
+	component : CoordinationSeq
+	language : XSTS
+	folder : "model-gen-coordination"
+	optimize : false
+	state-coverage
+	constraint : {
+		minimum-orchestrating-period : 0 s
+		maximum-orchestrating-period : 4 s
+	}
+}
+
+analysis {
+	component : CoordinationUnord
+	language : XSTS
+	folder : "model-gen-coordination-timed"
+	optimize : false
+	state-coverage
+}
+
+analysis {
+	component : CoordinationUnord
+	language : XSTS
+	folder : "model-gen-coordination"
+	optimize : false
+	state-coverage
+	constraint : {
+		minimum-orchestrating-period : 0 s
+		maximum-orchestrating-period : 4 s
+	}
+}
