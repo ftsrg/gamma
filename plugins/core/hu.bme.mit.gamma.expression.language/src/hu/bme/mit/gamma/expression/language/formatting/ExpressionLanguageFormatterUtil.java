@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.expression.language.formatting;
 
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.xtext.Group;
 import org.eclipse.xtext.Keyword;
 import org.eclipse.xtext.formatting.impl.FormattingConfig;
 import org.eclipse.xtext.service.AbstractElementFinder.AbstractGrammarElementFinder;
@@ -35,10 +37,25 @@ public class ExpressionLanguageFormatterUtil {
 
 	protected void setDoubleColons(FormattingConfig c, AbstractGrammarElementFinder f) {
 		for (Keyword dot : f.findKeywords("::")) {
-			c.setNoSpace().around(dot);
+			wrapKeyword(c, dot);
 		}
 	}
-
+	
+	protected void wrapKeyword(FormattingConfig c, Keyword keyword) {
+		EObject container = keyword.eContainer();
+	    if (container instanceof Group group) {
+	        var elements = group.getElements();
+	        int size = elements.size();
+	        int i = elements.indexOf(keyword);
+	        if (i > 0) {
+				c.setNoSpace().before(keyword);
+	        }
+	        if (i < size - 1) {
+				c.setNoSpace().after(keyword);
+	        }
+	    }
+	}
+	
 	protected void setCommas(FormattingConfig c, AbstractGrammarElementFinder f) {
 		for (Keyword comma : f.findKeywords(",")) {
 			c.setNoSpace().before(comma);

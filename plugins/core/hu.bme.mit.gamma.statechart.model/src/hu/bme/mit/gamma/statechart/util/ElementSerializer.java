@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2025 Contributors to the Gamma project
+ * Copyright (c) 2025-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,9 +12,14 @@ package hu.bme.mit.gamma.statechart.util;
 
 import java.util.List;
 
+import org.eclipse.emf.ecore.EObject;
+
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Trigger;
+import hu.bme.mit.gamma.statechart.statechart.Region;
+import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.util.JavaUtil;
 
@@ -29,23 +34,67 @@ public class ElementSerializer {
 	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	//
 	
+	public String serialize(State state) {
+		Region region = StatechartModelDerivedFeatures.getParentRegion(state);
+		return "state " + region.getName() + "." + state.getName();
+	}
+	
 	public String serialize(Transition transition) {
-		String stateNodes = "from " + transition.getSourceState().getName() + " to " +
-				transition.getTargetState().getName();
-		
-		Trigger trigger = transition.getTrigger();
-		String triggerString = "when " + triggerSerializer.serialize(trigger);
-		
-		Expression guard = transition.getGuard();
-		String guardString = (guard == null) ? "" :  "[" + javaUtil.deparenthesize(
-				expressionSerializer.serialize(guard)) + "]";
+		String sourceString = serializeSourceAndTargetAndTriggerAndGuard(transition);
 		
 		List<Action> effects = transition.getEffects();
-		String effectString = (effects.isEmpty()) ? "" : "/ " + effects.stream()
+		String effectString = (effects.isEmpty()) ? "" : " / " + effects.stream()
 				.map(it -> actionSerializer.serialize(it))
-				.reduce((t, u) -> t + "; " + u);
+				.reduce((t, u) -> t + " " + u)
+				.get();
 		
-		return stateNodes + " " + triggerString + " " + guardString + " " + effectString;
+		return (sourceString + effectString)
+					.replace(System.lineSeparator(), " ")
+					.replaceAll("\\s+", " ");
+	}
+	
+	public String serializeSourceAndTrigger(Transition transition) {
+		String source = "from " + transition.getSourceState().getName();
+		Trigger trigger = transition.getTrigger();
+		String string = source + serialize(trigger);
+		
+		return string;
+	}
+	
+	public String serializeSourceAndTargetAndTrigger(Transition transition) {
+		String source = "from " + transition.getSourceState().getName();
+		String target = " to " + transition.getTargetState().getName();
+		Trigger trigger = transition.getTrigger();
+		String string = source + target + serialize(trigger);
+		
+		return string;
+	}
+	
+	public String serializeSourceAndTargetAndTriggerAndGuard(Transition transition) {
+		String string = serializeSourceAndTargetAndTrigger(transition);
+		Expression guard = transition.getGuard();
+		String guardString = (guard == null) ? "" : " [" + javaUtil.deparenthesize(
+				expressionSerializer.serialize(guard)) + "]";
+		
+		return string + guardString;
+	}
+	
+	protected String serialize(Trigger trigger) {
+		if (trigger == null) {
+			return "";
+		}
+		String triggerString = " when " + triggerSerializer.serialize(trigger);
+		return triggerString;
+	}
+	
+	public String serialize(EObject stateOrTransition) {
+		if (stateOrTransition instanceof State state) {
+			return serialize(state);
+		}
+		if (stateOrTransition instanceof Transition transition) {
+			return serialize(transition);
+		}
+		throw new IllegalArgumentException("Unknown object: " + stateOrTransition);
 	}
 	
 }

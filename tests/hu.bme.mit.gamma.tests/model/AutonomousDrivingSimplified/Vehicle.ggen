@@ -1,0 +1,26 @@
+import "Vehicle"
+
+code {
+	component : AdSystem_ControllerStatechart
+	language : java
+}
+
+code {
+	component : ControllerAdSystem_ControllerStatechart
+	language : java
+}
+
+analysis {
+	component : ControllerAdSystem_ControllerStatechart
+	language : smart
+	state-coverage
+}
+
+verification {
+	language : smart
+	test-language : java
+	file : "Vehicle"
+	property-file : ".Vehicle.gpd"
+	optimize-traces : true
+	serialize-results : false
+}

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -13,15 +13,21 @@ package hu.bme.mit.gamma.querygenerator.patterns
 import "http://www.mit.bme.hu/gamma/expression/Model" 
 import "http://www.mit.bme.hu/gamma/statechart/Model/Statechart"
 import "http://www.mit.bme.hu/gamma/statechart/Model/Composite"
+import "http://www.mit.bme.hu/gamma/statechart/Model/Interface"
 
 pattern simpleInstances(instance : SynchronousComponentInstance, statechart : StatechartDefinition) {
 	SynchronousComponentInstance.type(instance, statechart); 
 }
 
 pattern instanceVariables(instance : SynchronousComponentInstance, variable : VariableDeclaration) {
-	// Composite systems
 	find simpleInstances(instance, statechart);
 	StatechartDefinition.variableDeclarations(statechart, variable);
+} or { // Added after introducing interface variables
+	find simpleInstances(instance, statechart);
+	StatechartDefinition.ports(statechart, port);
+	Port.interfaceRealization(port, realization);
+	InterfaceRealization.realizationMode(realization, RealizationMode::PROVIDED);
+	InterfaceRealization.interface.variableDeclarations(realization, variable);
 }
 
 pattern substatesOfCompositeState(compositeState : State, substate : StateNode) {

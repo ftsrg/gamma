@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.util
 
 import java.util.LinkedList
 import java.util.Scanner
+import java.util.logging.Level
 import java.util.logging.Logger
 
 class ScannerLogger implements Runnable {
@@ -85,12 +86,15 @@ class ScannerLogger implements Runnable {
 	override void run() {
 		while (!isCancelled && scanner.hasNext) {
 			val line = scanner.nextLine
+			
 			if (!errorLines.nullOrEmpty) {
 				line.checkError
 				line.storeLine
 			}
+			
+			val logLevel = (error) ? Level.SEVERE : Level.WARNING
 			if (printLines) {
-				logger.severe(line)
+				logger.log(logLevel, line)
 //				println(line)
 			}
 		}

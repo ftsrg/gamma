@@ -146,6 +146,7 @@ class XstsBackAnnotator {
 		val instanceVariable = xStsQueryGenerator.getSourceVariable(id)
 		val instance = instanceVariable.value
 		val variable = instanceVariable.key
+		val port = xStsQueryGenerator.isSourcePortVariable(id) ? xStsQueryGenerator.getSourcePortVariable(id).second
 		// Getting fields and indexes regardless of primitive or complex types
 		// In the case of primitive types, these hierarchies will be empty
 		val fieldIndex = variable.handleFields(id, value,
@@ -157,11 +158,11 @@ class XstsBackAnnotator {
 			val parsedValue = indexPair.value
 			try {
 				// If the string is a literal value (e.g., false, 0, ENUM_LITERAL)
-				step.addInstanceVariableState(instance, variable, field, index, parsedValue)
+				step.addInstanceVariableState(instance, port /* May be null */, variable, field, index, parsedValue)
 			} catch (RuntimeException e) {
 				// Value is not a literal; parsing expression
 				val expression = parsedValue.parseExpression
-				step.addInstanceVariableState(instance, variable, field, index, expression)
+				step.addInstanceVariableState(instance, port /* May be null */, variable, field, index, expression)
 				// This could be used in general, but the string literal based solution
 				// was kept for performance purposes (no actual expression parsing is needed most of the time)
 			}
@@ -371,7 +372,7 @@ class XstsBackAnnotator {
 	
 	protected def handleFields(Declaration declaration, String id, String value,
 			Supplier<FieldHierarchy> fieldComputer) {
-		val field =  fieldComputer.get
+		val field = fieldComputer.get
 		val indexPairs = id.parseArray(value)
 		declaration.handleOneCapacityArrayValues(field, indexPairs)
 		
@@ -640,6 +641,30 @@ class XstsBackAnnotator {
 		}
 		raisedOutEvents.clear // Crucial
 		activatedStates.clear // Crucial
+		
+		// Potential "AI" restoration of sliced states
+		if (!Thread.currentThread.interrupted) {
+			val instanceStates2 = step.instanceStateConfigurations
+			val component = step?.containingExecutionTrace?.component
+			if (component !== null) {
+				val simpleInstances = component?.allSimpleInstances
+				for (simpleInstance : simpleInstances) {
+					val noState = !instanceStates2.exists[it.instance.componentInstance == simpleInstance]
+					if (noState) {
+						val statechart = simpleInstance.getStatechart
+						val topRegions = statechart.regions
+						for (topRegion : topRegions) {
+							val potentialState = topRegion.states.filter[!it.composite && it.outgoingTransitions.empty].head
+							if (potentialState !== null) {
+								logger_.warning("Adding sliced state reference to step " + step.index + ": " + simpleInstance.name + "->" + topRegion.name + "." + potentialState.name)
+								val stateReference = simpleInstance.createInstanceReference.createStateReference(potentialState)
+								asserts += stateReference
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 	
 	def void checkInEvents(Step step) {

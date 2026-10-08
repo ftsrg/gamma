@@ -237,7 +237,7 @@ class ModelElementMutator {
 	def changeEventReference(EventParameterReferenceExpression expression) {
 		val port = expression.port
 		val oldEvent = expression.event
-		val oldParameter = expression.parameter
+		val oldParameter = expression.parameterDeclaration
 		
 		val newEvent = port.getNewInEvent(oldEvent)
 		val newParameters = newEvent.getParametersOfTypeDefinition(oldParameter.typeDefinition) 
@@ -245,16 +245,16 @@ class ModelElementMutator {
 		val newParameter = newParameters.get(random.nextInt(newParameters.size))
 		
 		expression.event = newEvent
-		expression.parameter = newParameter
+		expression.declaration = newParameter
 
 		info('''Changed event reference of event parameter reference from «oldEvent.name» to «newEvent.name»''')
 	}
 	
 	def changeParameterReference(EventParameterReferenceExpression expression) {
-		val oldParameter = expression.parameter
+		val oldParameter = expression.parameterDeclaration
 		val newParameter = oldParameter.newParameter
 		
-		expression.parameter = newParameter
+		expression.declaration = newParameter
 
 		info('''Changed parameter reference of event parameter reference from «oldParameter.name» to «newParameter.name»''')
 	}

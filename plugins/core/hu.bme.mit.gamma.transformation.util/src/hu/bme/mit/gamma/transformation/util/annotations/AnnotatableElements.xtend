@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.transformation.util.annotations
 
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
@@ -21,9 +22,15 @@ import org.eclipse.xtend.lib.annotations.Data
 @Data
 class AnnotatableElements {
 	
+	Collection<SynchronousComponentInstance> deadlockStateCoverableComponents
+	
 	Collection<SynchronousComponentInstance> deadlockCoverableComponents
 	
+	Collection<SynchronousComponentInstance> completenessCoverableComponents
+	
 	Collection<SynchronousComponentInstance> nondeterministicTransitionCoverableComponents
+	
+	Collection<AsynchronousComponentInstance> queueOverflowCoverableComponents
 	
 	Collection<SynchronousComponentInstance> transitionCoverableComponents
 	

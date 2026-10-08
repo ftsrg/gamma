@@ -420,7 +420,7 @@ abstract class AbstractContractStatechartGeneration {
 				val reference = createEventParameterReferenceExpression
 				reference.port = getPort(port.turnedOutPortName)
 				reference.event = getEvent(signal.getEvent.name, reference.port)
-				reference.parameter = argument
+				reference.declaration = argument
 				action.arguments += reference
 			}
 		} else {
@@ -506,23 +506,25 @@ abstract class AbstractContractStatechartGeneration {
 			val event = getEvent(tmp.getEvent.name, port)
 			for (paramDec : event.parameterDeclarations) {
 				val paramRef = createEventParameterReferenceExpression
-				paramRef.parameter = paramDec
+				paramRef.declaration = paramDec
 				paramRef.port = port
 				paramRef.event = event
-				guard1.operands += createEqualityExpression(paramRef, tmp.arguments.get(i).clone)
+				guard1.operands += paramRef.createEqualityExpression(tmp.arguments.get(i).clone)
 				i++
 			}
 		}
 		var Expression expr = null
 		if (guard1.operands.size == 1) {
 			expr = guard1.operands.get(0)
-		} else {
+		}
+		else {
 			expr = guard1
 		}
 		val guard = transition.guard
 		if (guard === null) {
 			transition.guard = expr
-		} else {
+		}
+		else {
 			val and = createAndExpression
 			and.operands += expr
 			and.operands += guard
@@ -582,7 +584,8 @@ abstract class AbstractContractStatechartGeneration {
 		].toList
 		if (nonCheckOrAssignmentInteractitons.size > 1) {
 			trigger = getBinaryTrigger(nonCheckOrAssignmentInteractitons, BinaryType.AND, reversed)
-		} else if (nonCheckOrAssignmentInteractitons.size == 1) {
+		}
+		else if (nonCheckOrAssignmentInteractitons.size == 1) {
 			trigger = getEventTrigger(nonCheckOrAssignmentInteractitons.head, reversed)
 		} 
 		if (trigger === null) {

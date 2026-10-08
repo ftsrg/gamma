@@ -1,0 +1,17 @@
+import "CoFiAdapter"
+
+analysis {
+	component : CoFiControllerAdapter
+	language : nuXmv
+	transition-coverage
+}
+
+verification {
+	language : nuXmv
+	test-language : java
+	file : "CoFiAdapter.smv"
+	property-file : ".CoFiAdapter.gpd"
+	trace-file : "CoFi"
+	optimize-traces : true
+	tested-file : "ReflectiveTrainDoorControllerAdapter"
+}

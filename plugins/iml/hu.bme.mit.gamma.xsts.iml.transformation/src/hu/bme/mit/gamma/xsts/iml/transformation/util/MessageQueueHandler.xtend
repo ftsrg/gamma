@@ -97,7 +97,7 @@ class MessageQueueHandler {
 						val messageQueue = declarationReferenceAnnotation.declarations.head
 						if (messageQueue === null) {
 							// The queue has been removed due to optimization
-							return '''«variable.name»'''
+							return expression._serialize
 						}
 						return '''List.length («messageQueue.serializeAsRhs»)'''
 					}

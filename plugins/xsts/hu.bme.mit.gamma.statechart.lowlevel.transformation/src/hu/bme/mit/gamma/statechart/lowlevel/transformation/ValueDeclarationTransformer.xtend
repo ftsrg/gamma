@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.InitializableElement
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.InternalParameterDeclarationAnnotation
+import hu.bme.mit.gamma.expression.model.NamedElement
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.ParameterDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
@@ -24,6 +25,7 @@ import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.Triple
 import java.util.List
 
 import static com.google.common.base.Preconditions.checkState
@@ -56,78 +58,86 @@ class ValueDeclarationTransformer {
 	def transformForParameter(ParameterDeclaration gammaParameter) {
 		// This must be an integer parameter
 		val typeDefinition = gammaParameter.typeDefinition
-		checkState(typeDefinition instanceof IntegerTypeDefinition)
+		checkState(typeDefinition instanceof IntegerTypeDefinition, typeDefinition)
 		val lowlevelParameter = gammaParameter.clone
 		trace.put(gammaParameter, lowlevelParameter)
+		
 		return lowlevelParameter
 	}
 	
 	def List<VariableDeclaration> transformComponentParameter(ParameterDeclaration gammaParameter) {
 		val lowlevelVariableNames = gammaParameter.componentParameterNames
 		return gammaParameter.transform(lowlevelVariableNames,
-			new Tracer {
+			new Tracer<VariableDeclaration> {
 				override trace(ValueDeclaration value, FieldHierarchy fieldHierarchy,
 						VariableDeclaration lowlevelVariable) {
 					trace.put(value -> fieldHierarchy, lowlevelVariable)
 				}
+				override createValueDeclaration() { return createVariableDeclaration }
 			}
-		)
+		) as List<VariableDeclaration>
 	}
 	
-	def List<VariableDeclaration> transformFunctionParameter(ParameterDeclaration gammaParameter) {
+	def List<ParameterDeclaration> transformFunctionParameter(ParameterDeclaration gammaParameter) {
 		val lowlevelVariableNames = gammaParameter.componentParameterNames
 		return gammaParameter.transform(lowlevelVariableNames,
-			new Tracer {
+			new Tracer<ParameterDeclaration> {
 				override trace(ValueDeclaration value, FieldHierarchy fieldHierarchy,
-						VariableDeclaration lowlevelVariable) {
-					trace.put(value -> fieldHierarchy, lowlevelVariable)
+						ParameterDeclaration lowlevelVariable) {
+					val parameter = value as ParameterDeclaration
+					trace.put(parameter -> fieldHierarchy, lowlevelVariable)
 				}
+				override createValueDeclaration() { return createParameterDeclaration }
 			}
-		)
+		) as List<ParameterDeclaration>
 	}
 	
 	def List<VariableDeclaration> transformInParameter(ParameterDeclaration gammaParameter, Port gammaPort) {
 		val lowlevelVariableNames = gammaParameter.getInNames(gammaPort)
 		return gammaParameter.transform(lowlevelVariableNames, 
-			new Tracer {
+			new Tracer<VariableDeclaration> {
 				override trace(ValueDeclaration value, FieldHierarchy fieldHierarchy,
 						VariableDeclaration lowlevelVariable) {
 					trace.putInParameter(gammaPort, gammaParameter.containingEvent,
 						gammaParameter -> fieldHierarchy, lowlevelVariable)
 				}
+				override createValueDeclaration() { return createVariableDeclaration }
 			}
-		)
+		) as List<VariableDeclaration>
 	}
 	
 	def List<VariableDeclaration> transformOutParameter(ParameterDeclaration gammaParameter, Port gammaPort) {
 		val lowlevelVariableNames = gammaParameter.getOutNames(gammaPort)
 		return gammaParameter.transform(lowlevelVariableNames, 
-			new Tracer {
+			new Tracer<VariableDeclaration> {
 				override trace(ValueDeclaration value, FieldHierarchy fieldHierarchy,
 						VariableDeclaration lowlevelVariable) {
 					trace.putOutParameter(gammaPort, gammaParameter.containingEvent,
 						gammaParameter -> fieldHierarchy, lowlevelVariable)
 				}
+				override createValueDeclaration() { return createVariableDeclaration }
 			}
-		)
+		) as List<VariableDeclaration>
 	}
 	
-	private def List<VariableDeclaration> transform(ParameterDeclaration gammaParameter,
-			List<String> lowlevelVariableNames, Tracer tracer) {
+	private def <T extends ValueDeclaration> List<? extends ValueDeclaration> transform(
+			ParameterDeclaration gammaParameter, List<String> lowlevelVariableNames, Tracer<T> tracer) {
 		val lowlevelVariables = gammaParameter.transformValue(tracer)
 		lowlevelVariables.nameLowlevelVariables(lowlevelVariableNames)
+		
 		return lowlevelVariables
 	}
 
 	def List<VariableDeclaration> transform(ConstantDeclaration gammaConstant) {
 		val lowlevelVariables = gammaConstant.transformValue(
-			new Tracer {
+			new Tracer<VariableDeclaration> {
 				override trace(ValueDeclaration value, FieldHierarchy fieldHierarchy,
 						VariableDeclaration lowlevelVariable) {
 					trace.put(value -> fieldHierarchy, lowlevelVariable)
 				}
+				override createValueDeclaration() { return createVariableDeclaration }
 			}
-		)
+		) as List<VariableDeclaration>
 		// Adding annotation to denote that these are final variables
 		for (lowlevelVariable : lowlevelVariables) {
 			lowlevelVariable.annotations += createFinalVariableDeclarationAnnotation
@@ -135,25 +145,43 @@ class ValueDeclarationTransformer {
 		// Constant variable names do not really matter in terms of traceability
 		val lowlevelVariableNames = gammaConstant.names
 		lowlevelVariables.nameLowlevelVariables(lowlevelVariableNames)
-		//
+		
 		return lowlevelVariables
 	}
 	
 	def List<VariableDeclaration> transform(VariableDeclaration gammaVariable) {
 		val lowlevelVariables = gammaVariable.transformValue(
-			new Tracer {
+			new Tracer<VariableDeclaration> {
 				override trace(ValueDeclaration value, FieldHierarchy fieldHierarchy,
 						VariableDeclaration lowlevelVariable) {
 					trace.put(value -> fieldHierarchy, lowlevelVariable)
 				}
+				override createValueDeclaration() { return createVariableDeclaration }
 			}
-		)
+		) as List<VariableDeclaration>
 		val lowlevelVariableNames = gammaVariable.names
 		lowlevelVariables.nameLowlevelVariables(lowlevelVariableNames)
+		
 		return lowlevelVariables
 	}
 	
-	private def nameLowlevelVariables(List<VariableDeclaration> lowlevelVariables,
+	def List<VariableDeclaration> transform(VariableDeclaration gammaVariable, Port gammaPort) {
+		val lowlevelVariables = gammaVariable.transformValue(
+			new Tracer<VariableDeclaration> {
+				override trace(ValueDeclaration value, FieldHierarchy fieldHierarchy,
+						VariableDeclaration lowlevelVariable) {
+					trace.put(new Triple(gammaPort, value, fieldHierarchy), lowlevelVariable)
+				}
+				override createValueDeclaration() { return createVariableDeclaration }
+			}
+		) as List<VariableDeclaration>
+		val lowlevelVariableNames = gammaVariable.getNames(gammaPort)
+		lowlevelVariables.nameLowlevelVariables(lowlevelVariableNames)
+		
+		return lowlevelVariables
+	}
+	
+	private def nameLowlevelVariables(List<? extends NamedElement> lowlevelVariables,
 			List<String> lowlevelVariableNames) {
 		checkState(lowlevelVariables.size == lowlevelVariableNames.size)
 		val size = lowlevelVariables.size
@@ -174,7 +202,8 @@ class ValueDeclarationTransformer {
 		throw new IllegalArgumentException("Not known value declaration: " + gammaValue)
 	}
 	
-	private def List<VariableDeclaration> transformValue(ValueDeclaration declaration, Tracer tracer) {
+	private def <T extends ValueDeclaration> List<? extends ValueDeclaration> transformValue(
+			ValueDeclaration declaration, Tracer<T> tracer) {
 		val type = declaration.type
 		val fieldHierarchies = type.fieldHierarchies
 		val nativeTypes = type.nativeTypes
@@ -183,21 +212,24 @@ class ValueDeclarationTransformer {
 		val lowlevelVariables = newArrayList
 		for (var i = 0; i < size; i++) {
 			val fieldHierarchy = fieldHierarchies.get(i)
-			val nativeType = nativeTypes.get(i).transformType // Only native and arrays
-			val lowlevelVariable = createVariableDeclaration => [
+			val nativeType = nativeTypes.get(i)
+			val lowlevelNativeType = nativeType.transformType // Only native and arrays
+			val lowlevelVariable = tracer.createValueDeclaration => [
 				// Name added later
-				it.type = nativeType
+				it.type = lowlevelNativeType
+			]
+			if (lowlevelVariable instanceof VariableDeclaration) { // Only for "variables" - not for function parameters
 				if (declaration instanceof VariableDeclaration) {
 					for (annotation : declaration.annotations) {
-						it.annotations += annotation.transformAnnotation
+						lowlevelVariable.annotations += annotation.transformAnnotation
 					}
 				}
 				else if (declaration instanceof ParameterDeclaration) {
 					for (annotation : declaration.annotations) {
-						it.annotations += annotation.transformAnnotation
+						lowlevelVariable.annotations += annotation.transformAnnotation
 					}
 				}
-			]
+			}
 			lowlevelVariables += lowlevelVariable
 			// Abstract tracing
 			tracer.trace(declaration, fieldHierarchy, lowlevelVariable)
@@ -213,7 +245,7 @@ class ValueDeclarationTransformer {
 		checkState(initialValues.size == 0 || initialValues.size == lowlevelVariables.size)
 		for (var i = 0; i < initialValues.size; i++) {
 			val initialValue = initialValues.get(i)
-			val lowlevelVariable = lowlevelVariables.get(i)
+			val lowlevelVariable = lowlevelVariables.get(i) as InitializableElement
 			lowlevelVariable.expression = initialValue
 		}
 		
@@ -241,10 +273,10 @@ class ValueDeclarationTransformer {
 	
 	//
 	
-	interface Tracer {
+	interface Tracer<T extends ValueDeclaration> {
 		// Maybe it could contain the namings too
-		def void trace(ValueDeclaration value, FieldHierarchy fieldHierarchy,
-			VariableDeclaration lowlevelVariable)
+		def void trace(ValueDeclaration value, FieldHierarchy fieldHierarchy, T lowlevelVariable)
+		def T createValueDeclaration()
 	}
 	
 }

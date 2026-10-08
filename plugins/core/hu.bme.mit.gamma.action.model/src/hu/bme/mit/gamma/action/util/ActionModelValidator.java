@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -41,6 +41,8 @@ import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeTypeDefinition;
+import hu.bme.mit.gamma.expression.model.OpaqueExpression;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
@@ -56,10 +58,11 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
 		ReferenceExpression lhs = assignment.getLhs();
-		Declaration declaration = expressionUtil.getDeclaration(lhs);
-		if (declaration instanceof ConstantDeclaration) {
+		Declaration declaration = expressionUtil.getAccessedDeclaration(lhs);
+		if (declaration instanceof ConstantDeclaration || declaration instanceof ParameterDeclaration) {
+			String declarationTypeName = declaration.eClass().getName();
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-				"Constants cannot be assigned new values",
+				declarationTypeName + "s cannot be assigned new values",
 					new ReferenceInfo(ActionModelPackage.Literals.ABSTRACT_ASSIGNMENT_STATEMENT__LHS)));
 			return validationResultMessages;
 		}
@@ -98,7 +101,8 @@ public class ActionModelValidator extends ExpressionModelValidator {
 			for (VariableDeclaration precedingVariableDeclaration : precedingVariableDeclarations) {
 				String newName = precedingVariableDeclaration.getName();
 				if (name.equals(newName)) {
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					validationResultMessages.add(
+						new ValidationResultMessage(ValidationResult.ERROR,
 							"This variable cannot be named " + newName + " as it would enshadow a previous local variable", 
 							new ReferenceInfo(ActionModelPackage.Literals.VARIABLE_DECLARATION_STATEMENT__VARIABLE_DECLARATION)));
 				}
@@ -148,7 +152,7 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 
 		Type type = procedure.getType();
-		if (ExpressionModelDerivedFeatures.getTypeDefinition(type) instanceof VoidTypeDefinition) {
+		if (ExpressionModelDerivedFeatures.getTypeDefinitionOrNull(type) instanceof VoidTypeDefinition) {
 			return validationResultMessages;
 		}
 		
@@ -325,7 +329,9 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Expression expression = expressionStatement.getExpression();
 		if (!(expression instanceof FunctionAccessExpression)) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+			ValidationResult result = (expression instanceof OpaqueExpression) ?
+					ValidationResult.INFO : ValidationResult.WARNING;
+			validationResultMessages.add(new ValidationResultMessage(result,
 				"This expression statement has no effect here",
 					new ReferenceInfo(ActionModelPackage.Literals.EXPRESSION_STATEMENT__EXPRESSION)));
 		}

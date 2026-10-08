@@ -50,20 +50,20 @@ public class ScenarioContentSorter {
 	}
 
 	private String getSerializedInteractionDefinition(DeterministicOccurrence interaction) {
-		if (interaction instanceof Delay) {
-			return getSerializedDelay((Delay) interaction);
+		if (interaction instanceof Delay _interaction) {
+			return getSerializedDelay(_interaction);
 		}
-		if (interaction instanceof NegatedDeterministicOccurrence) {
-			return getSerializedNegation((NegatedDeterministicOccurrence) interaction);
+		if (interaction instanceof NegatedDeterministicOccurrence _interaction) {
+			return getSerializedNegation(_interaction);
 		}
-		if (interaction instanceof Interaction) {
-			return getSerializedSignal((Interaction) interaction);
+		if (interaction instanceof Interaction _interaction) {
+			return getSerializedSignal(_interaction);
 		}
-		if (interaction instanceof ScenarioCheckExpression) {
-			return getSerializedCheck((ScenarioCheckExpression) interaction);
+		if (interaction instanceof ScenarioCheckExpression _interaction) {
+			return getSerializedCheck(_interaction);
 		}
-		if (interaction instanceof ScenarioAssignmentStatement) {
-			return getSerializedAssignment((ScenarioAssignmentStatement) interaction);
+		if (interaction instanceof ScenarioAssignmentStatement _interaction) {
+			return getSerializedAssignment(_interaction);
 		}
 		throw new IllegalArgumentException("Not supported interaction: " + interaction);
 	}
@@ -82,8 +82,8 @@ public class ScenarioContentSorter {
 	}
 
 	private String getSerializedSignal(Interaction signal) {
-		String output = "Interaction" + signal.getDirection() + signal.getModality() + signal.getPort().getName()
-				+ signal.getEvent().getName();
+		String output = "Interaction" + signal.getDirection() + signal.getModality() +
+				signal.getPort().getName() + signal.getEvent().getName();
 		for (Expression expression : signal.getArguments()) {
 			output += serializer.serialize(expression);
 		}

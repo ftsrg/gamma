@@ -3,7 +3,7 @@ Automatic-Module-Name: hu.bme.mit.gamma.property.language
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Property Language
 Bundle-Vendor: BME-FTSRG
-Bundle-Version: 2.12.0.qualifier
+Bundle-Version: 2.13.0.qualifier
 Bundle-SymbolicName: hu.bme.mit.gamma.property.language; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: hu.bme.mit.gamma.property.model,
@@ -18,7 +18,7 @@ Require-Bundle: hu.bme.mit.gamma.property.model,
  org.eclipse.xtext.util,
  org.antlr.runtime;bundle-version="[3.2.0,3.2.1)",
  org.eclipse.xtend.lib;bundle-version="2.14.0"
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: hu.bme.mit.gamma.property.language,
  hu.bme.mit.gamma.property.language.formatting,
  hu.bme.mit.gamma.property.language.generator,

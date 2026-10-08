@@ -66,7 +66,7 @@ class ReflectiveViatraMatcher {
 	}
 	
 	//
-
+	
 	def Class<?> loadPatternMatcherClass(ClassLoader classLoader,
 			String fqnOfPattern, String binUri) {
 		val bin = new File(binUri)

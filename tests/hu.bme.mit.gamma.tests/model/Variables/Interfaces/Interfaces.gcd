@@ -1,0 +1,32 @@
+package variables
+
+interface Execute {
+	out event ^execute
+}
+
+interface VariableExecute extends Execute {
+	var portInt : integer := -5
+	var otherPortInt : integer
+	var portRecord : ComplexRecord
+}
+
+type Rec0rd : record {
+	a : boolean,
+	b : integer
+}
+
+type ComplexRecord : record {
+	a : decimal,
+	b : Rec0rd
+}
+
+type int : integer
+
+type EnumTest : enum {
+	_A, _B
+}
+
+type ArrayEnumRecord : record {
+	a : [2]int,
+	b : EnumTest
+}

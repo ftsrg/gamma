@@ -15,4 +15,5 @@ verification {
 	test-language : java
 	file : "DispatcherMachineScheduledComposite.xsts"
 	query-file : "CustomQueries.prop"
+	serialize-results : false
 }

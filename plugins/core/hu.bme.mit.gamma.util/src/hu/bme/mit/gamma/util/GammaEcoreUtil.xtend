@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -18,7 +18,6 @@ import java.util.Iterator
 import java.util.List
 import java.util.function.BiPredicate
 import java.util.function.Predicate
-import java.util.logging.Level
 import java.util.logging.Logger
 import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.core.runtime.Path
@@ -35,6 +34,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.emf.ecore.util.EcoreUtil.Copier
 import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper
 import org.eclipse.emf.ecore.util.EcoreUtil.UsageCrossReferencer
+import org.eclipse.xtext.xbase.lib.Functions.Function1
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -51,9 +51,39 @@ class GammaEcoreUtil {
 		EcoreUtil.replace(oldObject, newObject)
 	}
 	
+	def <T extends EObject> void replaceContent(T lhs, T rhs) {
+		val lhsElements = lhs.eContents.map[it.eContainmentFeature -> it].toList
+		lhs.eContents.removeAll
+		val rhsElements = rhs.eContents.map[it.eContainmentFeature -> it].toList
+		rhs.eContents.removeAll
+		
+		for (lhsElement : lhsElements) {
+			rhs.add(lhsElement.key, lhsElement.value)
+		}
+		
+		for (rhsElement : rhsElements) {
+			lhs.add(rhsElement.key, rhsElement.value)
+		}
+	}
+	
+	def <T extends EObject> void moveContent(T from, T to) {
+		val lhsElements = newArrayList
+		lhsElements += from.eContents.map[it.eContainmentFeature -> it].toList
+		to.eContents.removeAll
+		
+		for (lhsElement : lhsElements) {
+			to.add(lhsElement.key, lhsElement.value)
+		}
+	}
+	
 	def isReferenced(EObject target, EObject container) {
 		val settings = UsageCrossReferencer.find(target, container)
 		return !settings.empty
+	}
+	
+	def referencesDirectly(EObject source, EObject target) {
+		val referencedObjects = source.eCrossReferences
+		return referencedObjects.contains(target)
 	}
 	
 	def inlineReferences(EObject target, EObject newObject, EObject container) {
@@ -105,7 +135,7 @@ class GammaEcoreUtil {
 					}
 				} catch (UnsupportedOperationException e) {
 					// Derived feature, cannot be changed
-					logger.log(Level.WARNING, "Reference from " + oldObject
+					logger.warning("Reference from " + oldObject
 						+ " to " + newObject + " in " + container + " cannot be changed")
 				}
 			}
@@ -154,7 +184,7 @@ class GammaEcoreUtil {
 			removableElement.remove
 			if (clazz.isInstance(container)) {
 				if (!container.eContents.empty) {
-					logger.log(Level.WARNING, "The content is not empty")
+					logger.warning("The content is not empty")
 				}
 				queue += container as T
 			}
@@ -389,6 +419,14 @@ class GammaEcoreUtil {
 		return EcoreUtil.getRootContainer(object)
 	}
 	
+	def EObject getContainerOrSelf(EObject object) {
+		val container = object.eContainer
+		if (container === null) {
+			return object
+		}
+		return container
+	}
+	
 	def <T extends EObject> T getContainerOfType(EObject object, Class<T> type) {
 		val container = object.eContainer
 		if (container === null) {
@@ -426,6 +464,35 @@ class GammaEcoreUtil {
 		return container.getChildOfContainerOfType(type)
 	}
 	
+	def <T extends EObject> List<EObject> getSelfAndAllContentsOfTypeReferencing(Iterable<? extends EObject> objects, EObject target) {
+		val referencers = newArrayList
+		
+		for (object : objects) {
+			referencers += object.getSelfAndAllContentsOfTypeReferencing(target)
+		}
+		
+		return referencers
+	}
+	
+	def <T extends EObject> List<EObject> getSelfAndAllContentsOfTypeReferencing(EObject object, EObject target) {
+		val referencers = object.getAllContentsOfTypeReferencing(target)
+		if (object.referencesDirectly(target)) {
+			referencers.add(0, object)
+		}
+		return referencers
+	}
+	
+	def <T extends EObject> List<EObject> getAllContentsOfTypeReferencing(EObject object, EObject target) {
+		val referencers = newArrayList
+		
+		for (content : object.getAllContentsOfType(EObject)) {
+			if (content.referencesDirectly(target)) {
+				referencers += content
+			}
+		}
+		
+		return referencers
+	}
 	
 	def <T extends EObject> List<T> getContentsOfType(EObject object, Class<T> type) {
 		return object.eContents.filter(type).toList
@@ -572,6 +639,11 @@ class GammaEcoreUtil {
 		val resource = resourceSet.getResource(uri, true)
 		return resource.getContents().get(0)
 	}
+	
+	def EObject normalLoad(String path) {
+		val file = new File(path)
+		return file.normalLoad
+	}
 
 	def EObject normalLoad(File file) {
 		return normalLoad(file.parent, file.name)
@@ -604,9 +676,17 @@ class GammaEcoreUtil {
 
 	def Resource normalSave(ResourceSet resourceSet, EObject rootElem,
 			String parentFolder, String fileName) {
+		return normalSave(resourceSet, rootElem, parentFolder + File.separator + fileName)
+	}
+	
+	def Resource normalSave(ResourceSet resourceSet, EObject rootElem, String fileName) {
 		// Save is always absolute
-		val uri = URI.createFileURI(parentFolder + File.separator + fileName)
+		val uri = URI.createFileURI(fileName)
 		return normalSave(resourceSet, rootElem, uri)
+	}
+	
+	def Resource normalSave(EObject rootElem, File file) {
+		return normalSave(new ResourceSetImpl(), rootElem, file.toString)
 	}
 
 	def Resource normalSave(EObject rootElem, URI uri) {
@@ -672,6 +752,10 @@ class GammaEcoreUtil {
 	def boolean helperEquals(EObject lhs, EObject rhs) {
 		val helper = new EqualityHelper
 		return helper.equals(lhs, rhs)
+	}
+	
+	def boolean allHelperEquals(Iterable<? extends EObject> objects) {
+		return objects.toList.allHelperEquals
 	}
 	
 	def boolean allHelperEquals(List<? extends EObject> objects) {
@@ -963,6 +1047,53 @@ class GammaEcoreUtil {
 		return array
 	}
 	
+	def <T extends EObject> List<T> sortTopologically(List<T> list) {
+		val array = newArrayList
+		
+		val references = newLinkedHashMap
+		for (elem : list) {
+			val refs = elem.getSelfAndAllContentsOfType(EObject)
+					.map[it.eCrossReferences].flatten.toSet
+			references += elem -> refs
+		}
+		val entries = references.entrySet
+		checkState(!entries.exists[
+				val node = it.key
+				val refs = it.value
+				entries.exists[it.key !== node && it.value.contains(node) && refs.contains(it.key)]],
+			"Elements with circular references cannot be sorted topologically")
+		
+		while (!references.empty) {
+			val nonReferencedElem = references.keySet
+					.findFirst[elem | !entries
+							.exists[it.key !== elem && it.value.contains(elem)]]
+			references -= nonReferencedElem
+			
+			array += nonReferencedElem
+		}
+		array.reverse
+		
+		return array
+	}
+	
+	def <T extends EObject> void sortTopologicallyInplace(List<T> list) {
+		val sortedList = list.sortTopologically
+		list.clear
+		list += sortedList
+	}
+	
+	def <T extends EObject, C extends Comparable<? super C>> List<T> sortInplaceWith(
+			List<T> list, Function1<? super T, C> key) {
+		val sortedList = newArrayList
+		sortedList += list
+		sortedList.sortInplaceBy(key)
+		
+		list.clear
+		list += sortedList
+		
+		return list
+	}
+	
 	def <T extends EObject> void removeEqualElements(List<T> list) {
 		for (var i = 0; i < list.size - 1; i++) {
 			for (var j = i + 1; j < list.size; j++) {
@@ -1038,6 +1169,26 @@ class GammaEcoreUtil {
 				root.add(containmentFeature, clone)
 			}
 		}
+	}
+	
+	//
+	
+	def getLogger_() {
+		return logger
+	}
+	
+	def randomizeName(EObject object) {
+		return object.hashCode.toString.replaceAll("-", "0")
+	}
+	
+	def uniqueIndex(EObject object) {
+		if (object.eContainer === null) {
+			return object.randomizeName
+		}
+		val containers = object.getSelfAndAllContainersOfType(EObject)
+		val index = containers.map[
+				it.eContainingFeature.indexOrZero.toString + it.indexOrZero].join
+		return index
 	}
 	
 }

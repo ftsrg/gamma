@@ -1,0 +1,17 @@
+import "TrafficLight/TrafficLightForm.gcd"
+
+analysis-model {
+	component : TrafficLightForm
+	language : smart
+	
+	state-coverage
+}
+
+verification {
+	file : "TrafficLightForm"
+	language : smart
+//	property-file : "TrafficLightForm.gpd"
+	property-file : ".TrafficLightForm.gpd"
+	optimize-traces : true
+	serialize-results : false
+}

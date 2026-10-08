@@ -18,3 +18,4 @@
 *.cmd
 *.smv
 !System.gpd
+!Conformance.gpd

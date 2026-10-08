@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Gamma Api Headless" uid="gamma.api.headless.product" id="hu.bme.mit.gamma.headless.api.product" application="gamma.api.headless.application" version="1.0.0" type="bundles" includeLaunchers="true" autoIncludeRequirements="true">
+<product name="Gamma Api Headless" uid="gamma.api.headless.product" id="hu.bme.mit.gamma.headless.api.product" application="gamma.api.headless.application" version="1.0.0" type="bundles" includeLaunchers="true" includeJRE="true" autoIncludeRequirements="true">
 
    <configIni use="default">
    </configIni>
@@ -23,6 +23,7 @@
    </vm>
 
    <plugins>
+      <plugin id="aQute.libg"/>
       <plugin id="bcpg"/>
       <plugin id="bcprov"/>
       <plugin id="bcutil"/>
@@ -31,12 +32,12 @@
       <plugin id="bndtools.api"/>
       <plugin id="ch.qos.logback.classic"/>
       <plugin id="ch.qos.logback.core"/>
+      <plugin id="com.github.weisj.jsvg"/>
       <plugin id="com.google.gson"/>
       <plugin id="com.google.guava"/>
       <plugin id="com.google.guava.failureaccess"/>
       <plugin id="com.google.inject"/>
       <plugin id="com.ibm.icu"/>
-      <plugin id="com.sun.el.javax.el"/>
       <plugin id="com.sun.jna"/>
       <plugin id="com.sun.jna.platform"/>
       <plugin id="de.uni_paderborn.uppaal"/>
@@ -146,9 +147,6 @@
       <plugin id="junit-platform-commons"/>
       <plugin id="junit-platform-engine"/>
       <plugin id="junit-platform-launcher"/>
-      <plugin id="junit-platform-runner"/>
-      <plugin id="junit-platform-suite-api"/>
-      <plugin id="junit-platform-suite-commons"/>
       <plugin id="net.sourceforge.plantuml.eclipse"/>
       <plugin id="net.sourceforge.plantuml.eclipse.imagecontrol"/>
       <plugin id="net.sourceforge.plantuml.lib"/>
@@ -163,13 +161,9 @@
       <plugin id="org.apache.batik.i18n"/>
       <plugin id="org.apache.batik.util"/>
       <plugin id="org.apache.commons.cli"/>
-      <plugin id="org.apache.commons.collections"/>
-      <plugin id="org.apache.commons.commons-beanutils"/>
       <plugin id="org.apache.commons.commons-codec"/>
       <plugin id="org.apache.commons.commons-io"/>
       <plugin id="org.apache.commons.commons-logging"/>
-      <plugin id="org.apache.commons.jxpath"/>
-      <plugin id="org.apache.commons.logging"/>
       <plugin id="org.apache.felix.scr"/>
       <plugin id="org.apache.log4j"/>
       <plugin id="org.apache.xerces"/>
@@ -178,7 +172,7 @@
       <plugin id="org.bndtools.versioncontrol.ignores.manager"/>
       <plugin id="org.bndtools.versioncontrol.ignores.plugin.git"/>
       <plugin id="org.commonmark"/>
-      <plugin id="org.commonmark-gfm-tables"/>
+      <plugin id="org.commonmark.ext-gfm-tables"/>
       <plugin id="org.eclipse.ant.core"/>
       <plugin id="org.eclipse.collections"/>
       <plugin id="org.eclipse.compare"/>
@@ -227,9 +221,7 @@
       <plugin id="org.eclipse.emf.codegen.ecore"/>
       <plugin id="org.eclipse.emf.codegen.ecore.ui"/>
       <plugin id="org.eclipse.emf.codegen.ecore.xtext"/>
-      <plugin id="org.eclipse.emf.codegen.ecore.xtext.source"/>
       <plugin id="org.eclipse.emf.codegen.ecore.xtext.ui"/>
-      <plugin id="org.eclipse.emf.codegen.ecore.xtext.ui.source"/>
       <plugin id="org.eclipse.emf.common"/>
       <plugin id="org.eclipse.emf.common.ui"/>
       <plugin id="org.eclipse.emf.ecore"/>
@@ -278,7 +270,6 @@
       <plugin id="org.eclipse.jdt.debug.ui"/>
       <plugin id="org.eclipse.jdt.launching"/>
       <plugin id="org.eclipse.jdt.ui"/>
-      <plugin id="org.eclipse.jetty.servlet-api"/>
       <plugin id="org.eclipse.jface"/>
       <plugin id="org.eclipse.jface.databinding"/>
       <plugin id="org.eclipse.jface.notifications"/>
@@ -294,6 +285,7 @@
       <plugin id="org.eclipse.search"/>
       <plugin id="org.eclipse.search.core"/>
       <plugin id="org.eclipse.swt"/>
+      <plugin id="org.eclipse.swt.svg"/>
       <plugin id="org.eclipse.swt.win32.win32.x86_64"/>
       <plugin id="org.eclipse.team.core"/>
       <plugin id="org.eclipse.team.ui"/>
@@ -331,92 +323,51 @@
       <plugin id="org.eclipse.xtend.lib.macro"/>
       <plugin id="org.eclipse.xtext"/>
       <plugin id="org.eclipse.xtext.activities"/>
-      <plugin id="org.eclipse.xtext.activities.source"/>
       <plugin id="org.eclipse.xtext.builder"/>
-      <plugin id="org.eclipse.xtext.builder.source"/>
       <plugin id="org.eclipse.xtext.builder.standalone"/>
-      <plugin id="org.eclipse.xtext.builder.standalone.source"/>
       <plugin id="org.eclipse.xtext.buildship"/>
-      <plugin id="org.eclipse.xtext.buildship.source"/>
       <plugin id="org.eclipse.xtext.common.types"/>
       <plugin id="org.eclipse.xtext.common.types.edit"/>
-      <plugin id="org.eclipse.xtext.common.types.edit.source"/>
       <plugin id="org.eclipse.xtext.common.types.shared"/>
       <plugin id="org.eclipse.xtext.common.types.shared.jdt38"/>
-      <plugin id="org.eclipse.xtext.common.types.shared.jdt38.source"/>
-      <plugin id="org.eclipse.xtext.common.types.shared.source"/>
-      <plugin id="org.eclipse.xtext.common.types.source"/>
       <plugin id="org.eclipse.xtext.common.types.ui"/>
-      <plugin id="org.eclipse.xtext.common.types.ui.source"/>
       <plugin id="org.eclipse.xtext.doc"/>
       <plugin id="org.eclipse.xtext.ecore"/>
-      <plugin id="org.eclipse.xtext.ecore.source"/>
       <plugin id="org.eclipse.xtext.ide"/>
-      <plugin id="org.eclipse.xtext.ide.source"/>
       <plugin id="org.eclipse.xtext.java"/>
-      <plugin id="org.eclipse.xtext.java.source"/>
       <plugin id="org.eclipse.xtext.jdt.facade"/>
       <plugin id="org.eclipse.xtext.logging"/>
-      <plugin id="org.eclipse.xtext.logging.source"/>
       <plugin id="org.eclipse.xtext.purexbase"/>
       <plugin id="org.eclipse.xtext.purexbase.ide"/>
-      <plugin id="org.eclipse.xtext.purexbase.ide.source"/>
-      <plugin id="org.eclipse.xtext.purexbase.source"/>
       <plugin id="org.eclipse.xtext.purexbase.ui"/>
-      <plugin id="org.eclipse.xtext.purexbase.ui.source"/>
       <plugin id="org.eclipse.xtext.smap"/>
-      <plugin id="org.eclipse.xtext.smap.source"/>
-      <plugin id="org.eclipse.xtext.source"/>
       <plugin id="org.eclipse.xtext.testing"/>
-      <plugin id="org.eclipse.xtext.testing.source"/>
       <plugin id="org.eclipse.xtext.ui"/>
       <plugin id="org.eclipse.xtext.ui.codemining"/>
-      <plugin id="org.eclipse.xtext.ui.codemining.source"/>
       <plugin id="org.eclipse.xtext.ui.codetemplates"/>
       <plugin id="org.eclipse.xtext.ui.codetemplates.ide"/>
-      <plugin id="org.eclipse.xtext.ui.codetemplates.ide.source"/>
-      <plugin id="org.eclipse.xtext.ui.codetemplates.source"/>
       <plugin id="org.eclipse.xtext.ui.codetemplates.ui"/>
-      <plugin id="org.eclipse.xtext.ui.codetemplates.ui.source"/>
       <plugin id="org.eclipse.xtext.ui.ecore"/>
-      <plugin id="org.eclipse.xtext.ui.ecore.source"/>
       <plugin id="org.eclipse.xtext.ui.shared"/>
-      <plugin id="org.eclipse.xtext.ui.shared.source"/>
-      <plugin id="org.eclipse.xtext.ui.source"/>
       <plugin id="org.eclipse.xtext.ui.testing"/>
-      <plugin id="org.eclipse.xtext.ui.testing.source"/>
       <plugin id="org.eclipse.xtext.util"/>
-      <plugin id="org.eclipse.xtext.util.source"/>
       <plugin id="org.eclipse.xtext.xbase"/>
       <plugin id="org.eclipse.xtext.xbase.ide"/>
-      <plugin id="org.eclipse.xtext.xbase.ide.source"/>
       <plugin id="org.eclipse.xtext.xbase.lib"/>
-      <plugin id="org.eclipse.xtext.xbase.lib.source"/>
-      <plugin id="org.eclipse.xtext.xbase.source"/>
       <plugin id="org.eclipse.xtext.xbase.testing"/>
-      <plugin id="org.eclipse.xtext.xbase.testing.source"/>
       <plugin id="org.eclipse.xtext.xbase.ui"/>
-      <plugin id="org.eclipse.xtext.xbase.ui.source"/>
       <plugin id="org.eclipse.xtext.xbase.ui.testing"/>
-      <plugin id="org.eclipse.xtext.xbase.ui.testing.source"/>
       <plugin id="org.eclipse.xtext.xtext.generator"/>
-      <plugin id="org.eclipse.xtext.xtext.generator.source"/>
+      <plugin id="org.eclipse.xtext.xtext.generator.dependencies"/>
       <plugin id="org.eclipse.xtext.xtext.ide"/>
-      <plugin id="org.eclipse.xtext.xtext.ide.source"/>
       <plugin id="org.eclipse.xtext.xtext.ui"/>
       <plugin id="org.eclipse.xtext.xtext.ui.examples"/>
       <plugin id="org.eclipse.xtext.xtext.ui.graph"/>
-      <plugin id="org.eclipse.xtext.xtext.ui.graph.source"/>
-      <plugin id="org.eclipse.xtext.xtext.ui.source"/>
       <plugin id="org.eclipse.xtext.xtext.wizard"/>
-      <plugin id="org.eclipse.xtext.xtext.wizard.source"/>
       <plugin id="org.hamcrest"/>
-      <plugin id="org.jdom"/>
       <plugin id="org.jdom2"/>
       <plugin id="org.junit"/>
       <plugin id="org.kohsuke.args4j"/>
-      <plugin id="org.mortbay.jasper.apache-el"/>
-      <plugin id="org.mortbay.jasper.apache-jsp"/>
       <plugin id="org.objectweb.asm"/>
       <plugin id="org.objectweb.asm.commons"/>
       <plugin id="org.objectweb.asm.tree"/>

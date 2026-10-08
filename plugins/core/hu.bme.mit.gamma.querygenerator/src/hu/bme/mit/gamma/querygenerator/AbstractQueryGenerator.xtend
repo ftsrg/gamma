@@ -305,6 +305,9 @@ abstract class AbstractQueryGenerator {
 	
 	protected abstract def List<String> getTargetVariableNames(VariableDeclaration variable,
 		SynchronousComponentInstance instance)
+		
+	protected abstract def List<String> getTargetVariableNames(VariableDeclaration variable, Port port,
+		SynchronousComponentInstance instance)
 	
 	protected abstract def String getTargetOutEventName(Event event, Port port,
 		SynchronousComponentInstance instance)

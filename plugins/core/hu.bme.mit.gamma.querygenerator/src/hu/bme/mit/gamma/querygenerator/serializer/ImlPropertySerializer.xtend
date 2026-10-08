@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Gamma project
+ * Copyright (c) 2024-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -22,9 +22,9 @@ import hu.bme.mit.gamma.property.model.TemporalPathFormula
 import hu.bme.mit.gamma.property.model.UnaryLogicalOperator
 import hu.bme.mit.gamma.property.model.UnaryOperandPathFormula
 import hu.bme.mit.gamma.property.model.UnaryPathOperator
-import hu.bme.mit.gamma.xsts.iml.transformation.util.Namings
 
 import static com.google.common.base.Preconditions.checkArgument
+import static hu.bme.mit.gamma.xsts.iml.transformation.util.Namings.*
 
 import static extension hu.bme.mit.gamma.property.derivedfeatures.PropertyModelDerivedFeatures.*
 
@@ -70,7 +70,7 @@ class ImlPropertySerializer extends ThetaPropertySerializer {
 		val inputtableFormulas = formula.relevantTemporalPathFormulas
 		return '''«imandraCall»(fun«FOR e : inputtableFormulas» «e.inputId»«ENDFOR» -> («
 				formula.singlePathConstraint») «singlePathConstraintOperator» let «
-				recordId» = «Namings.INIT_FUNCTION_IDENTIFIER» in «pathFormula.serializeFormula»)'''
+				recordId» = «INIT_FUNCTION_IDENTIFIER» in «pathFormula.serializeFormula»)'''
 	}
 	
 	protected override dispatch String serializeFormula(UnaryOperandPathFormula formula) {
@@ -78,8 +78,8 @@ class ImlPropertySerializer extends ThetaPropertySerializer {
 		val operand = formula.operand
 		if (formula.isAQuantifiedTransitively) {
 			return switch (operator) {
-				case NEXT: '''let «recordId» = «Namings.SINGLE_RUN_FUNCTION_IDENTIFIER» «recordId» «formula.inputId» in «operand.serializeFormula»'''
-				case GLOBAL: '''let «recordId» = «Namings.RUN_FUNCTION_IDENTIFIER» «recordId» «formula.inputId» in «operand.serializeFormula»'''
+				case NEXT: '''let «recordId» = «SINGLE_RUN_FUNCTION_IDENTIFIER» «recordId» «formula.inputId» in «operand.serializeFormula»'''
+				case GLOBAL: '''let «recordId» = «RUN_FUNCTION_IDENTIFIER» «recordId» «formula.inputId» in «operand.serializeFormula»'''
 				case FUTURE: '''((«endsInLoopName» «recordId» «formula.inputId») ==> «
 						existsRealPrefixName» «recordId» «formula.inputId» (fun «recordId» -> «operand.serializeFormula»))'''
 				default: throw new IllegalArgumentException("Not supported operator")
@@ -87,8 +87,8 @@ class ImlPropertySerializer extends ThetaPropertySerializer {
 		}
 		else { // E
 			return switch (operator) {
-				case NEXT: '''let «recordId» = «Namings.SINGLE_RUN_FUNCTION_IDENTIFIER» «recordId» «formula.inputId» in «operand.serializeFormula»'''
-				case FUTURE: '''let «recordId» = «Namings.RUN_FUNCTION_IDENTIFIER» «recordId» «formula.inputId» in «operand.serializeFormula»'''
+				case NEXT: '''let «recordId» = «SINGLE_RUN_FUNCTION_IDENTIFIER» «recordId» «formula.inputId» in «operand.serializeFormula»'''
+				case FUTURE: '''let «recordId» = «RUN_FUNCTION_IDENTIFIER» «recordId» «formula.inputId» in «operand.serializeFormula»'''
 				case GLOBAL: '''((«endsInLoopName» «recordId» «formula.inputId») ==> «
 						forallRealPrefixName» «recordId» «formula.inputId» (fun «recordId» -> «operand.serializeFormula»))'''
 				default: throw new IllegalArgumentException("Not supported operator")
@@ -103,11 +103,11 @@ class ImlPropertySerializer extends ThetaPropertySerializer {
 		if (formula.isAQuantifiedTransitively) {
 			return switch (operator) {
 				case RELEASE:
-					'''((let «recordId» = «Namings.RUN_FUNCTION_IDENTIFIER» «recordId» «
+					'''((let «recordId» = «RUN_FUNCTION_IDENTIFIER» «recordId» «
 							formula.inputId» in «rhsOperand.serializeFormula») || («
 								existsPrefixName» «recordId» «formula.inputId» (fun «recordId» -> «lhsOperand.serializeFormula» && «rhsOperand.serializeFormula»)))'''
 				case WEAK_UNTIL:
-					'''((let «recordId» = «Namings.RUN_FUNCTION_IDENTIFIER» «recordId» «
+					'''((let «recordId» = «RUN_FUNCTION_IDENTIFIER» «recordId» «
 							formula.inputId» in «lhsOperand.serializeFormula») || («
 								existsPrefixName» «recordId» «formula.inputId» (fun «recordId» -> «rhsOperand.serializeFormula»)))'''
 				case UNTIL:
@@ -124,11 +124,11 @@ class ImlPropertySerializer extends ThetaPropertySerializer {
 		else { // E
 			return switch (operator) {
 				case UNTIL:
-					'''((let «recordId» = «Namings.RUN_FUNCTION_IDENTIFIER» «recordId» «
+					'''((let «recordId» = «RUN_FUNCTION_IDENTIFIER» «recordId» «
 							formula.inputId» in «rhsOperand.serializeFormula») && («
 								forallRealPrefixName» «recordId» «formula.inputId» (fun «recordId» -> «lhsOperand.serializeFormula»)))'''
 				case STRONG_RELEASE:
-					'''((let «recordId» = «Namings.RUN_FUNCTION_IDENTIFIER» «recordId» «
+					'''((let «recordId» = «RUN_FUNCTION_IDENTIFIER» «recordId» «
 							formula.inputId» in («lhsOperand.serializeFormula» && «rhsOperand.serializeFormula»)) && («
 								forallRealPrefixName» «recordId» «formula.inputId» (fun «recordId» -> «rhsOperand.serializeFormula»)))'''
 				case RELEASE:
@@ -165,33 +165,6 @@ class ImlPropertySerializer extends ThetaPropertySerializer {
 	
 	//
 	
-//	protected def tailorFormula(QuantifiedFormula formula) {
-//		if (formula instanceof QuantifiedFormula) {
-//			val clonedFormula = formula.clone // So no side-effect
-//			val pathFormulas = clonedFormula.relevantTemporalPathFormulas
-//			val unaryOperandPathFormulas = pathFormulas.filter(UnaryOperandPathFormula)
-//			val quantifier = clonedFormula.quantifier
-//			//
-//			if (quantifier == PathQuantifier.EXISTS) { // E
-//				val globals = unaryOperandPathFormulas.filter[it.operator == UnaryPathOperator.GLOBAL]
-//				for (global : globals) { // G cannot be after E, but: G p === !F!p
-//					global.changeToDual
-//				}
-//				return clonedFormula
-//			}
-//			else { // A
-//				val futures = unaryOperandPathFormulas.filter[it.operator == UnaryPathOperator.FUTURE]
-//				for (future : futures) { // F cannot be after A, but: F p === !G!p
-//					future.changeToDual
-//				}
-//				return clonedFormula
-//			}
-//		}
-//		return formula
-//	}
-	
-	//
-	
 	protected def getRelevantTemporalPathFormulas(PathFormula formula) {
 		// We consider levels of F, G, X and U operators in-between A and E quantifiers
 		// to support multiple level of A/E nesting (CTL*)
@@ -211,10 +184,10 @@ class ImlPropertySerializer extends ThetaPropertySerializer {
 		val containingTemporalPathFormulas = formula.getAllContainersOfType(TemporalPathFormula)
 		
 		val operator = if (formula instanceof UnaryOperandPathFormula) {
-			formula.operator.seriliaze
+			formula.operator.serialize
 		}
 		else if (formula instanceof BinaryOperandPathFormula) {
-			formula.operator.seriliaze
+			formula.operator.serialize
 		}
 		else {
 			throw new IllegalArgumentException("Not known formula: " + formula)

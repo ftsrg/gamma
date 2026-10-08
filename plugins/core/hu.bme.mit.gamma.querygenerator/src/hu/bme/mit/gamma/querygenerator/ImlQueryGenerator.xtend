@@ -55,6 +55,10 @@ class ImlQueryGenerator extends ThetaQueryGenerator {
 		return super.getTargetVariableNames(variable, instance).map[it.customizeDeclarationName]
 	}
 	
+	override protected getTargetVariableNames(VariableDeclaration variable, Port port, SynchronousComponentInstance instance) {
+		return super.getTargetVariableNames(variable, port, instance).map[it.customizeDeclarationName]
+	}
+	
 	override protected getTargetOutEventName(Event event, Port port, SynchronousComponentInstance instance) {
 		return super.getTargetOutEventName(event, port, instance).customizeDeclarationName
 	}

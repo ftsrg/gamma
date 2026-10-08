@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -32,13 +32,37 @@ class TraceToPlantUmlTransformer {
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	//
 	protected final String TRAP_STATE_MESSAGE_PREFIX = "Trap state entered"
+	protected final String TRANSITION_EXECUTION_MESSAGE_PREFIX = "Transition executed:"
 	//
+	
 	new(ExecutionTrace trace) {
 		this.trace = trace
 	}
 	
 	def String execute() '''
 		@startuml
+		«generateSkinparams»
+		
+		title «trace.name» of «trace.component.name»
+		
+		participant "«trace.component.name»" as System <<«"SUT".addKeywordStyle»>>
+		
+		«FOR step : trace.steps»
+			«step.serialize»
+		«ENDFOR»
+		
+		«val cycle = trace.cycle»
+		«IF cycle !== null»
+			loop
+			«FOR step : cycle.steps»
+				«step.serialize»
+			«ENDFOR»
+			end loop
+		«ENDIF»
+		@enduml
+	'''
+	
+	protected def generateSkinparams() '''
 		hide footbox
 		skinparam shadowing false
 		skinparam ArrowColor #0b910b
@@ -52,23 +76,6 @@ class TraceToPlantUmlTransformer {
 		skinparam SequenceDividerBorderColor #0b910b
 		skinparam SequenceGroupBackgroundColor #8cdc8c
 		skinparam SequenceGroupBorderColor #043204
-		
-		title «trace.name» of «trace.component.name»
-		
-		participant "«trace.component.name»" as System <<«"SUT".addKeywordStyle»>>
-		
-		«FOR step : trace.steps»
-			«step.serialize»
-		«ENDFOR»
-		
-		«IF trace.cycle !== null»
-			loop
-			«FOR step : trace.cycle.steps»
-				«step.serialize»
-			«ENDFOR»
-			end loop
-		«ENDIF»
-		@enduml
 	'''
 	
 	protected def serialize(Step step) '''
@@ -97,6 +104,9 @@ class TraceToPlantUmlTransformer {
 		«IF step.needsOutEventGroup»end«ENDIF»
 		
 		hnote over System
+		«FOR transitionExecution : step.asserts.filter(OpaqueExpression).filter[it.transitionExecutionExpression]»
+			<color Green>«transitionExecution.expression.removeLongest("/", "of").addItalicStyle /* Removing effects */»
+		«ENDFOR»
 		«FOR config : step.instanceStateConfigurations
 						.groupBy[it.instance?.serialize].entrySet
 						.sortBy[it.key]»
@@ -106,7 +116,8 @@ class TraceToPlantUmlTransformer {
 			«FOR variableConstraint : step.uniqueInstanceVariableStates
 						.filter[it.instanceReference?.serialize == config.key]
 						.sortBy[it.variableDeclaration.name]»
-				«'''  '''»«variableConstraint.variableDeclaration.name» = «variableConstraint.otherOperandIfContainedByEquality.serialize»
+				«'''  '''»«variableConstraint.variableDeclaration.name»«
+					IF !variableConstraint.topmostAssert» = «variableConstraint.otherOperandIfContainedByEquality.serialize»«ENDIF»
 			«ENDFOR»
 		«ENDFOR»
 		«FOR trapAssert : step.asserts.filter(OpaqueExpression).filter[it.expression.startsWith(TRAP_STATE_MESSAGE_PREFIX)]»

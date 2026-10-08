@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.uppaal.transformation
 
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.xsts.model.XSTS
@@ -24,10 +25,11 @@ class Traceability {
 	
 	final Map<VariableDeclaration, VariableContainer> variables = newHashMap
 	final Map<ParameterDeclaration, VariableContainer> loopParameters = newHashMap
+	final Map<FunctionDeclaration, uppaal.declarations.FunctionDeclaration> functions = newHashMap
 	
 	new(XSTS xSts, NTA nta) {
 		this.xSts = xSts
-		this.nta = nta 
+		this.nta = nta
 	}
 	
 	// Variables
@@ -56,6 +58,20 @@ class Traceability {
 	
 	def get(ParameterDeclaration xStsParameter) {
 		loopParameters.get(xStsParameter)
+	}
+	
+	// Functions
+	
+	def put(FunctionDeclaration xStsFunction, uppaal.declarations.FunctionDeclaration uppaalFunction) {
+		functions.put(xStsFunction, uppaalFunction)
+	}
+	
+	def isMapped(FunctionDeclaration xStsFunction) {
+		functions.containsKey(xStsFunction)
+	}
+	
+	def get(FunctionDeclaration xStsFunction) {
+		functions.get(xStsFunction)
 	}
 	
 	// Roots

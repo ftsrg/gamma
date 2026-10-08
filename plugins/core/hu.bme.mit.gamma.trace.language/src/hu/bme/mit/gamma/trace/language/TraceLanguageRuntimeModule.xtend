@@ -24,7 +24,6 @@ import org.eclipse.xtext.serializer.tokens.SerializerScopeProviderBinding
  */
 class TraceLanguageRuntimeModule extends AbstractTraceLanguageRuntimeModule {
 	
-	
 	// Theoretically, needed for serialization
 	override bindIScopeProvider() {
 		return TraceLanguageScopeProvider;

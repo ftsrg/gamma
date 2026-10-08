@@ -76,7 +76,7 @@ public abstract class AbstractEntryPoint extends HeadlessApplicationCommandHandl
 			IWorkspaceRoot workspaceRoot = workspace.getRoot();
 			IPath workspaceLocation = workspaceRoot.getLocation();
 			File workspaceFolder = workspaceLocation.toFile();
-			//
+			
 			setup();
 			// The file and its containing project is not in the given workspace
 			// The project has to be copied into the workspace
@@ -88,7 +88,7 @@ public abstract class AbstractEntryPoint extends HeadlessApplicationCommandHandl
 			run(fileWorkspaceRelativePath);
 
 			beforeExitOperation(projectDescriptorPath);
-			logger.info("Exiting...");
+			logger.info("Returning...");
 		}
 	}
 

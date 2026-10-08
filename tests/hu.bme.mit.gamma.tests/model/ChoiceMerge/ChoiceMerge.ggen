@@ -17,4 +17,5 @@ verification {
 	property-file : ".ChoiceMergeMachine.gpd"
 	test-language : java
 	optimize-traces : true
+	serialize-results : false
 }

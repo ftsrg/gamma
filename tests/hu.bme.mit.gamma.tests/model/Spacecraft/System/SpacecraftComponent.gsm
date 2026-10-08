@@ -22,7 +22,7 @@
           <regions name="DataReception">
             <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Start">
               <entryActions xsi:type="hu.bme.mit.gamma.action:Block">
-                <actions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" event="/2/@interfaces.2/@events.0/@event" port="/0/@components.0/@ports.3"/>
+                <actions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" event="/2/@interfaces.2/@eventDeclarations.0/@event" port="/0/@components.0/@ports.3"/>
               </entryActions>
             </stateNodes>
             <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Receiving">
@@ -50,7 +50,7 @@
                           <expression xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="/0/@components.0/@variableDeclarations.1"/>
                         </variableDeclaration>
                       </actions>
-                      <actions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" event="/2/@interfaces.3/@events.0/@event" port="/0/@components.0/@ports.0">
+                      <actions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" event="/2/@interfaces.3/@eventDeclarations.0/@event" port="/0/@components.0/@ports.0">
                         <arguments xsi:type="hu.bme.mit.gamma.expression:DirectReferenceExpression" declaration="/0/@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1/@entryActions.0/@actions.2/@branches.0/@action/@actions.0/@variableDeclaration"/>
                       </actions>
                       <actions xsi:type="hu.bme.mit.gamma.action:EmptyStatement"/>
@@ -84,10 +84,10 @@
       <transitions sourceState="/0/@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1" targetState="/0/@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1">
         <trigger xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger" type="OR">
           <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
-            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" event="/2/@interfaces.0/@events.2/@event" port="/0/@components.0/@ports.4"/>
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" event="/2/@interfaces.0/@eventDeclarations.2/@event" port="/0/@components.0/@ports.4"/>
           </leftOperand>
           <rightOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
-            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" event="/2/@interfaces.1/@events.0/@event" port="/0/@components.0/@ports.2"/>
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" event="/2/@interfaces.1/@eventDeclarations.0/@event" port="/0/@components.0/@ports.2"/>
           </rightOperand>
         </trigger>
       </transitions>
@@ -95,20 +95,20 @@
       <transitions sourceState="/0/@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.0" targetState="/0/@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1">
         <trigger xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger" type="OR">
           <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
-            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" event="/2/@interfaces.0/@events.2/@event" port="/0/@components.0/@ports.4"/>
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" event="/2/@interfaces.0/@eventDeclarations.2/@event" port="/0/@components.0/@ports.4"/>
           </leftOperand>
           <rightOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
-            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" event="/2/@interfaces.1/@events.0/@event" port="/0/@components.0/@ports.2"/>
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" event="/2/@interfaces.1/@eventDeclarations.0/@event" port="/0/@components.0/@ports.2"/>
           </rightOperand>
         </trigger>
       </transitions>
       <transitions sourceState="/0/@components.0/@regions.0/@stateNodes.1" targetState="/0/@components.0/@regions.0/@stateNodes.0">
         <trigger xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger" type="OR">
           <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
-            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" event="/2/@interfaces.2/@events.0/@event" port="/0/@components.0/@ports.1"/>
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" event="/2/@interfaces.2/@eventDeclarations.0/@event" port="/0/@components.0/@ports.1"/>
           </leftOperand>
           <rightOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
-            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" event="/2/@interfaces.0/@events.1/@event" port="/0/@components.0/@ports.4"/>
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" event="/2/@interfaces.0/@eventDeclarations.1/@event" port="/0/@components.0/@ports.4"/>
           </rightOperand>
         </trigger>
       </transitions>
@@ -116,14 +116,14 @@
       <transitions sourceState="/0/@components.0/@regions.0/@stateNodes.0" targetState="/0/@components.0/@regions.0/@stateNodes.1">
         <trigger xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger" type="OR">
           <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
-            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" event="/2/@interfaces.2/@events.1/@event" port="/0/@components.0/@ports.1"/>
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" event="/2/@interfaces.2/@eventDeclarations.1/@event" port="/0/@components.0/@ports.1"/>
           </leftOperand>
           <rightOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
-            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" event="/2/@interfaces.0/@events.0/@event" port="/0/@components.0/@ports.4"/>
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" event="/2/@interfaces.0/@eventDeclarations.0/@event" port="/0/@components.0/@ports.4"/>
           </rightOperand>
         </trigger>
         <effects xsi:type="hu.bme.mit.gamma.action:Block">
-          <actions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" event="/2/@interfaces.2/@events.1/@event" port="/0/@components.0/@ports.3"/>
+          <actions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" event="/2/@interfaces.2/@eventDeclarations.1/@event" port="/0/@components.0/@ports.3"/>
         </effects>
       </transitions>
     </components>
@@ -237,10 +237,10 @@
       <transitions sourceState="/0/@components.1/@regions.0/@stateNodes.0/@regions.1/@stateNodes.1" targetState="/0/@components.1/@regions.0/@stateNodes.0/@regions.1/@stateNodes.0">
         <trigger xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger" type="OR">
           <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
-            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" event="/2/@interfaces.2/@events.1/@event" port="/0/@components.1/@ports.0"/>
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" event="/2/@interfaces.2/@eventDeclarations.1/@event" port="/0/@components.1/@ports.0"/>
           </leftOperand>
           <rightOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
-            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" event="/2/@interfaces.4/@events.1/@event" port="/0/@components.1/@ports.2"/>
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" event="/2/@interfaces.4/@eventDeclarations.1/@event" port="/0/@components.1/@ports.2"/>
           </rightOperand>
         </trigger>
       </transitions>
@@ -282,10 +282,10 @@
       <transitions sourceState="/0/@components.1/@regions.0/@stateNodes.0/@regions.1/@stateNodes.0" targetState="/0/@components.1/@regions.0/@stateNodes.0/@regions.1/@stateNodes.1">
         <trigger xsi:type="hu.bme.mit.gamma.statechart:BinaryTrigger" type="OR">
           <leftOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
-            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" event="/2/@interfaces.2/@events.0/@event" port="/0/@components.1/@ports.0"/>
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" event="/2/@interfaces.2/@eventDeclarations.0/@event" port="/0/@components.1/@ports.0"/>
           </leftOperand>
           <rightOperand xsi:type="hu.bme.mit.gamma.statechart.interface:EventTrigger">
-            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" event="/2/@interfaces.4/@events.0/@event" port="/0/@components.1/@ports.2"/>
+            <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" event="/2/@interfaces.4/@eventDeclarations.0/@event" port="/0/@components.1/@ports.2"/>
           </rightOperand>
         </trigger>
         <guard xsi:type="hu.bme.mit.gamma.expression:AndExpression">
@@ -327,7 +327,7 @@
               <rightOperand xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
             </rhs>
           </actions>
-          <actions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" event="/2/@interfaces.1/@events.0/@event" port="/0/@components.1/@ports.1"/>
+          <actions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" event="/2/@interfaces.1/@eventDeclarations.0/@event" port="/0/@components.1/@ports.1"/>
         </effects>
       </transitions>
     </components>
@@ -335,45 +335,45 @@
   <hu.bme.mit.gamma.statechart.interface:Package name="CompositeSystemPkg"/>
   <hu.bme.mit.gamma.statechart.interface:Package name="InterfacesPkg">
     <interfaces name="GroundStation_in_default">
-      <events>
+      <eventDeclarations>
         <event name="Stop"/>
-      </events>
-      <events>
+      </eventDeclarations>
+      <eventDeclarations>
         <event name="Start"/>
-      </events>
-      <events>
+      </eventDeclarations>
+      <eventDeclarations>
         <event name="Data"/>
-      </events>
+      </eventDeclarations>
     </interfaces>
     <interfaces name="Data">
-      <events direction="OUT">
+      <eventDeclarations direction="OUT">
         <event name="Data"/>
-      </events>
+      </eventDeclarations>
     </interfaces>
     <interfaces name="Control">
-      <events direction="OUT">
+      <eventDeclarations direction="OUT">
         <event name="Start"/>
-      </events>
-      <events direction="OUT">
+      </eventDeclarations>
+      <eventDeclarations direction="OUT">
         <event name="Stop"/>
-      </events>
+      </eventDeclarations>
     </interfaces>
     <interfaces name="Status">
-      <events direction="OUT">
+      <eventDeclarations direction="OUT">
         <event name="ReceivedPackets">
           <parameterDeclarations name="number">
             <type xsi:type="hu.bme.mit.gamma.expression:IntegerTypeDefinition"/>
           </parameterDeclarations>
         </event>
-      </events>
+      </eventDeclarations>
     </interfaces>
     <interfaces name="Spacecraft_in_default">
-      <events>
+      <eventDeclarations>
         <event name="Start"/>
-      </events>
-      <events>
+      </eventDeclarations>
+      <eventDeclarations>
         <event name="Stop"/>
-      </events>
+      </eventDeclarations>
     </interfaces>
   </hu.bme.mit.gamma.statechart.interface:Package>
 </xmi:XMI>

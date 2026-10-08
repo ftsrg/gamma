@@ -18,6 +18,7 @@ class MessageQueueStruct {
 	
 	VariableDeclaration arrayVariable // Integer array
 	VariableDeclaration sizeVariable // Integer
+	VariableDeclaration overflowVariable // Boolean
 	
 	boolean isInternal // Denoting the queue of an internal parameter
 	

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Gamma project
+ * Copyright (c) 2024-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -13,23 +13,28 @@ package hu.bme.mit.gamma.xsts.iml.transformation.serialization
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.xsts.iml.transformation.util.MessageQueueHandler
-import hu.bme.mit.gamma.xsts.iml.transformation.util.Namings
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.FunctionCallAction
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
+import hu.bme.mit.gamma.xsts.model.OpaqueAction
+import hu.bme.mit.gamma.xsts.model.ReturnAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XTransition
 import hu.bme.mit.gamma.xsts.transformation.util.MessageQueueUtil
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
+import java.util.Collection
 import java.util.List
 import java.util.Map
 
@@ -43,11 +48,13 @@ class ActionSerializer {
 	//
 	protected boolean hoistBranches = false
 	protected boolean hasTransHavoc = false
+	protected boolean optimizeNonDet = false
 	//
 	protected final extension MessageQueueHandler queueHandler = MessageQueueHandler.INSTANCE
 	protected final extension MessageQueueUtil queueUtil = MessageQueueUtil.INSTANCE
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
+	protected final extension ExpressionTypeDeterminator2 typeDeterminator = ExpressionTypeDeterminator2.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	//
@@ -55,12 +62,13 @@ class ActionSerializer {
 	//
 	
 	new() {
-		this(false, false)
+		this(false, false, false)
 	}
 	
-	new(boolean hoistBranches, boolean hasTransHavoc) {
+	new(boolean hoistBranches, boolean hasTransHavoc, boolean optimizeNonDet) {
 		this.hoistBranches = hoistBranches
 		this.hasTransHavoc = hasTransHavoc
+		this.optimizeNonDet = optimizeNonDet
 	}
 	
 	//
@@ -92,7 +100,8 @@ class ActionSerializer {
 					actionCode.deleteFirst(localVariableDeclarations).deleteLast("in") : actionCode + " " + localVariableNames
 			val functionCode = '''
 				let «functionName» («globalVariableName» : «GLOBAL_RECORD_TYPE_NAME») («
-					localVariableName» : «action.localRecordType») «IF hasTransHavoc»(«ENV_HAVOC_RECORD_IDENTIFIER» : «ENV_HAVOC_RECORD_TYPE_NAME») «ENDIF»= «functionBody»
+					localVariableName» : «action.localRecordType») «IF hasTransHavoc»(«
+						ENV_HAVOC_RECORD_IDENTIFIER» : «ENV_HAVOC_RECORD_TYPE_NAME») «ENDIF»= «functionBody»
 			'''
 			actions += action -> functionCode
 			
@@ -118,7 +127,7 @@ class ActionSerializer {
 			if (serializedAction.endsWith(localVariableNames)) { // Make this more flexible
 				serializedAction = serializedAction.deleteLast(localVariableNames)
 			}
-			//
+			
 			builder.append(serializedAction)
 		}
 		builder.append(localVariableNames) // Always?
@@ -134,6 +143,25 @@ class ActionSerializer {
 	
 	protected def dispatch serializeAction(EmptyAction action) ''''''
 	
+	protected def dispatch serializeAction(OpaqueAction action) {
+		val string = action.action
+		return string.serializeOpaqueElement
+	}
+	
+	protected def dispatch serializeAction(ReturnAction action) {
+		val expression = action.expression
+		val string = (expression === null) ? "false (* placeholder *)" : '''{ «
+				LOCAL_RECORD_IDENTIFIER» with «FUNCTION_RETURN_VALUE_NAME.customizeDeclarationName» = «expression.serialize» }'''
+		return '''«localVariableDeclarations»(«globalVariableName», «string») in'''
+	}
+	
+	protected def dispatch serializeAction(FunctionCallAction action) '''
+		«val functionCall = action.functionCallExpression»
+		«IF functionCall.hasFunctionCallSideEffect /* Serialize only if the function has side effect */»
+			«functionCall.serialize»
+		«ENDIF»
+	'''
+	
 	// Not the same, but a good run-time check
 	protected def dispatch serializeAction(AssumeAction action) '''
 		(* «action.assumption.serialize» *)
@@ -141,20 +169,57 @@ class ActionSerializer {
 	
 	protected def dispatch serializeAction(HavocAction action) {
 		val variable = action.lhs.declaration as VariableDeclaration
-		val rhsString = '''«Namings.ENV_HAVOC_RECORD_IDENTIFIER».«action.serializeFieldName»;'''
+		val rhsString = '''«ExpressionSerializer.LANGUAGE_IML»«ENV_HAVOC_RECORD_IDENTIFIER».«action.serializeFieldName»'''
 		
-		val placeHolderRhs = 0.toIntegerLiteral
-		val placeHolderRhsString = placeHolderRhs.serialize + ";"
-		
-		val placeHolderAction = variable.createAssignmentAction(placeHolderRhs)
-		val placeHolderActionString = placeHolderAction.serialize
-		
-		val actionString = placeHolderActionString.replaceFirst(placeHolderRhsString, rhsString)
+		val havocAction = variable.createAssignmentAction(rhsString.createOpaqueExpression)
+		val actionString = havocAction.serialize
 		
 		return actionString
 	}
 	
 	protected def dispatch serializeAction(AssignmentAction action) {
+		val lhs = action.lhs
+		val rhs = action.rhs
+		
+		val isTuple = lhs instanceof TupleReferenceExpression
+		val needR = rhs.hasFunctionCallSideEffect
+		if (isTuple || needR) {
+			val declarations = lhs.accessedDeclarations // Tuple elements or a simple variable
+			var declarationNames = lhs.serializeTemporaryDeclarationNames // Tuple-related code (works for basic declarations, too)
+			
+			val rhsTypes = rhs.type.nativeTypes
+			checkArgument(declarations.size == rhsTypes.size)
+			
+			// Method extraction related code
+			if (needR) {
+				declarationNames = '''(«globalVariableName», «declarationNames»)''' // First element
+			}
+			
+			val ids = declarations.map[it.id].toSet
+			val isSameId = ids.size == 1
+			return '''
+				let «declarationNames» = «rhs.serialize» in
+				«IF isSameId»
+					«val id = ids.head»
+					let «id» = { «id» with «FOR declaration : declarations»«
+							val i = declarations.indexOf(declaration)»«
+							declaration.serializeName» = «
+							val rhsType = rhsTypes.get(i)»«
+							declaration.serializeCasting(rhsType)»«
+							declaration.temporaryDeclarationName»; «ENDFOR»} in
+				«ELSE»
+					«FOR declaration : declarations»
+						«val id = declaration.id»
+						let «id» = { «id» with «declaration.serializeName» = «
+						val i = declarations.indexOf(declaration)»«
+						val rhsType = rhsTypes.get(i)»«
+						declaration.serializeCasting(rhsType)»«declaration.temporaryDeclarationName» } in
+					«ENDFOR»
+				«ENDIF»
+			''' // See ExpressionSerializer._serialize(FunctionAccessExpression ...)
+		}
+		
+		// Regular assignment code 
 		return #[action].serializeAssignmentActions
 	}
 	
@@ -183,23 +248,28 @@ class ActionSerializer {
 		if (action.queueAction) { // Queue handling
 			return action.serializeQueueAction
 		}
-		val expression = (variable.expression === null) ? variable.defaultExpression : variable.expression
+		val expression = (variable.expression === null) ?
+				variable.defaultExpression :
+				variable.expression
 		return '''«variable.serializeAssignmentAction(expression)»'''
 	}
 	
 	private def serializeAssignmentAction(Expression lhs, Expression rhs) {
-		if (lhs instanceof ArrayAccessExpression) {
+		return if (lhs instanceof ArrayAccessExpression) {
 			val declaration = lhs.declaration
 			// a[i][j][k] := 69 -> a2 = (Map.add i (Map.add j (Map.add k 69 (Map.get j (Map.get i a)))) (Map.get i a)) a)
-			return '''«declaration.serializeName» = «lhs.serializeArrayAssignmentAction(rhs)»;'''
+			'''«declaration.serializeName» = «lhs.serializeArrayAssignmentAction(rhs)»;'''
+		}
+		else if (lhs instanceof TupleReferenceExpression) {
+			throw new IllegalArgumentException("Tuples are not supported here: " + lhs)
 		}
 		else {
-			return '''«lhs.declaration.serializeAssignmentAction(rhs)»'''
+			'''«lhs.declaration.serializeAssignmentAction(rhs)»'''
 		}
 	}
 	
 	private def serializeAssignmentAction(Declaration lhs, Expression rhs) '''«
-			lhs.serializeName» = «rhs.serialize»;'''
+			lhs.serializeName» = «lhs.serializeWithCasting(rhs)»;'''
 	//
 	
 	private def String serializeArrayAssignmentAction(ArrayAccessExpression access, Expression value) {
@@ -217,7 +287,9 @@ class ActionSerializer {
 		val actualArray = '''(«FOR previousIndex : previousIndexes.reverseView»Map.get «previousIndex.serialize» «ENDFOR»«declaration.serializeAsRhs»)'''
 		previousIndexes += index
 		
-		val serializedOperand = (operand instanceof ArrayAccessExpression) ? operand.serializeArrayAssignmentAction(indexes, value, previousIndexes) : value.serialize
+		val serializedOperand = (operand instanceof ArrayAccessExpression) ?
+				operand.serializeArrayAssignmentAction(indexes, value, previousIndexes) :
+				declaration.elementTypeDefinition.serializeWithCasting(value)
 		
 		return '''(Map.add «index.serialize» «serializedOperand» «actualArray»)'''
 	}
@@ -238,7 +310,36 @@ class ActionSerializer {
 		'''
 	}
 	
-	protected def dispatch String serializeAction(NonDeterministicAction choice) '''
+	protected def dispatch String serializeAction(NonDeterministicAction choice) {
+		return (optimizeNonDet) ?
+			choice.serializeNonDeterministicActionOptimized :
+			choice.serializeNonDeterministicActionSound
+	}
+	
+	private def String serializeNonDeterministicActionSound(NonDeterministicAction choice) '''
+«««		Guard function written specifically for this non-det choice
+		let guard («globalVariableName» : «GLOBAL_RECORD_TYPE_NAME») (b : «NONDET_BRANCH_TYPE_NAME») : bool =
+			match b with
+			«FOR branch : choice.actions»
+				| «branch.index.branchLiteralName» -> «IF branch.isFirstActionAssume»«branch.getFirstActionAssume.assumption.serialize»«ELSE»true«ENDIF»
+			«ENDFOR»
+			| _ -> false
+			in
+			«localVariableDeclarations»
+			match «PICK_BRANCH_FUNCTION_NAME» «globalVariableName» guard [«FOR branch : choice.actions SEPARATOR "; "»«branch.index.branchLiteralName»«ENDFOR»] «globalVariableName».«choice.customizeChoice» with
+				«FOR branch : choice.actions»
+					| Some «branch.index.branchLiteralName» -> «branch.serialize»« /* When to add 'r, l' at the end: */
+						IF !branch.last && branch.getSelfAndAllContentsOfType(Action).forall[it.effectlessAction || it instanceof AssumeAction]»«localVariableNames»«ENDIF»
+				«ENDFOR»
+				| _ -> «localVariableNames» (* Theoretically unreachable *)
+			in
+			«globalVariableDeclaration»{ «globalVariableName» with «choice.customizeChoice» = 0; } (* Optimization *) in
+	'''
+	
+	/**
+	 * This mapping is sound only in the case of reachability/invariant properties (not LTL liveness).
+	 */
+	private def String serializeNonDeterministicActionOptimized(NonDeterministicAction choice) '''
 		«localVariableDeclarations»
 			«FOR branch : choice.actions SEPARATOR " else "»
 				«IF !branch.last /* By construction, XSTS choices coming from the Gamma mapping are complete, so we do not have to serialize the last condition */»
@@ -272,15 +373,12 @@ class ActionSerializer {
 			// Looking for subsequent assignments
 			val writtenVariables = newHashSet
 			while (j < actions.size - 1 &&
-					actions.get(j).id == actions.get(j + 1).id &&
-					(actions.get(j) instanceof AssignmentAction || actions.get(j) instanceof VariableDeclarationAction) &&
-					(actions.get(j + 1) instanceof AssignmentAction || actions.get(j + 1) instanceof VariableDeclarationAction) &&
-						writtenVariables.containsNone(actions.get(j + 1).referredAndLocalVariables) &&
-						actions.get(j).writtenAndLocalVariables.containsNone(actions.get(j + 1).referredAndLocalVariables)) {
-				writtenVariables += actions.get(j).writtenAndLocalVariables
+						actions.get(j).canBeSubsequentAssignments(actions.get(j + 1), writtenVariables)) {
+				val lhsAction = actions.get(j)
+				writtenVariables += lhsAction.writtenAndLocalVariables
 				j++ 
 			}
-			// No susbequent assignments
+			// No subsequent assignments
 			if (i == j) {
 				builder.append(
 					actions.get(i).serialize)
@@ -297,6 +395,29 @@ class ActionSerializer {
 		}
 		
 		return builder.toString
+	}
+	
+	//
+	
+	protected def canBeSubsequentAssignments(Action lhs, Action rhs,
+			Collection<? extends VariableDeclaration> writtenVariables) {
+		if (lhs instanceof AssignmentAction) {
+			val lhsRef = lhs.lhs.accessReference
+			if (lhsRef instanceof TupleReferenceExpression) {
+				// Assignment to tuples as a lhs are "extracted" in the low-level mapping and are separately handled here: '(_0_createR, _1_createR) := createR(67, true)'
+				return false
+			}
+			if (lhs.rhs.hasFunctionCallSideEffect) {
+				// Functions with a side effect are "extracted" in the low-level mapping and are separately handled here (to handle the 'r' record)
+				return false
+			}
+		}
+		
+		return lhs.id == rhs.id &&
+				(lhs instanceof AssignmentAction || lhs instanceof VariableDeclarationAction) &&
+				(rhs instanceof AssignmentAction || rhs instanceof VariableDeclarationAction) &&
+					writtenVariables.containsNone(rhs.referredAndLocalVariables) &&
+						lhs.writtenAndLocalVariables.containsNone(rhs.referredAndLocalVariables)
 	}
 	
 	//
@@ -329,10 +450,25 @@ class ActionSerializer {
 	
 	protected def getId(Action action) {
 		if (action instanceof AssignmentAction) {
-			val declaration = action.lhs.declaration
+			val lhs = action.lhs
+			
+			// Tuple
+			if (lhs instanceof TupleReferenceExpression) {
+				val declaratations = lhs.accessedDeclarations
+				val ids = declaratations.map[it.id].toSet
+				if (ids.size == 1) {
+					return ids.head
+				}
+				else {
+					throw new IllegalArgumentException("Unhandleable tuple: " + lhs)
+				}
+			}
+			
+			// Single declaration
+			val declaration = lhs.declaration
 			return declaration.id
 		}
-		return Namings.LOCAL_RECORD_IDENTIFIER
+		return LOCAL_RECORD_IDENTIFIER
 	}
 	
 	protected def getLocalRecordType(Action action) { // Not needed now, due to custom local var names; delete this if that helps somehow
@@ -392,9 +528,13 @@ class ActionSerializer {
 	def setHasTransHavoc(boolean hasTransHavoc) {
 		this.hasTransHavoc = hasTransHavoc
 	}
-	
+
 	def getHasTransHavoc() {
 		return hasTransHavoc
+	}
+	
+	def setOptimizeNonDet(boolean optimizeNonDet) {
+		this.optimizeNonDet = optimizeNonDet
 	}
 	
 	def getHoistedFunctions() {

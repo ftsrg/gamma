@@ -23,6 +23,5 @@ public class ExpressionSerializer extends hu.bme.mit.gamma.statechart.util.Expre
 	public String serialize(Expression expression) {
 		return super.serialize(expression);
 	}
-
 	
 }

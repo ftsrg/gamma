@@ -37,6 +37,7 @@ verification {
 	query-file : "ANTIVAL_CHK_COID_System.q"
 	optimize : true
 	test-language : java
+	serialize-results : false
 }
 
 verification {
@@ -45,6 +46,7 @@ verification {
 	query-file : "CustomQuery_ANTIVAL_CHK_COID_System.prop"
 	optimize : true
 	test-language : java
+	serialize-results : false
 }
 
 verification {
@@ -54,4 +56,5 @@ verification {
 	property-file : "ANTIVAL_CHK_COID_System-LTL.gpd"
 	optimize-model : true
 	test-language : java
+	serialize-results : false
 }

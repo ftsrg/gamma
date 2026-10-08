@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,15 +11,17 @@
 package hu.bme.mit.gamma.transformation.util.reducer
 
 import hu.bme.mit.gamma.action.model.AssignmentStatement
+import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
+import hu.bme.mit.gamma.expression.model.AccessExpression
 import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
-import java.util.logging.Level
 import org.eclipse.emf.ecore.EObject
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
-import hu.bme.mit.gamma.expression.model.AccessExpression
+
+import static extension hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures.*
 
 class WrittenOnlyVariableReducer implements Reducer {
 	// Any object can be root, e.g., Package or Component...
@@ -27,7 +29,7 @@ class WrittenOnlyVariableReducer implements Reducer {
 	protected final Collection<VariableDeclaration> relevantVariables
 	//
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
-	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	new(EObject root) {
 		this(root, #[])
@@ -54,14 +56,21 @@ class WrittenOnlyVariableReducer implements Reducer {
 					deletableVariables += declaration
 					assignment.remove
 				}
-			} else if (assignment.lhs instanceof AccessExpression) {
-				//TODO
+			}
+			else if (lhs instanceof AccessExpression) {
+				// TODO
 			}
 			
 		}
 		for (deletableVariable : deletableVariables) {
+			if (deletableVariable instanceof VariableDeclaration) {
+				if (deletableVariable.local) {
+					val container = deletableVariable.getContainerOfType(VariableDeclarationStatement)
+					createEmptyStatement_.replace(container)
+				}
+			}
 			deletableVariable.delete
-			logger.log(Level.INFO, deletableVariable.name + " has been deleted")
+			logger.info(deletableVariable.name + " has been deleted")
 		}
 	}
 	

@@ -1,0 +1,41 @@
+package environmental_port
+type Obstacle_vehicle : record {
+	front_distance : decimal,
+	rear_distance : decimal
+}
+type Kinematics : record {
+	vel : decimal
+}
+type Odd : enum {
+	highway, urban
+}
+type Environment : record {
+	odd : Odd,
+	ov : Obstacle_vehicle,
+	op : Obstacle_pedestrian,
+	di : Driver_input,
+	rf : Road_features,
+	k : Kinematics,
+	in_autonomous_mode : boolean,
+	power_on : boolean
+}
+type Driver_input : record {
+	brake_pressed : boolean,
+	power_off : boolean,
+	power_on : boolean,
+	human_steering_cmd : boolean,
+	auto_requested : boolean
+}
+type Obstacle_pedestrian : record {
+	ped_detected : boolean,
+	ped_distance_front : decimal,
+	ped_distance_rear : decimal
+}
+type Road_features : record {
+	intersection : boolean,
+	extra_lane : boolean,
+	distance_to_exit : decimal
+}
+interface Environmental_port {
+	in event Payload(e : Environment)
+}

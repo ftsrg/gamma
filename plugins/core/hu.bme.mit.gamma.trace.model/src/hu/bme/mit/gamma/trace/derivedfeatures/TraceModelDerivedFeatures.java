@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -25,8 +25,10 @@ import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
+import hu.bme.mit.gamma.expression.model.OpaqueExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
+import hu.bme.mit.gamma.expression.model.VariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
@@ -38,6 +40,7 @@ import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.State;
+import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer;
 import hu.bme.mit.gamma.trace.model.Act;
 import hu.bme.mit.gamma.trace.model.Cycle;
@@ -53,6 +56,8 @@ import hu.bme.mit.gamma.trace.model.TimeUnitAnnotation;
 
 public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	//
+	public static final String TRANSITION_EXEC_PREFIX = "Transition executed: ";
+	//
 	protected static final ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE;
 	//
 	
@@ -67,7 +72,8 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 			return event.getParameterDeclarations();
 		}
 		if (element instanceof ExecutionTrace trace) {
-			return trace.getComponent().getParameterDeclarations();
+			Component component = trace.getComponent();
+			return component.getParameterDeclarations();
 		}
 		throw new IllegalArgumentException("Not supported element: " + element);
 	}
@@ -75,6 +81,11 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	public static ExecutionTrace getContainingExecutionTrace(EObject object) {
 		ExecutionTrace trace = ecoreUtil.getContainerOfType(object, ExecutionTrace.class);
 		return trace;
+	}
+	
+	public static boolean isTopmostAssert(Expression expression) {
+		EObject container = expression.eContainer();
+		return !(container instanceof Expression);
 	}
 	
 	public static Step getContainingStep(EObject object) {
@@ -89,7 +100,9 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	// Annotations
 	
 	public static boolean hasAssertInFirstStep(ExecutionTrace trace) {
-		return !trace.getSteps().get(0).getAsserts().isEmpty();
+		List<Step> steps = trace.getSteps();
+		Step firstStep = steps.get(0);
+		return !firstStep.getAsserts().isEmpty();
 	}
 	
 	public static boolean hasAllowedWaitingAnnotation(ExecutionTrace trace) {
@@ -104,19 +117,25 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	public static <T extends ExecutionTraceAnnotation> T getAnnotation(
 			ExecutionTrace trace, Class<T> annotation) {
 		List<ExecutionTraceAnnotation> annotations = trace.getAnnotations();
-		return javaUtil.filterIntoList(annotations, annotation).get(0);
+		List<T> filteredAnnotations = javaUtil.filterIntoList(annotations, annotation);
+		T filteredAnnotation = filteredAnnotations.get(0);
+		return filteredAnnotation;
 	}
 	
 	public static ExecutionTraceAllowedWaitingAnnotation getAllowedWaitingAnnotation(
 				ExecutionTrace trace) {
 		List<ExecutionTraceAnnotation> annotations = trace.getAnnotations();
-		return javaUtil.filterIntoList(annotations,
-				ExecutionTraceAllowedWaitingAnnotation.class).get(0);
+		List<ExecutionTraceAllowedWaitingAnnotation> waitingAnnotations = javaUtil.filterIntoList(annotations,
+				ExecutionTraceAllowedWaitingAnnotation.class);
+		ExecutionTraceAllowedWaitingAnnotation annotation = waitingAnnotations.get(0);
+		return annotation;
 	}
 	
 	public static TimeUnitAnnotation getTimeUnitAnnotation(ExecutionTrace trace) {
 		List<ExecutionTraceAnnotation> annotations = trace.getAnnotations();
-		return javaUtil.filterIntoList(annotations, TimeUnitAnnotation.class).get(0);
+		List<TimeUnitAnnotation> timeUnitAnnotations = javaUtil.filterIntoList(annotations, TimeUnitAnnotation.class);
+		TimeUnitAnnotation timeUnitAnnotation = timeUnitAnnotations.get(0);
+		return timeUnitAnnotation;
 	}
 	
 	public static boolean isNegativeTest(ExecutionTrace trace) {
@@ -168,7 +187,8 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 			else {
 				Expression generalElapsedTime = schedulingTimeElapse.getElapsedTime();
 				Expression actualElapsedTime = timeElapse.getElapsedTime();
-				if (evaluator.evaluateInteger(generalElapsedTime) != evaluator.evaluateInteger(actualElapsedTime)) {
+				if (evaluator.evaluateInteger(generalElapsedTime) !=
+						evaluator.evaluateInteger(actualElapsedTime)) {
 					return null;
 				}
 			}
@@ -176,6 +196,15 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		
 		Expression generalElapsedTime = schedulingTimeElapse.getElapsedTime();
 		return ecoreUtil.clone(generalElapsedTime);
+	}
+	
+	public static boolean isTransitionExecutionExpression(Expression expression) {
+		if (expression instanceof OpaqueExpression opaque) {
+			String TRANSITION_EXEC_PREFIX = "Transition executed: ";
+			String text = opaque.getExpression();
+			return text.startsWith(TRANSITION_EXEC_PREFIX);
+		}
+		return false;
 	}
 	
 	public static Expression getLowermostAssert(Expression assertion) {
@@ -186,14 +215,14 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 	
 	public static Expression getPrimaryAssert(Expression assertion) {
-		List<ComponentInstanceVariableReferenceExpression> variableReferences =
-				ecoreUtil.getSelfAndAllContentsOfType(assertion, ComponentInstanceVariableReferenceExpression.class);
+		List<VariableReferenceExpression> variableReferences =
+				ecoreUtil.getSelfAndAllContentsOfType(assertion, VariableReferenceExpression.class);
 		if (variableReferences.size() == 1) {
 			return variableReferences.get(0);
 		}
 		
-		List<ComponentInstanceStateReferenceExpression> stateReferences =
-				ecoreUtil.getSelfAndAllContentsOfType(assertion, ComponentInstanceStateReferenceExpression.class);
+		List<StateReferenceExpression> stateReferences =
+				ecoreUtil.getSelfAndAllContentsOfType(assertion, StateReferenceExpression.class);
 		if (stateReferences.size() == 1) {
 			return stateReferences.get(0);
 		}
@@ -347,7 +376,8 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 			Step lhsStep = lhs.get(i);
 			Step rhsStep = rhs.get(i);
 			
-			if (!areAssertsEquivalent(lhsStep, rhsStep, considerInstanceNames, considerInjectedVariables)) {
+			if (!areAssertsEquivalent(lhsStep, rhsStep,
+					considerInstanceNames, considerInjectedVariables)) {
 				return false;
 			}
 		}
@@ -362,9 +392,9 @@ public class TraceModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 		
 		if (!considerInjectedVariables) {
 			lhsAsserts.removeIf(it -> ecoreUtil.getSelfAndAllContentsOfType(it,	ComponentInstanceVariableReferenceExpression.class)
-					.stream().anyMatch(ref -> isInjected(ref.getVariableDeclaration())));
+					.stream().anyMatch(ref -> isInjected(StatechartModelDerivedFeatures.getVariableDeclaration(ref))));
 			rhsAsserts.removeIf(it -> ecoreUtil.getSelfAndAllContentsOfType(it,	ComponentInstanceVariableReferenceExpression.class)
-					.stream().anyMatch(ref -> isInjected(ref.getVariableDeclaration())));
+					.stream().anyMatch(ref -> isInjected(StatechartModelDerivedFeatures.getVariableDeclaration(ref))));
 		}
 		
 		int size = lhsAsserts.size();

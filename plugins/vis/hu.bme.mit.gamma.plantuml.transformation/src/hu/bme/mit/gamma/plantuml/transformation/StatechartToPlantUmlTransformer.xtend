@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -41,7 +41,7 @@ import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.UnaryType
 import hu.bme.mit.gamma.statechart.util.ActionSerializer
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
-import org.eclipse.emf.common.util.EList
+import java.util.List
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -163,29 +163,33 @@ class StatechartToPlantUmlTransformer {
 	// Handling the fork, join, choice and merge pseudostates
 	// The initial and history states are not handled in this section, but instead in the stateSearch() method,
 	// because it was more convenient that way.
-	protected def dispatch transformPseudoState(ForkState forkState) {
+	protected def dispatch transformStateNode(ForkState forkState) {
 		return "state " + forkState.name + " <<fork>>"
 	}
 
-	protected def dispatch transformPseudoState(JoinState joinState) {
+	protected def dispatch transformStateNode(JoinState joinState) {
 		return "state " + joinState.name + " <<join>>"
 	}
 
-	protected def dispatch transformPseudoState(ChoiceState choiceState) {
+	protected def dispatch transformStateNode(ChoiceState choiceState) {
 		return "state " + choiceState.name + " <<choice>>"
 	}
 
-	protected def dispatch transformPseudoState(MergeState mergeState) {
+	protected def dispatch transformStateNode(MergeState mergeState) {
 		return "state " + mergeState.name + " <<choice>>"
 	}
-
-	protected def dispatch transformPseudoState(EntryState entryState) {
+	
+	protected def dispatch transformStateNode(State state) {
+		return "state " + state.name
 	}
+
+	protected def dispatch transformStateNode(EntryState entryState) {}
 
 ///////////////////// ACTION DISPATCH /////////////////////
 	// Handling the different instances of actions
 	protected def transformAction(Action action) {
-		return action.serialize.replaceAll(System.lineSeparator, "\\\\n") // PlantUML needs \\n
+		return action.serialize
+				.replaceAll("\r\n|\n", "\\\\n") // PlantUML needs \\n
 	}
 
 ///////////////////// OTHER FUNCTIONS /////////////////////
@@ -212,31 +216,31 @@ class StatechartToPlantUmlTransformer {
 	 * If there are multiple regions in the state, it will separate them.
 	 */
 	protected def String regionSearch(StateNode state, StatechartDefinition statechart) {
-		if (regionsDispatch(state) !== null) {
+		val regionsDispatch = state.regionsDispatch
+		if (regionsDispatch !== null) {
 			val result = '''
 				state «state.name» {
-					«FOR region : regionsDispatch(state)»
+					«FOR region : regionsDispatch»
 						«FOR pseudo: region.stateNodes»
-							«IF pseudo instanceof PseudoState»
-								«pseudo.transformPseudoState»
-							«ENDIF»
+							«pseudo.transformStateNode»
 						«ENDFOR»
 						«FOR inner: region.stateNodes»
-							«regionSearch(inner, statechart)»
+							«inner.regionSearch(statechart)»
 								«IF !(inner instanceof PseudoState)»
-									«IF stateActionsSearch(inner) !== null»
-										«stateActionsSearch(inner)»
+									«val stateActionsSearch = inner.stateActionsSearch»
+									«IF stateActionsSearch !== null»
+										«stateActionsSearch»
 									«ENDIF»
 								«ENDIF»
 								«FOR itransition: statechart.transitions»
 									«IF itransition.sourceState == inner»
-										«stateSearch(itransition)»
+										«itransition.stateSearch»
 									«ENDIF»
 								«ENDFOR»
 						«ENDFOR»
-						«FOR inner: region.stateNodes»
+						«FOR inner: region.stateNodes /* ? */»
 						«ENDFOR»
-						«IF regionsDispatch(state).length > 1 && region !== regionsDispatch(state).lastOrNull»
+						«IF regionsDispatch.length > 1 && region !== regionsDispatch.lastOrNull»
 							--
 						«ENDIF»
 					«ENDFOR»
@@ -244,12 +248,10 @@ class StatechartToPlantUmlTransformer {
 				
 			'''
 			return result
-		} else {
-			val result = null
-			return result
 		}
+		return null
 	}
-
+	
 	/**
 	 * stateActionsSearch(StateNode)
 	 * 
@@ -260,31 +262,29 @@ class StatechartToPlantUmlTransformer {
 	 */
 	protected def stateActionsSearch(StateNode statenode) {
 		val state = statenode as State
-		if (!(state.entryActions.empty) || !(state.exitActions.empty) || !(state.invariants.empty)) {
+		if (!state.entryActions.empty || !state.exitActions.empty || !state.invariants.empty) {
 			val result = '''
-				«IF !(state.invariants.empty)»
+				«IF !state.invariants.empty»
 					«FOR invariant: state.invariants»
 						«statenode.name» : invariant «invariant.serialize»
 					«ENDFOR»
 				«ENDIF»
-				«IF !(state.entryActions.empty)»
+				«IF !state.entryActions.empty»
 					«FOR entry: state.entryActions»
 						«statenode.name» : entry / «entry.transformAction»
 					«ENDFOR»
 				«ENDIF»
-				«IF !(state.exitActions.empty)»
+				«IF !state.exitActions.empty»
 					«FOR exit: state.exitActions»
 						«statenode.name» : exit / «exit.transformAction»
 					«ENDFOR»
 				«ENDIF»
 			'''
 			return result
-		} else {
-			val result = null
-			return result
 		}
+		return null
 	}
-
+	
 	/**
 	 * regionsDispatch(StateNode)
 	 * 
@@ -294,16 +294,12 @@ class StatechartToPlantUmlTransformer {
 	 */
 	protected def regionsDispatch(StateNode state) {
 		if (!(state instanceof PseudoState)) {
-			val statecomp = state as CompositeElement
-			if (!(statecomp.getRegions().isEmpty())) {
-				val region = statecomp.getRegions()
-				return region
-			} else {
-				return null
-			}
+			val compositeElement = state as CompositeElement
+			val regions = compositeElement.regions
+			return (!regions.empty) ? regions : null
 		}
 	}
-
+	
 	/**
 	 * mainRegionSearch(StatechartDefitnition)
 	 * 
@@ -316,22 +312,21 @@ class StatechartToPlantUmlTransformer {
 			«IF statechart.regions.size > 1»state «statechart.name» {«ENDIF»
 				«FOR main : statechart.regions»
 					«FOR pseudo: main.stateNodes»
-						«IF pseudo instanceof PseudoState»
-							«pseudo.transformPseudoState»
-						«ENDIF»
+						«pseudo.transformStateNode»
 					«ENDFOR»
 					«FOR mainstate: main.stateNodes.filter(State)»
-						«regionSearch(mainstate, statechart)»
+						«mainstate.regionSearch(statechart)»
 						«IF !(mainstate instanceof PseudoState)»
-							«IF stateActionsSearch(mainstate) !== null»
-								«stateActionsSearch(mainstate)»
+							«val stateActionsSearch = mainstate.stateActionsSearch»
+							«IF stateActionsSearch !== null»
+								«stateActionsSearch»
 							«ENDIF»
 						«ENDIF»
 					«ENDFOR»
 					«FOR transition : statechart.transitions»
 						«FOR mainstate: main.stateNodes»
 							«IF transition.sourceState == mainstate»
-								«stateSearch(transition)»
+								«transition.stateSearch»
 							«ENDIF»
 						«ENDFOR»
 					«ENDFOR»
@@ -348,20 +343,12 @@ class StatechartToPlantUmlTransformer {
 		'''
 		return mainString
 	}
-
-	protected def isLastRegion(EList<Region> regions, Region region) {
+	
+	protected def isLastRegion(List<Region> regions, Region region) {
 		val size = regions.size
-		if (regions.contains(region)) {
-			if (regions.indexOf(region) == size - 1) {
-				return true
-			} else {
-				return false
-			}
-		} else {
-			return false
-		}
+		return regions.contains(region) && regions.indexOf(region) == size - 1
 	}
-
+	
 	/**
 	 * stateSearch(Transition)
 	 * 
@@ -379,12 +366,7 @@ class StatechartToPlantUmlTransformer {
 		val guard = transition.guard
 		val effects = transition.effects
 		val target = transition.targetState
-		var arrow = ""
-		if (source instanceof EntryState || (source.parentRegion.orthogonal && target.state)) {
-			arrow = "->"
-		} else {
-			arrow = "-->"
-		}
+		val arrow = (source instanceof EntryState || (source.parentRegion.orthogonal && target.state)) ? "->" : "-->"
 		return '''
 			«transition.sourceText» «arrow» «target.name»«IF !transition.empty» : «ENDIF»«IF trigger !== null»«trigger.transformTrigger»«ENDIF» «IF guard !== null»\n[«guard.serialize
 				.replaceAll("\\|\\|", "||\\\\n").replaceAll("\\&\\&", "&&\\\\n")»]«ENDIF»«FOR effect : effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformAction»«ENDFOR»
@@ -393,38 +375,38 @@ class StatechartToPlantUmlTransformer {
 
 	protected def getSourceText(Transition transition) {
 		val source = transition.sourceState
-		switch (source) {
-			InitialState: {
-				return '''[*]'''
-			}
-			ShallowHistoryState: {
-				return '''[H]'''
-			}
-			DeepHistoryState: {
-				return '''[H]''' // PlantUML does not distinguish between the two history states
-			}
-			default: {
-				return source.name
-			}
+		return switch (source) {
+			InitialState:
+				'''[*]'''
+			ShallowHistoryState:
+				'''[H]'''
+			DeepHistoryState:
+				'''[H]''' // PlantUML does not distinguish between the two history states
+			default:
+				source.name
 		}
 	}
 
 	protected def listVariablesInNote(StatechartDefinition statechart) {
 		val parameterDeclarations = statechart.parameterDeclarations
+		val constantDeclarations = statechart.containingPackage?.constantDeclarations
 		val variableDeclarations = statechart.variableDeclarations
 		val timeoutDeclarations = statechart.timeoutDeclarations
 		val invariants = statechart.invariants
 		
-		if (variableDeclarations.empty && timeoutDeclarations.empty && parameterDeclarations.empty && invariants.empty) {
+		if ((variableDeclarations + constantDeclarations + timeoutDeclarations + parameterDeclarations + invariants).empty) {
 			return ''''''
 		}
 		return '''
 			legend top
 			 	«FOR parameter : parameterDeclarations»
-			 		param «parameter.name»: «parameter.type.serialize»
+			 		param «parameter.name» : «parameter.type.serialize»
+				«ENDFOR»
+				«FOR constant : constantDeclarations»
+					const «constant.name» : «constant.type.serialize» = «constant.expression?.serialize»
 				«ENDFOR»
 				«FOR variable : variableDeclarations»
-					var «variable.name»: «variable.type.serialize»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»
+					var «variable.name» : «variable.type.serialize»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»
 				«ENDFOR»
 				«FOR timeout : timeoutDeclarations»
 					timeout «timeout.name»

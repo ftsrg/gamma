@@ -4,4 +4,6 @@ import "Interface/Interface.gcd"
 component Conformance
 
 A G [ { ( event _stateMachine -> controller.ControlActions.controlDoor imply
-	event _statechart -> controller.ControlActions.controlDoor) } ]
+		(event _statechart -> controller.ControlActions.controlDoor and
+			parameter _stateMachine -> controller.ControlActions.controlDoor::action =
+				parameter _statechart -> controller.ControlActions.controlDoor::action)) } ]

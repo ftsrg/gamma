@@ -1,0 +1,31 @@
+import "Orion"
+
+code {
+	component : System_MasterStatechart
+	language : java
+}
+
+code {
+	component : System_SlaveStatechart
+	language : java
+}
+
+code {
+	component : OrionSystem
+	language : java
+}
+
+analysis {
+	component : OrionSystem
+	language : smart
+	state-coverage
+}
+
+verification {
+	language : smart
+	test-language : java
+	file : "Orion"
+	property-file : ".Orion.gpd"
+	optimize-traces : true
+	serialize-results : false
+}

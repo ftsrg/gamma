@@ -49,7 +49,7 @@ class EnvironmentalActionFilter {
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	
 	def void deleteEverythingExceptSystemEventsAndParameters(Action action, Component component) {
-		val necessaryNames = newHashSet
+		val necessaryNames = newLinkedHashSet
 		// Input and output events and parameters
 		for (port : component.allBoundSimplePorts) {
 			val statechart = port.containingStatechart
@@ -72,7 +72,7 @@ class EnvironmentalActionFilter {
 	}
 	
 	def Action resetEverythingExceptPersistentParameters(Action action, Component component) {
-		val necessaryNames = newHashSet
+		val necessaryNames = newLinkedHashSet
 		for (port : component.allBoundSimplePorts) {
 			val statechart = port.containingStatechart
 			val instance = statechart.referencingComponentInstance
@@ -156,7 +156,7 @@ class EnvironmentalActionFilter {
 	}
 	
 	private def Action reset(Action action, Set<String> necessaryNames) {
-		val xStsAssignments = newHashSet
+		val xStsAssignments = newLinkedHashSet
 		for (xStsAssignment : action.getSelfAndAllContentsOfType(AbstractAssignmentAction)) {
 			val lhs = xStsAssignment.lhs as DirectReferenceExpression
 			val declaration = lhs.declaration as VariableDeclaration

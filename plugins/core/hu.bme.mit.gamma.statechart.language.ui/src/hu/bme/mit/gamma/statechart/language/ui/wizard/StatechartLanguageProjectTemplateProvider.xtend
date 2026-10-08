@@ -119,7 +119,8 @@ final class CrossroadGammaProject {
 					if (file.file) {
 						val contents = futil.loadString(file);
 						addFile("model" + File.separator + filename, contents)
-					} else {
+					}
+					else {
 						val toUrl = file.toURL
 						val uri = FileLocator.toFileURL(toUrl).toURI
 						val paths = Paths.get(uri)

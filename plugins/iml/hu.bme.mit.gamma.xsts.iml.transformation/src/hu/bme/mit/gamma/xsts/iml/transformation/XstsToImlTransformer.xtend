@@ -24,6 +24,7 @@ class XstsToImlTransformer {
 	protected final String targetFolderUri
 	protected final String fileName
 	protected final XSTS xSts
+	protected final boolean optimizeNondeterministicChoices
 	
 	protected final extension ModelSerializer modelSerializer = ModelSerializer.INSTANCE
 	
@@ -35,18 +36,20 @@ class XstsToImlTransformer {
 		this.targetFolderUri = file.parent
 		this.fileName = file.extensionlessName
 		this.xSts = targetFolderUri.normalLoad(file.name) as XSTS
+		this.optimizeNondeterministicChoices = false
 	}
 	
-	new(XSTS xSts, String targetFolderUri, String fileName) {
+	new(XSTS xSts, String targetFolderUri, String fileName, boolean optimizeNondeterministicChoices) {
 		this.xSts = xSts
 		this.targetFolderUri = targetFolderUri
 		this.fileName = fileName
+		this.optimizeNondeterministicChoices = optimizeNondeterministicChoices
 	}
 	
 	def void execute() {
 		validate
 		val imlFile = new File(targetFolderUri + File.separator + fileName.imlImandraFileName)
-		val imlString = xSts.serializeIml
+		val imlString = xSts.serializeIml(optimizeNondeterministicChoices)
 		imlFile.saveString(imlString)
 	}
 	

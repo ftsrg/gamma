@@ -44,6 +44,7 @@ verification {
 	query-file : "CustomQueries.q"
 	optimize : true
 	test-language : java
+	serialize-results : false
 }
 
 verification {
@@ -52,6 +53,7 @@ verification {
 	property-file : ".Crossroad-XSTS.gpd" // Checking test optimization
 	optimize : true
 	test-language : java
+	serialize-results : false
 }
 
 verification {
@@ -60,4 +62,5 @@ verification {
 	property-file : ".Crossroad-SMV.gpd" // Checking test optimization
 	optimize-model : true
 	test-language : java
+	serialize-results : false
 }

@@ -35,6 +35,7 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.math.BigInteger
 import java.util.List
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class TraceGenUtil {
@@ -47,9 +48,8 @@ class TraceGenUtil {
 	protected val extension ExpressionModelFactory exprFactory = ExpressionModelFactory.eINSTANCE
 	protected val extension ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE
 	
-	
 	def ExecutionTrace mergeLastStepOfTraces(List<ExecutionTrace> traces) {
-		if(traces.size == 1) {
+		if (traces.size == 1) {
 			return traces.head
 		}
 		val lastSteps = traces.map[it.steps.lastOrNull]
@@ -66,7 +66,7 @@ class TraceGenUtil {
 			lastAsserts += or.operands.head
 		}
 		else {
-			//nop
+			// nop
 		}
 		return result
 	}
@@ -132,7 +132,7 @@ class TraceGenUtil {
 					val arguments = act.arguments
 					val params = act.event.parameterDeclarations
 					for (var i = 0; i < params.size; i++) {
-						if (ref.parameter.name == params.get(i).name) {
+						if (ref.parameterDeclaration.name == params.get(i).name) {
 							val clone = arguments.get(i).clone
 							ecoreUtil.changeAndReplace(clone, ref, ref.eContainer)
 							foundMatch = true
@@ -143,33 +143,33 @@ class TraceGenUtil {
 			if (!foundMatch) {
 				if (scenarioStatechartUtil.isTurnedOut(ref.port)) {
 					ref.port = component.getPort(scenarioStatechartUtil.getTurnedOutPortName(ref.port))
-				} else {
+				}
+				else {
 					ref.port = component.getPort(ref.port.name)
 				}
 				ref.event = ref.port.getEvent(ref.event.name)
-				ref.parameter = ref.event.getEventParam(ref.parameter.name)
+				ref.declaration = ref.event.getEventParam(ref.parameterDeclaration.name)
 			}
 		}
 	}
 	
 	def getPort(Component component, String name) {
-		component.ports.findFirst[it.name == name]
+		return component.ports.findFirst[it.name == name]
 	}
 
 	def getEvent(Port port, String name) {
-		port.interfaceRealization.interface.events.findFirst[it.event.name == name]?.event
+		return port.interfaceRealization.interface.eventDeclarations.findFirst[it.event.name == name]?.event
 	}
 	
 	def getEventParam(Event event, String paramName) {
-		event.parameterDeclarations.findFirst[it.name == paramName]
+		return event.parameterDeclarations.findFirst[it.name == paramName]
 	}
 	
 	
 	def List<EventTrigger> finNegatedInteractions(List<Transition> transitions) {
 		return transitions
 			.map[it.trigger]
-			.map[ecoreUtil.getAllContentsOfType(it, UnaryTrigger)]
-			.flatten
+			.map[ecoreUtil.getAllContentsOfType(it, UnaryTrigger)].flatten
 			.filter[it.type == UnaryType.NOT && it.operand instanceof EventTrigger]
 			.map[it.operand as EventTrigger]
 			.toList
@@ -177,8 +177,7 @@ class TraceGenUtil {
 	
 	def List<AssignmentStatement> findAssignmentBasedActions(List<Transition> transitions) {
 		return transitions
-			.map[it.effects]
-			.flatten
+			.map[it.effects].flatten
 			.filter(AssignmentStatement)
 			.filter[!((it.lhs as DirectReferenceExpression).declaration as VariableDeclaration).name.startsWith("__id_")]
 			.toList
@@ -197,10 +196,12 @@ class TraceGenUtil {
 			if (outgoingTarget == target) {
 				transitions += transition
 				return transitions
-			} else {
+			}
+			else {
 				if (states.contains(outgoingTarget)) {
 					//nop
-				} else {
+				}
+				else {
 					val transitionsCopy = <Transition>newArrayList(transitions)
 					val statesCopy = <StateNode>newArrayList(states)
 					statesCopy += outgoingTarget

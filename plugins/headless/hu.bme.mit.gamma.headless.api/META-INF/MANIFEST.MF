@@ -3,10 +3,10 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Headless Application
 Bundle-SymbolicName: hu.bme.mit.gamma.headless.api;singleton:=true
 Bundle-Vendor: BME-FTSRG
-Bundle-Version: 2.12.0.qualifier
+Bundle-Version: 2.13.0.qualifier
 Export-Package: hu.bme.mit.gamma.api.headless
 Automatic-Module-Name: hui.bme.mit.gamma.api.headless
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Require-Bundle: org.eclipse.equinox.app,
  org.eclipse.core.resources,
  org.eclipse.core.runtime,

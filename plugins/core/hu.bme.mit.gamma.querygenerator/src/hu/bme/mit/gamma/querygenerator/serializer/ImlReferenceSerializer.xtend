@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Gamma project
+ * Copyright (c) 2024-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.querygenerator.serializer
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
@@ -60,6 +61,18 @@ class ImlReferenceSerializer extends ThetaReferenceSerializer {
 	
 	override getId(Event event, Port port, ParameterDeclaration parameter, ComponentInstanceReferenceExpression instance) {
 		return super.getId(event, port, parameter, instance).map[recordIdentifier + "." + it.customizeDeclarationName]
+	}
+	
+//	override getId(MessageQueue queue, ComponentInstanceReferenceExpression instance) {
+//		return super.getId(queue, instance).customizeDeclarationName
+//	}
+//	
+//	override getSizeId(MessageQueue queue, ComponentInstanceReferenceExpression instance) {
+//		return super.getSizeId(queue, instance).customizeDeclarationName
+//	}
+	
+	override getOverflowId(MessageQueue queue, ComponentInstanceReferenceExpression instance) {
+		return recordIdentifier + "." + super.getOverflowId(queue, instance).customizeDeclarationName
 	}
 	
 }

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.codegeneration.java.util
 
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
-
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
@@ -59,6 +58,29 @@ class TypeDeclarationSerializer {
 				«ENDFOR»
 			}
 			
+			«IF type.compositeRecord»@SuppressWarnings("unchecked")«ENDIF»
+			public «name»(List<Object> elements) {
+				«var i = 0»
+				«FOR field : type.fieldDeclarations»
+					«val fieldType = field.typeDefinition»
+					«val element = '''elements.get(«i++»)'''»
+					this.«field.name» = «
+						IF field.record
+							»new «fieldType.typeDeclaration.name»((List<Object>) «element»);«
+						ELSE
+							»(«field.type.serialize») «element»;«
+						ENDIF»
+				«ENDFOR»
+			}
+			
+			public List<Object> toList() {
+				List<Object> fields = new ArrayList<Object>();
+				«FOR field : type.fieldDeclarations»
+					fields.add«IF field.record»All«ENDIF»(«field.name»«IF field.record».toList()«ENDIF»);
+				«ENDFOR»
+				return fields;
+			}
+			
 			@Override
 			public boolean equals(Object object) {
 				if (this == object) {
@@ -72,7 +94,7 @@ class TypeDeclarationSerializer {
 				}
 				«name» record = («name») object;
 				«FOR field : type.fieldDeclarations»
-					if («IF field.type.isPrimitive»this.«field.name» != record.«field.name»«ELSE»!this.«field.name».equals(record.«field.name»)«ENDIF») {
+					if («IF field.type.primitive»this.«field.name» != record.«field.name»«ELSE»!Objects.deepEquals(this.«field.name», record.«field.name»)«ENDIF») {
 						return false;
 					}
 				«ENDFOR»

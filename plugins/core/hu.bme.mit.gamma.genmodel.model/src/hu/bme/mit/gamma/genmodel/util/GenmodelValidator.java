@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -29,6 +29,8 @@ import hu.bme.mit.gamma.expression.model.ExpressionPackage;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.model.TypeDeclaration;
+import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
 import hu.bme.mit.gamma.fei.model.FaultExtensionInstructions;
 import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
@@ -204,11 +206,14 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkTasks(Verification verification) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		List<AnalysisLanguage> languages = verification.getAnalysisLanguages();
-		if (languages.size() != 1) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-				"A single formal language must be specified",
-					new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__ANALYSIS_LANGUAGES)));
+		int languagesSize = languages.size();
+		if (languagesSize < 1) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO, 
+				"If no formal language is specified, then smart verification will be run",
+					new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME)));
+			return validationResultMessages;
 		}
+		AnalysisLanguage language = languages.getFirst();
 		File resourceFile = ecoreUtil.getFile(verification.eResource());
 		List<String> modelFiles = verification.getFileName();
 		if (modelFiles.size() != 1) {
@@ -217,11 +222,24 @@ public class GenmodelValidator extends ExpressionModelValidator {
 					new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME)));
 		}
 		for (String modelFile : modelFiles) {
-			if (!fileUtil.isValidRelativeFile(resourceFile, modelFile)) {
-				int index = modelFiles.indexOf(modelFile);
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"This is not a valid relative path to a model file: " + modelFile,
-						new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, index)));
+			int index = modelFiles.indexOf(modelFile);
+			if (language == AnalysisLanguage.SMART || language == AnalysisLanguage.SMART_ALL ||
+						1 < languagesSize) {
+				if (fileUtil.hasExtension(modelFile)) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+						"Do not add the extension of the file for smart or multi-thread verification: " + modelFile,
+							new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, index)));
+				}
+			}
+			else if (!fileUtil.isValidRelativeFile(resourceFile, modelFile)) {
+				String fileExtension = fileNamer.getFileExtension(language);
+				String adjustedModelFile = fileUtil.changeExtension(modelFile, fileExtension);
+				if (fileUtil.hasExtension(modelFile) ||
+						!fileUtil.isValidRelativeFile(resourceFile, adjustedModelFile)) { 
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+						"This is not a valid relative path to a model file: " + modelFile,
+							new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, index)));
+				}
 			}
 		}
 		
@@ -245,6 +263,11 @@ public class GenmodelValidator extends ExpressionModelValidator {
 				"This setting can be used only if the default name is not changed during the " +
 					"derivation of the analysis model ('file' setting is not used in the analysis task)",
 						new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__BACK_ANNOTATE_TO_ORIGINAL)));
+		}
+		if (verification.isOptimizeModel()) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO,
+				"After the first execution, this setting shall be 'true' unless the analysis model is regenerated",
+					new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__OPTIMIZE_MODEL)));
 		}
 		
 		return validationResultMessages;
@@ -508,7 +531,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		
 		Set<Package> packageImports = genmodel.getPackageImports().stream().collect(Collectors.toSet());
 		List<Task> tasks = genmodel.getTasks();
-		for (CodeGeneration task : javaUtil.filterIntoList(tasks,CodeGeneration.class)) {
+		for (CodeGeneration task : javaUtil.filterIntoList(tasks, CodeGeneration.class)) {
 			Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(task.getComponent());
 			packageImports.remove(parentPackage);
 		}
@@ -592,7 +615,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		for (Package packageImport : packageImports) {
 			int index = genmodel.getPackageImports().indexOf(packageImport);
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
-					"This package import is not used",
+				"This package import is not used",
 					new ReferenceInfo(GenmodelModelPackage.Literals.GEN_MODEL__PACKAGE_IMPORTS, index)));
 		}
 		return validationResultMessages;
@@ -601,11 +624,17 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	private Set<Package> getUsedPackages(AnalysisModelTransformation analysisModelTransformationTask) {
 		Set<Package> packageImports = new HashSet<Package>();
 		ModelReference modelReference = analysisModelTransformationTask.getModel();
-		if (modelReference instanceof ComponentReference) {
-			ComponentReference componentReference = (ComponentReference)modelReference;
+		if (modelReference instanceof ComponentReference componentReference) {
 			Component component = componentReference.getComponent();
 			Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(component);
 			packageImports.add(parentPackage);
+			for (Expression expression : componentReference.getArguments()) {
+				for (TypeReference reference : ecoreUtil.getSelfAndAllContentsOfType(expression, TypeReference.class)) {
+					TypeDeclaration typeReference = reference.getReference();
+					Package parentPackage_ = StatechartModelDerivedFeatures.getContainingPackage(typeReference);
+					packageImports.add(parentPackage_);
+				}
+			}
 		}
 		for (Coverage coverage : analysisModelTransformationTask.getCoverages()) {
 			List<ComponentInstanceReferenceExpression> allCoverages = new ArrayList<ComponentInstanceReferenceExpression>();
@@ -676,7 +705,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 							"The types of the declaration and the right hand side expression are not the same: " +
 								typeDeterminator.print(declarationType) + " and " + typeDeterminator.print(argument),
-								new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i)));
+								new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i, componentReference)));
 					} 
 				}
 			}

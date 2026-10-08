@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2024 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.java
 
 import hu.bme.mit.gamma.codegeneration.java.util.TypeSerializer
@@ -37,6 +47,10 @@ class ValueDeclarationAccessor {
 		return objectId.access(declaration, declaration.customizeNames)
 	}
 	
+	def access(String objectId, VariableDeclaration declaration, Port port) {
+		return objectId.access(declaration, declaration.customizeNames(port))
+	}
+	
 	def accessOut(String objectId, Port port, ParameterDeclaration declaration) {
 		return objectId.access(declaration, declaration.customizeOutNames(port))
 	}
@@ -45,7 +59,7 @@ class ValueDeclarationAccessor {
 		return objectId.access(declaration, declaration.customizeInNames(port))
 	}
 	
-	def protected access(String objectId, ValueDeclaration declaration, List<String> fieldNames) {
+	protected def access(String objectId, ValueDeclaration declaration, List<String> fieldNames) {
 		val type = declaration.typeDefinition
 		val fieldPairs = type.formFieldPairs(fieldNames)
 		return objectId.access(type, fieldPairs, new IndexHierarchy)
@@ -108,6 +122,23 @@ class ValueDeclarationAccessor {
 	private def String access(IndexHierarchy indexes) '''«FOR index : indexes.indexes»[«index»]«ENDFOR»'''
 	
 	// Write
+	
+	def writeIn(String id, VariableDeclaration declaration) {
+		return id.writeIn(declaration, null)
+	}
+	
+	def writeIn(String id, VariableDeclaration declaration, Port port) {
+		val valueId = declaration.name
+		val type = declaration.typeDefinition
+		val names = (port === null) ? declaration.customizeNames : declaration.customizeNames(port)
+		val accesses = type.accessIn(valueId)
+		checkState(names.size == accesses.size)
+		return '''
+			«FOR i : 0 ..< names.size»
+				«id».set«names.get(i).toFirstUpper»(«accesses.get(i)»);
+			«ENDFOR»
+		'''
+	}
 
 	def writeIn(String id, Port port, ParameterDeclaration declaration, String valueId) {
 		val type = declaration.typeDefinition
@@ -119,7 +150,7 @@ class ValueDeclarationAccessor {
 				«id».set«names.get(i).toFirstUpper»(«accesses.get(i)»);
 			«ENDFOR»
 		'''
-	}	
+	}
 	
 	def List<String> accessIn(TypeDefinition type, String valueId) {
 		if (type.native) {

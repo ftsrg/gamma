@@ -10,12 +10,12 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.eventpriority.transformation
 
-import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
-import hu.bme.mit.gamma.statechart.interface_.EventReference
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
+import hu.bme.mit.gamma.statechart.interface_.OccurrenceReferenceExpression
+import hu.bme.mit.gamma.statechart.interface_.Trigger
+import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.Transition
-import hu.bme.mit.gamma.statechart.interface_.Trigger
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
 
 class EventPriorityDeterminer {
@@ -43,7 +43,7 @@ class EventPriorityDeterminer {
 		return trigger.eventReference.isEventPrioritized
 	}
 	
-	def dispatch boolean isEventPrioritized(EventReference eventReference) {
+	def dispatch boolean isEventPrioritized(OccurrenceReferenceExpression eventReference) {
 		return false
 	}
 	

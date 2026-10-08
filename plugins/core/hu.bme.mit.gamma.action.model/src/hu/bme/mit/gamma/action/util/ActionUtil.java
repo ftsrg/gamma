@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -25,17 +25,24 @@ import hu.bme.mit.gamma.action.model.Block;
 import hu.bme.mit.gamma.action.model.Branch;
 import hu.bme.mit.gamma.action.model.EmptyStatement;
 import hu.bme.mit.gamma.action.model.ExpressionStatement;
+import hu.bme.mit.gamma.action.model.ForStatement;
 import hu.bme.mit.gamma.action.model.IfStatement;
+import hu.bme.mit.gamma.action.model.ReturnStatement;
 import hu.bme.mit.gamma.action.model.SwitchStatement;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.AccessExpression;
+import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DefaultExpression;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
+import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
+import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
+import hu.bme.mit.gamma.expression.model.OpaqueExpression;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
@@ -58,7 +65,9 @@ public class ActionUtil extends ExpressionUtil {
 			ReferenceExpression lhs = assignment.getLhs();
 			return getDeclaration(lhs);
 		}
-		return (Declaration) ecoreUtil.getSelfOrContainerOfType(context, InitializableElement.class);
+		InitializableElement initializableElement = ecoreUtil.getSelfOrContainerOfType(context, InitializableElement.class);
+		Declaration declaration = (Declaration) initializableElement;
+		return declaration;
 	}
 	
 	//
@@ -117,9 +126,7 @@ public class ActionUtil extends ExpressionUtil {
 	//
 	
 	public Block wrap(Collection<? extends Action> actions) {
-		Block block = actionFactory.createBlock();
-		block.getActions().addAll(actions);
-		return block;
+		return createBlock(actions);
 	}
 	
 	public Action prepend(Action action, Action pivot) {
@@ -129,8 +136,7 @@ public class ActionUtil extends ExpressionUtil {
 		else if (pivot == null) {
 			return action;
 		}
-		else if (pivot instanceof Block) {
-			Block block = (Block) pivot;
+		else if (pivot instanceof Block block) {
 			block.getActions().add(0, action);
 			return block;
 		}
@@ -151,8 +157,7 @@ public class ActionUtil extends ExpressionUtil {
 		else if (action == null) {
 			return pivot;
 		}
-		else if (pivot instanceof Block) {
-			Block block = (Block) pivot;
+		else if (pivot instanceof Block block) {
 			block.getActions().add(action);
 			return block;
 		}
@@ -176,7 +181,12 @@ public class ActionUtil extends ExpressionUtil {
 	
 	//
 	
-
+	public Block createFilteredBlock(Collection<? extends Action> actions) {
+		List<Action> filteredActions = new ArrayList<Action>(actions);
+		filteredActions.removeIf(it -> ActionModelDerivedFeatures.isEffectlessAction(it));
+		return createBlock(filteredActions);
+	}
+	
 	public Block createBlock(Collection<? extends Action> actions) {
 		Block block = actionFactory.createBlock();
 		
@@ -193,6 +203,29 @@ public class ActionUtil extends ExpressionUtil {
 			}
 		}
 		return createBlock(actions);
+	}
+	
+	public void removeBlockInBlock(Action action) {
+		if (action == null) {
+			return;
+		}
+		List<Block> blocks = ecoreUtil.getSelfAndAllContentsOfType(action, Block.class);
+		for (Block block : blocks) {
+			List<Action> actions = block.getActions();
+			EObject container = block.eContainer();
+			if (actions.isEmpty()) {
+				ecoreUtil.remove(block);
+			}
+			else if (container instanceof Block containerBlock) {
+				containerBlock.getActions()
+					.addAll(actions);
+				ecoreUtil.remove(block);
+			}
+		}
+	}
+	
+	public IfStatement createIfStatement(Expression condition, Action then) {
+		return createIfStatement(condition, then, null);
 	}
 	
 	public IfStatement createIfStatement(Expression condition, Action then, Action _else) {
@@ -262,7 +295,30 @@ public class ActionUtil extends ExpressionUtil {
 		}
 	}
 	
+	public ForStatement createForStatement(Expression start, Expression end) {
+		return createForStatement("i", start, end);
+	}
+	
+	public ForStatement createForStatement(String parameterName, Expression start, Expression end) {
+		ForStatement forStatement = actionFactory.createForStatement();
+		
+		ParameterDeclaration i = createParameterDeclaration(
+				factory.createIntegerTypeDefinition(), parameterName);
+		forStatement.setParameter(i);
+		
+		IntegerRangeLiteralExpression range = createIntegerRangeLiteralExpression(start, end);
+		forStatement.setRange(range);
+		
+		return forStatement;
+	}
+	
 	//
+	
+	public ExpressionStatement createOpaqueStatement(CharSequence string) {
+		OpaqueExpression opaqueExpression = factory.createOpaqueExpression();
+		opaqueExpression.setExpression(string.toString());
+		return createExpressionStatement(opaqueExpression);
+	}
 	
 	public ExpressionStatement createExpressionStatement(Expression expression) {
 		ExpressionStatement statement = actionFactory.createExpressionStatement();
@@ -270,16 +326,50 @@ public class ActionUtil extends ExpressionUtil {
 		return statement;
 	}
 	
-	public VariableDeclarationStatement createDeclarationStatement(Type type, String name) {
+	public ReturnStatement createReturnStatement(Expression expression) {
+		ReturnStatement statement = actionFactory.createReturnStatement();
+		statement.setExpression(expression);
+		return statement;
+	}
+	
+	public VariableDeclarationStatement createBooleanDeclarationStatement(CharSequence name) {
+		BooleanTypeDefinition type = factory.createBooleanTypeDefinition();
+		return createDeclarationStatement(type, name,
+				ExpressionModelDerivedFeatures.getDefaultExpression(type));
+	}
+	
+	public VariableDeclarationStatement createIntegerDeclarationStatement(CharSequence name) {
+		IntegerTypeDefinition type = factory.createIntegerTypeDefinition();
+		return createDeclarationStatement(type, name,
+				ExpressionModelDerivedFeatures.getDefaultExpression(type));
+	}
+	
+	public VariableDeclarationStatement createDeclarationStatement(Type type, CharSequence name) {
 		return createDeclarationStatement(type, name, // Otherwise, the variable is "havoced"
 				ExpressionModelDerivedFeatures.getDefaultExpression(type));
 	}
 	
+	public EmptyStatement createEmptyStatement_() {
+		return actionFactory.createEmptyStatement();
+	}
+	
+	public VariableDeclarationStatement createIntegerDeclarationStatement(
+			CharSequence name, Expression initialExpression) {
+		IntegerTypeDefinition type = factory.createIntegerTypeDefinition();
+		return createDeclarationStatement(type, name, initialExpression);
+	}
+	
+	public VariableDeclarationStatement createBooleanDeclarationStatement(
+			CharSequence name, Expression initialExpression) {
+		BooleanTypeDefinition type = factory.createBooleanTypeDefinition();
+		return createDeclarationStatement(type, name, initialExpression);
+	}
+	
 	public VariableDeclarationStatement createDeclarationStatement(Type type,
-			String name, Expression initialExpression) {
+			CharSequence name, Expression initialExpression) {
 		VariableDeclaration variable = factory.createVariableDeclaration();
 		variable.setType(type);
-		variable.setName(name);
+		variable.setName(name.toString());
 		variable.setExpression(initialExpression);
 		return createDeclarationStatement(variable);
 	}
@@ -297,8 +387,7 @@ public class ActionUtil extends ExpressionUtil {
 		List<AssignmentStatement> assignmentsOfVariable = new ArrayList<>();
 		for (AssignmentStatement assignment : assignments) {
 			ReferenceExpression lhs = assignment.getLhs();
-			if (lhs instanceof DirectReferenceExpression) {
-				DirectReferenceExpression reference = (DirectReferenceExpression) lhs;
+			if (lhs instanceof DirectReferenceExpression reference) {
 				Declaration declaration = reference.getDeclaration();
 				if (declaration == variable) {
 					assignmentsOfVariable.add(assignment);
@@ -311,26 +400,25 @@ public class ActionUtil extends ExpressionUtil {
 		return assignmentsOfVariable;
 	}
 	
-	public AssignmentStatement createAssignment(ReferenceExpression reference,
-			Expression expression) {
+	public AssignmentStatement createAssignment(ReferenceExpression reference, Expression expression) {
 		AssignmentStatement assignmentStatement = actionFactory.createAssignmentStatement();
 		assignmentStatement.setLhs(reference);
 		assignmentStatement.setRhs(expression);
 		return assignmentStatement;
 	}
 	
-	public AssignmentStatement createAssignment(VariableDeclaration variable,
-			Expression expression) {
-		return createAssignment(createReferenceExpression(variable), expression);
+	public AssignmentStatement createAssignment(VariableDeclaration variable, Expression expression) {
+		DirectReferenceExpression reference = createReferenceExpression(variable);
+		return createAssignment(reference, expression);
 	}
 	
-	public AssignmentStatement createAssignment(VariableDeclaration variable,
-			ValueDeclaration declaration) {
-		return createAssignment(variable, createReferenceExpression(declaration));
+	public AssignmentStatement createAssignment(VariableDeclaration variable, ValueDeclaration declaration) {
+		DirectReferenceExpression reference = createReferenceExpression(declaration);
+		return createAssignment(variable, reference);
 	}
 	
-	public List<AssignmentStatement> createAssignments(List<? extends ReferenceExpression> left,
-			List<Expression> right) {
+	public List<AssignmentStatement> createAssignments(
+				List<? extends ReferenceExpression> left, List<? extends Expression> right) {
 		List<AssignmentStatement> assignments = new ArrayList<AssignmentStatement>();
 		int size = left.size();
 		if (size != right.size()) {
@@ -339,7 +427,8 @@ public class ActionUtil extends ExpressionUtil {
 		for (int i = 0; i < size; i++) {
 			ReferenceExpression lhs = left.get(i);
 			Expression rhs = right.get(i);
-			assignments.add(createAssignment(lhs, rhs));
+			AssignmentStatement assignment = createAssignment(lhs, rhs);
+			assignments.add(assignment);
 		}
 		return assignments;
 	}
@@ -350,8 +439,8 @@ public class ActionUtil extends ExpressionUtil {
 	}
 	
 	public AssignmentStatement createIncrementation(VariableDeclaration variable) {
-		return createAssignment(variable,
-				createIncrementExpression(variable));
+		Expression increment = createIncrementExpression(variable);
+		return createAssignment(variable, increment);
 	}
 	
 }

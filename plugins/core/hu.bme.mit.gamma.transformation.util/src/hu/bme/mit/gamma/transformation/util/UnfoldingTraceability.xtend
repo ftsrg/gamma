@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,12 +15,15 @@ import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.NamedElement
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceTransitionReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
@@ -30,9 +33,12 @@ import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation
+import hu.bme.mit.gamma.statechart.util.ElementSerializer
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.JavaUtil
 import java.util.Collection
+import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -48,6 +54,8 @@ class UnfoldingTraceability {
 	
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
+	protected final extension ElementSerializer elementSerializer = ElementSerializer.INSTANCE
 	
 	// Folded -> unfolded mapping
 	
@@ -243,7 +251,7 @@ class UnfoldingTraceability {
 		val newInstances = newArrayList
 		if (includedOriginalInstances.empty) {
 			// If it is empty, it means all simple instances must be covered
-			newInstances += newType.allSimpleInstances
+			newInstances += newType.allSynchronousSimpleInstances
 		}
 		// The semantics is defined here: including has priority over excluding
 		newInstances -= excludedOriginalInstances.getNewSimpleInstances(newType)
@@ -254,15 +262,15 @@ class UnfoldingTraceability {
 	def getNewSimpleInstances(
 			Collection<ComponentInstanceReferenceExpression> originalInstances,
 			Component newType) {
-		val accpedtedNewInstances = newArrayList
+		val acceptedNewInstances = newArrayList
 		for (originalInstance : originalInstances) {
-			accpedtedNewInstances += originalInstance.getNewSimpleInstances(newType)
+			acceptedNewInstances += originalInstance.getNewSimpleInstances(newType)
 		}
-		return accpedtedNewInstances
+		return acceptedNewInstances
 	}
 	
 	def getNewSimpleInstances(ComponentInstanceReferenceExpression originalInstance, Component newType) {
-		val newInstances = newType.allSimpleInstances
+		val newInstances = newType.allSynchronousSimpleInstances
 		val acceptedNewInstances = newArrayList
 		// This instance can be a composite instance, thus more than one new instance can be here
 		val lastInstance = originalInstance.lastInstance
@@ -297,6 +305,30 @@ class UnfoldingTraceability {
 		return newInstances.head
 	}
 	
+	def getNewAsynchronousSimpleInstances(
+			Collection<ComponentInstanceReferenceExpression> includedOriginalInstances,
+			Collection<ComponentInstanceReferenceExpression> excludedOriginalInstances,
+			Component newType) {
+		val newInstances = newArrayList
+		if (includedOriginalInstances.empty) {
+			// If it is empty, it means all simple instances must be covered
+			newInstances += newType.allAsynchronousSimpleInstances
+		}
+		// The semantics is defined here: including has priority over excluding
+		newInstances -= excludedOriginalInstances.getNewAsynchronousSimpleInstances(newType)
+		newInstances += includedOriginalInstances.getNewAsynchronousSimpleInstances(newType)
+		return newInstances
+	}
+	
+	def getNewAsynchronousSimpleInstances(
+			Collection<ComponentInstanceReferenceExpression> originalInstances,
+			Component newType) {
+		val acceptedNewInstances = newArrayList
+		for (originalInstance : originalInstances) {
+			acceptedNewInstances += originalInstance.getNewAsynchronousSimpleInstances(newType)
+		}
+		return acceptedNewInstances
+	}
 	
 	def getNewAsynchronousSimpleInstances(ComponentInstanceReferenceExpression original, Component newType) {
 		return newType.allAsynchronousSimpleInstances
@@ -404,6 +436,19 @@ class UnfoldingTraceability {
 		throw new IllegalStateException("Not found original instance for " + newInstance)
 	}
 	
+	def getOriginalSimpleInstanceReference(
+			AsynchronousComponentInstance newInstance, Component originalType) {
+		checkState(newInstance.isAdapter)
+		
+		val originalSimpleInstances = originalType.allAsynchronousSimpleInstanceReferences
+		for (originalSimpleInstance : originalSimpleInstances) {
+			if (originalSimpleInstance.contains(newInstance)) {
+				return originalSimpleInstance
+			}
+		}
+		throw new IllegalStateException("Not found original instance for " + newInstance)
+	}
+	
 	def getOriginalScheduledInstanceReferences(Component originalType) {
 		return originalType.allScheduledInstanceReferences
 	}
@@ -467,6 +512,71 @@ class UnfoldingTraceability {
 		throw new IllegalArgumentException("Not found state: " + newState)
 	}
 	
+	def getOriginalQueue(ComponentInstanceReferenceExpression originalInstance, MessageQueue newQueue) {
+		val statechartInstance = originalInstance.lastInstance
+		return statechartInstance.getOriginalQueue(newQueue)
+	}
+	
+	def getOriginalQueue(ComponentInstance originalInstance, MessageQueue newQueue) {
+		val originalType = originalInstance.getStatechart
+		for (originalQueue : originalType.allAsynchronousSimpleInstances
+					.map[it.type].filter(AsynchronousAdapter).map[it.messageQueues].flatten) {
+			if (originalQueue.equal(newQueue)) {
+				return originalQueue
+			}
+		}
+		throw new IllegalArgumentException("Not found queue: " + newQueue)
+	}
+	
+	private def equal(MessageQueue lhs, MessageQueue rhs) {
+		return lhs.containingComponent.name == rhs.containingComponent.name && lhs.name == rhs.name
+	}
+	
+	def getOriginalTransition(ComponentInstanceReferenceExpression originalInstance, Transition newTransition) {
+		val statechartInstance = originalInstance.lastInstance
+		return statechartInstance.getOriginalTransition(newTransition)
+	}
+	
+	def getOriginalTransition(ComponentInstance originalInstance, Transition newTransition) {
+		val originalType = originalInstance.getStatechart
+		val originalTransitions = originalType.transitions
+		
+		val sameSource = originalTransitions.filter[
+				it.sourceState.fullContainmentHierarchy == newTransition.sourceState.fullContainmentHierarchy]
+		val sameTarget = originalTransitions.filter[
+				it.targetState.fullContainmentHierarchy == newTransition.targetState.fullContainmentHierarchy]
+		val sameSourceAndTarget = sameSource.intersection(sameTarget)
+		
+		if (sameSourceAndTarget.size == 1) {
+			return sameSourceAndTarget.head
+		}
+		if (sameSource.size == 1) {
+			return sameSource.head
+		}
+		for (transition : sameSource) {
+			if (transition.serializeSourceAndTargetAndTriggerAndGuard == newTransition.serializeSourceAndTargetAndTriggerAndGuard) {
+				return transition
+			}
+		}
+		for (transition : sameSource) {
+			if (transition.serializeSourceAndTrigger == newTransition.serializeSourceAndTrigger) {
+				return transition
+			}
+		}
+		
+		throw new IllegalArgumentException("Not found transition: " + newTransition)
+	}
+	
+	def getOriginalStateOrTransition(ComponentInstanceReferenceExpression originalInstance, EObject object) {
+		if (object instanceof State) {
+			return originalInstance.getOriginalState(object)
+		}
+		if (object instanceof Transition) {
+			return originalInstance.getOriginalTransition(object)
+		}
+		throw new IllegalArgumentException("Unknown: " + object)
+	}
+	
 	def getOriginalVariable(ComponentInstanceReferenceExpression originalInstance, VariableDeclaration newVariable) {
 		val statechartInstance = originalInstance.lastInstance
 		return statechartInstance.getOriginalVariable(newVariable)
@@ -474,7 +584,7 @@ class UnfoldingTraceability {
 	
 	def getOriginalVariable(ComponentInstance originalInstance, VariableDeclaration newVariable) {
 		val originalType = originalInstance.getStatechart
-		for (originalVariable : originalType.variableDeclarations) {
+		for (originalVariable : originalType.allVariableDeclarations) {
 			if (originalVariable.nameEquals(newVariable)) {
 				return originalVariable // Variable names must be unique
 			}

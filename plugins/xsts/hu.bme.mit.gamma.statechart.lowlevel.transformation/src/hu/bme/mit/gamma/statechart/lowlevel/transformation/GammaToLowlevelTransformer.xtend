@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -28,8 +28,16 @@ class GammaToLowlevelTransformer {
 		this(null)
 	}
 	
+	new(boolean functionInlining) {
+		this(functionInlining, false, null)
+	}
+	
 	new(TimeUnit baseTimeUnit) {
 		transformer = new StatechartToLowlevelTransformer(baseTimeUnit)
+	}
+	
+	new(boolean functionInlining, boolean addReturnGuards, TimeUnit baseTimeUnit) {
+		transformer = new StatechartToLowlevelTransformer(functionInlining, addReturnGuards, baseTimeUnit)
 	}
 	
 	//

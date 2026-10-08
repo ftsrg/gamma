@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.expression.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,8 +62,7 @@ public class ComplexTypeUtil {
 	public List<FieldHierarchy> getFieldHierarchies(Type type) {
 		List<FieldHierarchy> fieldHierarchies = new ArrayList<FieldHierarchy>();
 		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
-		if (typeDefinition instanceof RecordTypeDefinition) {
-			RecordTypeDefinition record = (RecordTypeDefinition) typeDefinition;
+		if (typeDefinition instanceof RecordTypeDefinition record) {
 			for (FieldDeclaration field : record.getFieldDeclarations()) {
 				Type fieldType = field.getType();
 				List<FieldHierarchy> hierarchies = getFieldHierarchies(fieldType);
@@ -72,21 +72,44 @@ public class ComplexTypeUtil {
 				}
 			}
 		}
-		else if (typeDefinition instanceof ArrayTypeDefinition) {
-			ArrayTypeDefinition array = (ArrayTypeDefinition) typeDefinition;
+		else if (typeDefinition instanceof ArrayTypeDefinition array) {
 			Type arrayType = array.getElementType();
-			fieldHierarchies.addAll(getFieldHierarchies(arrayType));
+			fieldHierarchies.addAll(
+					getFieldHierarchies(arrayType));
 		}
 		else {
 			// Primitive type
-			fieldHierarchies.add(new FieldHierarchy());
+			fieldHierarchies.add(
+					new FieldHierarchy());
 		}
 		return fieldHierarchies;
+	}
+	
+	public List<Type> getNativeTypes(Collection<? extends Declaration> declarations) {
+		List<Type> nativeTypes = new ArrayList<Type>();
+		
+		for (Declaration declaration : declarations) {
+			List<Type> nativeTypes_ = getNativeTypes(declaration);
+			nativeTypes.addAll(nativeTypes_);
+		}
+		
+		return nativeTypes;
 	}
 	
 	public List<Type> getNativeTypes(Declaration declaration) {
 		TypeDefinition type = ExpressionModelDerivedFeatures.getTypeDefinition(declaration);
 		return getNativeTypes(type);
+	}
+	
+	public List<Type> getNativeTypes(Iterable<? extends Type> types) {
+		List<Type> nativeTypes = new ArrayList<Type>();
+		
+		for (Type type : types) {
+			List<Type> nativeTypes_ = getNativeTypes(type);
+			nativeTypes.addAll(nativeTypes_);
+		}
+		
+		return nativeTypes;
 	}
 	
 	public List<Type> getNativeTypes(Type type) {
@@ -105,15 +128,14 @@ public class ComplexTypeUtil {
 	public List<Type> getMultiDNativeTypes(Type type) {
 		List<Type> nativeTypes = new ArrayList<Type>();
 		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
-		if (typeDefinition instanceof RecordTypeDefinition) {
-			RecordTypeDefinition record = (RecordTypeDefinition) typeDefinition;
+		if (typeDefinition instanceof RecordTypeDefinition record) {
 			for (FieldDeclaration field : record.getFieldDeclarations()) {
 				Type fieldType = field.getType();
-				nativeTypes.addAll(getNativeTypes(fieldType));
+				nativeTypes.addAll(
+						getNativeTypes(fieldType));
 			}
 		}
-		else if (typeDefinition instanceof ArrayTypeDefinition) {
-			ArrayTypeDefinition array = (ArrayTypeDefinition) typeDefinition;
+		else if (typeDefinition instanceof ArrayTypeDefinition array) {
 			Type arrayType = array.getElementType();
 			for (Type nativeType : getNativeTypes(arrayType)) {
 				ArrayTypeDefinition newArrayType = ecoreUtil.clone(array);
@@ -148,8 +170,7 @@ public class ComplexTypeUtil {
 	
 	public Type to1DArray(Type type) {
 		Type clonedType = ecoreUtil.clone(type);
-		if (clonedType instanceof ArrayTypeDefinition) {
-			ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) clonedType;
+		if (clonedType instanceof ArrayTypeDefinition arrayTypeDefinition) {
 			Expression size = arrayTypeDefinition.getSize();
 			Type innerType = arrayTypeDefinition.getElementType();
 			if (innerType instanceof ArrayTypeDefinition) {
@@ -170,8 +191,7 @@ public class ComplexTypeUtil {
 		Expression size = ecoreUtil.clone(type.getSize());
 		List<Expression> dimensions = new ArrayList<Expression>();
 		dimensions.add(size);
-		if (elementType instanceof ArrayTypeDefinition) {
-			ArrayTypeDefinition innerArrayType = (ArrayTypeDefinition) elementType;
+		if (elementType instanceof ArrayTypeDefinition innerArrayType) {
 			dimensions.addAll(
 					getDSizes(innerArrayType));
 		}
@@ -231,7 +251,8 @@ public class ComplexTypeUtil {
 		return createAccess(declaration, fieldHierarchy, null);
 	}
 	
-	public Expression createAccess(Declaration declaration, FieldHierarchy fieldHierarchy, IndexHierarchy indexHierarchy) {
+	public Expression createAccess(Declaration declaration,
+			FieldHierarchy fieldHierarchy, IndexHierarchy indexHierarchy) {
 		DirectReferenceExpression reference = expressionUtil.createReferenceExpression(declaration);
 		return createAccess(reference, fieldHierarchy, indexHierarchy);
 	}
@@ -240,7 +261,8 @@ public class ComplexTypeUtil {
 		return createAccess(reference, fieldHierarchy, null);
 	}
 	
-	public Expression createAccess(Expression reference, FieldHierarchy fieldHierarchy, IndexHierarchy indexHierarchy) {
+	public Expression createAccess(Expression reference,
+			FieldHierarchy fieldHierarchy, IndexHierarchy indexHierarchy) {
 		TypeDefinition type = typeDeterminator.getTypeDefinition(reference);
 		if (type instanceof RecordTypeDefinition) {
 			FieldHierarchy clonedHierarchy = fieldHierarchy.clone();
@@ -261,8 +283,7 @@ public class ComplexTypeUtil {
 	
 	public List<Expression> getAccesses(Expression expression) {
 		List<Expression> accesses = new ArrayList<Expression>();
-		if (expression instanceof ArrayAccessExpression) {
-			ArrayAccessExpression arrayAccessExpression = (ArrayAccessExpression) expression;
+		if (expression instanceof ArrayAccessExpression arrayAccessExpression) {
 			Expression operand = arrayAccessExpression.getOperand();
 			if (operand instanceof AccessExpression) {
 				accesses.addAll(
@@ -270,17 +291,16 @@ public class ComplexTypeUtil {
 			}
 			accesses.add(arrayAccessExpression.getIndex());
 		}
-		else if (expression instanceof RecordAccessExpression) {
-			RecordAccessExpression recordAccess = (RecordAccessExpression) expression;
+		else if (expression instanceof RecordAccessExpression recordAccess) {
 			Expression operand = recordAccess.getOperand();
 			if (operand instanceof AccessExpression) {
 				accesses.addAll(
 						getAccesses(operand));
 			}
-			accesses.add(recordAccess.getFieldReference());
+			accesses.add(
+					recordAccess.getFieldReference());
 		}
-		else if (expression instanceof SelectExpression) {
-			SelectExpression select = (SelectExpression) expression;
+		else if (expression instanceof SelectExpression select) {
 			Expression operand = select.getOperand();
 			if (operand instanceof AccessExpression) {
 				accesses.addAll(

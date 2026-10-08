@@ -17,4 +17,5 @@ verification {
 	file : "AsynchronousTrafficLightCtrl.xsts"
 	property-file : ".AsynchronousTrafficLightCtrl.gpd"
 	test-language : java
+	serialize-results : false
 }

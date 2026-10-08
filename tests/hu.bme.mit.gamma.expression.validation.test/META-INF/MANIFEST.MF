@@ -1,7 +1,15 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Expression Validation Test
-Bundle-SymbolicName: hu.bme.mit.gamma.expression.validation.test; singleton:=true
-Bundle-Version: 2.5.0.qualifier
+Bundle-SymbolicName: hu.bme.mit.gamma.expression.validation.test;singleton:=true
+Bundle-Version: 2.11.0.qualifier
+Export-Package: hu.bme.mit.gamma
+Require-Bundle: org.eclipse.viatra.query.runtime.rete,
+ org.eclipse.viatra.query.runtime.localsearch,
+ org.eclipse.xtext.xbase.lib,
+ hu.bme.mit.gamma.statechart.model,
+ org.eclipse.viatra.query.runtime,
+ org.eclipse.emf.ecore,
+ org.apache.log4j
 Automatic-Module-Name: hu.bme.mit.gamma.expression.validation.test
-Require-Bundle: org.eclipse.emf.ecore
+Import-Package: org.apache.log4j

@@ -1,0 +1,17 @@
+package portvariablessystem
+
+import "Interfaces/Interfaces.gcd"
+
+import "Statecharts/AsyncVariables_1.gcd"
+import "Statecharts/AsyncVariables_2.gcd"
+
+scheduled-async AsyncPortVariablesSystem [
+	port Execute : requires Execute
+] {
+	component _1 : AsyncVariables_1
+	component _2 : AsyncVariables_2
+	
+	bind Execute -> _1.Execute
+	
+	channel [_1.VariableExecute] -o)- [_2.VariableExecute]
+}

@@ -76,7 +76,9 @@ private pattern relevantEvents(port : Port, event : Event) {
 	PortEventReference.port(portEventReference, port);
 	PortEventReference.event(portEventReference, event);
 } or {
-	Port.interfaceRealization.interface.events.event(port, event);
+	Port.interfaceRealization.interface(port, interface);
+	find parentInterfaces*(interface, parentOrSameInterface);
+	Interface.eventDeclarations.event(parentOrSameInterface, event);
 	AnyPortEventReference.port(_, port);
 } or {
 	RaiseEventAction.port(raiseEventAction, port);
@@ -96,7 +98,7 @@ private pattern componentDeclarationEvents(type : Component, port : Port, realiz
 	InterfaceRealization.realizationMode(interfaceRealization, realizationMode);
 	InterfaceRealization.interface(interfaceRealization, interface);
 	find parentInterfaces*(interface, parentOrSameInterface);
-	Interface.events(parentOrSameInterface, eventDeclaration);
+	Interface.eventDeclarations(parentOrSameInterface, eventDeclaration);
 	EventDeclaration.event(eventDeclaration, event);
 }
 
@@ -279,7 +281,9 @@ private pattern simpleChannelRequired(channel : SimpleChannel, inInstance : Comp
 private pattern instancePortReferences(portRef : InstancePortReference, instance : ComponentInstance , port : Port, event : Event) {
 	InstancePortReference.instance(portRef, instance);
 	InstancePortReference.port(portRef, port);
-	Port.interfaceRealization.interface.events.event(port, event);
+	Port.interfaceRealization.interface(port, interface);
+	find parentInterfaces*(interface, parentOrSameInterface);
+	Interface.eventDeclarations.event(parentOrSameInterface, event);
 }
 
 /**
@@ -608,11 +612,11 @@ private pattern parentInterfaces(interface : Interface, parent : Interface) {
 
 private pattern eventsOfPorts(port : Port, event : Event) {
 	Port.interfaceRealization.interface(port, interface);
-	Interface.events.event(interface, event);
+	Interface.eventDeclarations.event(interface, event);
 } or {
 	Port.interfaceRealization.interface(port, interface);
 	find parentInterfaces+(interface, parentInterface);
-	Interface.events.event(parentInterface, event);
+	Interface.eventDeclarations.event(parentInterface, event);
 }
 
 pattern queuesOfClocks(wrapper : AsynchronousAdapter, queue : MessageQueue, clock : Clock) {
@@ -634,7 +638,7 @@ pattern queuesOfEvents(wrapper : AsynchronousAdapter, queue : MessageQueue, port
 	find eventsOfPorts(port, event);
 }
 
-pattern sourceOfEventPassings(queue : MessageQueue, sourceEventReference : EventReference) {
+pattern sourceOfEventPassings(queue : MessageQueue, sourceEventReference : OccurrenceReferenceExpression) {
 	MessageQueue.eventPassings(queue, eventPassing);
 	EventPassing.source(eventPassing, sourceEventReference);
 }
@@ -657,7 +661,7 @@ pattern queuePriorities(wrapper : AsynchronousAdapter, lowerPriotityQueue : Mess
 
 // Control specification
 
-private pattern runOnceControl(wrapper : AsynchronousAdapter, eventReference : EventReference) {
+private pattern runOnceControl(wrapper : AsynchronousAdapter, eventReference : OccurrenceReferenceExpression) {
 	AsynchronousAdapter.controlSpecifications(wrapper, controlSpecification);
 	ControlSpecification.trigger(controlSpecification, trigger);
 	ControlSpecification.controlFunction(controlSpecification, ControlFunction::RUN_ONCE);
@@ -697,7 +701,9 @@ pattern timeoutValues(timeSpec : TimeSpecification, valueExp : Expression, unit 
 // Triggerable transition optimization patterns
 
 private pattern internalPorts(port : Port) {
-	Port.interfaceRealization.interface.events(port, eventDeclaration);
+	Port.interfaceRealization.interface(port, interface);
+	find parentInterfaces*(interface, parentOrSameInterface);
+	Interface.eventDeclarations(parentOrSameInterface, eventDeclaration);
 	EventDeclaration.direction(eventDeclaration, EventDirection::INTERNAL);
 }
 

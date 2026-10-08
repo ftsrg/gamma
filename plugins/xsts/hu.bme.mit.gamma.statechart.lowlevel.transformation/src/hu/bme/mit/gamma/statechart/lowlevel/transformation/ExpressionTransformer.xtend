@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,11 +17,13 @@ import hu.bme.mit.gamma.expression.model.DefaultExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
+import hu.bme.mit.gamma.expression.model.EqualityExpression
+import hu.bme.mit.gamma.expression.model.EquivalenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
-import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
+import hu.bme.mit.gamma.expression.model.InequalityExpression
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.NullaryExpression
@@ -34,15 +36,17 @@ import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.util.ArgumentInliner
 import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
+import hu.bme.mit.gamma.statechart.interface_.EventAnyPortParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
-import hu.bme.mit.gamma.statechart.interface_.EventReference
+import hu.bme.mit.gamma.statechart.interface_.OccurrenceReferenceExpression
+import hu.bme.mit.gamma.statechart.interface_.PortDeclarationReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
-import hu.bme.mit.gamma.statechart.statechart.ClockTickReference
+import hu.bme.mit.gamma.statechart.statechart.EventAnyPortReference
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
 import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression
@@ -50,6 +54,8 @@ import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.Triple
+import hu.bme.mit.gamma.xsts.transformation.util.Configuration
 import java.util.List
 import java.util.logging.Logger
 
@@ -75,29 +81,28 @@ class ExpressionTransformer {
 	// Trace needed for variable mappings
 	protected final Trace trace
 	protected final boolean FUNCTION_INLINING
-	protected final int MAX_RECURSION_DEPTH
+	protected final boolean ADD_RETURN_GUARDS
 	protected final TimeUnit BASE_TIME_UNIT
 	
-	protected int currentRecursionDepth // For lambdas
+	protected int currentRecursionDepth = Configuration.MAX_RECURSION_DEPTH
 	
 	new() {
 		this(new Trace) // For ad-hoc expression transformations
 	}
 	
 	new(Trace trace) {
-		this(trace, true, 10, null)
+		this(trace, true, true, null)
 	}
 	
-	new(Trace trace, boolean functionInlining, int maxRecursionDepth) {
-		this(trace, functionInlining, maxRecursionDepth, null)
+	new(Trace trace, boolean functionInlining, boolean addReturnGuards) {
+		this(trace, functionInlining, addReturnGuards, null)
 	}
 	
-	new(Trace trace, boolean functionInlining, int maxRecursionDepth, TimeUnit baseTimeUnit) {
+	new(Trace trace, boolean functionInlining, boolean addReturnGuards, TimeUnit baseTimeUnit) {
 		this.trace = trace
 		this.FUNCTION_INLINING = functionInlining
-		this.MAX_RECURSION_DEPTH = maxRecursionDepth
 		this.BASE_TIME_UNIT = baseTimeUnit
-		this.currentRecursionDepth = maxRecursionDepth
+		this.ADD_RETURN_GUARDS = addReturnGuards
 		this.typeTransformer = new TypeTransformer(trace)
 	}
 	
@@ -110,15 +115,11 @@ class ExpressionTransformer {
 	// Multiple expressions can be returned
 	
 	def dispatch List<Expression> transformExpression(NullaryExpression expression) {
-		return #[
-			expression.clone
-		]
+		return #[ expression.clone ]
 	}
 	
 	def dispatch List<Expression> transformExpression(DefaultExpression expression) {
-		return #[
-			createTrueExpression
-		]
+		return #[ createTrueExpression ]
 	}
 	
 	def dispatch List<Expression> transformExpression(UnaryExpression expression) {
@@ -138,14 +139,38 @@ class ExpressionTransformer {
 		]
 	}
 	
+	def dispatch List<Expression> transformExpression(EquivalenceExpression expression) {
+		val expressions = <Expression>newArrayList
+		
+		val lowlevelLhs = expression.leftOperand.transformExpression
+		val lowlevelRhs = expression.rightOperand.transformExpression
+		val size = lowlevelLhs.size
+		checkState(lowlevelLhs.size == lowlevelRhs.size)
+		
+		for (var i = 0; i < size; i++) {
+			val lhs = lowlevelLhs.get(i)
+			val rhs = lowlevelRhs.get(i)
+			
+			expressions += create(expression.eClass) as EquivalenceExpression => [
+				it.leftOperand = lhs
+				it.rightOperand = rhs
+			]
+		}
+		
+		checkState(expression instanceof EqualityExpression || expression instanceof InequalityExpression, expression)
+		
+		return #[
+			(expression instanceof EqualityExpression) ?
+				expressions.wrapIntoAndExpression :
+				expressions.wrapIntoOrExpression ]
+	}
+	
 	def dispatch List<Expression> transformExpression(MultiaryExpression expression) {
 		val multiaryExpression = create(expression.eClass) as MultiaryExpression
 		for (containedExpression : expression.operands) {
 			multiaryExpression.operands += containedExpression.transformSimpleExpression
 		}
-		return #[
-			multiaryExpression
-		]
+		return #[ multiaryExpression ]
 	}
 	
 	def dispatch List<Expression> transformExpression(IntegerRangeLiteralExpression expression) {
@@ -160,12 +185,12 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch List<Expression> transformExpression(StateReferenceExpression expression) {
-		val gammaRegion = expression.region
-		val gammaState = expression.state
+		val region = expression.region
+		val state = expression.state
 		return #[
 			statechartModelFactory.createStateReferenceExpression => [
-				it.region = trace.get(gammaRegion)
-				it.state = trace.get(gammaState)
+				it.region = trace.get(region)
+				it.state = trace.get(state)
 			]
 		]
 	}
@@ -181,11 +206,11 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch List<Expression> transformExpression(EnumerationLiteralExpression expression) {
-		val gammaEnumLiteral = expression.reference
-		val index = gammaEnumLiteral.index
-		val gammaEnumTypeDeclaration = gammaEnumLiteral.typeDeclaration
-		checkState(trace.isMapped(gammaEnumTypeDeclaration))
-		val lowlevelEnumTypeDeclaration = trace.get(gammaEnumTypeDeclaration)
+		val enumLiteral = expression.reference
+		val index = enumLiteral.index
+		val enumTypeDeclaration = enumLiteral.typeDeclaration
+		checkState(trace.isMapped(enumTypeDeclaration))
+		val lowlevelEnumTypeDeclaration = trace.get(enumTypeDeclaration)
 		val lowlevelEnumTypeDefinition = lowlevelEnumTypeDeclaration.type as EnumerationTypeDefinition
 		return #[
 			lowlevelEnumTypeDefinition.literals.get(index).createEnumerationLiteralExpression
@@ -195,9 +220,12 @@ class ExpressionTransformer {
 	def dispatch List<Expression> transformExpression(RecordLiteralExpression expression) {
 		// Currently the field assignment position has to match the field declaration position
 		val result = newArrayList
-		for (assignment : expression.fieldAssignments) {
+		
+		val sortedRecord = expression.sortedRecordLiteral
+		for (assignment : sortedRecord.fieldAssignments) {
 			result += assignment.value.transformExpression
 		}
+		
 		return result
 	}
 	
@@ -223,19 +251,27 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch List<Expression> transformExpression(EventParameterReferenceExpression expression) {
-		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
+		return expression.transformReferenceExpression
+	}
+	
+	def dispatch List<Expression> transformExpression(EventAnyPortParameterReferenceExpression expression) {
+		throw new IllegalArgumentException("Unsupported here, should be addressed by pre-processing: " + expression)
+	}
+	
+	def dispatch List<Expression> transformExpression(PortDeclarationReferenceExpression expression) {
+		return expression.transformReferenceExpression
 	}
 		
 	def dispatch List<Expression> transformExpression(RecordAccessExpression expression) {
-		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
+		return expression.transformReferenceExpression
 	}
 	
 	def dispatch List<Expression> transformExpression(ArrayAccessExpression expression) {
-		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
+		return expression.transformReferenceExpression
 	}
 
 	def dispatch List<Expression> transformExpression(DirectReferenceExpression expression) {
-		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
+		return expression.transformReferenceExpression
 	}
 	
 	def dispatch List<Expression> transformExpression(TimeSpecification timeSpecification) {
@@ -246,18 +282,20 @@ class ExpressionTransformer {
 	
 	// Key method: reference expression
 	
-	def List<ReferenceExpression> transformReferenceExpression(ReferenceExpression expression) {
+	def List<Expression> transformReferenceExpression(ReferenceExpression _expression) {
+		val expression = _expression.needPreprocessForReferenceExpression ?
+				_expression.preprocessReferenceExpression : _expression
+		
+		val reference = expression.accessReference
 		// a[0].b.c[1].d
 		val fieldAccess = expression.fieldAccess // .b .c
 		val indexes = expression.indexAccess // [0] and [1]
 		// It is the callers responsibility to make sure the original expression contains all necessary indexes
 		val lowlevelIndexes = indexes.map[it.transformSimpleExpression].toList
 		
-		val reference = expression.accessReference
 		val lowlevelVariables = <ValueDeclaration>newArrayList
 		
-		// If original is not a full access, other potential fields are explored, that is,
-		// fieldAccess can be an extensible field access 
+		// If original is not a full access, other potential fields are explored, i.e., fieldAccess can be an extensible field access
 		if (reference instanceof DirectReferenceExpression) {
 			val declaration = reference.declaration as ValueDeclaration
 			if (trace.isForStatementParameterMapped(declaration)) {
@@ -265,32 +303,79 @@ class ExpressionTransformer {
 				val forLoopParameter = declaration as ParameterDeclaration
 				lowlevelVariables += trace.get(forLoopParameter)
 			}
+			else if (trace.isAnyParMapped(declaration -> fieldAccess)) {
+				// Function parameter value
+				lowlevelVariables += trace.getAllPar(declaration -> fieldAccess)
+			}
 			else {
 				// Normal value
 				lowlevelVariables += trace.getAll(declaration -> fieldAccess)
 			}
 		}
+		else if (reference instanceof PortDeclarationReferenceExpression) {
+			val port = reference.port
+			val declaration = reference.declaration as ValueDeclaration
+			val record_ = new Triple(port, declaration, fieldAccess)
+			lowlevelVariables += trace.getAll(record_)
+		}
 		else if (reference instanceof EventParameterReferenceExpression) {
 			val port = reference.port
 			val event = reference.event
-			val parameter = reference.parameter
+			val parameter = reference.parameterDeclaration
 			lowlevelVariables += trace.getAllInParameters(port, event, parameter -> fieldAccess)
 		}
-		else if (reference instanceof FunctionAccessExpression) {
-			// FunctionAccess?
+		else if (reference instanceof EventAnyPortParameterReferenceExpression) {
+			throw new IllegalArgumentException("Unsupported here, should be addressed by pre-processing: " + expression)
 		}
 		
 		// Simple references are returned if indexes are empty
-		val lowlevelReferences = newArrayList
-		lowlevelReferences += lowlevelVariables.map[it.index(lowlevelIndexes)]
+		val lowlevelReferences = <Expression>newArrayList
+		lowlevelReferences += lowlevelVariables.map[
+				it.index(lowlevelIndexes)]
 		
 		return lowlevelReferences
+	}
+	
+	protected def needPreprocessForReferenceExpression(ReferenceExpression expression) {
+		return expression.isOrContainsTypesTransitively(
+					#[ FunctionAccessExpression, ArrayAccessExpression ])
+	}
+	
+	protected def preprocessReferenceExpression(ReferenceExpression expression) {
+		val _expression = expression.clone
+				.createNotExpression // Dummy container due to 'replace'
+		
+		// Inline lambdas
+		while (_expression.containsTypeTransitively(FunctionAccessExpression)) {
+			val functionAccesses = _expression.getAllContentsOfType(FunctionAccessExpression)
+			checkState(functionAccesses.map[it.functionDeclaration].forall[it.pure])
+			functionAccesses.forEach[it.createInlinedLambaExpression.replace(it)]
+		}
+		// Inline array literals
+		var arrayLiterals = _expression.getAllContentsOfType(ArrayAccessExpression)
+		while (arrayLiterals.exists[it.arrayAccessEvaluable]) {
+			arrayLiterals.filter[it.arrayAccessEvaluable]
+					.forEach[it.evaluateArrayAccess.replace(it)]
+			arrayLiterals = _expression.getAllContentsOfType(ArrayAccessExpression)
+		}
+		// Inline record literals
+		var recordAccesses = _expression.getAllContentsOfType(RecordAccessExpression)
+		while (recordAccesses.exists[it.recordAccessEvaluable]) {
+			recordAccesses.filter[it.recordAccessEvaluable]
+					.forEach[it.evaluateRecordAccess.replace(it)]
+			recordAccesses = _expression.getAllContentsOfType(RecordAccessExpression)
+		}
+		
+		return _expression.operand // Dummy container
 	}
 	
 	// Function access
 	
 	def dispatch List<Expression> transformExpression(FunctionAccessExpression expression) {
 		val result = <Expression>newArrayList
+		
+		val function = expression.functionDeclaration // Referenced function (potentially via channels)
+		
 		if (FUNCTION_INLINING) {
 			if (trace.isMapped(expression)) {
 				// By now, the procedure call must be inlined by ExpressionPreconditionTransformer
@@ -299,7 +384,6 @@ class ExpressionTransformer {
 				}
 			}
 			else {
-				val function = expression.declaration as FunctionDeclaration
 				checkState(function.lambda)
 				val type = function.type
 				if (currentRecursionDepth <= 0) {
@@ -310,19 +394,50 @@ class ExpressionTransformer {
 					currentRecursionDepth--
 					
 					var clonedBody = expression.createInlinedLambaExpression
-					result += clonedBody.transformSimpleExpression // Possible recursion
+					result += clonedBody.transformExpression // Possible recursion
 					
 					currentRecursionDepth++
 				}
 			}
 		}
 		else {
-			throw new IllegalArgumentException("Currently only function inlining is possible")
+			if (trace.isMapped(expression)) {
+				// Extracted method call
+				for (returnVariable : trace.get(expression)) {
+					result += returnVariable.createReferenceExpression
+				}
+			}
+			else {
+				// Basic method call
+				val arguments = expression.arguments
+				// By now, the procedure must be transformed by ExpressionPreconditionTransformer
+				if (!trace.isMapped(function)) { // On-the-fly transformation added here
+					val extension functionTransformer = new FunctionTransformer(trace, ADD_RETURN_GUARDS)
+					function.transformAndStoreFunction
+					
+					checkState(!function.interfaceFunctionDeclaration)
+				}
+				
+				var lowlevelFunction =
+				if (expression.hasPortDeclarationReference) {
+					val portDeclarationReference = expression.portDeclarationReference
+					val port = portDeclarationReference.port
+					trace.get_(port -> function)
+				}
+				else {
+					trace.get(function)
+				}
+				
+				val lowlevelArguments = arguments.map[it.transformExpression].flatten.toList
+				val lowlevelCall = lowlevelFunction.createFunctionAccessExpression(lowlevelArguments)
+				result += lowlevelCall
+			}
 		}
+		
 		return result
 	}
 	
-	def dispatch List<Expression> transformExpression(EventReference expression) {
+	def dispatch List<Expression> transformExpression(OccurrenceReferenceExpression expression) {
 		return #[
 			transformEventReference(expression)
 		]
@@ -335,17 +450,26 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch Expression transformEventReference(AnyPortEventReference reference) {
-		val port = reference.port
-		val allEvents = trace.getAllLowlevelEvents(port, EventDirection.IN) // Considering only IN events
 		val triggerGuards = newLinkedList
-		for (event : allEvents) {
-			triggerGuards += event.transformToLowlevelGuard
+		val port = reference.port
+		val allLowlevelEvents = trace.getAllLowlevelEvents(port, EventDirection.IN) // Considering only IN events
+		for (lowlevelEvent : allLowlevelEvents) {
+			triggerGuards += lowlevelEvent.transformToLowlevelGuard
 		}
 		return triggerGuards.wrapIntoOrExpression
 	}
 	
-	def dispatch Expression transformEventReference(ClockTickReference reference) {
-		throw new IllegalArgumentException("Clock references are not yet transformed: " + reference)
+	def dispatch Expression transformEventReference(EventAnyPortReference reference) {
+		val triggerGuards = newLinkedList
+		val event = reference.event
+		for (inputEvent : reference.inputEvents) {
+			if (inputEvent.value === event) {
+				val port = inputEvent.key
+				val lowlevelEvent = trace.get(port, event, EventDirection.IN)
+				triggerGuards += lowlevelEvent.transformToLowlevelGuard
+			}
+		}
+		return triggerGuards.wrapIntoOrExpression
 	}
 	
 	def dispatch Expression transformEventReference(PortEventReference reference) {
@@ -411,8 +535,8 @@ class ExpressionTransformer {
 	//
 	
 	private def Expression getValueOfTimeout(TimeoutDeclaration timeoutDeclaration) {
-		val gammaStatechart = timeoutDeclaration.containingStatechart
-		val timeoutSettings = gammaStatechart.getAllContentsOfType(SetTimeoutAction)
+		val statechart = timeoutDeclaration.containingStatechart
+		val timeoutSettings = statechart.getAllContentsOfType(SetTimeoutAction)
 		val correctTimeoutSetting = timeoutSettings.filter[it.timeoutDeclaration == timeoutDeclaration]
 		val times = correctTimeoutSetting.map[it.time].toList
 		if (times.empty) {
@@ -436,7 +560,7 @@ class ExpressionTransformer {
 		}
 		return time.value.transform(time.unit, smallestTimeUnit)
 	}
-
+	
 	protected def Expression transform(Expression timeValue, TimeUnit timeUnit, TimeUnit base) {
 		val plainValue = timeValue.transformSimpleExpression
 		val multiplicator = timeUnit.getMultiplicator(base)

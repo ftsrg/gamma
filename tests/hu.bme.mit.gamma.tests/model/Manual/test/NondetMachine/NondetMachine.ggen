@@ -21,4 +21,5 @@ verification {
 	file : "NondetMachineWrapper.smv"
 	property-file : "model/NondetMachine/NondetMachine.gpd"
 	test-language : java
+	serialize-results : false
 }

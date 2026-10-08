@@ -90,8 +90,7 @@ public class PredicateHandler extends hu.bme.mit.gamma.expression.util.Predicate
 				Expression rhs = assignment.getValue();
 				if (rhs instanceof ReferenceExpression) {
 					Declaration rhsDeclaration = xStsUtil.getDeclaration(rhs);
-					if (rhsDeclaration instanceof VariableDeclaration) {
-						VariableDeclaration rhsVariable = (VariableDeclaration) rhsDeclaration;
+					if (rhsDeclaration instanceof VariableDeclaration rhsVariable) {
 						if (lhsVariable == variable) {
 							integerValues.addAll(
 								calculateIntegerValues(root, rhsVariable,

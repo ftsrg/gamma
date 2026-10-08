@@ -27,6 +27,8 @@ import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.expression.util.IndexHierarchy
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
@@ -330,10 +332,37 @@ class TraceBuilder {
 	// Instance variables
 	
 	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
+			Port port, VariableDeclaration variable, String value) {
+		if (port === null) {
+			step.addInstanceVariableState(instance, variable, value)
+		}
+		else {
+			step.addInstancePortVariableState(instance, port, variable, value)
+		}
+	}
+	
+	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
 			VariableDeclaration variable, String value) {
 		val type = variable.typeDefinition
 		val expression = type.createLiteral(value)
 		step.addInstanceVariableState(instance, variable, expression)
+	}
+	
+	def addInstancePortVariableState(Step step, SynchronousComponentInstance instance,
+			Port port, VariableDeclaration variable, String value) {
+		val type = variable.typeDefinition
+		val expression = type.createLiteral(value)
+		step.addInstancePortVariableState(instance, port, variable, expression)
+	}
+	
+	def addInstanceVariableState(Step step, SynchronousComponentInstance instance, Port port,
+			VariableDeclaration variable, Expression value) {
+		if (port === null) {
+			step.addInstanceVariableState(instance, variable, value)
+		}
+		else {
+			step.addInstancePortVariableState(instance, port, variable, value)
+		}
 	}
 	
 	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
@@ -341,6 +370,23 @@ class TraceBuilder {
 		step.asserts += instance.createInstanceReference
 								.createVariableReference(variable)
 									.createEqualityExpression(value)
+	}
+	
+	def addInstancePortVariableState(Step step, SynchronousComponentInstance instance, Port port,
+			VariableDeclaration variable, Expression value) {
+		step.asserts += instance.createInstanceReference
+								.createPortVariableReference(port, variable)
+									.createEqualityExpression(value)
+	}
+	
+	def void addInstanceVariableState(Step step, SynchronousComponentInstance instance,
+			Port port, VariableDeclaration variable, FieldHierarchy fieldHierarchy, IndexHierarchy indexes, String value) {
+		if (port === null) {
+			step.addInstanceVariableState(instance, variable, fieldHierarchy, indexes, value)
+		}
+		else {
+			step.addInstancePortVariableState(instance, port, variable, fieldHierarchy, indexes, value)
+		}
 	}
 	
 	def void addInstanceVariableState(Step step, SynchronousComponentInstance instance,
@@ -353,6 +399,29 @@ class TraceBuilder {
 			checkState(type.complex)
 			val literal = step.getOrCreateLiteral(instance, variable)
 			literal.changeValue(fieldHierarchy, indexes, value)
+		}
+	}
+	
+	def void addInstancePortVariableState(Step step, SynchronousComponentInstance instance,
+			Port port, VariableDeclaration variable, FieldHierarchy fieldHierarchy, IndexHierarchy indexes, String value) {
+		val type = variable.typeDefinition
+		if (type.native) {
+			step.addInstancePortVariableState(instance, port, variable, value)
+		}
+		else {
+			checkState(type.complex)
+			val literal = step.getOrCreateLiteral(instance, port, variable)
+			literal.changeValue(fieldHierarchy, indexes, value)
+		}
+	}
+	
+	def void addInstanceVariableState(Step step, SynchronousComponentInstance instance,
+			Port port, VariableDeclaration variable, FieldHierarchy fieldHierarchy, IndexHierarchy indexes, Expression value) {
+		if (port === null) {
+			step.addInstanceVariableState(instance, variable, fieldHierarchy, indexes, value)
+		}
+		else {
+			step.addInstancePortVariableState(instance, port, variable, fieldHierarchy, indexes, value)
 		}
 	}
 	
@@ -369,16 +438,40 @@ class TraceBuilder {
 		}
 	}
 	
+	def void addInstancePortVariableState(Step step, SynchronousComponentInstance instance,
+			Port port, VariableDeclaration variable, FieldHierarchy fieldHierarchy, IndexHierarchy indexes, Expression value) {
+		val type = variable.typeDefinition
+		if (type.native) {
+			step.addInstancePortVariableState(instance, port, variable, value)
+		}
+		else {
+			checkState(type.complex)
+			val literal = step.getOrCreateLiteral(instance,port,  variable)
+			literal.changeValue(fieldHierarchy, indexes, value)
+		}
+	}
+	
+	private def getOrCreateLiteral(Step step, SynchronousComponentInstance instance, VariableDeclaration variable) {
+		return step.getOrCreateLiteral(instance, null, variable)
+	}
+	
 	private def getOrCreateLiteral(Step step, SynchronousComponentInstance instance,
-			VariableDeclaration variable) {
+			Port port, VariableDeclaration variable) {
 		val equalityExpressions = step.asserts.filter(EqualityExpression)
 		// Finding the instance, if it has been already been created
-		var ComponentInstanceVariableReferenceExpression variableState = null
+		var ComponentInstanceElementReferenceExpression variableState = null
 		var Expression value = null
 		for (equalityExpression : equalityExpressions) {
 			val leftOperand = equalityExpression.leftOperand
 			if (leftOperand instanceof ComponentInstanceVariableReferenceExpression) {
 				if (leftOperand.instance.lastInstance === instance &&
+						leftOperand.variableDeclaration === variable) {
+					variableState = leftOperand
+					value = leftOperand.otherOperandIfContainedByEquality
+				}
+			}
+			else if (leftOperand instanceof ComponentInstancePortVariableReferenceExpression) {
+				if (leftOperand.instance.lastInstance === instance && leftOperand.port === port &&
 						leftOperand.variableDeclaration === variable) {
 					variableState = leftOperand
 					value = leftOperand.otherOperandIfContainedByEquality
@@ -390,9 +483,11 @@ class TraceBuilder {
 			// Creating the literal, similar to "getInstance" in singletons
 			val type = variable.typeDefinition
 			val initialValue = type.initialValueOfType
-			step.asserts += instance.createInstanceReference
-								.createVariableReference(variable)
-									.createEqualityExpression(initialValue)
+			val instanceReference = instance.createInstanceReference
+			val reference = (port === null) ? instanceReference.createVariableReference(variable) :
+					instanceReference.createPortVariableReference(port, variable)
+			
+			step.asserts += reference.createEqualityExpression(initialValue)
 			
 			return initialValue
 		}

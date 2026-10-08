@@ -1,0 +1,3 @@
+import "/hu.bme.mit.gamma.tests/model/NonDetChoice/System/.NonDetChoice.gsm"
+component NonDetChoice
+A G ( [ { state NonDetChoice.main._B } ] -> F [ { state NonDetChoice.main._C } ] )

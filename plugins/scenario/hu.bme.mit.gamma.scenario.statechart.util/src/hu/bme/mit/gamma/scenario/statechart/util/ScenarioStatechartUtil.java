@@ -20,9 +20,9 @@ import hu.bme.mit.gamma.scenario.model.LoopCombinedFragment;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
-import hu.bme.mit.gamma.statechart.interface_.EventReference;
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory;
+import hu.bme.mit.gamma.statechart.interface_.OccurrenceReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.Trigger;
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
@@ -140,8 +140,8 @@ public class ScenarioStatechartUtil {
 		return isSend ? getTurnedOutPortName(port) : port.getName();
 	}
 
-	public List<EventReference> getAllInputEventReferencesForDirection(Component automaton, boolean isSentByComponent) {
-		List<EventReference> eventRefs = new LinkedList<EventReference>();
+	public List<OccurrenceReferenceExpression> getAllInputEventReferencesForDirection(Component automaton, boolean isSentByComponent) {
+		List<OccurrenceReferenceExpression> eventRefs = new LinkedList<OccurrenceReferenceExpression>();
 		List<Port> correctPorts = automaton.getPorts().stream()
 				.filter(it -> !StatechartModelDerivedFeatures.isInternal(it)) 
 				.filter(it -> !StatechartModelDerivedFeatures.getInputEvents(it).isEmpty())
@@ -162,8 +162,8 @@ public class ScenarioStatechartUtil {
 	public List<Trigger> getAllTriggersForDirection(Component automaton, boolean isSentByComponent) {
 		List<Trigger> triggers = new LinkedList<Trigger>();
 		
-		List<EventReference> eventRefs = getAllInputEventReferencesForDirection(automaton, isSentByComponent);
-		for (EventReference ref : eventRefs) {
+		List<OccurrenceReferenceExpression> eventRefs = getAllInputEventReferencesForDirection(automaton, isSentByComponent);
+		for (OccurrenceReferenceExpression ref : eventRefs) {
 			EventTrigger eventTrigger = interfaceFactory.createEventTrigger();
 			eventTrigger.setEventReference(ref);
 			triggers.add(eventTrigger);

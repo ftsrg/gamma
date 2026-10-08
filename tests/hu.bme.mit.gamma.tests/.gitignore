@@ -9,6 +9,8 @@
 *.l2s
 *.xsts
 *.smv
+*.smvp
+*.iml
 *.cmd
 *.cex
 *.gpd
@@ -16,6 +18,8 @@
 *.pml
 *.pmlp
 *.txt
+*.py
+!/model/NonDetChoice/System/NonDetChoice.gpd
 !/model/TMT/System/TMT.gsm
 !/model/TMT/System/TMTComponent.gsm
 !/model/Spacecraft/System/Spacecraft.gsm
@@ -25,3 +29,5 @@
 !/model/RIS/SystemGlobalQueue/RigelSystem.gpd
 !/model/RIS/SystemLocalQueue/RigelSystem.gpd
 !/model/TrafficLight/System/TrafficLightWrapper-LTL.gpd
+!/model/PIL/System/Vaganyut/Cascade/Vaganyut.gpd
+!/model/PIL/System/Vaganyut/Synchronous/Vaganyut.gpd

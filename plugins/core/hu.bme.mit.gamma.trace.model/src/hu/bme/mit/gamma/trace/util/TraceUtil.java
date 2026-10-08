@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,7 +12,7 @@ package hu.bme.mit.gamma.trace.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -23,23 +23,19 @@ import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeature
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
-import hu.bme.mit.gamma.expression.model.VariableDeclaration;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.contract.ScenarioAllowedWaitAnnotation;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
-import hu.bme.mit.gamma.statechart.statechart.Region;
-import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures;
 import hu.bme.mit.gamma.trace.model.Act;
 import hu.bme.mit.gamma.trace.model.Cycle;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.model.ExecutionTraceAllowedWaitingAnnotation;
+import hu.bme.mit.gamma.trace.model.ExecutionTraceAnnotation;
 import hu.bme.mit.gamma.trace.model.ExecutionTraceCommentAnnotation;
 import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Reset;
@@ -67,82 +63,16 @@ public class TraceUtil extends StatechartUtil {
 				.getReferencedTypedDeclarations(_package);
 		return typedDeclarations;
 	}
-
-	// Step sorter
-	
-	public static class AssertSorter implements Comparator<Expression> {
-
-		@Override
-		public int compare(Expression lhsAssert, Expression rhsAssert) {
-			Expression lhs = TraceModelDerivedFeatures.getPrimaryAssert(lhsAssert);
-			Expression rhs = TraceModelDerivedFeatures.getPrimaryAssert(rhsAssert);
-			if (lhs instanceof RaiseEventAct lhsAct) {
-				if (rhs instanceof RaiseEventAct rhsAct) {
-					String lhsName = lhsAct.getPort().getName() + lhsAct.getEvent().getName();
-					String rhsName = rhsAct.getPort().getName() + rhsAct.getEvent().getName();
-					return lhsName.compareTo(rhsName);
-				}
-				return -1;
-			}
-			if (rhs instanceof RaiseEventAct) {
-				return 1;
-			}
-			if (lhs instanceof ComponentInstanceStateReferenceExpression lhsInstanceStateConfiguration &&
-					rhs instanceof ComponentInstanceStateReferenceExpression rhsInstanceStateConfiguration) {
-				// Two instance states: first - instance name, second - state level
-				ComponentInstance lhsInstance = StatechartModelDerivedFeatures.getLastInstance(
-						lhsInstanceStateConfiguration.getInstance());
-				ComponentInstance rhsInstance = StatechartModelDerivedFeatures.getLastInstance(
-						rhsInstanceStateConfiguration.getInstance());
-				int nameCompare = lhsInstance.getName().compareTo(rhsInstance.getName());
-				if (nameCompare != 0) {
-					return nameCompare;
-				}
-				State lhsState = lhsInstanceStateConfiguration.getState();
-				Integer lhsLevel = StatechartModelDerivedFeatures.getLevel(lhsState);
-				State rhsState = rhsInstanceStateConfiguration.getState();
-				Integer rhsLevel = StatechartModelDerivedFeatures.getLevel(rhsState);
-				int regionCompare = lhsLevel.compareTo(rhsLevel);
-				if (regionCompare != 0) {
-					return regionCompare;
-				}
-				Region lhsRegion = StatechartModelDerivedFeatures.getParentRegion(lhsState);
-				Region rhsRegion = StatechartModelDerivedFeatures.getParentRegion(rhsState);
-				return lhsRegion.getName().compareTo(
-						rhsRegion.getName());
-			}
-			else if (lhs instanceof ComponentInstanceVariableReferenceExpression lhsVariableReference &&
-					rhs instanceof ComponentInstanceVariableReferenceExpression rhsVariableReference) {
-				// Two instance variable: name
-				ComponentInstance lhsInstance = StatechartModelDerivedFeatures.getLastInstance(
-						lhsVariableReference.getInstance());
-				ComponentInstance rhsInstance = StatechartModelDerivedFeatures.getLastInstance(
-						rhsVariableReference.getInstance());
-				VariableDeclaration lhsVariable = lhsVariableReference.getVariableDeclaration();
-				VariableDeclaration rhsVariable = rhsVariableReference.getVariableDeclaration();
-				String lhsName = lhsInstance.getName() + lhsVariable.getName();
-				String rhsName = rhsInstance.getName() + rhsVariable.getName();
-				return lhsName.compareTo(rhsName);
-			}
-			else if (lhs instanceof ComponentInstanceStateReferenceExpression && rhs instanceof ComponentInstanceVariableReferenceExpression) {
-				// First - instance state, second - instance variable
-				return -1;
-			}
-			else if (lhs instanceof ComponentInstanceVariableReferenceExpression && rhs instanceof ComponentInstanceStateReferenceExpression) {
-				// First - instance variable, second - instance state
-				return 1;
-			}
-			return 0;
-		}
-	}
 	
 	public ExecutionTrace createTrace(Component component) {
 		ExecutionTrace trace = factory.createExecutionTrace();
 		
+		String componentName = component.getName();
+		
 		trace.setImport(
 				StatechartModelDerivedFeatures.getContainingPackage(component));
 		trace.setComponent(component);
-		trace.setName(component.getName() + "Trace");
+		trace.setName(componentName + "Trace");
 		
 		addTimeUnitAnnotation(trace);
 		
@@ -176,10 +106,12 @@ public class TraceUtil extends StatechartUtil {
 	}
 	
 	public void sortInstanceStates(ExecutionTrace executionTrace) {
-		sortInstanceStates(executionTrace.getSteps());
+		sortInstanceStates(
+				executionTrace.getSteps());
 		Cycle cycle = executionTrace.getCycle();
 		if (cycle != null) {
-			sortInstanceStates(cycle.getSteps());
+			sortInstanceStates(
+					cycle.getSteps());
 		}
 	}
 	
@@ -204,8 +136,9 @@ public class TraceUtil extends StatechartUtil {
 			annotation.setComment(annotation.getComment() + comment);
 		}
 		else {
+			List<ExecutionTraceAnnotation> annotations = trace.getAnnotations();
 			annotation = factory.createExecutionTraceCommentAnnotation();
-			trace.getAnnotations().add(annotation);
+			annotations.add(annotation);
 			annotation.setComment(comment);
 		}
 	}
@@ -226,7 +159,9 @@ public class TraceUtil extends StatechartUtil {
 	
 	// Trace coverage
 	
-	public void removeCoveredExecutionTraces(List<ExecutionTrace> traces) {
+	public Collection<ExecutionTrace> removeCoveredExecutionTraces(List<ExecutionTrace> traces) {
+		Collection<ExecutionTrace> removedTraces = new ArrayList<ExecutionTrace>(traces);
+		
 		for (int i = 0; i < traces.size() - 1; ++i) {
 			ExecutionTrace lhs = traces.get(i);
 			boolean isLhsDeleted = false;
@@ -244,6 +179,10 @@ public class TraceUtil extends StatechartUtil {
 				}
 			}
 		}
+		
+		removedTraces.removeAll(traces);
+		
+		return removedTraces;
 	}
 	
 	public void removeCoveredSteps(ExecutionTrace trace) {
@@ -255,7 +194,8 @@ public class TraceUtil extends StatechartUtil {
 		List<List<Step>> stepsList = new ArrayList<List<Step>>();
 		List<Step> actualSteps = null;
 		for (Step step : trace.getSteps()) {
-			if (step.getActions().stream().anyMatch(it -> it instanceof Reset)) {
+			List<Act> actions = step.getActions();
+			if (actions.stream().anyMatch(it -> it instanceof Reset)) {
 				if (actualSteps != null) {
 					stepsList.add(actualSteps);
 				}
@@ -377,16 +317,32 @@ public class TraceUtil extends StatechartUtil {
 		}
 		
 		Step last = javaUtil.getLastElement(steps);
+		Step lastClone = ecoreUtil.clone(last);
+		lastClone.getActions().clear();
 		for (Step step : steps) {
-			if (ecoreUtil.helperEquals(step, last) && step != last) {
-				int i = ecoreUtil.getIndex(step);
+			Step stepClone = ecoreUtil.clone(step);
+			stepClone.getActions().clear();
+			if (ecoreUtil.helperEquals(stepClone, lastClone) && step != last) {
+				int i = ecoreUtil.getIndex(step) + 1;
 				Cycle cycle = factory.createCycle();
 				trace.setCycle(cycle);
+				List<Step> cycleSteps = cycle.getSteps();
 				while (i < steps.size()) {
 					Step nextStep = steps.get(i);
-					cycle.getSteps().add(nextStep);
+					cycleSteps.add(nextStep);
 				}
-				ecoreUtil.remove(last);
+				
+				// Removing potential step duplications
+				Step previous = null;
+				Iterator<Step> iterator = cycleSteps.iterator();
+				while (iterator.hasNext()) {
+					Step actual = iterator.next();
+					if (ecoreUtil.helperEquals(previous, actual)) {
+						iterator.remove();
+					}
+					previous = actual;
+				}
+				
 				return;
 			}
 		}

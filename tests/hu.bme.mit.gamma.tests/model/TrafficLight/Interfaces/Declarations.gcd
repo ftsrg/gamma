@@ -1,0 +1,10 @@
+package control
+type Light_state : enum {
+	^off, lit, blinking
+}
+type Custom_string : enum {
+	__, Safe_all_red, operating_mode_stop_sign, operating_mode_caution, operating_mode_traffic_flow
+}
+interface Control {
+	in event State_message_item(message_queue : Custom_string, wait_duration : integer)
+}

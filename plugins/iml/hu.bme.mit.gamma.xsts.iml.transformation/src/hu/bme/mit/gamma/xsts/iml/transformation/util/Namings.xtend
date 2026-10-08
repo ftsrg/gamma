@@ -13,13 +13,13 @@ package hu.bme.mit.gamma.xsts.iml.transformation.util
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
-import org.eclipse.emf.ecore.EObject
 
 class Namings {
 	//
@@ -46,10 +46,15 @@ class Namings {
 	
 	public static final String NONDET_IDENTIFIER_PREFIX = "choice_"
 	
+	public static final String NONDET_BRANCH_TYPE_NAME = "b"
+	public static final String NONDET_BRANCH_LITERAL_PREFIX = "B"
+	public static final String PICK_BRANCH_FUNCTION_NAME = "pick_branch"
+	
+	public static final String FUNCTION_RETURN_VALUE_NAME = "v_"
 	//
 	
 	public static final String DECLARATION_NAME_PREFIX = "_"
-	def static customizeName(Declaration variable) { variable.name.customizeDeclarationName }
+	def static customizeName(Declaration declaration) { declaration.name.customizeDeclarationName }
 	def static customizeDeclarationName(String name) { DECLARATION_NAME_PREFIX + name }
 	
 	def static String customizeLocalDeclarationName(Declaration variable) { '''«variable.name.customizeDeclarationName»_«variable.uniqueIndex»''' }
@@ -57,6 +62,9 @@ class Namings {
 	public static final String TYPE_DECLARATION_NAME_PREFIX = "M_"
 	def static customizeName(TypeDeclaration type) { type.name.customizeTypeDeclarationName }
 	def static customizeTypeDeclarationName(String name) { TYPE_DECLARATION_NAME_PREFIX + name }
+	
+	def static customizeLocalVariablesTypeName(FunctionDeclaration function) { function.name.customizeLocalVariablesTypeName }
+	def static customizeLocalVariablesTypeName(String name) { LOCAL_RECORD_TYPE_NAME + "_" + name }
 	
 	public static final String ENUM_LITERAL_PREFIX = "L_"
 	def static customizeName(EnumerationLiteralExpression literal) { literal.reference.customizeName }
@@ -67,19 +75,9 @@ class Namings {
 	
 	def static customizeChoice(NonDeterministicAction choice) '''«NONDET_IDENTIFIER_PREFIX»«choice.uniqueIndex»''' // Deterministic name - needed for the reuse of the 'r' record during semantic diff computation
 	
-	def static customizeHoistedFunctionName(Action action) '''h_«action.randomizeName»'''
+	def static customizeHoistedFunctionName(Action action) '''h_«action.uniqueIndex»'''
 	
-	protected def static randomizeName(EObject object) {
-		return object.hashCode.toString.replaceAll("-", "0")
-	}
+	def static getBranchLiteralName(int i) '''«NONDET_BRANCH_LITERAL_PREFIX»_«i»'''
 	
-	protected def static uniqueIndex(EObject object) {
-		if (object.eContainer === null) {
-			return object.randomizeName
-		}
-		val containers = object.getSelfAndAllContainersOfType(EObject)
-		val index = containers.map[it.indexOrZero].join
-		return index
-	}
-	
+	def static String getTemporaryDeclarationName(Declaration declaration) '''«DECLARATION_NAME_PREFIX»«declaration.name»_t'''
 }

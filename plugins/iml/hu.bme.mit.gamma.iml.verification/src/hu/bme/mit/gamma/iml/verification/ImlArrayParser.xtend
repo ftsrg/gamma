@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Gamma project
+ * Copyright (c) 2024-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -36,17 +36,15 @@ class ImlArrayParser implements XstsArrayParser {
 				
 				values += parsed
 			}
-			else if (value.mapArray) { // (Map.of_list ~default:(Map.const 0) [(1, (Map.of_list ~default:0 [(0, 736)]))])
-				var parsedValue = value.deparenthesize // Map.of_list ~default:(Map.const 0) [(1, (Map.of_list ~default:0 [(0, 736)]))]
-				parsedValue = parsedValue.substring(parsedValue.indexOf("[")) // [(1, (Map.of_list ~default:0 [(0, 736)]))]
+			else if (value.mapArray) { // (Map.of_list ~default:(Map.const 0) [(1, (Map.of_list ~default:0 [(0, 736); (1, 6)]))])
+				var parsedValue = value.deparenthesize // Map.of_list ~default:(Map.const 0) [(1, (Map.of_list ~default:0 [(0, 736); (1, 6)]))]
+				parsedValue = parsedValue.substring(parsedValue.indexOf("[")) // [(1, (Map.of_list ~default:0 [(0, 736); (1, 6)]))]
 				for (element : parsedValue
 						.substring(1, parsedValue.length - 1) // Removing '[' and ']'
-						.split(";")
-						.map[it.trim]
-						.reject[it.nullOrEmpty]) {
-					val split = element.deparenthesize.split(",", 2) // (1, (Map.of_list ~default:0 [(0, 736)]))
+						.splitArrayValues) {
+					val split = element.deparenthesize.split(",", 2) // (1, (Map.of_list ~default:0 [(0, 736); (1, 6)]))
 					val index = split.head.trim // 1
-					val parsableValue = split.lastOrNull.trim // (Map.of_list ~default:0 [(0, 736)])
+					val parsableValue = split.lastOrNull.trim // (Map.of_list ~default:0 [(0, 736); (1, 6)])
 					
 					val intIndex = Integer.parseInt(index)
 					val parsed = id.parseArray(parsableValue)
@@ -116,6 +114,37 @@ class ImlArrayParser implements XstsArrayParser {
 		return value.startsWith("[")
 	}
 	
+	protected def splitArrayValues(String string) {
+		string.splitArrayValues(";") // IML separates values with ';'
+	}
+	
+	protected def splitArrayValues(String string, char splitChar) {
+		val values = newArrayList
+		
+		val unnecessaryParenthesisCount = 0 // No unnecessary parentheses expected around (in) the string
+		
+		var lastIndex = 0
+		var parCount = 0
+		for (var i = 0; i < string.length; i++) {
+			val character = string.charAt(i)
+			if (character == '('.toCharArray.head) {
+				parCount++
+			}
+			else if (character == ')'.toCharArray.head) {
+				parCount--
+			}
+			else if (parCount == unnecessaryParenthesisCount && character == splitChar) {
+				val value = string.substring(lastIndex, i).trim
+				values += value
+				lastIndex = i + 1
+			}
+		}
+		val lastElement = string.substring(lastIndex, string.length).trim
+		values += lastElement
+		
+		return values
+	}
+	
 	//
 	
 	protected def deparenthesize(String string) {
@@ -123,6 +152,7 @@ class ImlArrayParser implements XstsArrayParser {
 		if (trim.startsWith("(")) {
 			return trim.substring(1, string.length - 1).trim
 		}
+		return trim
 	}
 	
 }

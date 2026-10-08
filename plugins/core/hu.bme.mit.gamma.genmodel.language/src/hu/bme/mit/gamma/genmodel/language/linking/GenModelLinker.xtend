@@ -29,8 +29,9 @@ class GenModelLinker extends GammaLanguageLinker {
 				pack.genModel_StatechartImports,
 				pack.genModel_PackageImports,
 				pack.genModel_TraceImports,
-				pack.genModel_GenmodelImports,
-				pack.genModel_ScenarioImports
+				pack.genModel_ScenarioImports,
+				pack.genModel_Inclusions,
+				pack.genModel_ParallelExecutions
 			],
 			Verification -> #[pack.verification_PropertyPackages],
 			XstsReference -> #[pack.xstsReference_XSts],

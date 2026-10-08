@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -14,16 +14,25 @@ import org.eclipse.xtend.lib.annotations.Data
 
 @Data
 class AnnotatablePreprocessableElements {
-	
 	ComponentInstanceReferences testedComponentsForStates
+	
+	ComponentInstanceReferences testedComponentsForOrthogonalStateCombinations
+	
+	ComponentInstanceReferences testedComponentsForOrthogonalLeafStateCombinations
 	
 	ComponentInstanceReferences testedComponentsForUnstableStates
 	
 	ComponentInstanceReferences testedComponentsForTrapStates
 	
+	ComponentInstanceReferences testedComponentsForDeadlockStates
+	
 	ComponentInstanceReferences testedComponentsForDeadlock
 	
+	ComponentInstanceReferences testedComponentsForCompleteness
+	
 	ComponentInstanceReferences testedComponentsForNondeterministicTransitions
+	
+	ComponentInstanceReferences testedComponentsForQueueOverflow
 	
 	ComponentInstanceReferences testedComponentsForTransitions
 	
@@ -45,14 +54,20 @@ class AnnotatablePreprocessableElements {
 	
 	new() {
 		// If only a placeholder is needed, this constructor can be used
-		this(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null)
+		this(null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+				null, null, null, null, null, null)
 	}
-
+	
 	new(ComponentInstanceReferences testedComponentsForStates,
+			ComponentInstanceReferences testedComponentsForOrthogonalStateCombinations,
+			ComponentInstanceReferences testedComponentsForOrthogonalLeafStateCombinations,
 			ComponentInstanceReferences testedComponentsForUnstableStates,
 			ComponentInstanceReferences testedComponentsForTrapStates,
+			ComponentInstanceReferences testedComponentsForDeadlockStates,
 			ComponentInstanceReferences testedComponentsForDeadlock,
+			ComponentInstanceReferences testedComponentsForCompleteness,
 			ComponentInstanceReferences testedComponentsForNondeterministicTransitions,
+			ComponentInstanceReferences testedComponentsForQueueOverflow,
 			ComponentInstanceReferences testedComponentsForTransitions,
 			ComponentInstanceReferences testedComponentsForTransitionPairs,
 			ComponentInstancePortReferences testedComponentsForOutEvents,
@@ -60,10 +75,15 @@ class AnnotatablePreprocessableElements {
 			ComponentInstanceVariableReferences dataflowTestedVariables, DataflowCoverageCriterion dataflowCoverageCriterion,
 			ComponentInstancePortReferences testedComponentsForInteractionDataflow, DataflowCoverageCriterion interactionDataflowCoverageCriterion) {
 		this.testedComponentsForStates = testedComponentsForStates
+		this.testedComponentsForOrthogonalStateCombinations = testedComponentsForOrthogonalStateCombinations
+		this.testedComponentsForOrthogonalLeafStateCombinations = testedComponentsForOrthogonalLeafStateCombinations
 		this.testedComponentsForUnstableStates = testedComponentsForUnstableStates
 		this.testedComponentsForTrapStates = testedComponentsForTrapStates
+		this.testedComponentsForDeadlockStates = testedComponentsForDeadlockStates
 		this.testedComponentsForDeadlock = testedComponentsForDeadlock
+		this.testedComponentsForCompleteness = testedComponentsForCompleteness
 		this.testedComponentsForNondeterministicTransitions = testedComponentsForNondeterministicTransitions
+		this.testedComponentsForQueueOverflow = testedComponentsForQueueOverflow
 		this.testedComponentsForTransitions = testedComponentsForTransitions
 		this.testedComponentsForTransitionPairs = testedComponentsForTransitionPairs
 		this.testedComponentsForOutEvents = testedComponentsForOutEvents
@@ -74,6 +94,10 @@ class AnnotatablePreprocessableElements {
 		this.dataflowCoverageCriterion = dataflowCoverageCriterion
 		this.testedComponentsForInteractionDataflow = testedComponentsForInteractionDataflow
 		this.interactionDataflowCoverageCriterion = interactionDataflowCoverageCriterion
+	}
+	
+	def checkQueueOverflow() {
+		return testedComponentsForQueueOverflow?.include !== null
 	}
 	
 }

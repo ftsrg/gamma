@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,12 +17,14 @@ import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration
 import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.DivExpression
 import hu.bme.mit.gamma.expression.model.DivideExpression
 import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.FalseExpression
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.GreaterEqualExpression
 import hu.bme.mit.gamma.expression.model.GreaterExpression
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
@@ -34,6 +36,7 @@ import hu.bme.mit.gamma.expression.model.LessExpression
 import hu.bme.mit.gamma.expression.model.ModExpression
 import hu.bme.mit.gamma.expression.model.MultiplyExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
+import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.expression.model.OrExpression
 import hu.bme.mit.gamma.expression.model.PredicateExpression
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression
@@ -41,6 +44,8 @@ import hu.bme.mit.gamma.expression.model.RecordAccessExpression
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
 import hu.bme.mit.gamma.expression.model.SubtractExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
+import hu.bme.mit.gamma.expression.model.TupleLiteralExpression
+import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
@@ -59,7 +64,7 @@ class ExpressionSerializer {
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
 	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
-	protected final extension ExpressionTypeDeterminator2 expressionTypeDeterminator3 = ExpressionTypeDeterminator2.INSTANCE
+	protected final extension ExpressionTypeDeterminator2 expressionTypeDeterminator = ExpressionTypeDeterminator2.INSTANCE
 	//
 	
 	def dispatch String serialize(Expression expression) {
@@ -69,6 +74,16 @@ class ExpressionSerializer {
 	def dispatch String serialize(ElseExpression expression) {
 		// No operation, this cannot be transformed on this level
 		throw new IllegalArgumentException("Cannot be transformed")
+	}
+	
+	def dispatch String serialize(FunctionAccessExpression expression) {
+		val operand = expression.operand
+		val arguments = expression.arguments
+		return '''«operand.serialize»(«FOR argument : arguments SEPARATOR ', '»«argument.serialize»«ENDFOR»)'''
+	}
+	
+	def dispatch String serialize(OpaqueExpression expression) {
+		return '''// «expression.expression»'''
 	}
 	
 	def dispatch String serialize(EnumerationLiteralExpression expression) {
@@ -85,7 +100,11 @@ class ExpressionSerializer {
 	}
 	
 	def dispatch String serialize(RecordLiteralExpression expression) {
-		return '''new «expression.typeDeclaration.name»(«FOR value : expression.fieldValues SEPARATOR ", "»«value.serialize»«ENDFOR»)'''
+		return '''new «expression.typeDeclaration.name»(«FOR value : expression.sortedRecordLiteral.fieldValues SEPARATOR ", "»«value.serialize»«ENDFOR»)'''
+	}
+	
+	def dispatch String serialize(TupleLiteralExpression expression) {
+		return '''List.of(«FOR value : expression.operands SEPARATOR ", "»«value.serialize»«ENDFOR»)'''
 	}
 	
 	def dispatch String serialize(IntegerLiteralExpression expression) {
@@ -143,6 +162,10 @@ class ExpressionSerializer {
 	
 	def dispatch String serialize(RecordAccessExpression expression) {
 		return '''«expression.operand.serialize».«expression.fieldReference.fieldDeclaration.name»'''
+	}
+	
+	def dispatch String serialize(TupleReferenceExpression expression) {
+		return '''List<Object> «Namings.getName(expression)»'''
 	}
 	
 	def dispatch String serialize(NotExpression expression) {
@@ -206,6 +229,10 @@ class ExpressionSerializer {
 	}
 	
 	def dispatch String serialize(DivideExpression expression) {
+		return "(" + expression.leftOperand.serialize + " / " + expression.rightOperand.serialize + ")"
+	}
+	
+	def dispatch String serialize(DivExpression expression) {
 		return "(" + expression.leftOperand.serialize + " / " + expression.rightOperand.serialize + ")"
 	}
 	

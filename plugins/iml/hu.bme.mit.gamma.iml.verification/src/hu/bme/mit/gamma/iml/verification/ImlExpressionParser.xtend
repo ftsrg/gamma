@@ -32,9 +32,10 @@ import static hu.bme.mit.gamma.xsts.iml.transformation.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class ImlExpressionParser {
-	//
-	public static val preprocessExpressions = #{ "&&" -> "and", "||" -> "or", "=" -> "==", "<>" -> "!=",
-			"+." -> "+", "-." -> "-", "*." -> "*", "/." -> "/", "." + ENUM_LITERAL_PREFIX -> "::" + ENUM_LITERAL_PREFIX /* Only for enums, not records */}
+	// We support both of these 'equal' operators "=" -> "=="
+	public static val preprocessExpressions = newLinkedHashMap( // Note: order matters
+			"&&" -> "and", "||" -> "or", "<>" -> "!=", "+." -> "+", "-." -> "-", "*." -> "*", "/." -> "/",
+			"." + ENUM_LITERAL_PREFIX -> "::" + ENUM_LITERAL_PREFIX /* Only for enums, not records */)
 	// TODO arrays?
 	protected final ThetaQueryGenerator imlQueryGenerator
 	protected final extension XstsBackAnnotator xStsBackAnnotator

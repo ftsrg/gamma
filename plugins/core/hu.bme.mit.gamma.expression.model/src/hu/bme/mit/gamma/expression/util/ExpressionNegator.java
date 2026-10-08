@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.FalseExpression;
 import hu.bme.mit.gamma.expression.model.GreaterEqualExpression;
 import hu.bme.mit.gamma.expression.model.GreaterExpression;
+import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.ImplyExpression;
 import hu.bme.mit.gamma.expression.model.InequalityExpression;
 import hu.bme.mit.gamma.expression.model.LessEqualExpression;
@@ -55,14 +56,16 @@ public class ExpressionNegator {
 	
 	public Expression _negate(ReferenceExpression expression) {
 		NotExpression notExpression = factory.createNotExpression();
-		notExpression.setOperand(ecoreUtil.clone(expression));
+		notExpression.setOperand(
+				ecoreUtil.clone(expression));
 		return notExpression;
 	}
 	
 	public Expression _negate(AndExpression expression) {
 		OrExpression orExpression = factory.createOrExpression();
 		for (Expression operand : expression.getOperands()) {
-			orExpression.getOperands().add(negate(operand));
+			orExpression.getOperands().add(
+					negate(operand));
 		}
 		return orExpression;
 	}
@@ -141,95 +144,122 @@ public class ExpressionNegator {
 	
 	public Expression _negate(ImplyExpression expression) {
 		AndExpression andExpression = factory.createAndExpression();
-		andExpression.getOperands().add(ecoreUtil.clone(expression.getLeftOperand()));
-		andExpression.getOperands().add(negate(expression.getRightOperand()));
+		List<Expression> operands = andExpression.getOperands();
+		operands.add(
+				ecoreUtil.clone(expression.getLeftOperand()));
+		operands.add(
+				negate(expression.getRightOperand()));
 		return andExpression;
 	}
 	
 	public Expression _negate(EqualityExpression expression) {
 		InequalityExpression inequalityExpression = factory.createInequalityExpression();
-		inequalityExpression.setLeftOperand(ecoreUtil.clone(expression.getLeftOperand()));
-		inequalityExpression.setRightOperand(ecoreUtil.clone(expression.getRightOperand()));
+		inequalityExpression.setLeftOperand(
+				ecoreUtil.clone(expression.getLeftOperand()));
+		inequalityExpression.setRightOperand(
+				ecoreUtil.clone(expression.getRightOperand()));
 		return inequalityExpression;
 	}
 	
 	public Expression _negate(InequalityExpression expression) {
 		EqualityExpression equalityExpression = factory.createEqualityExpression();
-		equalityExpression.setLeftOperand(ecoreUtil.clone(expression.getLeftOperand()));
-		equalityExpression.setRightOperand(ecoreUtil.clone(expression.getRightOperand()));
+		equalityExpression.setLeftOperand(
+				ecoreUtil.clone(expression.getLeftOperand()));
+		equalityExpression.setRightOperand(
+				ecoreUtil.clone(expression.getRightOperand()));
 		return equalityExpression;
 	}
 	
 	public Expression _negate(GreaterExpression expression) {
 		LessEqualExpression predicateExpression = factory.createLessEqualExpression();
-		predicateExpression.setLeftOperand(ecoreUtil.clone(expression.getLeftOperand()));
-		predicateExpression.setRightOperand(ecoreUtil.clone(expression.getRightOperand()));
+		predicateExpression.setLeftOperand(
+				ecoreUtil.clone(expression.getLeftOperand()));
+		predicateExpression.setRightOperand(
+				ecoreUtil.clone(expression.getRightOperand()));
 		return predicateExpression;
 	}
 	
 	public Expression _negate(GreaterEqualExpression expression) {
 		LessExpression predicateExpression = factory.createLessExpression();
-		predicateExpression.setLeftOperand(ecoreUtil.clone(expression.getLeftOperand()));
-		predicateExpression.setRightOperand(ecoreUtil.clone(expression.getRightOperand()));
+		predicateExpression.setLeftOperand(
+				ecoreUtil.clone(expression.getLeftOperand()));
+		predicateExpression.setRightOperand(
+				ecoreUtil.clone(expression.getRightOperand()));
 		return predicateExpression;
 	}
 	
 	public Expression _negate(LessExpression expression) {
 		GreaterEqualExpression predicateExpression = factory.createGreaterEqualExpression();
-		predicateExpression.setLeftOperand(ecoreUtil.clone(expression.getLeftOperand()));
-		predicateExpression.setRightOperand(ecoreUtil.clone(expression.getRightOperand()));
+		predicateExpression.setLeftOperand(
+				ecoreUtil.clone(expression.getLeftOperand()));
+		predicateExpression.setRightOperand(
+				ecoreUtil.clone(expression.getRightOperand()));
 		return predicateExpression;
 	}
 	
 	public Expression _negate(LessEqualExpression expression) {
 		GreaterExpression predicateExpression = factory.createGreaterExpression();
-		predicateExpression.setLeftOperand(ecoreUtil.clone(expression.getLeftOperand()));
-		predicateExpression.setRightOperand(ecoreUtil.clone(expression.getRightOperand()));
+		predicateExpression.setLeftOperand(
+				ecoreUtil.clone(expression.getLeftOperand()));
+		predicateExpression.setRightOperand(
+				ecoreUtil.clone(expression.getRightOperand()));
 		return predicateExpression;
 	}
 	
+	public Expression _negate(IfThenElseExpression expression) {
+		IfThenElseExpression ifThenElseExpression = ecoreUtil.clone(expression);
+		ifThenElseExpression.setThen(
+				negate(ifThenElseExpression.getThen()));
+		ifThenElseExpression.setElse(
+				negate(ifThenElseExpression.getElse()));
+		return ifThenElseExpression;
+	}
+	
 	public Expression negate(Expression expression) {
-		if (expression instanceof TrueExpression) {
-			return _negate((TrueExpression) expression);
+		if (expression instanceof TrueExpression _expression) {
+			return _negate(_expression);
 		}
-		else if (expression instanceof FalseExpression) {
-			return _negate((FalseExpression) expression);
+		else if (expression instanceof FalseExpression _expression) {
+			return _negate(_expression);
 		}
-		else if (expression instanceof NotExpression) {
-			return _negate((NotExpression) expression);
+		else if (expression instanceof NotExpression _expression) {
+			return _negate(_expression);
 		}
-		else if (expression instanceof ReferenceExpression) {
-			return _negate((ReferenceExpression) expression);
+		else if (expression instanceof ReferenceExpression _expression) {
+			return _negate(_expression);
 		}
-		else if (expression instanceof AndExpression) {
-			return _negate((AndExpression) expression);
+		else if (expression instanceof AndExpression _expression) {
+			return _negate(_expression);
 		}
-		else if (expression instanceof XorExpression) {
-			return _negate((XorExpression) expression);
+		else if (expression instanceof XorExpression _expression) {
+			return _negate(_expression);
 		}
-		else if (expression instanceof OrExpression) {
-			return _negate((OrExpression) expression);
+		else if (expression instanceof OrExpression _expression) {
+			return _negate(_expression);
 		}
-		else if (expression instanceof ImplyExpression) {
-			return _negate((ImplyExpression) expression);
+		else if (expression instanceof ImplyExpression _expression) {
+			return _negate(_expression);
 		}
-		else if (expression instanceof EqualityExpression) {
-			return _negate((EqualityExpression) expression);
+		else if (expression instanceof EqualityExpression _expression) {
+			return _negate(_expression);
 		}
-		else if (expression instanceof InequalityExpression) {
-			return _negate((InequalityExpression) expression);
+		else if (expression instanceof InequalityExpression _expression) {
+			return _negate(_expression);
 		}
-		else if (expression instanceof GreaterExpression) {
-			return _negate((GreaterExpression) expression);
+		else if (expression instanceof GreaterExpression _expression) {
+			return _negate(_expression);
 		}
-		else if (expression instanceof GreaterEqualExpression) {
-			return _negate((GreaterEqualExpression) expression);
+		else if (expression instanceof GreaterEqualExpression _expression) {
+			return _negate(_expression);
 		}
-		else if (expression instanceof LessExpression) {
-			return _negate((LessExpression) expression);
+		else if (expression instanceof LessExpression _expression) {
+			return _negate(_expression);
 		}
-		else if (expression instanceof LessEqualExpression) {
-			return _negate((LessEqualExpression) expression);
+		else if (expression instanceof LessEqualExpression _expression) {
+			return _negate(_expression);
+		}
+		else if (expression instanceof IfThenElseExpression _expression) {
+			return _negate(_expression);
 		}
 		else {
 			throw new IllegalArgumentException("Unhandled parameter types: " + expression);

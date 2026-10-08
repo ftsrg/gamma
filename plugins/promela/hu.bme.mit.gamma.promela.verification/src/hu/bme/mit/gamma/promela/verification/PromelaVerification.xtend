@@ -23,7 +23,7 @@ class PromelaVerification extends AbstractVerification {
 		return fileName.unfoldedPackageFileName
 	}
 	
-	protected override createVerifier() {
+	protected override createVerifier(Long timeout) {
 		return new PromelaVerifier
 	}
 	
@@ -93,4 +93,8 @@ SPACE	optimize for space not speed
 		return PromelaPropertySerializer.INSTANCE
 	}
 	
+	override getBackendName() {
+		return "Spin"
+	}
+
 }

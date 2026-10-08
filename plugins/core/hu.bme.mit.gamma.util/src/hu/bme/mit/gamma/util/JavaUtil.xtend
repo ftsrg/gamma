@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,7 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.util
 
+import java.io.UnsupportedEncodingException
 import java.util.AbstractMap.SimpleEntry
+import java.util.Arrays
 import java.util.Collection
 import java.util.List
 import java.util.Map
@@ -24,8 +26,15 @@ class JavaUtil {
 	public static final JavaUtil INSTANCE = new JavaUtil
 	protected new() {}
 	//
+	public static final String DELIM_CHAR = "_"
+	public static final String WHITESPACE_PATTERN = "\\s"
+	public static final String WHITESPACES_PATTERN = "\\s+"
+	public static final String ALFA_NUMERICAL_CHAR_PATTERN = "[A-Za-z0-9]"
+	public static final String ID_CHAR_PATTERN = "[_A-Za-z0-9]"
+	public static final String ID_PATTERN = "[_A-Za-z]" + ID_CHAR_PATTERN + "*"
+	//
 
-	def <T> List<T> filterIntoList(Iterable<? super T> collection, Class<T> clazz) {
+	def <E, T> List<T> filterIntoList(Iterable<E> collection, Class<T> clazz) {
 		val list = <T>newArrayList
 		for (element : collection) {
 			if (clazz.isInstance(element)) {
@@ -54,11 +63,7 @@ class JavaUtil {
 	}
 	
 	def <T> T getLastElement(Iterable<T> collection) {
-		var T last = null
-		for (element : collection) {
-			last = element
-		}
-		return last
+		return collection.lastOrNull
 	}
 	
 	def <T> T getBeforeLastElement(Iterable<T> collection) {
@@ -77,6 +82,14 @@ class JavaUtil {
 	
 	def <T> T removeLastElement(List<T> list) {
 		return list.remove(list.size - 1)
+	}
+	
+	def <T, R> void removeElementsOfType(List<T> list, Class<R> clazz) {
+		list.removeIf[clazz.isInstance(it)]
+	}
+	
+	def <T, R> void removeElementsOfOtherType(List<T> list, Class<R> clazz) {
+		list.removeIf[!clazz.isInstance(it)]
 	}
 	
 	def <T> void removeAllButFirst(List<T> list) {
@@ -138,11 +151,82 @@ class JavaUtil {
 		return !lhs.containsAny(rhs)
 	}
 	
+	def <T> Collection<Collection<T>> combine(Iterable<Collection<T>> collection) {
+		val newCollection = <Collection<T>>newArrayList
+		
+		if (collection.empty) {
+			return newCollection
+		}
+		if (collection.size == 1) {
+			newCollection += collection.head.map[newArrayList(it)]
+			return newCollection
+		}
+		
+		val head = collection.head
+		val tail = collection.tail
+		val combinedTail = tail.combine
+		
+		for (element : head) {
+			for (combinedTailList : combinedTail) {
+				val newCombinedTailList = newArrayList
+				newCombinedTailList += element
+				newCombinedTailList += combinedTailList
+				
+				newCollection += newCombinedTailList
+			}
+		}
+		
+		return newCollection
+	}
+	
+	def <T> Collection<Collection<T>> combine(Iterable<Collection<T>> a, Iterable<Collection<T>> b) {
+		if (a.nullOrEmpty) {
+			return b.toList
+		}
+		if (b.nullOrEmpty) {
+			return a.toList
+		}
+		
+		val lists = <Collection<T>>newArrayList
+		for (_a : a) {
+			for (_b : b) {
+				val newList = <T>newArrayList
+				newList += _a
+				newList += _b
+				lists += newList
+			}
+		}
+		return lists
+	}
+	
+	
+	def <T> Set<T> union(T lhs, Iterable<? extends T> rhs) {
+		return #[lhs].union(rhs)
+	}
+	
+	def <T> Set<T> union(Iterable<T> lhs, Iterable<? extends T> rhs) {
+		val set = newLinkedHashSet
+		
+		set += lhs
+		set += rhs
+		
+		return set
+	}
+	
+	def <T> Set<T> intersection(Iterable<T> lhs, Iterable<?> rhs) {
+		val set = newLinkedHashSet
+		
+		set += lhs
+		set.retainAll(rhs.toList)
+		
+		return set
+	}
+	
 	def <T> T getOnlyElement(Iterable<T> collection) {
 		if (collection.size !== 1) {
-			throw new IllegalArgumentException("Not one elment: " + collection)
+			throw new IllegalArgumentException("Not one element: " + collection)
 		}
-		return collection.lastElement
+		return collection.head
 	}
 	
 	def <K, V> List<V> getOrCreateList(Map<K, List<V>> map, K key) {
@@ -232,7 +316,40 @@ class JavaUtil {
 		return pairs
 	}
 	
+	def <T> List<Entry<T, T>> zip(Iterable<? extends T> a, Iterable<? extends T> b) {
+		val it_1 = a.iterator
+		val it_2 = b.iterator
+		
+		val pairs = <Entry<T, T>>newArrayList
+		
+		while (it_1.hasNext && it_2.hasNext) {
+		    pairs += Map.entry(it_1.next, it_2.next)
+		}
+		
+		return pairs
+	}
+	
 	//
+	
+	def int lastBeforeLastIndexOf(String string, String str) {
+		val lastI = string.lastIndexOf(str)
+		val sub = string.substring(0, lastI)
+		val lastBeforeLastI = sub.lastIndexOf(str)
+		return lastBeforeLastI
+	}
+	
+	def String getCommonPrefix(String a, String b) {
+		for (var i = 0; i < a.length && i < b.length; i++) {
+			if (a.charAt(i) != b.charAt(i)) {
+				return a.substring(0, i)
+			}
+		}
+		
+		if (a.length < b.length) {
+			return a
+		}
+		return b
+	}
 	
 	def getStringBetweenChars(String string, char character) {
 		return string.getStringBetweenChars(character, character)
@@ -255,14 +372,104 @@ class JavaUtil {
 		return string
 	}
 	
+	def remove(String string, String start, String end) {
+		val i = string.indexOf(start)
+		val j = string.indexOf(end, i)
+		
+		if (0 < i && 0 < j) {
+			val result = string.substring(0, i) + string.substring(j)
+			return result
+		}
+		
+		return string
+	}
+	
+	def removeLongest(String string, String start, String end) {
+		val i = string.indexOf(start)
+		val j = string.lastIndexOf(end)
+		
+		if (0 < i && 0 < j) {
+			val result = string.substring(0, i) + string.substring(j)
+			return result
+		}
+		
+		return string
+	}
+	
 	def isAlfaNumerical(char character) {
 		val String string = character.toString
-		return string.matches("[A-Za-z0-9]")
+		return string.matches(ALFA_NUMERICAL_CHAR_PATTERN)
 	}
 	
 	def isIdChar(char character) {
 		val String string = character.toString
-		return string.matches("[_A-Za-z0-9]")
+		return string.matches(ID_CHAR_PATTERN)
+	}
+	
+	def toId(String string) {
+		return string.toId(DELIM_CHAR)
+	}
+	
+	def toId(String string, String delimiter) {
+		try {
+			val bytes = string.getBytes("UTF-8")
+			return Arrays.toString(bytes)
+					.replaceAll("\\D+", delimiter)
+		} catch (UnsupportedEncodingException e) {
+			return null
+		}
+	}
+	
+	def isByteSequence(String string) {
+		return string.isByteSequence(DELIM_CHAR)
+	}
+	
+	def isByteSequence(String string, String delimiter) {
+		try {
+			string.fromId(delimiter)
+			return true
+		} catch (Exception e) {
+			return false
+		}
+	}
+	
+	def fromId(String byteSequence) {
+		return byteSequence.fromId(DELIM_CHAR)
+	}
+	
+	def fromId(String byteSequence, String delimiter) {
+		val byteCharacters = byteSequence.split(delimiter)
+		val bytes = byteCharacters
+				.reject[it.nullOrEmpty]
+				.map[Byte.valueOf(it)].toList
+		val string = bytes.fromId
+		return string
+	}
+	
+	def fromId(byte[] bytes) {
+		return new String(bytes, "UTF-8")
+	}
+	
+	def fromIdIfByteSequence(String string) {
+		return string.fromIdIfByteSequence(DELIM_CHAR)
+	}
+	
+	def fromIdIfByteSequence(String string, String delimiter) {
+		return string.isByteSequence(delimiter) ?
+				string.fromId(delimiter) :
+				string
+	}
+	
+	def isIdString(String string) {
+		if (string.nullOrEmpty) {
+			return false
+		}
+		return string.matches(ID_PATTERN)
+	}
+	
+	def countChar(String string, String _char) {
+		val character = _char.toCharArray.onlyElement
+		return string.countChar(character)
 	}
 	
 	def countChar(String string, char character) {
@@ -314,7 +521,23 @@ class JavaUtil {
 	}
 	
 	def String replaceLast(String string, String regex, String replacement) {
-		return string.replaceFirst("(?s)(.*)" + regex, "$1" + replacement);
+		return string.replaceFirst("(?s)(.*)" + regex, "$1" + replacement)
+	}
+	
+	def String replaceFromString(String string,
+			String start, String target, String replacement) {
+		val i = string.indexOf(start)
+		if (i < 0) {
+			return string
+		}
+		
+		val _1 = string.substring(0, i)
+		val _2 = string.substring(i)
+		val __2 = _2.replace(target, replacement)
+		
+		val final = _1 + __2
+		
+		return final
 	}
 	
 	def matchFirstCharacterCapitalization(String string, String example) {
@@ -370,6 +593,10 @@ class JavaUtil {
 	}
 	
 	def boolean isDeparenthesizable(String string) {
+		if (string.nullOrEmpty) {
+			return false
+		}
+		
 		val char leftParenthesis = '('
 		val char rightParenthesis = ')'
 		
@@ -419,11 +646,11 @@ class JavaUtil {
 	//
 	
 	def boolean isUnstartableProcessException(Throwable throwable) {
-		val message = throwable.message
-		val cause = throwable.cause
-		val causeMessage = cause.message
-		return message.startsWith("Cannot run program") &&
-			causeMessage.startsWith("CreateProcess error=") // CreateProcess error=2, but not sure about the literal in other OS
+		val message = throwable.message.trim
+//		val cause = throwable.cause
+//		val causeMessage = cause.message.trim
+		return message.startsWith("Cannot run program")
+//			&& causeMessage.contains("error") // CreateProcess error=2, but not sure about the literal in other OS
 	}
 	
 }

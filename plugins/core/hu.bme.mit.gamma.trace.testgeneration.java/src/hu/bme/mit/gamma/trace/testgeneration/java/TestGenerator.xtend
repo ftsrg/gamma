@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,7 +17,6 @@ import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.testgeneration.java.util.TestGeneratorUtil
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import java.util.Collections
 import java.util.List
 import org.eclipse.emf.ecore.resource.ResourceSet
 
@@ -35,6 +34,8 @@ class TestGenerator {
 	
 	protected final String FINAL_TEST_PREFIX = "final"
 	protected final String TEST_ANNOTATION = "@Test"
+	protected final String BEFORE_ANNOTATION = "@BeforeEach"
+	protected final String AFTER_ANNOTATION = "@AfterEach"
 	protected final String TEST_NAME = "step"
 	
 	// Value is assigned by the execute methods
@@ -66,7 +67,8 @@ class TestGenerator {
 	 * Note that the lists of traces represents a set of behaviors the component must conform to.
 	 * Each trace must reference the same component with the same parameter values (arguments).
 	 */
-	new(List<ExecutionTrace> traces, String basePackage, String className, int cycleIterationCount) {
+	new(List<ExecutionTrace> traces, String basePackage,
+			String className, String testedClassName, int cycleIterationCount) {
 		this.firstTrace = traces.head
 		this.component = firstTrace.component
 		this.resourceSet = component.eResource.resourceSet
@@ -78,12 +80,14 @@ class TestGenerator {
 		this.BASE_PACKAGE = basePackage
 		this.PACKAGE_NAME = getPackageName
     	this.CLASS_NAME = className
-    	this.TEST_CLASS_NAME = component.reflectiveClassName
+    	val isTestedClassDifferent = testedClassName !== null
+    	this.TEST_CLASS_NAME = isTestedClassDifferent ? testedClassName :
+    			component.reflectiveClassName // Default
     	this.TEST_INSTANCE_NAME = TEST_CLASS_NAME.toFirstLower
     	
     	this.cycleIterationCount = cycleIterationCount
     	
-    	this.testGeneratorUtil = new TestGeneratorUtil(component)
+    	this.testGeneratorUtil = new TestGeneratorUtil(component, isTestedClassDifferent /* TODO extract */)
 		this.actAndAssertSerializer = new ActAndAssertSerializer(component,
 			TEST_INSTANCE_NAME, TIMER_OBJECT_NAME)
 		this.expressionSerializer = new ExpressionSerializer(component, TEST_INSTANCE_NAME)
@@ -95,16 +99,24 @@ class TestGenerator {
 		}
 	}
 	
+	new(List<ExecutionTrace> traces, String basePackage, String className, int cycleIterationCount) {
+		this(traces, basePackage, className, null, cycleIterationCount)
+	}
+	
 	new(List<ExecutionTrace> traces, String basePackage, String className) {
 		this(traces, basePackage, className, 2)
 	}
 	
 	new(ExecutionTrace trace, String basePackage, String className, int cycleIterationCount) {
-		this(Collections.singletonList(trace), basePackage, className, cycleIterationCount)
+		this(List.of(trace), basePackage, className, cycleIterationCount)
+	}
+	
+	new(ExecutionTrace trace, String basePackage, String className, String testedClassName) {
+		this(List.of(trace), basePackage, className, testedClassName, 2)
 	}
 	
 	new(ExecutionTrace trace, String basePackage, String className) {
-		this(Collections.singletonList(trace), basePackage, className, 2)
+		this(trace, basePackage, className, null)
 	}
 	
 	/**
@@ -144,7 +156,7 @@ class TestGenerator {
 				protected «variable.type.serialize» «variable.name»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»;
 			«ENDFOR»
 			
-			@Before
+			«BEFORE_ANNOTATION»
 			public void init() {
 				«IF component.timed»
 «««					Only if there are timing specis in the model
@@ -156,7 +168,7 @@ class TestGenerator {
 			«ENDIF»
 			}
 			
-			@After
+			«AFTER_ANNOTATION»
 			public void tearDown() {
 				stop();
 			}
@@ -185,11 +197,11 @@ class TestGenerator {
 		
 		import java.util.Objects;
 		
-		import static org.junit.Assert.assertTrue;
+		import static org.junit.jupiter.api.Assertions.assertTrue;
 		
-		import org.junit.Before;
-		import org.junit.After;
-		import org.junit.Test;
+		import org.junit.jupiter.api.«BEFORE_ANNOTATION.substring(1)»;
+		import org.junit.jupiter.api.«AFTER_ANNOTATION.substring(1)»;
+		import org.junit.jupiter.api.«TEST_ANNOTATION.substring(1)»;
 		«IF waitingHandle instanceof WaitingAllowedInFunction»
 			import java.util.Arrays;
 			import java.util.List;

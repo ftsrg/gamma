@@ -24,7 +24,7 @@ class NuxmvVerification extends AbstractVerification {
 		return fileName.unfoldedPackageFileName
 	}
 	
-	protected override createVerifier() {
+	protected override createVerifier(Long timeout) {
 		return new NuxmvVerifier
 	}
 	
@@ -72,4 +72,8 @@ class NuxmvVerification extends AbstractVerification {
 		return NuxmvPropertySerializer.INSTANCE
 	}
 	
+	override getBackendName() {
+		return "nuXmv"
+	}
+
 }

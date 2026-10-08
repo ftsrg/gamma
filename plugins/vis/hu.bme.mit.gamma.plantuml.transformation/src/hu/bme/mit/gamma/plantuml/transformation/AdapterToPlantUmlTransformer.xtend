@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -13,8 +13,8 @@ package hu.bme.mit.gamma.plantuml.transformation
 import hu.bme.mit.gamma.expression.util.ExpressionSerializer
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
-import hu.bme.mit.gamma.statechart.interface_.EventReference
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
+import hu.bme.mit.gamma.statechart.interface_.OccurrenceReferenceExpression
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
@@ -31,39 +31,35 @@ class AdapterToPlantUmlTransformer {
 	new(AsynchronousAdapter adapter) {
 		this.adapter = adapter
 	}
-
-	//
-	dispatch def getSimpleConnection(AnyPortEventReference source, EventReference target, String queueName) {
-		return '''
-			«IF target === null»
-				c_«source.getPort.name» ...> «queueName» : "any"
-				«queueName» ...> comp_«source.getPort.name» : "any"
-			«ELSEIF target instanceof AnyPortEventReference»
-				c_«target.getPort.name» ...> «queueName» : "any"
-				«queueName» ...> comp_«source.getPort.name» : "any"
-			«ELSEIF target instanceof PortEventReference»
-				c_«target.getPort.name» ...> «queueName» : "«target.event.name»"
-				«queueName» ...> comp_«source.getPort.name» : "any"
-			«ENDIF»
-		'''
-	}
-
-	dispatch def getSimpleConnection(PortEventReference source, EventReference target, String queueName) {
-		return '''
-			«IF target === null»
-				c_«source.getPort.name» ..> «queueName» : "any"
-				«queueName» ..> comp_«source.getPort.name» : "«source.event.name»"
-			«ELSEIF target instanceof AnyPortEventReference»
-				c_«target.getPort.name» ..> «queueName» : "any"
-				«queueName» ..> comp_«source.getPort.name» : "«source.event.name»"
-			«ELSEIF target instanceof PortEventReference»
-				c_«target.getPort.name» ..> «queueName» : "«target.event.name»"
-				«queueName» ..> comp_«source.getPort.name» : "«source.event.name»"
-			«ENDIF»
-		'''
-	}
 	
-	dispatch def getSimpleConnection(ClockTickReference source, EventReference target, String queueName) '''
+	//
+	dispatch def getSimpleConnection(AnyPortEventReference source, OccurrenceReferenceExpression target, String queueName) '''
+		«IF target === null»
+			c_«source.getPort.name» ...> «queueName» : "any"
+			«queueName» ...> comp_«source.getPort.name» : "any"
+		«ELSEIF target instanceof AnyPortEventReference»
+			c_«target.getPort.name» ...> «queueName» : "any"
+			«queueName» ...> comp_«source.getPort.name» : "any"
+		«ELSEIF target instanceof PortEventReference»
+			c_«target.getPort.name» ...> «queueName» : "«target.event.name»"
+			«queueName» ...> comp_«source.getPort.name» : "any"
+		«ENDIF»
+	'''
+
+	dispatch def getSimpleConnection(PortEventReference source, OccurrenceReferenceExpression target, String queueName) '''
+		«IF target === null»
+			c_«source.getPort.name» ..> «queueName» : "any"
+			«queueName» ..> comp_«source.getPort.name» : "«source.event.name»"
+		«ELSEIF target instanceof AnyPortEventReference»
+			c_«target.getPort.name» ..> «queueName» : "any"
+			«queueName» ..> comp_«source.getPort.name» : "«source.event.name»"
+		«ELSEIF target instanceof PortEventReference»
+			c_«target.getPort.name» ..> «queueName» : "«target.event.name»"
+			«queueName» ..> comp_«source.getPort.name» : "«source.event.name»"
+		«ENDIF»
+	'''
+	
+	dispatch def getSimpleConnection(ClockTickReference source, OccurrenceReferenceExpression target, String queueName) '''
 		c_«source.clock.name» ..> «queueName»
 	'''
 	//
@@ -83,22 +79,7 @@ class AdapterToPlantUmlTransformer {
 
 	def String execute() '''
 		@startuml
-		skinparam shadowing false
-		
-		skinparam shadowing false
-		!theme plain
-		left to right direction
-		skinparam nodesep 30
-		skinparam ranksep 30
-		
-		skinparam padding 5
-		
-		
-		skinparam interface<<Invisible>> {
-		  borderColor Transparent
-		  backgroundColor Transparent
-		  stereotypeFontColor Transparent
-		}
+		«generateSkinparams»
 		
 		component "«adapter.name»"<<Asynchronous Adapter>> {
 			
@@ -140,7 +121,7 @@ class AdapterToPlantUmlTransformer {
 			priority=«queue.priority»
 			]
 			«FOR passing : queue.eventPassings»
-				«getSimpleConnection(passing.source, passing.target, queue.name)»
+				«passing.source.getSimpleConnection(passing.target, queue.name)»
 			«ENDFOR»
 		«ENDFOR»
 		
@@ -164,6 +145,24 @@ class AdapterToPlantUmlTransformer {
 		«ENDIF»
 		}
 		@enduml
+	'''
+	
+	protected def generateSkinparams() '''
+		skinparam shadowing false
+		
+		skinparam shadowing false
+		!theme plain
+		left to right direction
+		skinparam nodesep 30
+		skinparam ranksep 30
+		
+		skinparam padding 5
+		
+		skinparam interface<<Invisible>> {
+		  borderColor Transparent
+		  backgroundColor Transparent
+		  stereotypeFontColor Transparent
+		}
 	'''
 
 }

@@ -21,22 +21,25 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.scenario.model.CombinedFragment;
-import hu.bme.mit.gamma.scenario.model.Occurrence;
 import hu.bme.mit.gamma.scenario.model.Fragment;
+import hu.bme.mit.gamma.scenario.model.Occurrence;
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration;
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinitionReference;
 import hu.bme.mit.gamma.scenario.model.ScenarioModelFactory;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class ScenarioReferenceResolver {
+	//
 	private GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
-
+	//
+	
 	public void resolveReferences(ScenarioDeclaration scenario) {
 		if (!containsAnyReferences(scenario)) {
 			return;
 		}
-		List<Occurrence> interactions = scenario.getFragment().getInteractions();
-		List<Occurrence> newInteractions = resolveReferencesFromFragment(scenario.getFragment());
+		Fragment fragment = scenario.getFragment();
+		List<Occurrence> interactions = fragment.getInteractions();
+		List<Occurrence> newInteractions = resolveReferencesFromFragment(fragment);
 		interactions.clear();
 		interactions.addAll(newInteractions);
 
@@ -46,29 +49,34 @@ public class ScenarioReferenceResolver {
 	private List<Occurrence> resolveReferencesFromFragment(Fragment fragment) {
 		List<Occurrence> newInteractions = new ArrayList<>();
 		for (Occurrence interaction : fragment.getInteractions()) {
-			if (interaction instanceof ScenarioDefinitionReference) {
-				ScenarioDefinitionReference ref = (ScenarioDefinitionReference) interaction;
+			if (interaction instanceof ScenarioDefinitionReference ref) {
+				ScenarioDeclaration scenario = ref.getScenarioDefinition();
+				Fragment fragment2 = scenario.getFragment();
 				List<Occurrence> clonedInteractions = ecoreUtil
-						.clone(ref.getScenarioDefinition().getFragment()).getInteractions();
+						.clone(fragment2).getInteractions();
 				checkReferencesToInline(clonedInteractions, ref);
 				newInteractions.addAll(clonedInteractions);
-			} else if (interaction instanceof CombinedFragment) {
+			}
+			else if (interaction instanceof CombinedFragment combinedFragment) {
+				List<Fragment> fragments = combinedFragment.getFragments();
 				boolean isTransformationNeeded = containsAnyReferences(interaction);
 				if (isTransformationNeeded) {
-					CombinedFragment combinedFragmen = (CombinedFragment) interaction;
 					List<Fragment> newFargments = new ArrayList<>();
-					for (Fragment subFragment : combinedFragmen.getFragments()) {
+					for (Fragment subFragment : fragments) {
 						Fragment newFragment = ScenarioModelFactory.eINSTANCE.createFragment();
-						newFragment.getInteractions().addAll(resolveReferencesFromFragment(subFragment));
+						newFragment.getInteractions().addAll(
+								resolveReferencesFromFragment(subFragment));
 						newFargments.add(newFragment);
 					}
-					combinedFragmen.getFragments().clear();
-					combinedFragmen.getFragments().addAll(newFargments);
-					newInteractions.add(combinedFragmen);
-				} else {
+					fragments.clear();
+					fragments.addAll(newFargments);
+					newInteractions.add(combinedFragment);
+				}
+				else {
 					newInteractions.add(interaction);
 				}
-			} else {
+			}
+			else {
 				newInteractions.add(interaction);
 			}
 		}
@@ -85,17 +93,17 @@ public class ScenarioReferenceResolver {
 					DirectReferenceExpression.class);
 			for (DirectReferenceExpression direct : references) {
 				Declaration decl = direct.getDeclaration();
-				if (decl instanceof ConstantDeclaration) {
-					ConstantDeclaration _const = (ConstantDeclaration) decl;
+				if (decl instanceof ConstantDeclaration _const) {
 					Expression cloned = ecoreUtil.clone(_const.getExpression());
 					ecoreUtil.change(cloned, direct, direct.eContainer());
 					ecoreUtil.replace(cloned, direct);
 				}
-				if (decl instanceof ParameterDeclaration) {
-					ParameterDeclaration param = (ParameterDeclaration) decl;
-					for (ParameterDeclaration paramD : ref.getScenarioDefinition().getParameterDeclarations()) {
+				if (decl instanceof ParameterDeclaration param) {
+					ScenarioDeclaration scenario = ref.getScenarioDefinition();
+					List<ParameterDeclaration> parameterDeclarations = scenario.getParameterDeclarations();
+					for (ParameterDeclaration paramD : parameterDeclarations) {
 						if (paramD.getName() == param.getName()) {
-							int index = ref.getScenarioDefinition().getParameterDeclarations().indexOf(paramD);
+							int index = parameterDeclarations.indexOf(paramD);
 							Expression _new = ref.getArguments().get(index);
 							Expression cloned = ecoreUtil.clone(_new);
 							ecoreUtil.change(cloned, direct, direct.eContainer());

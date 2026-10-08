@@ -1,0 +1,15 @@
+import "Statechart/NonDetChoice.gcd"
+
+analysis {
+	component : NonDetChoice
+	language : Imandra
+	state-coverage
+}
+
+verification {
+	file : "NonDetChoice.iml"
+	language : Imandra
+	property-file : ".NonDetChoice.gpd"
+	optimize-traces : true
+}
+

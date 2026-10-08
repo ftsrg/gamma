@@ -176,7 +176,7 @@ class ExecutionTraceBackAnnotator {
 	}
 
 	def getEvent(Port port, String name) {
-		for (eventDeclaration : port.interfaceRealization.interface.events) {
+		for (eventDeclaration : port.interfaceRealization.interface.eventDeclarations) {
 			if (eventDeclaration.event.name == name) {
 				return eventDeclaration.event
 			}

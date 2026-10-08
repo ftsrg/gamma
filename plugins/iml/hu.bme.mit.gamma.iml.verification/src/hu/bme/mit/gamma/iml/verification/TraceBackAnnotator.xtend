@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024-2025 Contributors to the Gamma project
+ * Copyright (c) 2024-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -23,6 +23,7 @@ import hu.bme.mit.gamma.trace.model.Reset
 import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.verification.util.TraceBuilder
 import java.util.NoSuchElementException
 import java.util.Scanner
@@ -30,18 +31,15 @@ import java.util.logging.Logger
 import org.eclipse.emf.ecore.EObject
 
 import static com.google.common.base.Preconditions.checkState
+import static hu.bme.mit.gamma.iml.verification.ImlApiHelper.*
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class TraceBackAnnotator {
 	//
 	protected static final String LOOP = " loop "
-	protected static final String RETURN_VALUE = "- : "
-	public static final String CX_START = "module CX :"
 	public static final String STATE_CHANGE = "{"
 	public static final String STATE_CHANGE2 = "[{"
-	public static final String COUNTEREXAMPLE_INIT_VAR = RETURN_VALUE + "t =" // Used to be 'module CX :' before refactor
-	public static final String COUNTEREXAMPLE_TRACE_VAR = RETURN_VALUE + "t list ="
 	
 	protected val preprocessExpressions = ImlExpressionParser.preprocessExpressions
 	
@@ -62,6 +60,7 @@ class TraceBackAnnotator {
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension TraceBuilder traceBuilder = TraceBuilder.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final JavaUtil javaUtil = JavaUtil.INSTANCE
 	
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//
@@ -129,15 +128,15 @@ class TraceBackAnnotator {
 				
 				if (state != BackAnnotatorState.INFO && state != BackAnnotatorState.END) {
 					switch (line) {
-						case line.contains(COUNTEREXAMPLE_INIT_VAR): { // Before RETURN_VALUE; UNREACHABLE?
+						case line.contains(CX_INIT_VAR): { // Before RETURN_VALUE; UNREACHABLE?
 							isValidTrace = true
 							state = BackAnnotatorState.END
 						}
-						case line.contains(COUNTEREXAMPLE_TRACE_VAR): { // UNREACHABLE?
+						case line.contains(CX_TRACE_VAR): { // UNREACHABLE?
 							isValidTrace = true
 							state = BackAnnotatorState.STATE_CHECK // Will be switched to ENV in default branch
 						}
-						case line.startsWith(RETURN_VALUE): {
+						case line.startsWith(RET_VALUE): {
 							// Return value of a call, no operation
 						}
 						case state == BackAnnotatorState.INIT: {
@@ -187,7 +186,7 @@ class TraceBackAnnotator {
 							for (handledLine : handledLines.split(System.lineSeparator)
 										.map[it.trim]
 										.reject[it.nullOrEmpty]) {
-								val split = handledLine.split(" = ", 2) // Only the first " = " is checked
+								val split = handledLine.split("=", 2) // Only the first " = " is checked
 								val id = split.get(0).trim
 								val value = split.get(1).trim
 								try {
@@ -321,17 +320,30 @@ class TraceBackAnnotator {
 		if (newLine.startsWith("{")) {
 			newLine = newLine.substring(1)
 		}
-		while (!(newLine.endsWith(";") || newLine.endsWith("}") || newLine.endsWith("}]"))) {
-			val nextLine = scanner.nextLine
+		var continue = false
+		while (!(newLine.endsWith(";") || newLine.endsWith("}") || newLine.endsWith("}]")) ||
+				continue) {
+			val nextLine = scanner.nextLine.trim
 			newLine = newLine + " " + nextLine
+			
+			continue = nextLine.contains("Map.of_list") && !nextLine.endsWith("]);") // Array literal end?
 		}
+//		_array__first =
+//		(Map.of_list ~default:(Map.const 0)
+//			[(0, (Map.of_list ~default:0 [(1, 30)]));
+//			(1, (Map.of_list ~default:0 [(0, 8)]))]);
+		val ARR_DELIM = "<-ARRAY-DELIM->"
+		newLine = javaUtil.replaceFromString(newLine, "Map.of_list", ";", ARR_DELIM) // Array literal
+		newLine = newLine.endsWith(ARR_DELIM) ? javaUtil.deleteLast(newLine, ARR_DELIM) : newLine // No ';' at the end (needed due to parsing rules)
+		
 		if (newLine.endsWith("}")) {
 			newLine = newLine.substring(0, newLine.length - 1)
 		}
 		if (newLine.endsWith("};") || newLine.endsWith("}]")) {
 			newLine = newLine.substring(0, newLine.length - 2)
 		}
-		newLine = newLine.replaceAll(";", System.lineSeparator).trim
+		newLine = newLine.replace(";", System.lineSeparator).trim
+		newLine = newLine.replace(ARR_DELIM, "; ") // Array literal
 		
 		return newLine
 	}

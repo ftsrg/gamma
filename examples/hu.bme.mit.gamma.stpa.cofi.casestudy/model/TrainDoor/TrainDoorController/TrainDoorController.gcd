@@ -6,10 +6,17 @@ import "Interface/Interface.gcd"
 @TransitionPriority = order-based
 statechart TrainDoorController [
 	port ControlActions : provides ControlActions
-	port FeedbackDoorState : requires FeedbackDoorState
+	port FeedbackDoorState : requires FeedbackDoorState {
+		invariant FeedbackDoorState.feedback::doorState = DoorState::OPENING imply (in-state(DoorStateRegion.Closed) or in-state(DoorStateRegion.Closing))
+		invariant FeedbackDoorState.feedback::doorState = DoorState::OPEN imply in-state(DoorStateRegion.Opening)
+		invariant FeedbackDoorState.feedback::doorState = DoorState::CLOSING imply (in-state(DoorStateRegion.Open) or in-state(DoorStateRegion.Opening))
+		invariant FeedbackDoorState.feedback::doorState = DoorState::CLOSED imply in-state(DoorStateRegion.Closing)
+	}
 	port FeedbackPresence : requires FeedbackPresence
 	port ExternalCommunication : requires ExternalCommunication
-	port OpenTimeout : requires Timeout { invariant OpenTimeout.^timeout:: imply in-state(DoorStateRegion.Open) }
+	port OpenTimeout : requires Timeout	{
+		invariant OpenTimeout.^timeout:: imply in-state(DoorStateRegion.Open)
+	}
 ] {
 	region DoorStateRegion {
 		initial InitialDoorState
@@ -19,6 +26,10 @@ statechart TrainDoorController [
 		state Open
 	}
 	transition from InitialDoorState to Closed
+	// Added for the sake of completeness (but should not happen)
+	transition from Closed to Open when FeedbackDoorState.feedback [FeedbackDoorState.feedback::doorState == DoorState::OPEN]
+	transition from Open to Closed when FeedbackDoorState.feedback [FeedbackDoorState.feedback::doorState == DoorState::CLOSED]
+	//
 	transition from Closed to Opening when FeedbackDoorState.feedback [FeedbackDoorState.feedback::doorState == DoorState::OPENING]
 	transition from Opening to Open when FeedbackDoorState.feedback [FeedbackDoorState.feedback::doorState == DoorState::OPEN]
 	transition from Opening to Closing when FeedbackDoorState.feedback [FeedbackDoorState.feedback::doorState == DoorState::CLOSING]
@@ -113,7 +124,7 @@ statechart TrainDoorController [
 			in-state(PresenceRegion.PersonInDoorway)]
 	// SC-C
 	transition from Control to OpenDoor when cycle [
-			!(in-state(DoorStateRegion.Opening) or in-state(DoorStateRegion.Open)) and // Needed?
+			!(in-state(DoorStateRegion.Opening) or in-state(DoorStateRegion.Open) or in-state(DoorStateRegion.Closing) /* Added later */) and // Needed?
 			in-state(MovementRegion.Still) and in-state(AlignmentRegion.Aligned)]
 	
 	transition from OpenDoor to Control / raise ControlActions.controlDoor(ControlAction::OPEN);

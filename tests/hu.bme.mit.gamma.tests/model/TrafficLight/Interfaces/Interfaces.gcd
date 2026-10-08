@@ -19,3 +19,15 @@ interface in_default {
 }
 interface out_default {
 }
+
+interface Default {
+	out event on
+	out event ^off
+	
+	out event toggle
+	
+	out event manualOn
+	out event manualOff
+	out event carGo
+	out event carIn
+}

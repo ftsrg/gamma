@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2025 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -67,7 +67,9 @@ class UppaalVerifier extends AbstractVerifier {
 			else {
 				throw new IllegalStateException("Not known traceability element: " + traceability)
 			}
-			val traceModel = backAnnotator.synchronizeAndExecute
+			
+			val returnedTraceModel = backAnnotator.synchronizeAndExecute
+			val traceModel = (returnedTraceModel.steps.empty) ? null : returnedTraceModel
 			val lines = backAnnotator.getResultText
 			
 			result =
@@ -120,6 +122,10 @@ class UppaalVerifier extends AbstractVerifier {
 		return "The command line tool of UPPAAL ('verifyta') cannot be found. " +
 				"UPPAAL can be downloaded from 'https://uppaal.org/downloads/'. " +
 				"Make sure to add the folder containing the 'verifyta' bin to your path environment variable."
+	}
+	
+	override protected getAnalysisLanguage() {
+		return "UPPAAL"
 	}
 	
 }

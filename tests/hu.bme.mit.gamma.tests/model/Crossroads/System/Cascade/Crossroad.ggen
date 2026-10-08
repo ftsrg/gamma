@@ -72,6 +72,7 @@ verification {
 	query-file : "CustomQueries.q"
 	optimize : true
 	test-language : java
+	serialize-results : false
 }
 
 verification {
@@ -79,6 +80,7 @@ verification {
 	file : "Crossroad-Theta.xsts"
 	query-file : "ThetaCustomQueries.prop"
 	test-language : java
+	serialize-results : false
 }
 
 verification {
@@ -87,6 +89,7 @@ verification {
 	property-file : ".Crossroad-XSTS.gpd" // Checking test optimization
 	optimize : true
 	test-language : java
+	serialize-results : false
 }
 
 verification {
@@ -95,6 +98,7 @@ verification {
 	property-file : ".Crossroad-Promela.gpd"
 	test-language : java
 	optimize-model : true // Checking model optimization
+	serialize-results : false
 }
 
 verification {
@@ -104,6 +108,7 @@ verification {
 	property-file : "Crossroad-LTL.gpd"
 	test-language : java
 	optimize-model : true // Checking model optimization
+	serialize-results : false
 }
 
 verification {
@@ -113,4 +118,5 @@ verification {
 	test-language : java
 	optimize-model : true // Checking model optimization
 	optimize-traces : true // Checking trace optimization
+	serialize-results : false
 }

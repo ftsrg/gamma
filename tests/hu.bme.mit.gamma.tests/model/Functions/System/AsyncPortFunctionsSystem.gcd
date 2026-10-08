@@ -1,0 +1,17 @@
+package asyncportfunctionssystem
+
+import "Interfaces/Interfaces.gcd"
+
+import "Statechart/AsyncPortFunctions_1.gcd"
+import "Statechart/AsyncPortFunctions_2.gcd"
+
+scheduled-async AsyncPortFunctionsSystem [
+	port Execute : requires Execute
+] {
+	component _1 : AsyncPortFunctions_1
+	component _2 : AsyncPortFunctions_2
+	
+	bind Execute -> _1.Execute
+	
+	channel [_1.FunctionExecute] -o)- [_2.FunctionExecute]
+}

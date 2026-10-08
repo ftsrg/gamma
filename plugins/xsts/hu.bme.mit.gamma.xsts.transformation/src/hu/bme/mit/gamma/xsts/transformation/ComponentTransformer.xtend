@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -46,6 +46,7 @@ import hu.bme.mit.gamma.xsts.model.InEventGroup
 import hu.bme.mit.gamma.xsts.model.RegionGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
+import hu.bme.mit.gamma.xsts.transformation.util.FunctionInliner
 import hu.bme.mit.gamma.xsts.transformation.util.OrthogonalActionTransformer
 import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
@@ -72,6 +73,8 @@ class ComponentTransformer {
 	// Traceability
 	protected XSTS xSts
 	// Transformation settings
+	protected final boolean inlineFunctions
+	protected final boolean checkQueueOverflow
 	protected final boolean transformOrthogonalActions
 	protected final boolean optimize
 	protected final boolean optimizeEnvironmentalMessageQueues
@@ -88,6 +91,7 @@ class ComponentTransformer {
 	protected final extension EventConnector eventConnector = EventConnector.INSTANCE
 	protected final extension InternalEventHandler internalEventHandler = InternalEventHandler.INSTANCE
 	protected final extension SystemReducer systemReducer = SystemReducer.INSTANCE
+	protected final extension FunctionInliner functionInliner = FunctionInliner.INSTANCE
 	
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension XSTSModelFactory xStsModelFactory = XSTSModelFactory.eINSTANCE
@@ -96,9 +100,12 @@ class ComponentTransformer {
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//
 	
-	new(GammaToLowlevelTransformer gammaToLowlevelTransformer, boolean transformOrthogonalActions,
-			boolean optimize, boolean optimizeEnvironmentalMessageQueues, TransitionMerging transitionMerging) {
+	new(GammaToLowlevelTransformer gammaToLowlevelTransformer, boolean inlineFunctions, boolean checkQueueOverflow,
+			boolean transformOrthogonalActions, boolean optimize, boolean optimizeEnvironmentalMessageQueues,
+			TransitionMerging transitionMerging) {
 		this.gammaToLowlevelTransformer = gammaToLowlevelTransformer
+		this.inlineFunctions = inlineFunctions
+		this.checkQueueOverflow = checkQueueOverflow
 		this.transformOrthogonalActions = transformOrthogonalActions
 		this.optimize = optimize
 		this.optimizeEnvironmentalMessageQueues = optimizeEnvironmentalMessageQueues
@@ -194,9 +201,9 @@ class ComponentTransformer {
 				
 				// Creating the event ID type with an EMPTY literal for master message queues
 				val eventIdType = createEnumerationTypeDefinition // To limit the possible values for message identifiers
-				eventIdType.literals += "EMPTY".createEnumerationLiteralDefinition
+				eventIdType.literals += emptyLiteralName.createEnumerationLiteralDefinition
 				val eventIdTypeDeclaration = eventIdType.createTypeDeclaration(
-						"EventIdTypeOf" + masterQueueName)
+						masterQueueName.queueTypeName)
 				//
 				
 				val evaluatedCapacity = queue.getCapacity(systemPorts)
@@ -210,6 +217,9 @@ class ComponentTransformer {
 				val masterSizeVariable = (evaluatedCapacity == 1) ? null : // Master array size var optimization
 					createIntegerTypeDefinition
 						.createVariableDeclaration(masterSizeVariableName)
+				
+				val overflowVariableName = queue.getMasterOverflowVariableName(adapterInstance)
+				val masterOverflowVariable = overflowVariableName.createBooleanVariableDeclaration
 				
 				val slaveQueuesMap = newLinkedHashMap
 				val typeSlaveQueuesMap = newLinkedHashMap // Reusing slave queues for same types if possible
@@ -244,7 +254,7 @@ class ComponentTransformer {
 							
 							val isInternal = parameter.isInternal
 							
-							val messageQueueStruct = new MessageQueueStruct(slaveQueue, slaveSizeVariable, isInternal)
+							val messageQueueStruct = new MessageQueueStruct(slaveQueue, slaveSizeVariable, null, isInternal)
 							slaveQueues += messageQueueStruct
 							typeSlaveQueues += messageQueueStruct
 							logger.info( '''Created a slave queue for «port.name».«event.name»::«parameter.name»''')
@@ -261,7 +271,7 @@ class ComponentTransformer {
 				}
 				
 				val messageQueueMapping = new MessageQueueMapping(storedClocks, storedPortEvents, eventIdType,
-						new MessageQueueStruct(masterQueue, masterSizeVariable, false), slaveQueuesMap, typeSlaveQueuesMap)
+						new MessageQueueStruct(masterQueue, masterSizeVariable, masterOverflowVariable, false), slaveQueuesMap, typeSlaveQueuesMap)
 				queueTraceability.put(queue, messageQueueMapping)
 				val slaveQueueMappings = messageQueueMapping.typeSlaveQueues
 			
@@ -270,7 +280,6 @@ class ComponentTransformer {
 				// Namings.customize* covers the same naming behavior as QueueNamings + valueDeclarationTransformer
 				
 				val xStsMasterQueueVariable = valueDeclarationTransformer.transform(masterQueue).onlyElement
-//				xStsMasterQueueVariable.addStrictControlAnnotation
 				xSts.variableDeclarations += xStsMasterQueueVariable
 				xSts.masterMessageQueueGroup.variables += xStsMasterQueueVariable
 				val isQueueEnvironmental = queue.isEnvironmentalAndCheck(systemPorts)
@@ -286,6 +295,9 @@ class ComponentTransformer {
 					xSts.messageQueueSizeGroup.variables += xStsMasterSizeVariable
 					xStsMasterSizeVariable.addStrictControlAnnotation // Needed for loops
 				}
+				
+				val xStsMasterOverflowVariable = valueDeclarationTransformer.transform(masterOverflowVariable).onlyElement
+				xStsMasterOverflowVariable.addResettableAnnotation
 				
 				val slaveQueuesCollection = slaveQueueMappings.values
 				val slaveQueueStructs = slaveQueuesCollection.flatten
@@ -585,6 +597,12 @@ class ComponentTransformer {
 			if (sizeVariable !== null) {
 				xStsQueueVariables += variableTrace.getAll(sizeVariable)
 			}
+			
+			val overflowVariable = queueStruct.overflowVariable
+			if (overflowVariable !== null) {
+				xStsQueueVariables += variableTrace.getAll(overflowVariable)
+						.filter[it.containedByXsts]
+			}
 		}
 		for (xStsQueueVariable : xStsQueueVariables) {
 			variableInitAction.actions += xStsQueueVariable.createVariableResetAction
@@ -853,6 +871,16 @@ class ComponentTransformer {
 		xStsDeletableSlaveQueues.changeAssignmentsAndReadingAssignmentsToEmptyActions(xSts)
 		xStsDeletableSlaveQueues.forEach[it.deleteDeclaration] // Variable groups
 		
+		logger.info("Connecting interface functions through channels in " + name)
+		xSts.connectInterfaceFunctionsThroughChannels(component)
+		
+		logger.info("Connecting interface variables through channels in " + name)
+		xSts.connectInterfaceVariablesThroughChannels(component)
+		
+		if (inlineFunctions && component.top) {
+			xSts.inlineFunctionCalls
+		}
+		
 		return xSts
 	}
 	
@@ -892,11 +920,14 @@ class ComponentTransformer {
 						val masterQueueStruct = queueMapping.masterQueue
 						val masterQueue = masterQueueStruct.arrayVariable
 						val masterSizeVariable = masterQueueStruct.sizeVariable
+						val masterOverflowVariable = masterQueueStruct.overflowVariable
 						val slaveQueues = queueMapping.slaveQueues.get(connectedPortEvent)
 						
 						val xStsMasterQueue = variableTrace.getAll(masterQueue).onlyElement
 						val xStsMasterSizeVariable = (masterSizeVariable === null) ? null :
 								variableTrace.getAll(masterSizeVariable).onlyElement
+						val xStsMasterOverflowVariable = (masterOverflowVariable === null) ? null :
+								variableTrace.getAll(masterOverflowVariable).onlyElement
 						
 						val xStsEventIdType = xStsMasterQueue.elementTypeDefinition as EnumerationTypeDefinition
 						val eventId = xStsEventIdType.addOrGetEventIdLiteral(eventIntegerId)
@@ -940,6 +971,14 @@ class ComponentTransformer {
 							}
 						}
 						
+						if (checkQueueOverflow) {
+							// // if (size >= capacity) { overflow := true; }
+							val isMasterQueueFull = xStsMasterQueue.isMasterQueueFull(xStsMasterSizeVariable)
+							val setXStsOverflowVariable = xStsMasterOverflowVariable.createAssignmentAction(createTrueExpression)
+							thenAction.actions += isMasterQueueFull.createIfAction(setXStsOverflowVariable)
+							xSts.variableDeclarations += xStsMasterOverflowVariable // Adding to XSTS now
+						}
+						
 						if (eventDiscardStrategy == DiscardStrategy.INCOMING) {
 							// if (size < capacity) { "add elements into master and slave queues" }
 							val isMasterQueueNotFull = xStsMasterQueue.isMasterQueueNotFull(xStsMasterSizeVariable)
@@ -974,6 +1013,7 @@ class ComponentTransformer {
 				eventDispatchAction.actions += ifExpression.createIfAction(thenAction)
 			}
 		}
+		
 		return eventDispatchAction
 	}
 	
@@ -1042,7 +1082,7 @@ class ComponentTransformer {
 		var instanceEndcodingVariable = xSts.getVariable(name)
 		if (instanceEndcodingVariable === null) {
 			instanceEndcodingVariable = createIntegerTypeDefinition
-					.createVariableDeclaration(name)
+					.createVariableDeclarationWithDefaultInitialValue(name)
 			
 			instanceEndcodingVariable.addUnremovableAnnotation
 			instanceEndcodingVariable.addResettableAnnotation
@@ -1142,7 +1182,7 @@ class ComponentTransformer {
 					.map[it.value.getInputEventVariables(it.key)].flatten.toList
 			
 			val randomActions = createChoiceActionForRandomValues(
-					messageQueue.name + "_" + messageQueue.hashCode.abs, min, max + 1 /* exclusive */)
+					messageQueue.name + "_" + messageQueue.hashCode.abs, min, max + 1 + 1 /* exclusive '1' + else branch '1' */)
 			val storageAction = randomActions.key
 			newInEventAction.actions += storageAction
 			val choiceAction = randomActions.value
@@ -1176,7 +1216,11 @@ class ComponentTransformer {
 					}
 				}
 			}
-			removableBranchActions.forEach[it.remove] // Removing now - it would break the indexes in the loop
+			// Else branch (no valid input to/from the queue)
+			branchActions.last.appendToAction(
+					allXStsInputEventVariables.createVariableResetActions)
+			// Removing branches now - it would break the indexes in the loop
+			removableBranchActions.forEach[it.remove]
 			
 			// Note that if the sync component has no port, the event transmission is not mapped
 			
@@ -1197,7 +1241,7 @@ class ComponentTransformer {
 	
 	def dispatch XSTS transform(AbstractSynchronousCompositeComponent component, Package lowlevelPackage) {
 		val name = component.name
-		logger.info( "Transforming abstract synchronous composite " + name)
+		logger.info("Transforming abstract synchronous composite " + name)
 		val xSts = name.createXsts
 		val componentMergedActions = <Component, Action>newHashMap // To handle multiple schedulings in CascadeCompositeComponents
 		val components = component.components
@@ -1313,14 +1357,24 @@ class ComponentTransformer {
 		}
 		xSts.changeTransitions(mergedAction.wrap)
 		
-		logger.info( "Deleting unused instance ports in " + name)
+		logger.info("Deleting unused instance ports in " + name)
 		xSts.deleteUnusedPorts(component) // Deleting variable assignments for unused ports
 		
 		// Connect only after "xSts.mergedTransition.action = mergedAction" / "xSts.changeTransitions"
-		logger.info( "Connecting events through channels in " + name)
+		logger.info("Connecting events through channels in " + name)
 		xSts.connectEventsThroughChannels(component) // Event (variable setting) connecting across channels
 		
-		logger.info( "Binding event to system port events in " + name)
+		logger.info("Connecting interface functions through channels in " + name)
+		xSts.connectInterfaceFunctionsThroughChannels(component)
+		
+		logger.info("Connecting interface variables through channels in " + name)
+		xSts.connectInterfaceVariablesThroughChannels(component)
+		
+		if (inlineFunctions && component.topSynchronous) {
+			xSts.inlineFunctionCalls
+		}
+		
+		logger.info("Binding event to system port events in " + name)
 		val oldInEventAction = xSts.inEventTransition.action
 		val bindingAssignments = xSts.createEventAndParameterAssignmentsBoundToTheSameSystemPort(component)
 		// Optimization: removing old NonDeterministicActions 
@@ -1336,7 +1390,7 @@ class ComponentTransformer {
 		
 		if (transformOrthogonalActions) {
 			// After connectEventsThroughChannels
-			logger.info( "Transforming orthogonal actions in XSTS " + name)
+			logger.info("Transforming orthogonal actions in XSTS " + name)
 			xSts.mergedAction.transform(xSts)
 			// Before optimize actions
 		}
@@ -1348,14 +1402,14 @@ class ComponentTransformer {
 		}
 		
 		// After in event optimization
-		logger.info( "Adding internal event handlings in " + name)
+		logger.info("Adding internal event handlings in " + name)
 		xSts.addInternalEventHandlingActions(component)
 		
 		return xSts
 	}
 	
 	def dispatch XSTS transform(StatechartDefinition statechart, Package lowlevelPackage) {
-		logger.info( "Transforming statechart " + statechart.name)
+		logger.info("Transforming statechart " + statechart.name)
 		/* Note that the package is already transformed and traced because of
 		   the "val lowlevelPackage = gammaToLowlevelTransformer.transform(_package)" call */
 		val lowlevelStatechart = gammaToLowlevelTransformer.transform(statechart)
@@ -1449,7 +1503,7 @@ class ComponentTransformer {
 			return true
 		}
 		checkState(systemPorts.containsNone(topPorts) || topPorts.forall[it.internal],
-			"All or none of the event references must be of system ports in " + queue.containingComponent.name + "' queue " + queue.name)
+			"All or none of the event references must be of system ports in " + queue.containingComponent.name + "'s queue " + queue.name)
 		return false
 	}
 	
@@ -1497,12 +1551,20 @@ class ComponentTransformer {
 		mergedAction.appendToAction(resetAction)
 	}
 	
+	private def void inlineFunctionCalls(XSTS xSts) {
+		xSts.inlineFunctionAccessExpressions
+		xSts.functionDeclarations.clear
+	}
+	
 	private def void customizeDeclarationNames(XSTS xSts, ComponentInstance instance) {
 		val type = instance.derivedType
 		if (type instanceof StatechartDefinition) {
 			// Customizing every variable name
 			for (variable : xSts.variableDeclarations) {
 				variable.name = variable.getCustomizedName(instance)
+			}
+			for (function : xSts.functionDeclarations) {
+				function.name = function.getCustomizedName(instance)
 			}
 			// Customizing region type declaration name
 			for (regionType : xSts.variableGroups.filter[it.annotation instanceof RegionGroup]

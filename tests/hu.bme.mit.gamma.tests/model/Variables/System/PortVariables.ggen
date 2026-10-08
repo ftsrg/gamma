@@ -1,0 +1,92 @@
+import "Statecharts/Variables_1"
+import "Statecharts/Variables_2"
+import "Statecharts/AsyncVariables_1"
+import "Statecharts/AsyncVariables_2"
+
+import "PortVariablesSystem"
+import "SyncPortVariablesSystem"
+import "AsyncPortVariablesSystem"
+
+code {
+	component : Variables_1
+	language : java
+}
+
+code {
+	component : Variables_2
+	language : java
+}
+
+analysis {
+	component : PortVariablesSystem
+	language : IML
+	state-coverage
+}
+
+verification {
+	file : "PortVariablesSystem"
+	language : IML
+	property-file : ".PortVariablesSystem.gpd"
+	optimize-traces : true
+	test-language : java
+	serialize-results : false
+}
+
+code {
+	component : PortVariablesSystem
+	language : java
+}
+
+//
+
+analysis {
+	component : SyncPortVariablesSystem
+	language : IML
+	state-coverage
+}
+
+verification {
+	file : "SyncPortVariablesSystem"
+	language : IML
+	property-file : ".SyncPortVariablesSystem.gpd"
+	optimize-traces : true
+	test-language : java
+	serialize-results : false
+}
+
+code {
+	component : SyncPortVariablesSystem
+	language : java
+}
+
+//
+
+code {
+	component : AsyncVariables_1
+	language : java
+}
+
+code {
+	component : AsyncVariables_2
+	language : java
+}
+
+analysis {
+	component : AsyncPortVariablesSystem
+	language : IML
+	state-coverage
+}
+
+verification {
+	file : "AsyncPortVariablesSystem"
+	language : IML
+	property-file : ".AsyncPortVariablesSystem.gpd"
+	optimize-traces : true
+	test-language : java
+	serialize-results : false
+}
+
+code {
+	component : AsyncPortVariablesSystem
+	language : java
+}

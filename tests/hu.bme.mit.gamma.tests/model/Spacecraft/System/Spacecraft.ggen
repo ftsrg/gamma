@@ -38,4 +38,5 @@ verification {
     back-annotate-to-original : true
     file : "Spacecraft.xml"
     property-file : "Spacecraft.gpm"
+	serialize-results : false
 }

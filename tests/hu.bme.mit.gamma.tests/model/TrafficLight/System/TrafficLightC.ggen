@@ -1,0 +1,21 @@
+import "TrafficLight/TrafficLightC.gcd"
+
+code {
+	component : Example_ControllerStatechart
+	language : java
+}
+
+analysis {
+	component : Example_ControllerStatechart
+	language : smart
+	state-coverage
+}
+
+verification {
+	language : smart
+	test-language : java
+	file : "TrafficLightC"
+	property-file : ".TrafficLightC.gpd"
+	optimize-traces : true
+	serialize-results : false
+}

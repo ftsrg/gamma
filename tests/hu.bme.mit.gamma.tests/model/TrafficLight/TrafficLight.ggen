@@ -1,1 +1,3 @@
-include "System/TrafficLightWrapper.ggen"
+parallel exec "System/TrafficLightWrapper.ggen"
+parallel exec "System/TrafficLightForm.ggen"
+parallel exec "System/TrafficLightC.ggen"

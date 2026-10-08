@@ -3,7 +3,8 @@ package traindoorcontrol
 import "Interface/Interface.gcd"
 
 @TransitionPriority = order-based
-statechart NominalController [
+@IncompleteStatechart
+statechart CoFiController [
 	port ControlActions : provides ControlActions
 	port FeedbackDoorState : requires FeedbackDoorState
 	port FeedbackPresence : requires FeedbackPresence

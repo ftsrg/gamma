@@ -17,7 +17,9 @@ import java.util.List;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
+import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
@@ -32,12 +34,15 @@ import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
 import hu.bme.mit.gamma.statechart.interface_.EventDirection;
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage;
+import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage;
 import hu.bme.mit.gamma.statechart.util.StatechartModelValidator;
 import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures;
+import hu.bme.mit.gamma.trace.model.Act;
 import hu.bme.mit.gamma.trace.model.AssignmentAct;
 import hu.bme.mit.gamma.trace.model.ComponentSchedule;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
@@ -59,7 +64,8 @@ public class TraceModelValidator extends StatechartModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
 		if (element instanceof RaiseEventAct act) { // Assert acts do not have to have arguments
-			if (act.getArguments().isEmpty()) {
+			List<Expression> arguments = act.getArguments();
+			if (arguments.isEmpty()) {
 				Step step = ecoreUtil.getContainerOfType(act, Step.class);
 				List<Expression> asserts = step.getAsserts();
 				EObject object = ecoreUtil.getChildOfContainerOfType(act, Step.class);
@@ -78,25 +84,29 @@ public class TraceModelValidator extends StatechartModelValidator {
 	public Collection<ValidationResultMessage> checkRaiseEventAct(RaiseEventAct raiseEventAct) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Step step = ecoreUtil.getContainerOfType(raiseEventAct, Step.class);
-		RealizationMode realizationMode = raiseEventAct.getPort().getInterfaceRealization().getRealizationMode();
+		Port port = raiseEventAct.getPort();
+		RealizationMode realizationMode = port.getInterfaceRealization().getRealizationMode();
 		Event event = raiseEventAct.getEvent();
 		EventDirection eventDirection = ecoreUtil.getContainerOfType(event, EventDeclaration.class).getDirection();
-		if (step.getActions().contains(raiseEventAct)) {
+		List<Act> actions = step.getActions();
+		if (actions.contains(raiseEventAct)) {
 			// It should be an in event
 			if (realizationMode == RealizationMode.PROVIDED && eventDirection == EventDirection.OUT ||
 				realizationMode == RealizationMode.REQUIRED && eventDirection == EventDirection.IN) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR, 
 						"This event is an out-event of the component",
-						new ReferenceInfo(StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT)));
+							new ReferenceInfo(InterfaceModelPackage.Literals.EVENT_REFERENCE_EXPRESSION__EVENT)));
 			}			
 		}
 		else {
 			// It should be an out event
 			if (realizationMode == RealizationMode.PROVIDED && eventDirection == EventDirection.IN ||
 				realizationMode == RealizationMode.REQUIRED && eventDirection == EventDirection.OUT) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR, 
 						"This event is an in-event of the component",
-						new ReferenceInfo(StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT)));
+							new ReferenceInfo(InterfaceModelPackage.Literals.EVENT_REFERENCE_EXPRESSION__EVENT)));
 			}			
 		}
 		return validationResultMessages;
@@ -111,9 +121,10 @@ public class TraceModelValidator extends StatechartModelValidator {
 		
 		ComponentInstance instance = StatechartModelDerivedFeatures.getLastInstance(instanceReference);
 		if (!StatechartModelDerivedFeatures.isStatechart(instance)) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-				"This is not a statechart instance",
-					new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE)));
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.ERROR, 
+					"This is not a statechart instance",
+						new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE)));
 		}
 		return validationResultMessages;
 	}
@@ -121,17 +132,18 @@ public class TraceModelValidator extends StatechartModelValidator {
 	public Collection<ValidationResultMessage> checkInstanceStateConfiguration(
 			ComponentInstanceStateReferenceExpression configuration) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		ComponentInstance instance = (ComponentInstance)
-				StatechartModelDerivedFeatures.getLastInstance(configuration.getInstance());
+		ComponentInstance instance = StatechartModelDerivedFeatures
+					.getLastInstance(configuration.getInstance());
 		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
 		if (type instanceof StatechartDefinition) {
 			State state = configuration.getState();
 			List<State> states =  ecoreUtil.getAllContentsOfType(type,
 					hu.bme.mit.gamma.statechart.statechart.State.class);
 			if (!states.contains(state)) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"This is not a valid state in the specified statechart",
-						new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_STATE_REFERENCE_EXPRESSION__STATE)));
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR, 
+						"This is not a valid state in the specified statechart",
+							new ReferenceInfo(StatechartModelPackage.Literals.STATE_REFERENCE_EXPRESSION__STATE)));
 			}
 		}
 		return validationResultMessages;
@@ -142,14 +154,14 @@ public class TraceModelValidator extends StatechartModelValidator {
 		ComponentInstanceReferenceExpression instanceReference = variableReference.getInstance();
 		ComponentInstance instance = StatechartModelDerivedFeatures.getLastInstance(instanceReference);
 		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
-		if (type instanceof StatechartDefinition) {
-			VariableDeclaration variable = variableReference.getVariableDeclaration();
-			StatechartDefinition statechartDefinition = (StatechartDefinition) type;
-			List<VariableDeclaration> variables = statechartDefinition.getVariableDeclarations();
+		if (type instanceof StatechartDefinition statechartDefinition) {
+			Declaration variable = variableReference.getDeclaration();
+			List<VariableDeclaration> variables = StatechartModelDerivedFeatures.getAllProvidedVariableDeclarations(statechartDefinition);
 			if (!variables.contains(variable)) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"This is not a valid variable in the specified statechart",
-						new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_VARIABLE_REFERENCE_EXPRESSION__VARIABLE_DECLARATION)));
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR, 
+						"This is not a valid variable in the specified statechart",
+							new ReferenceInfo(ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION)));
 			}
 		}
 		return validationResultMessages;
@@ -160,9 +172,10 @@ public class TraceModelValidator extends StatechartModelValidator {
 		ComponentInstanceReferenceExpression instanceReference = schedule.getInstanceReference();
 		ComponentInstance instance = StatechartModelDerivedFeatures.getLastInstance(instanceReference);
 		if (!StatechartModelDerivedFeatures.needsScheduling(instance)) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-				"Only scheduled-asynchronous and aynchronous adapter components can be scheduled",
-					new ReferenceInfo(TraceModelPackage.Literals.INSTANCE_SCHEDULE__INSTANCE_REFERENCE)));
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.ERROR, 
+					"Only scheduled-asynchronous and aynchronous adapter components can be scheduled",
+						new ReferenceInfo(TraceModelPackage.Literals.INSTANCE_SCHEDULE__INSTANCE_REFERENCE)));
 		}
 		return validationResultMessages;
 	}
@@ -174,9 +187,10 @@ public class TraceModelValidator extends StatechartModelValidator {
 		Component component = executionTrace.getComponent();
 		if (component != null) {
 			if (component instanceof AsynchronousCompositeComponent) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"Global component scheduling is not valid if the component is an asynchronous composite component",
-						new ReferenceInfo(TraceModelPackage.Literals.STEP__ACTIONS, ecoreUtil.getIndex(schedule), step)));
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR, 
+						"Global component scheduling is not valid if the component is an asynchronous composite component",
+							new ReferenceInfo(TraceModelPackage.Literals.STEP__ACTIONS, ecoreUtil.getIndex(schedule), step)));
 			}
 		}
 		return validationResultMessages;

@@ -74,7 +74,7 @@ public class CommandHandler extends AbstractHandler {
 		LOGGER.info("XSTS model " + xSts.getName() + " successfully read");
 		
 		/* define the platform and function pointers*/
-		final boolean pointers = true;
+//		final boolean pointers = true;
 		final SupportedPlatforms platform = SupportedPlatforms.UNIX;
 		
 		// Load component too, if you want to use this

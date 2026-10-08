@@ -17,4 +17,5 @@ verification {
 	language : Theta
 	optimize-traces : true
 	test-language : java
+	serialize-results : false
 }

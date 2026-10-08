@@ -3,9 +3,10 @@ package traindoorcontrol
 import "Interface/Interface.gcd"
 
 import "TrainDoorController/TrainDoorControllerAdapter.gcd"
-import "CoFi/NominalAdapter.gcd"
+import "CoFi/CoFiAdapter.gcd"
 
 scheduled-async Conformance [
+	port FeedbackDoorState : requires FeedbackDoorState
 	port FeedbackPresence : requires FeedbackPresence
 	port ExternalCommunication : requires ExternalCommunication
 	
@@ -17,10 +18,12 @@ scheduled-async Conformance [
 	port ControlActionsStateMachine : provides ControlActions
 ] {
 	component _statechart : TrainDoorControllerAdapter
-	component _stateMachine : NominalControllerAdapter
+	component _stateMachine : CoFiControllerAdapter
 	
+	bind FeedbackDoorState -> _statechart.FeedbackDoorState
 	bind FeedbackPresence -> _statechart.FeedbackPresence
 	bind ExternalCommunication -> _statechart.ExternalCommunication	
+	bind FeedbackDoorState -> _stateMachine.FeedbackDoorState
 	bind FeedbackPresence -> _stateMachine.FeedbackPresence
 	bind ExternalCommunication -> _stateMachine.ExternalCommunication
 	

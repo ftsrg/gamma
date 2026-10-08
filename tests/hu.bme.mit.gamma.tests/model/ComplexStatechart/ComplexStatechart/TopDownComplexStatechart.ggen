@@ -26,6 +26,7 @@ verification {
 	optimize : true
 	test-language : java
 	optimize : true
+	serialize-results : false
 }
 
 verification {
@@ -34,4 +35,5 @@ verification {
 	query-file : "TopDownComplexStatechart-XSTS.prop"
 	test-language : java
 	optimize : true
+	serialize-results : false
 }

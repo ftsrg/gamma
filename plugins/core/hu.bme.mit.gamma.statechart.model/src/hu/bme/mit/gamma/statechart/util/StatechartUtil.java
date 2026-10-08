@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
@@ -47,6 +48,9 @@ import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortVariableReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueOverflowExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
@@ -69,16 +73,18 @@ import hu.bme.mit.gamma.statechart.interface_.AnyTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.ComponentAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.Event;
+import hu.bme.mit.gamma.statechart.interface_.EventAnyPortParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
 import hu.bme.mit.gamma.statechart.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
-import hu.bme.mit.gamma.statechart.interface_.EventReference;
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
+import hu.bme.mit.gamma.statechart.interface_.OccurrenceReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Port;
+import hu.bme.mit.gamma.statechart.interface_.PortDeclarationReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
@@ -91,12 +97,14 @@ import hu.bme.mit.gamma.statechart.statechart.BinaryType;
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
 import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
 import hu.bme.mit.gamma.statechart.statechart.EntryState;
+import hu.bme.mit.gamma.statechart.statechart.EventAnyPortReference;
 import hu.bme.mit.gamma.statechart.statechart.InitialState;
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.Region;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StateNode;
+import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory;
 import hu.bme.mit.gamma.statechart.statechart.SynchronousStatechartDefinition;
@@ -110,7 +118,7 @@ public class StatechartUtil extends ActionUtil {
 	public static final StatechartUtil INSTANCE = new StatechartUtil();
 	protected StatechartUtil() {}
 	//
-
+	
 	protected InterfaceModelFactory interfaceFactory = InterfaceModelFactory.eINSTANCE;
 	protected StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE;
 	protected CompositeModelFactory compositeFactory = CompositeModelFactory.eINSTANCE;
@@ -118,40 +126,15 @@ public class StatechartUtil extends ActionUtil {
 	// Extending super methods
 	
 	@Override
-	public Declaration getDeclaration(Expression expression) {
-		if (expression instanceof EventParameterReferenceExpression) {
-			EventParameterReferenceExpression reference = (EventParameterReferenceExpression) expression;
-			return reference.getParameter();
-		}
-		return super.getDeclaration(expression);
-	}
-	
-	@Override
-	public ReferenceExpression getAccessReference(Expression expression) {
-		if (expression instanceof EventParameterReferenceExpression) {
-			return (EventParameterReferenceExpression) expression;
-		}
-		return super.getAccessReference(expression);
-	}
-	
-	@Override
-	public Declaration getAccessedDeclaration(Expression expression) {
-		ReferenceExpression referenceExpression = getAccessReference(expression);
-		if (referenceExpression instanceof EventParameterReferenceExpression) {
-			EventParameterReferenceExpression reference = (EventParameterReferenceExpression) referenceExpression;
-			return reference.getParameter();
-		}
-		return super.getAccessedDeclaration(referenceExpression);
-	}
-	
-	@Override
 	public Collection<TypeDeclaration> getTypeDeclarations(EObject context) {
 		Package _package = ecoreUtil.getSelfOrContainerOfType(context, Package.class);
 		List<TypeDeclaration> types = new ArrayList<TypeDeclaration>();
 		for (Package _import :_package.getImports()) {
-			types.addAll(_import.getTypeDeclarations());
+			types.addAll(
+					_import.getTypeDeclarations());
 		}
-		types.addAll(_package.getTypeDeclarations());
+		types.addAll(
+				_package.getTypeDeclarations());
 		return types;
 	}
 	
@@ -237,11 +220,9 @@ public class StatechartUtil extends ActionUtil {
 		for (AssignmentStatement assignmentStatement :
 				ecoreUtil.getSelfAndAllContentsOfType(object, AssignmentStatement.class)) {
 			ReferenceExpression lhs = assignmentStatement.getLhs();
-			if (lhs instanceof DirectReferenceExpression) {
-				DirectReferenceExpression reference = (DirectReferenceExpression) lhs;
+			if (lhs instanceof DirectReferenceExpression reference) {
 				Declaration declaration = reference.getDeclaration();
-				if (declaration instanceof VariableDeclaration) {
-					VariableDeclaration variable = (VariableDeclaration) declaration;
+				if (declaration instanceof VariableDeclaration variable) {
 					variables.add(variable);
 				}
 			}
@@ -258,18 +239,15 @@ public class StatechartUtil extends ActionUtil {
 				ecoreUtil.getSelfAndAllContentsOfType(object, ReferenceExpression.class)) {
 			boolean isWritten = false;
 			EObject container = referenceExpression.eContainer();
-			if (container instanceof AssignmentStatement) {
-				AssignmentStatement assignment = (AssignmentStatement) container;
+			if (container instanceof AssignmentStatement assignment) {
 				if (assignment.getLhs() == referenceExpression) {
 					isWritten = true;
 				}
 			}
 			if (!isWritten) {
-				if (referenceExpression instanceof DirectReferenceExpression) {
-					DirectReferenceExpression directReference = (DirectReferenceExpression) referenceExpression;
+				if (referenceExpression instanceof DirectReferenceExpression directReference) {
 					Declaration declaration = directReference.getDeclaration();
-					if (declaration instanceof VariableDeclaration) {
-						VariableDeclaration variable = (VariableDeclaration) declaration;
+					if (declaration instanceof VariableDeclaration variable) {
 						variables.add(variable);
 					}
 				}
@@ -283,8 +261,10 @@ public class StatechartUtil extends ActionUtil {
 	
 	public Set<VariableDeclaration> getUnusedVariables(EObject object) {
 		Set<VariableDeclaration> variables = getVariables(object);
-		variables.removeAll(getWrittenVariables(object));
-		variables.removeAll(getReadVariables(object));
+		variables.removeAll(
+				getWrittenVariables(object));
+		variables.removeAll(
+				getReadVariables(object));
 		return variables;
 	}
 	
@@ -310,13 +290,15 @@ public class StatechartUtil extends ActionUtil {
 	
 	public Set<VariableDeclaration> getWrittenOnlyVariables(EObject object) {
 		Set<VariableDeclaration> variables = getWrittenVariables(object);
-		variables.removeAll(getReadVariables(object));
+		variables.removeAll(
+				getReadVariables(object));
 		return variables;
 	}
 	
 	public Set<VariableDeclaration> getReadOnlyVariables(EObject object) {
 		Set<VariableDeclaration> variables = getReadVariables(object);
-		variables.removeAll(getWrittenVariables(object));
+		variables.removeAll(
+				getWrittenVariables(object));
 		return variables;
 	}
 	
@@ -349,6 +331,28 @@ public class StatechartUtil extends ActionUtil {
 		return eventTrigger;
 	}
 	
+	public EventTrigger createAnyPortEventTrigger(Port port) {
+		AnyPortEventReference anyPortEventReference = statechartFactory.createAnyPortEventReference();
+		anyPortEventReference.setPort(port);
+		
+		EventTrigger eventTrigger = interfaceFactory.createEventTrigger();
+		eventTrigger.setEventReference(anyPortEventReference);
+		
+		return eventTrigger;
+	}
+	
+	public EventTrigger createAnyEventTrigger(Event event) {
+		EventAnyPortReference anyEventReference = statechartFactory.createEventAnyPortReference();
+		anyEventReference.setInterface(
+				ecoreUtil.getContainerOfType(event, Interface.class));
+		anyEventReference.setEvent(event);
+		
+		EventTrigger eventTrigger = interfaceFactory.createEventTrigger();
+		eventTrigger.setEventReference(anyEventReference);
+		
+		return eventTrigger;
+	}
+	
 	public List<Trigger> unwrapAnyTriggers(Iterable<? extends Trigger> triggers) {
 		List<Trigger> simpleTriggers = new ArrayList<Trigger>();
 		
@@ -368,7 +372,7 @@ public class StatechartUtil extends ActionUtil {
 		}
 		else if (trigger instanceof EventTrigger) {
 			EventTrigger eventTrigger = (EventTrigger) trigger;
-			EventReference eventReference = eventTrigger.getEventReference();
+			OccurrenceReferenceExpression eventReference = eventTrigger.getEventReference();
 			if (eventReference instanceof AnyPortEventReference) {
 				AnyPortEventReference anyPortEventReference = (AnyPortEventReference) eventReference;
 				Port port = anyPortEventReference.getPort();
@@ -467,7 +471,7 @@ public class StatechartUtil extends ActionUtil {
 			Port referredPort = parameterReference.getPort();
 			Event referredEvent = parameterReference.getEvent();
 			if (port == referredPort && event == referredEvent) {
-				ParameterDeclaration referredParameter = parameterReference.getParameter();
+				Declaration referredParameter = parameterReference.getDeclaration();
 				int index = ecoreUtil.getIndex(referredParameter);
 				Expression argument = arguments.get(index);
 				Expression clonedArgument = ecoreUtil.clone(argument);
@@ -511,6 +515,15 @@ public class StatechartUtil extends ActionUtil {
 		}
 	}
 	
+	public long evaluateForSmallestUnit(TimeSpecification time, Package _package) {
+		Expression value = time.getValue();
+		TimeUnit unit = time.getUnit();
+		TimeUnit base = StatechartModelDerivedFeatures.getSmallestTimeUnit(_package);
+		long multiplicator = StatechartModelDerivedFeatures.getMultiplicator(unit, base);
+		Expression value_ = ecoreUtil.clone(value);
+		return evaluator.evaluateInteger(value_) * multiplicator;
+	}
+	
 	public AsynchronousAdapter wrapIntoAdapter(SynchronousComponent component,
 			String adapterName, String instanceName) {
 		AsynchronousAdapter adapter = wrapIntoAdapter(component, adapterName);
@@ -545,7 +558,8 @@ public class StatechartUtil extends ActionUtil {
 	
 	public AsynchronousAdapter wrapIntoDefaultAdapter(SynchronousComponent component, String adapterName,
 			String messageQueueName, int capacity) {
-		return wrapIntoDefaultAdapter(component, adapterName, messageQueueName, toIntegerLiteral(capacity));
+		IntegerLiteralExpression _capacity = toIntegerLiteral(capacity);
+		return wrapIntoDefaultAdapter(component, adapterName, messageQueueName, _capacity);
 	}
 	
 	public AsynchronousAdapter wrapIntoDefaultAdapter(SynchronousComponent component, String adapterName,
@@ -553,7 +567,8 @@ public class StatechartUtil extends ActionUtil {
 		AsynchronousAdapter adapter = wrapIntoAdapter(component, adapterName);
 		
 		ControlSpecification controlSpecification = compositeFactory.createControlSpecification();
-		controlSpecification.setTrigger(interfaceFactory.createAnyTrigger());
+		AnyTrigger anyTrigger = interfaceFactory.createAnyTrigger();
+		controlSpecification.setTrigger(anyTrigger);
 		controlSpecification.setControlFunction(ControlFunction.RUN_ONCE);
 		
 		adapter.getControlSpecifications().add(controlSpecification);
@@ -579,13 +594,15 @@ public class StatechartUtil extends ActionUtil {
 	}
 	
 	public Package wrapIntoPackage(Component component) {
-		Package _package = createPackage(component.getName().toLowerCase());
+		String packageName = component.getName().toLowerCase();
+		Package _package = createPackage(packageName);
 		_package.getComponents().add(component);
 		return _package;
 	}
 	
 	public Package wrapIntoPackage(Interface _interface) {
-		Package _package = createPackage(_interface.getName().toLowerCase());
+		String packageName = _interface.getName().toLowerCase();
+		Package _package = createPackage(packageName);
 		_package.getInterfaces().add(_interface);
 		return _package;
 	}
@@ -603,6 +620,10 @@ public class StatechartUtil extends ActionUtil {
 		return _package;
 	}
 	
+	public Port createPort(Interface _interface, String name) {
+		return createPort(_interface, RealizationMode.PROVIDED, name);
+	}
+	
 	public Port createPort(Interface _interface, RealizationMode mode, String name) {
 		Port port = interfaceFactory.createPort();
 		port.setName(name);
@@ -616,18 +637,22 @@ public class StatechartUtil extends ActionUtil {
 	public Port createOppositePort(Port port) {
 		Port oppositePort = ecoreUtil.clone(port);
 		
-		InterfaceRealization interfaceRealization = oppositePort.getInterfaceRealization();
+		conjugate(oppositePort);
+		
+		return oppositePort;
+	}
+	
+	public void conjugate(Port port) {
+		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
 		RealizationMode realizationMode = interfaceRealization.getRealizationMode();
 		RealizationMode opposite = StatechartModelDerivedFeatures.getOpposite(realizationMode);
 		interfaceRealization.setRealizationMode(opposite);
-		
-		return oppositePort;
 	}
 	
 	public Interface createBroadcastInterface(Interface _interface) {
 		Interface broadcastInterface = ecoreUtil.clone(_interface);
 		
-		for (EventDeclaration event : broadcastInterface.getEvents()) {
+		for (EventDeclaration event : broadcastInterface.getEventDeclarations()) {
 			event.setDirection(EventDirection.OUT);
 		}
 		
@@ -635,42 +660,37 @@ public class StatechartUtil extends ActionUtil {
 	}
 	
 	public ComponentInstance instantiateComponent(Component component) {
-		if (component instanceof SynchronousComponent) {
-			return instantiateSynchronousComponent(
-					(SynchronousComponent) component);
+		if (component instanceof SynchronousComponent synchronousComponent) {
+			return instantiateSynchronousComponent(synchronousComponent);
 		}
-		if (component instanceof AsynchronousComponent) {
-			return instantiateAsynchronousComponent(
-					(AsynchronousComponent) component);
+		if (component instanceof AsynchronousComponent asynchronousComponent) {
+			return instantiateAsynchronousComponent(asynchronousComponent);
 		}
 		throw new IllegalArgumentException("Not known type: " + component);
 	}
 	
 	public SynchronousComponentInstance instantiateSynchronousComponent(SynchronousComponent component) {
 		SynchronousComponentInstance instance = compositeFactory.createSynchronousComponentInstance();
-		instance.setName(
-				getWrapperInstanceName(component));
+		String wrapperInstanceName = getWrapperInstanceName(component);
+		instance.setName(wrapperInstanceName);
 		instance.setType(component);
 		return instance;
 	}
 	
 	public AsynchronousComponentInstance instantiateAsynchronousComponent(AsynchronousComponent component) {
 		AsynchronousComponentInstance instance = compositeFactory.createAsynchronousComponentInstance();
-		instance.setName(getWrapperInstanceName(component));
+		String wrapperInstanceName = getWrapperInstanceName(component);
+		instance.setName(wrapperInstanceName);
 		instance.setType(component);
 		return instance;
 	}
 	
 	public void prependComponentInstance(Component component, ComponentInstance instance) {
-		if (component instanceof AbstractSynchronousCompositeComponent) {
-			AbstractSynchronousCompositeComponent compositeComponent =
-					(AbstractSynchronousCompositeComponent) component;
+		if (component instanceof AbstractSynchronousCompositeComponent compositeComponent) {
 			SynchronousComponentInstance synchronousInstance = (SynchronousComponentInstance) instance;
 			compositeComponent.getComponents().add(0, synchronousInstance);
 		}
-		else if (component instanceof AbstractAsynchronousCompositeComponent) {
-			AbstractAsynchronousCompositeComponent compositeComponent =
-					(AbstractAsynchronousCompositeComponent) component;
+		else if (component instanceof AbstractAsynchronousCompositeComponent compositeComponent) {
 			AsynchronousComponentInstance asynchronousInstance = (AsynchronousComponentInstance) instance;
 			compositeComponent.getComponents().add(0, asynchronousInstance);
 		}
@@ -680,15 +700,11 @@ public class StatechartUtil extends ActionUtil {
 	}
 	
 	public void addComponentInstance(Component component, ComponentInstance instance) {
-		if (component instanceof AbstractSynchronousCompositeComponent) {
-			AbstractSynchronousCompositeComponent compositeComponent =
-					(AbstractSynchronousCompositeComponent) component;
+		if (component instanceof AbstractSynchronousCompositeComponent compositeComponent) {
 			SynchronousComponentInstance synchronousInstance = (SynchronousComponentInstance) instance;
 			compositeComponent.getComponents().add(synchronousInstance);
 		}
-		else if (component instanceof AbstractAsynchronousCompositeComponent) {
-			AbstractAsynchronousCompositeComponent compositeComponent =
-					(AbstractAsynchronousCompositeComponent) component;
+		else if (component instanceof AbstractAsynchronousCompositeComponent compositeComponent) {
 			AsynchronousComponentInstance asynchronousInstance = (AsynchronousComponentInstance) instance;
 			compositeComponent.getComponents().add(asynchronousInstance);
 		}
@@ -705,7 +721,8 @@ public class StatechartUtil extends ActionUtil {
 			List<? extends ComponentInstance> instances) {
 		List<ComponentInstanceReferenceExpression> executionList = composite.getExecutionList();
 		for (ComponentInstance componentInstance : instances) {
-			executionList.add(createInstanceReference(componentInstance));
+			ComponentInstanceReferenceExpression instanceReference = createInstanceReference(componentInstance);
+			executionList.add(instanceReference);
 		}
 	}
 	
@@ -734,26 +751,25 @@ public class StatechartUtil extends ActionUtil {
 		for (int i = 0; i < changeableInstances.size(); i++) {
 			ComponentInstance changeableInstance = changeableInstances.get(i);
 			ComponentInstance targetInstance = targetInstances.get(i);
-			setType(changeableInstance,
-					StatechartModelDerivedFeatures.getDerivedType(targetInstance));
+			Component type = StatechartModelDerivedFeatures.getDerivedType(targetInstance);
+			setType(changeableInstance,	type);
 		}
 	}
 	
 	public SchedulableCompositeComponent wrapComponent(Component component) {
-		if (component instanceof SynchronousComponent) {
-			return wrapSynchronousComponent(
-					(SynchronousComponent) component);
+		if (component instanceof SynchronousComponent synchronousComponent) {
+			return wrapSynchronousComponent(synchronousComponent);
 		}
-		else if (component instanceof AsynchronousComponent) {
-			return wrapAsynchronousComponent(
-					(AsynchronousComponent) component);
+		else if (component instanceof AsynchronousComponent asynchronousComponent) {
+			return wrapAsynchronousComponent(asynchronousComponent);
 		}
 		throw new IllegalArgumentException("Not known type: " + component);
 	}
 	
 	public CascadeCompositeComponent wrapSynchronousComponent(SynchronousComponent component) {
 		CascadeCompositeComponent cascade = compositeFactory.createCascadeCompositeComponent();
-		cascade.setName(component.getName()); // Trick: same name, so reflective API will work
+		String name = component.getName();
+		cascade.setName(name); // Trick: same name, so reflective API will work
 		SynchronousComponentInstance instance = instantiateSynchronousComponent(component);
 		cascade.getComponents().add(instance);
 		
@@ -765,7 +781,8 @@ public class StatechartUtil extends ActionUtil {
 	public ScheduledAsynchronousCompositeComponent wrapAsynchronousComponent(AsynchronousComponent component) {
 		ScheduledAsynchronousCompositeComponent asynchron =
 				compositeFactory.createScheduledAsynchronousCompositeComponent();
-		asynchron.setName(component.getName()); // Trick: same name, so reflective API will work
+		String name = component.getName();
+		asynchron.setName(name); // Trick: same name, so reflective API will work
 		AsynchronousComponentInstance instance = instantiateAsynchronousComponent(component);
 		asynchron.getComponents().add(instance);
 		
@@ -848,11 +865,50 @@ public class StatechartUtil extends ActionUtil {
 		return channel;
 	}
 	
-	public EventPassing createEventPassing(EventReference source) {
+	public AnyPortEventReference createAnyPortEventReference(Port port) {
+		AnyPortEventReference anyPortEventReference = statechartFactory.createAnyPortEventReference();
+		anyPortEventReference.setPort(port);
+		return anyPortEventReference;
+	}
+	
+	public PortEventReference createPortEventReference(Port port, Event event) {
+		PortEventReference portEventReference = statechartFactory.createPortEventReference();
+		portEventReference.setPort(port);
+		portEventReference.setEvent(event);
+		return portEventReference;
+	}
+	
+	public IfThenElseExpression createIfRaisedThenExpression(Port port, ParameterDeclaration parameter) {
+		EventParameterReferenceExpression eventParameterReference = createEventParameterReference(port, parameter);
+		return createIfRaisedThenExpression(eventParameterReference);
+	}
+	
+	public IfThenElseExpression createIfRaisedThenExpression(EventParameterReferenceExpression expression) {
+		return createIfRaisedThenExpression(
+				expression.getPort(), expression.getEvent(), expression);
+	}
+	
+	public IfThenElseExpression createIfRaisedThenExpression(Port port, Event event, Expression then) {
+		PortEventReference portEventReference = createPortEventReference(port, event);
+		IfThenElseExpression ifThenElseExpression = createIfThenElseExpression(portEventReference, then, null);
+		return ifThenElseExpression;
+	}
+	
+	public EventPassing createEventPassing(Port port) {
+		return createEventPassing(
+				createAnyPortEventReference(port), null);
+	}
+	
+	public EventPassing createEventPassing(Port port, Event event) {
+		return createEventPassing(
+				createPortEventReference(port, event), null);
+	}
+	
+	public EventPassing createEventPassing(OccurrenceReferenceExpression source) {
 		return createEventPassing(source, null);
 	}
 	
-	public EventPassing createEventPassing(EventReference source, EventReference target) {
+	public EventPassing createEventPassing(OccurrenceReferenceExpression source, OccurrenceReferenceExpression target) {
 		EventPassing eventPassing = compositeFactory.createEventPassing();
 
 		eventPassing.setSource(source);
@@ -943,10 +999,50 @@ public class StatechartUtil extends ActionUtil {
 		return transition;
 	}
 	
+	public Transition createLoopTransition(StateNode stateNode) {
+		return createTransition(stateNode, stateNode);
+	}
+	
+	public Transition createDefaultTransition(Collection<? extends Transition> transitions) {
+		Expression guard = createDefaultGuard(transitions);
+		
+		Transition transition = statechartFactory.createTransition();
+		transition.setTrigger(
+				statechartFactory.createOnCycleTrigger());
+		transition.setGuard(guard);
+		
+		return transition;
+	}
+	
+	public Expression createDefaultGuard(Collection<? extends Transition> transitions) {
+		if (transitions.isEmpty()) {
+			return factory.createTrueExpression();
+		}
+		
+		TriggerTransformer triggerTransformer = TriggerTransformer.INSTANCE;
+		
+		List<Expression> preconditions = new ArrayList<Expression>();
+		for (Transition transition : transitions) {
+			Trigger trigger = transition.getTrigger();
+			Expression triggerExpression = triggerTransformer.transformTrigger(trigger);
+			
+			Expression guard = transition.getGuard();
+			Expression guardExpression = (guard == null) ? factory.createTrueExpression() : ecoreUtil.clone(guard);
+			
+			Expression precondition = wrapIntoAndExpression(
+					List.of(triggerExpression, guardExpression));
+			preconditions.add(precondition);
+		}
+		
+		Expression defaultExpression = createDefaultExpression(preconditions);
+		
+		return defaultExpression;
+	}
+	
 	public Transition createMaximumPriorityTransition(StateNode sourceState, StateNode targetState) {
 		Transition transition = createTransition(sourceState, targetState);
 		maximizeTransitionPriority(transition); // To support if-else over nondeterministic choices
-
+		
 		return transition;
 	}
 	
@@ -1008,11 +1104,12 @@ public class StatechartUtil extends ActionUtil {
 		region.setName(regionName);
 		compositeElement.getRegions().add(region);
 		
-		region.getStateNodes().add(entry);
+		List<StateNode> stateNodes = region.getStateNodes();
+		stateNodes.add(entry);
 		
 		State state = statechartFactory.createState();
 		state.setName(stateName);
-		region.getStateNodes().add(state);
+		stateNodes.add(state);
 		
 		createTransition(entry, state);
 		
@@ -1070,11 +1167,31 @@ public class StatechartUtil extends ActionUtil {
 	
 	public EventParameterReferenceExpression createEventParameterReference(
 			Port port, ParameterDeclaration parameter) {
+		Event event = ecoreUtil.getContainerOfType(parameter, Event.class);
+		return createEventParameterReference(port, event, parameter);
+	}
+	
+	public EventParameterReferenceExpression createEventParameterReference(
+			Port port, Event event, ParameterDeclaration parameter) {
 		EventParameterReferenceExpression expression = interfaceFactory.createEventParameterReferenceExpression();
 		expression.setPort(port);
-		Event event = ecoreUtil.getContainerOfType(parameter, Event.class);
 		expression.setEvent(event);
-		expression.setParameter(parameter);
+		expression.setDeclaration(parameter);
+		return expression;
+	}
+	
+	public EventAnyPortParameterReferenceExpression createEventAnyPortParameterReference(ParameterDeclaration parameter) {
+		Event event = ecoreUtil.getContainerOfType(parameter, Event.class);
+		return createEventAnyPortParameterReference(event, parameter);
+	}
+	
+	public EventAnyPortParameterReferenceExpression createEventAnyPortParameterReference(
+			Event event, ParameterDeclaration parameter) {
+		EventAnyPortParameterReferenceExpression expression = interfaceFactory.createEventAnyPortParameterReferenceExpression();
+		Interface _interface = ecoreUtil.getContainerOfType(event, Interface.class);
+		expression.setInterface(_interface);
+		expression.setEvent(event);
+		expression.setDeclaration(parameter);
 		return expression;
 	}
 	
@@ -1102,6 +1219,21 @@ public class StatechartUtil extends ActionUtil {
 		return raiseEventAction;
 	}
 	
+	public PortDeclarationReferenceExpression createPortDeclarationReferenceExpression(Port port, Declaration declaraion) {
+		PortDeclarationReferenceExpression portDeclarationReferenceExpression = interfaceFactory.createPortDeclarationReferenceExpression();
+		portDeclarationReferenceExpression.setPort(port);
+		portDeclarationReferenceExpression.setDeclaration(declaraion);
+		return portDeclarationReferenceExpression;
+	}
+	
+	public StateReferenceExpression createStateReference(State state) {
+		StateReferenceExpression stateReferenceExpression = statechartFactory.createStateReferenceExpression();
+		stateReferenceExpression.setState(state);
+		stateReferenceExpression.setRegion(
+				StatechartModelDerivedFeatures.getParentRegion(state));
+		return stateReferenceExpression;
+	}
+	
 	// Atomic component instance reference expressions
 	
 	public ComponentInstanceStateReferenceExpression createStateReference(
@@ -1124,7 +1256,35 @@ public class StatechartUtil extends ActionUtil {
 		ComponentInstanceVariableReferenceExpression reference =
 				compositeFactory.createComponentInstanceVariableReferenceExpression();
 		reference.setInstance(instance);
-		reference.setVariableDeclaration(variable);
+		reference.setDeclaration(variable);
+		return reference;
+	}
+	
+	public ComponentInstancePortVariableReferenceExpression createPortVariableReference(ComponentInstanceReferenceExpression instance,
+			Port port, VariableDeclaration variable) {
+		ComponentInstancePortVariableReferenceExpression reference =
+				compositeFactory.createComponentInstancePortVariableReferenceExpression();
+		reference.setInstance(instance);
+		reference.setPort(port);
+		reference.setDeclaration(variable);
+		return reference;
+	}
+	
+	public ComponentInstanceQueueSizeExpression createQueueSizeReference(ComponentInstanceReferenceExpression instance,
+			MessageQueue queue) {
+		ComponentInstanceQueueSizeExpression reference =
+				compositeFactory.createComponentInstanceQueueSizeExpression();
+		reference.setInstance(instance);
+		reference.setQueue(queue);
+		return reference;
+	}
+	
+	public ComponentInstanceQueueOverflowExpression createQueueOverflowReference(ComponentInstanceReferenceExpression instance,
+			MessageQueue queue) {
+		ComponentInstanceQueueOverflowExpression reference =
+				compositeFactory.createComponentInstanceQueueOverflowExpression();
+		reference.setInstance(instance);
+		reference.setQueue(queue);
 		return reference;
 	}
 	
@@ -1153,13 +1313,19 @@ public class StatechartUtil extends ActionUtil {
 	}
 	
 	public ComponentInstanceEventParameterReferenceExpression createParameterReference(
+			ComponentInstanceReferenceExpression instance, Port port, ParameterDeclaration parameter) {
+		Event event = StatechartModelDerivedFeatures.getContainingEvent(parameter);
+		return createParameterReference(instance, port, event, parameter);
+	}
+	
+	public ComponentInstanceEventParameterReferenceExpression createParameterReference(
 			ComponentInstanceReferenceExpression instance, Port port, Event event, ParameterDeclaration parameter) {
 		ComponentInstanceEventParameterReferenceExpression reference =
 				compositeFactory.createComponentInstanceEventParameterReferenceExpression();
 		reference.setInstance(instance);
 		reference.setPort(port);
 		reference.setEvent(event);
-		reference.setParameterDeclaration(parameter);
+		reference.setDeclaration(parameter);
 		return reference;
 	}
 	
@@ -1267,8 +1433,9 @@ public class StatechartUtil extends ActionUtil {
 		List<Transition> transitions = new ArrayList<Transition>(
 				statechart.getTransitions());
 		for (Transition transition : transitions) {
-			if (nodes.contains(transition.getSourceState()) ||
-					nodes.contains(transition.getTargetState())) {
+			StateNode source = transition.getSourceState();
+			StateNode target = transition.getTargetState();
+			if (nodes.contains(source) || nodes.contains(target)) {
 				ecoreUtil.remove(transition);
 			}
 		}

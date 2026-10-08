@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2022 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -13,7 +13,6 @@ package hu.bme.mit.gamma.uppaal.serializer
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
-import java.util.logging.Level
 import java.util.logging.Logger
 import uppaal.NTA
 import uppaal.declarations.FunctionDeclaration
@@ -36,7 +35,9 @@ import static extension hu.bme.mit.gamma.uppaal.serializer.ExpressionTransformer
  * @author Benedek Horvath, Bence Graics
  */
 class UppaalModelSerializer {
-	
+	//
+	static final Logger logger = Logger.getLogger("GammaLogger")
+	//
 	def static saveToXML(NTA nta, File file) {
 		saveToXML(nta, file.parent, file.name)
 	}
@@ -59,9 +60,9 @@ class UppaalModelSerializer {
 			fw.write(header.toString + body.toString + footer)
 			fw.close
 			// Information message, about the completion of the transformation.
-			Logger.getLogger("GammaLogger").log(Level.INFO, "The serialization has been finished.")
+			logger.info("The serialization has been finished.")
 		} catch (IOException ex) {
-			Logger.getLogger("GammaLogger").log(Level.SEVERE, "An error occurred, while creating the XML file. " + ex.message)
+			logger.severe("An error occurred, while creating the XML file. " + ex.message)
 		}
 	}
 	
@@ -71,9 +72,9 @@ class UppaalModelSerializer {
 			writer.append(content)
 			writer.close
 			// information message, about the completion of the transformation
-			Logger.getLogger("GammaLogger").log(Level.INFO, "Serialization has been finished.")
+			logger.info("Serialization has been finished.")
 		} catch (IOException ex) {
-			Logger.getLogger("GammaLogger").log(Level.SEVERE, "An error occurred, while creating the file. " + ex.message)
+			logger.severe("An error occurred, while creating the file. " + ex.message)
 		}
 	}
 	/**
@@ -90,7 +91,7 @@ class UppaalModelSerializer {
 		<nta>
 		<declaration>
 		
-		«FOR declaration : nta.globalDeclarations.declaration.filter(TypeDeclaration) SEPARATOR "\n"»
+		«FOR declaration : nta.globalDeclarations.declaration.filter(TypeDeclaration) SEPARATOR System.lineSeparator»
 			«IF declaration.typeDefinition instanceof StructTypeSpecification»
 				typedef struct { 
 					«declaration.typeDefinition.serializeTypeDefinition»
@@ -100,11 +101,11 @@ class UppaalModelSerializer {
 		
 		«FOR declaration : nta.globalDeclarations.declaration.filter(VariableDeclaration)
 //				.sortBy[it.variable.head.name] /* Declaration order is crucial, it must not be reordered */ 
-				SEPARATOR "\n"»
+				SEPARATOR System.lineSeparator»
 			«declaration.serializeVariable»
 		«ENDFOR»
 		
-		«FOR function : nta.globalDeclarations.declaration.filter(FunctionDeclaration).map[it.function] SEPARATOR "\n"»
+		«FOR function : nta.globalDeclarations.declaration.filter(FunctionDeclaration).map[it.function] SEPARATOR System.lineSeparator»
 			«function.returnType.serializeTypeDefinition» «function.name»(«FOR param : function.parameter SEPARATOR ", "»«param.variableDeclaration.typeDefinition.serializeTypeDefinition»«param.callType.serializeCallType» «param.variableDeclaration.variable.head.name»«ENDFOR») «function.block.transformStatement»
 		«ENDFOR»
 		
@@ -119,7 +120,7 @@ class UppaalModelSerializer {
 	 * @return The main part of the XML file in a char sequence.
 	 */
 	private def static createTemplate(NTA nta) '''
-		«FOR template : nta.template SEPARATOR "\n"»
+		«FOR template : nta.template SEPARATOR System.lineSeparator»
 		<template>
 		<name>
 		«template.name»
@@ -128,12 +129,12 @@ class UppaalModelSerializer {
 «««			This IF is due to an UPPAAL bug: if there is an empty declaration tag, UPPAAL throws
 «««			a nullptr exception upon opening the declaration of a template in the editor
 			<declaration>
-			«FOR variableDeclaration : template.declarations.declaration.filter(VariableDeclaration) SEPARATOR "\n"»
+			«FOR variableDeclaration : template.declarations.declaration.filter(VariableDeclaration) SEPARATOR System.lineSeparator»
 				«variableDeclaration.serializeVariable»
 			«ENDFOR»
 			</declaration>
 		«ENDIF»
-		«FOR location : template.location SEPARATOR "\n"»
+		«FOR location : template.location SEPARATOR System.lineSeparator»
 		<location id="«location.name»">
 		<name>
 		«location.name»
@@ -158,7 +159,7 @@ class UppaalModelSerializer {
 		«ENDFOR»
 		<init ref="«template.init.name»"/>
 		
-		«FOR transition : template.edge SEPARATOR "\n"»
+		«FOR transition : template.edge SEPARATOR System.lineSeparator»
 		<transition>
 		<source ref="«transition.source.name»"/>
 		<target ref="«transition.target.name»"/>
@@ -192,7 +193,7 @@ class UppaalModelSerializer {
 	 */
 	private def static createFooter(NTA nta) '''
 			<system>
-				«FOR template : nta.template SEPARATOR "\n"»
+				«FOR template : nta.template SEPARATOR System.lineSeparator»
 					«template.name.processNameOfTemplate» = «template.name»();
 				«ENDFOR»
 «««				The instantiation list needs reversing as they are declared in a decreasing priority			

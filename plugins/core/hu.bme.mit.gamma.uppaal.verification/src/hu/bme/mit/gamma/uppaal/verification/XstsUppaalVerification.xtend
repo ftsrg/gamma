@@ -25,5 +25,9 @@ class XstsUppaalVerification extends AbstractUppaalVerification {
 	override protected createPropertySerializer() {
 		return XstsUppaalPropertySerializer.INSTANCE
 	}
+	
+	override getBackendName() {
+		return "XUPPAAL"
+	}
 
 }

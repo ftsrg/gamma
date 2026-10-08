@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,7 +17,6 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.XSTS
-import java.util.logging.Level
 import java.util.logging.Logger
 import uppaal.templates.LocationKind
 
@@ -67,9 +66,19 @@ class XstsToUppaalTransformer {
 		
 		xSts.transformVariables
 		
+		for (function : xSts.functionDeclarations) {
+			function.transformAndSaveFunctionDeclaration
+		}
+		
 		val stableLocation = initializingAction.transformAction(initialLocation)
 		stableLocation.name = stableLocationName
-		stableLocation.locationTimeKind = LocationKind.NORMAL
+		if (!xSts.timed) {
+			// To counter trivial CEX for A<> properties - timing does not matter anyway
+			stableLocation.locationTimeKind = LocationKind.URGENT
+		}
+		else {
+			stableLocation.locationTimeKind = LocationKind.NORMAL
+		}
 		
 		val environmentFinishLocation = template.createLocation
 		environmentFinishLocation.name = environmentFinishLocationName
@@ -96,7 +105,7 @@ class XstsToUppaalTransformer {
 			environmentFinishLocation.locationTimeKind = LocationKind.COMMITED
 		}
 		
-		logger.log(Level.INFO, "Basic NTA transformation has finished")
+		logger.info("Basic NTA transformation has finished")
 		
 		//
 		optimizelIntegerCodomains

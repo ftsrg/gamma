@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024-2025 Contributors to the Gamma project
+ * Copyright (c) 2024-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -42,8 +42,11 @@ abstract class ImlSemanticDiffer {
 	protected static final String DIFF_FUNCTION_NAME = "trans"
 	protected static final String NEW_DIFF_FUNCTION_NAME = DIFF_FUNCTION_NAME + 2
 	//
+	protected static final String R = "r"
+	protected static final String T = "t"
 	protected static final String INVARIANT_DELIM = " " + ImlApiHelper.CONSTRAINT_DELIM + System.lineSeparator
 	//
+	protected final boolean printDiff
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
@@ -51,6 +54,14 @@ abstract class ImlSemanticDiffer {
 	protected final StatechartEcoreUtil statechartEcoreUtil = StatechartEcoreUtil.INSTANCE
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//
+	
+	new() {
+		this(false)
+	}
+	
+	new(boolean printDiff) {
+		this.printDiff = printDiff
+	}
 	
 	abstract def ExecutionTrace execute(Object traceability, File modelFile, File modelFile2)
 	
@@ -109,7 +120,9 @@ abstract class ImlSemanticDiffer {
 			val diffAdapter = new SemanticDiffAdapter
 			val diffTrace = diffAdapter.execute(diff)
 //			val diffTrace = diffAdapter.exampleDiff // Test
-			println(diffTrace)
+			if (printDiff) {
+				println(diffTrace)
+			}
 			
 			val gammaPackage = traceability as Package
 			val scanner = new Scanner(diffTrace)
@@ -126,7 +139,7 @@ abstract class ImlSemanticDiffer {
 			if (statechartEcoreUtil.existsOriginalComponent(unfoldedComponent)) {
 				val originalComponent = statechartEcoreUtil.loadAndReplaceToOriginalComponent(unfoldedComponent)
 				if (!originalComponent.statechart) {
-					val backAnnotator = new UnfoldedExecutionTraceBackAnnotator(trace, originalComponent)
+					val backAnnotator = new UnfoldedExecutionTraceBackAnnotator(trace, originalComponent, false)
 					val orignalTrace = backAnnotator.execute
 					return orignalTrace
 				}
@@ -150,6 +163,9 @@ abstract class ImlSemanticDiffer {
 			if (assertion instanceof OpaqueExpression) {
 				if (assertion.expression == SemanticDiffAdapter.V_INVARIANT) {
 					assertion.remove
+				}
+				else if (assertion.expression == SemanticDiffAdapter.O_INVARIANT) {
+					assertion.expression = SemanticDiffAdapter.INVARIANT
 				}
 			}
 		}
@@ -270,6 +286,7 @@ abstract class ImlSemanticDiffer {
 		
 		val constraints = new StringBuilder
 		val invariants = new StringBuilder
+		val newInvariants = new StringBuilder
 		
 		var currentBuilder = constraints
 		
@@ -278,22 +295,24 @@ abstract class ImlSemanticDiffer {
 					.deleteAll("\"")
 			switch (string) {
 				case string.startsWith(SemanticDiffAdapter.REGION): {
-					regions += Region.of(constraints.toString, invariants.toString)
+					regions += Region2.of(constraints.toString, invariants.toString, newInvariants.toString)
 					constraints.length = 0
 					invariants.length = 0
+					newInvariants.length = 0
 				}
 				case SemanticDiffAdapter.CONSTRAINTS:
 					currentBuilder = constraints
-				case SemanticDiffAdapter.O_INVARIANT:
+				case SemanticDiffAdapter.O_INVARIANT,
+				case SemanticDiffAdapter.INVARIANT:
 					currentBuilder = invariants
 				case SemanticDiffAdapter.V_INVARIANT:
-					currentBuilder = invariants
+					currentBuilder = newInvariants
 				default:
 					currentBuilder.append(string + ";")
 			}
 		}
 		regions.removeFirstElement // Empty region
-		regions += Region.of(constraints.toString, invariants.toString) // Last region
+		regions += Region2.of(constraints.toString, invariants.toString, newInvariants.toString) // Last region
 		
 		return regions
 	}
@@ -333,7 +352,7 @@ abstract class ImlSemanticDiffer {
 		}
 		
 		private def void parseFieldIds(String src) {
-			val S = "type nonrec t = {"
+			val S = '''type nonrec «T» = {'''
 			
 			val firstIndex = src.indexOf(S) + S.length
 			val lastIndex = src.indexOf("}", firstIndex)
@@ -353,6 +372,8 @@ abstract class ImlSemanticDiffer {
 			«mergeEnums.serializeModules»
 			
 			«mergeRecords.serializeRecords»
+			
+			«serializeNondeterministicChoiceHelpers»
 			
 			«trans»
 			«trans2»
@@ -375,8 +396,8 @@ abstract class ImlSemanticDiffer {
 			var line = ""
 			while (scanner.hasNextLine && (line = scanner.nextLine).startsWith(M)) {
 				val name = line.substring(M.length, line.indexOf('=')).trim
-				val literals =  line.substring(line.lastIndexOf('=') + 1, line.indexOf("end"))
-						.split('\\|').map[it.trim].reject[it.nullOrEmpty].toList
+				val content = line.substring(line.lastIndexOf('=') + 1, line.lastIndexOf("end"))
+				val literals = content.split('\\|').map[it.trim].reject[it.nullOrEmpty].toList
 				
 				modules += name -> literals
 			}
@@ -403,10 +424,12 @@ abstract class ImlSemanticDiffer {
 			while (scanner.hasNextLine) {
 				line = scanner.nextLine.trim
 				if (line.startsWith("type")) {
-					insideRecord = true
-					val name = line.substring("type nonrec".length, line.indexOf("=")).trim
-					fields = newArrayList
-					records += name -> fields
+					if (line.contains("{")) {
+						insideRecord = true
+						val name = line.substring("type nonrec".length, line.indexOf("=")).trim
+						fields = newArrayList
+						records += name -> fields
+					}
 				}
 				else if (line.startsWith("}")) {
 					insideRecord = false
@@ -436,7 +459,7 @@ abstract class ImlSemanticDiffer {
 		
 		protected def serializeModules(Map<String, ? extends Iterable<String>> modules) '''
 			«FOR name : modules.keySet»
-				module «name» = struct type t = «FOR literal : modules.get(name) SEPARATOR ' | '»«literal»«ENDFOR» end
+				module «name» = struct type «T» = «FOR literal : modules.get(name) SEPARATOR ' | '»«literal»«ENDFOR» end
 			«ENDFOR»
 		'''
 		
@@ -449,6 +472,32 @@ abstract class ImlSemanticDiffer {
 				}
 			«ENDFOR»
 		'''
+		
+		protected def serializeNondeterministicChoiceHelpers() {
+			val typeB = "type nonrec b ="
+			
+			val pickBranch = "let pick_branch ("
+			
+			val i = src.indexOf(typeB)
+			val b = (i < 0) ? "" :
+					src.substring(i, src.indexOf(System.lineSeparator, i)) // type nonrec b = B_0 | B_1 | B_2
+			
+			val i2 = src2.indexOf(typeB)
+			val b2 = (i2 < 0) ? "" :
+					src2.substring(i2, src2.indexOf(System.lineSeparator, i2))
+			
+			val finalB = b.startsWith(b2) ? b : b2
+			
+			val j = src.indexOf(pickBranch)
+			val pickBranchMethod = (j < 0) ? "" :
+					src.substring(j, src.indexOf(System.lineSeparator + System.lineSeparator, j))
+			
+			return '''
+				«finalB»
+				
+				«pickBranchMethod»
+			'''.deleteEmptyLines
+		}
 		
 		protected def getTrans() {
 			val trans = src.behavior
@@ -532,12 +581,12 @@ abstract class ImlSemanticDiffer {
 			
 			return base.replaceLast("r", '''
 				«C»
-				let r = { r with
+				let «R» = { «R» with
 					«FOR input : inputs SEPARATOR ";"»
 						«input»
 					«ENDFOR»
 				} in
-				r
+				«R»
 			''')
 		}
 		
@@ -578,12 +627,12 @@ abstract class ImlSemanticDiffer {
 	
 	static class Region {
 		//
-		String constraints
-		String invariant
+		protected String constraints
+		protected String invariant
 		//
 		new(String constraints, String invariant) {
 			this.constraints = constraints.trimLine.sort // We use this as key in one of the subclasses; must be sorted: 'canonical' representation
-			this.invariant = invariant.trimLine.changeTopmostSemicolons
+			this.invariant = invariant.trimLine.removeRWith.changeTopmostSemicolons
 		}
 		
 		def getConstraints() {
@@ -614,6 +663,10 @@ abstract class ImlSemanticDiffer {
 		
 		protected def trimLine(String line) {
 			return line.trim.replaceAll("\\s+", " ")
+		}
+		
+		protected def removeRWith(String line) {
+			return line.replace('''«R» with ''', "")
 		}
 		
 		// Needed for invariant parsing
@@ -654,6 +707,31 @@ abstract class ImlSemanticDiffer {
 			sortable.sortInplace
 			val result = sortable.join(ImlApiHelper.CONSTRAINT_DELIM)
 			return result
+		}
+		
+	}
+	
+	static class Region2 extends Region {
+		//
+		protected String invariant2
+		//
+		new(String constraints, String invariant, String invariant2) {
+			super(constraints, invariant)
+			this.invariant2 = invariant2.trimLine.changeTopmostSemicolons
+		}
+		
+		def static of(String constraints, String invariant, String invariant2) {
+			if (invariant2.nullOrEmpty) {
+				return of(constraints, invariant)
+			}
+			val region2 = new Region2(constraints, invariant, invariant2)
+			region2.invariant = invariant
+			region2.invariant2 = invariant2
+			return region2
+		}
+		
+		def getInvariant2() {
+			return invariant2
 		}
 		
 	}
@@ -817,10 +895,13 @@ abstract class ImlSemanticDiffer {
 	
 		def print(Map<String, ? extends Entry<String, String>> diffs) {
 			println("Semantic diff:")
-			val S = "  "
+			val I = " > "
+			val O = " < "
 			
 			val invert = false // If true, the same invariants are not duplicated for different constraints
 			if (invert) {
+				val S = "  "
+				val _2S = S + S
 				val C = "- "
 				val semDiffs = newLinkedHashMap
 				for (entries : diffs.entrySet) {
@@ -845,30 +926,30 @@ abstract class ImlSemanticDiffer {
 					}
 				}
 				
-				for (invariant : semDiffs.keySet) {
-					val constraint = semDiffs.get(invariant)
+				for (invariant : semDiffs.keySet.map[it.trim]) {
+					val constraint = semDiffs.get(invariant).trim
 					
 					println(S + "Constraints:")
-					println(S + constraint.replace(System.lineSeparator, System.lineSeparator + S))
-					println(S + invariant.replace(System.lineSeparator, System.lineSeparator + S))
+					println(_2S + constraint)
+					println(_2S + invariant)
 					println
 				}
 				
 				return
 			}
 			
-			for (constraint : diffs.keySet) {
+			for (constraint : diffs.keySet.map[it.trim]) {
 				val value = diffs.get(constraint)
 				
-				val invariant1 = value.key
-				val invariant2 = value.value
+				val invariant1 = value.key.trim
+				val invariant2 = value.value.trim
 				
-				println(S + "Constraint:")
-				println(S + S + constraint.replace(System.lineSeparator, System.lineSeparator + S + S))
-				println(S + "Original invariant:")
-				println(S + S + invariant1)
-				println(S + "New invariant:")
-				println(S + S + invariant2)
+				println(I + "Constraint:")
+				println(constraint)
+				println(O + "Original invariant:")
+				println(invariant1)
+				println(O + "New invariant:")
+				println(invariant2)
 				println
 			}
 		}
@@ -881,6 +962,7 @@ abstract class ImlSemanticDiffer {
 		protected static final String CONSTRAINTS = "- Constraints:"
 		protected static final String O_INVARIANT = "- Original invariant:"
 		protected static final String V_INVARIANT = "- New invariant:"
+		protected static final String INVARIANT = "- Invariant:" // For plain region decomp
 		
 		//
 		protected final String REC = "r"

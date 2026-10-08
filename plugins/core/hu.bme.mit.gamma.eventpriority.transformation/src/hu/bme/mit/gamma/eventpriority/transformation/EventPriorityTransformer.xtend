@@ -12,9 +12,9 @@ package hu.bme.mit.gamma.eventpriority.transformation
 
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
-import hu.bme.mit.gamma.statechart.interface_.EventReference
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
+import hu.bme.mit.gamma.statechart.interface_.OccurrenceReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Trigger
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.BinaryType
@@ -105,7 +105,7 @@ class EventPriorityTransformer {
 	
 	///
 		
-	protected def dispatch Collection<Event> getHigherPriorityEvents(EventReference eventReference) {
+	protected def dispatch Collection<Event> getHigherPriorityEvents(OccurrenceReferenceExpression eventReference) {
 		throw new IllegalArgumentException("Not supported reference type: " + eventReference)
 	}
 	

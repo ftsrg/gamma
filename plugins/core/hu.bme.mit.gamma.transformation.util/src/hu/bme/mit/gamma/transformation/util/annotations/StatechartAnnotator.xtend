@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -31,12 +31,14 @@ import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.BinaryType
+import hu.bme.mit.gamma.statechart.statechart.CoverageAvoidanceAnnotation
 import hu.bme.mit.gamma.statechart.statechart.EntryState
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
+import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.transformation.util.queries.InteractionCUses
 import hu.bme.mit.gamma.transformation.util.queries.InteractionPUses
@@ -67,11 +69,23 @@ class StatechartAnnotator {
 	protected final Package gammaPackage
 	protected final ViatraQueryEngine engine
 	
-	// Transition coverage
+	// Deadlock state coverage
+	protected boolean DEADLOCK_STATE_COVERAGE
+	protected final Set<SynchronousComponentInstance> deadlockStateCoverableComponents = newHashSet
+	protected final Set<Transition> coverableDeadlockStateTransitions = newHashSet
+	protected final Map<Transition, VariableDeclaration> deadlockStateTransitionVariables = newHashMap // Boolean variables
+	
+	// Deadlock coverage
 	protected boolean DEADLOCK_COVERAGE
 	protected final Set<SynchronousComponentInstance> deadlockCoverableComponents = newHashSet
 	protected final Set<Transition> coverableDeadlockTransitions = newHashSet
 	protected final Map<Transition, VariableDeclaration> deadlockTransitionVariables = newHashMap // Boolean variables
+	
+	// Completeness coverage
+	protected boolean COMPLETENESS_COVERAGE
+	protected final Set<SynchronousComponentInstance> completenessCoverableComponents = newHashSet
+	protected final Set<State> coverableCompletenessStates = newHashSet
+	protected final Map<Transition, VariableDeclaration> completenessTransitionVariables = newHashMap // Boolean variables
 	
 	// Nondeterministic transition coverage
 	protected boolean NONDETERMINISTIC_TRANSITION_COVERAGE
@@ -157,33 +171,47 @@ class StatechartAnnotator {
 			new EMFScope(
 				gammaPackage.eResource.resourceSet))
 		
+		if (!annotableElements.deadlockStateCoverableComponents.empty) {
+			this.DEADLOCK_STATE_COVERAGE = true
+			this.deadlockStateCoverableComponents += annotableElements.deadlockStateCoverableComponents
+			this.coverableDeadlockStateTransitions += deadlockStateCoverableComponents
+					.map[it.type].filter(StatechartDefinition)
+					.map[it.transitions].flatten.filter[it.sourceState.state]
+		}
 		if (!annotableElements.deadlockCoverableComponents.empty) {
 			this.DEADLOCK_COVERAGE = true
 			this.deadlockCoverableComponents += annotableElements.deadlockCoverableComponents
 			this.coverableDeadlockTransitions += deadlockCoverableComponents
-				.map[it.type].filter(StatechartDefinition)
-				.map[it.transitions].flatten.filter[it.sourceState.state]
+					.map[it.type].filter(StatechartDefinition)
+					.map[it.transitions].flatten.filter[it.sourceState.state]
+		}
+		if (!annotableElements.completenessCoverableComponents.empty) {
+			this.COMPLETENESS_COVERAGE = true
+			this.completenessCoverableComponents += annotableElements.completenessCoverableComponents
+			this.coverableCompletenessStates += completenessCoverableComponents
+					.map[it.type].filter(StatechartDefinition)
+					.map[it.allStates].flatten
 		}
 		if (!annotableElements.nondeterministicTransitionCoverableComponents.empty) {
 			this.NONDETERMINISTIC_TRANSITION_COVERAGE = true
 			this.nondeterministicTransitionCoverableComponents += annotableElements.nondeterministicTransitionCoverableComponents
 			this.coverableNondeterministicTransitions += nondeterministicTransitionCoverableComponents
-				.map[it.type].filter(StatechartDefinition)
-				.map[it.transitions].flatten.filter[it.sourceState.outgoingTransitions.size > 1]
+					.map[it.type].filter(StatechartDefinition)
+					.map[it.transitions].flatten.filter[it.sourceState.outgoingTransitions.size > 1]
 		}
 		if (!annotableElements.transitionCoverableComponents.empty) {
 			this.TRANSITION_COVERAGE = true
 			this.transitionCoverableComponents += annotableElements.transitionCoverableComponents
 			this.coverableTransitions += transitionCoverableComponents
-				.map[it.type].filter(StatechartDefinition)
-				.map[it.transitions].flatten
+					.map[it.type].filter(StatechartDefinition)
+					.map[it.transitions].flatten
 		}
 		if (!annotableElements.transitionPairCoverableComponents.empty) {
 			this.TRANSITION_PAIR_COVERAGE = true
 			this.transitionPairCoverableComponents += annotableElements.transitionPairCoverableComponents
 			this.coverableTransitionPairs += transitionPairCoverableComponents
-				.map[it.type].filter(StatechartDefinition)
-				.map[it.transitions].flatten
+					.map[it.type].filter(StatechartDefinition)
+					.map[it.transitions].flatten
 		}
 		if (!annotableElements.interactionCoverablePorts.isEmpty) {
 			this.INTERACTION_COVERAGE = true
@@ -210,13 +238,31 @@ class StatechartAnnotator {
 	// Entry point
 	
 	def annotateModel() {
+		annotateModelForDeadlockStateCoverage
 		annotateModelForDeadlockCoverage
+		annotateModelForCompletenessCoverage
 		annotateModelForNondeterministicTransitionCoverage
 		annotateModelForTransitionCoverage
 		annotateModelForTransitionPairCoverage
 		annotateModelForInteractionCoverage
 		annotateModelForDataFlowCoverage
 		annotateModelForInteractionDataFlowCoverage
+	}
+	
+	// Deadlock state coverage
+	
+	def annotateModelForDeadlockStateCoverage() {
+		if (!DEADLOCK_STATE_COVERAGE) {
+			return
+		}
+		for (transition : coverableDeadlockStateTransitions.filter[it.needsAnnotation]) {
+			val variable = transition.createTransitionVariable(deadlockStateTransitionVariables)
+			transition.effects += variable.createAssignment(createTrueExpression)
+		}
+	}
+	
+	def getDeadlockStateTransitionVariables() {
+		return new TransitionAnnotations(this.deadlockStateTransitionVariables)
 	}
 	
 	// Deadlock coverage
@@ -233,6 +279,36 @@ class StatechartAnnotator {
 	
 	def getDeadlockTransitionVariables() {
 		return new TransitionAnnotations(this.deadlockTransitionVariables)
+	}
+	
+	// Completeness coverage
+	
+	def annotateModelForCompletenessCoverage() {
+		if (!COMPLETENESS_COVERAGE) {
+			return
+		}
+		for (state : coverableCompletenessStates) {
+			val statechart = state.containingStatechart
+			statechart.transitionPriority = TransitionPriority.ORDER_BASED // Sound?
+			
+			val inputs = statechart.portInputEvents
+			for (input : inputs) {
+				val port = input.key
+				val event = input.value
+				
+				val transition = state.createLoopTransition
+				transition.trigger = port.createEventTrigger(event)
+				
+				val variable = transition.createTransitionVariable(completenessTransitionVariables)
+				transition.effects += variable.createAssignment(createTrueExpression)
+				
+				completenessTransitionVariables += transition -> variable
+			}
+		}
+	}
+	
+	def getCompletenessTransitionVariables() {
+		return new TransitionAnnotations(this.completenessTransitionVariables)
 	}
 	
 	// Nondeterministic transition coverage
@@ -295,7 +371,8 @@ class StatechartAnnotator {
 	// Transition coverage
 	
 	protected def needsAnnotation(Transition transition) {
-		return !(transition.sourceState instanceof EntryState)
+		return !(transition.sourceState instanceof EntryState) &&
+				!transition.hasAnnotation(CoverageAvoidanceAnnotation)
 	}
 	
 	protected def createTransitionVariable(Transition transition,
@@ -628,7 +705,7 @@ class StatechartAnnotator {
 					createEventParameterReferenceExpression => [
 						it.port = inPort
 						it.event = event
-						it.parameter = inParameter
+						it.declaration = inParameter
 					]
 				)
 				if (RECEIVER_CONSIDERATION) {
@@ -913,8 +990,8 @@ class StatechartAnnotator {
 		val raisedEvents = defReferences.map[it.event].toSet // Set, so one event is set only once
 		// Creating event parameters
 		for (event : raisedEvents) {
-			event.extendEventWithParameter(createIntegerTypeDefinition,
-				namings.getInteractionDefVariableName(event))
+			val interactionDefVariableName = namings.getInteractionDefVariableName(event)
+			event.extendEventWithParameter(createIntegerTypeDefinition, interactionDefVariableName)
 			// Parameter is always the last
 		}
 		
@@ -929,8 +1006,8 @@ class StatechartAnnotator {
 		for (useReference : useReferences) {
 			val event = useReference.event
 			val defVariable = event.parameterDeclarations.lastElement // Parameter is always the last
-			val useVariable = useReference.createUseVariable(interactionUseVariables,
-				namings.getInteractionUseVariableName(useReference))
+			val interactionUseVariableName = namings.getInteractionUseVariableName(useReference)
+			val useVariable = useReference.createUseVariable(interactionUseVariables, interactionUseVariableName)
 			useReference.saveDefUseVariablePair(defVariable, useVariable)
 		}
 		
@@ -940,8 +1017,7 @@ class StatechartAnnotator {
 		// have to have the correct number of arguments - they get the 0 (reset) id
 		defReferences.extendUnattendedRaiseEventActions
 		
-		// Collecting parameter transfer between ports among which there is a channel
-		// is in the getter method
+		// Collecting parameter transfer between ports among which there is a channel in the getter method
 	}
 	
 	protected def areBothPortsConsidered(Port inPort, Port outPort) {
@@ -968,7 +1044,7 @@ class StatechartAnnotator {
 			val defReference = createEventParameterReferenceExpression => [
 				it.port = useReference.port
 				it.event = useReference.event
-				it.parameter = defVariable
+				it.declaration = defVariable
 			]
 			val useVariable = defUseVariablePair.useVariable
 			val assignment = useVariable.createAssignment(defReference)

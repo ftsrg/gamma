@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -67,16 +67,17 @@ class ThreadRacer<T> {
 			}
 			
 			// Racing
-			logger.info('''Waiting for the threads to return a result with «IF timeout <= 0»no timeout«ELSE»a timeout of «timeout»«ENDIF»''')
+			val timeoutString = timeout <= 0 ? "no timeout" : "a timeout of " + timeout
+			logger.info('''Waiting for the threads to return a result with «timeoutString»''')
 			if (timeout <= 0) {
 				latch.await
 				logger.info('''A result has been returned''') // One of the threads won
 			}
 			else {
-				latch.await(timeout, unit)
+				val gracePeriod = unit.convert(3, TimeUnit.SECONDS)
+				latch.await(timeout + gracePeriod, unit)
 				logger.info('''«timeout» «unit» timeout has been reached''')
 			}
-			//
 			
 			return object
 		} finally {
@@ -145,7 +146,7 @@ class ThreadRacer<T> {
 					incrementNumberOfAbortedCallables
 					if (currentThread.isInterrupted || // The thread has been interrupted, the result is not valid
 							cause?.class.name.endsWith("NotSolvableException")) { // Theta cannot solve this task
-						// TODO model checking OOM exception should be swallowed here
+						// Model checking OOM exception should be swallowed here?
 						return null
 					}
 					

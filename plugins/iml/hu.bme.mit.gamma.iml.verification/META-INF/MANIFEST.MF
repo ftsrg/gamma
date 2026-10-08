@@ -2,9 +2,9 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Imandra Verifier
 Bundle-SymbolicName: hu.bme.mit.gamma.iml.verification
-Bundle-Version: 2.12.0.qualifier
+Bundle-Version: 2.13.0.qualifier
 Automatic-Module-Name: hu.bme.mit.gamma.nuxmv.verification
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: BME-FTSRG
 Require-Bundle: com.google.guava,
  com.google.gson,

@@ -100,7 +100,7 @@ class TransitionToStepTransformer {
 	private def dispatch transformEventReference(TimeoutEventReference eventReference) {
 		val timeout = eventReference.timeout
 		val value = timeout.timeoutValue
-		val elapsedTime = value.evaluateMilliseconds
+		val elapsedTime = value.evaluateForSmallestUnit(eventReference.containingPackage)
 		return createTimeElapse => [
 			it.elapsedTime = elapsedTime.toIntegerLiteral
 		]
@@ -124,7 +124,7 @@ class TransitionToStepTransformer {
 					}
 				]
 				acts += act
-				for (parameterGroup : eventGroup.value.groupBy[it.key.parameter].entrySet) {
+				for (parameterGroup : eventGroup.value.groupBy[it.key.parameterDeclaration].entrySet) {
 					val parameter = parameterGroup.key
 					val parameterIndex = event.parameterDeclarations.indexOf(parameter)
 					val value = parameterGroup.value.lastOrNull.value // Last assigned expression

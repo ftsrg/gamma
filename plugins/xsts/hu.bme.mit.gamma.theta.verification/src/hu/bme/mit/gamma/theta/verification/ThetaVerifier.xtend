@@ -167,6 +167,10 @@ class ThetaVerifier extends AbstractVerifier {
 						"(for detailed instructions, see 'https://github.com/ftsrg/gamma/blob/master/plugins/xsts/README.md')."
 	}
 	
+	override protected getAnalysisLanguage() {
+		return "THETA"
+	}
+	
 }
 
 class ThetaQueryAdapter {

@@ -26,4 +26,5 @@ verification {
 	optimize : true
 	test-language : java
 	back-annotate-to-original : true
+	serialize-results : false
 }

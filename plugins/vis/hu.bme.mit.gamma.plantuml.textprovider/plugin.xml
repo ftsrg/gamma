@@ -5,7 +5,7 @@
          point="net.sourceforge.plantuml.eclipse.diagramIntentProvider">
       <diagramIntentProvider
             id="hu.bme.mit.gamma.statechart.plantuml.commandhandler.StatechartModelTextProvider"
-            label="Gamma statechart model visualizer"
+            label="Gamma model visualizer"
             providerClass="hu.bme.mit.gamma.plantuml.commandhandler.TextProvider">
       </diagramIntentProvider>
    </extension>

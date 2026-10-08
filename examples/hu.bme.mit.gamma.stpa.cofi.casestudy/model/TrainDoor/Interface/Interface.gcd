@@ -30,4 +30,5 @@ interface ExternalCommunication {
 
 interface Timeout {
 	out event ^timeout
+	out event lateDoorOpening
 }

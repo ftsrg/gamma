@@ -1,0 +1,10 @@
+import "/hu.bme.mit.gamma.tests/model/PIL/System/Vaganyut/Cascade/Vaganyut.gcd"
+import "/hu.bme.mit.gamma.tests/model/PIL/Types/Types.gcd"
+component Vaganyut
+@ ("fojelzo.F_VU_lez_reg.F_VU_lez_Valaszra_Var")
+E F [ { event fojelzo.F_VU_lez.val and parameter fojelzo.F_VU_lez.val::val_VU_tip == valasz_t::ELUTASITVA and
+		parameter fojelzo.F_VU_lez.val::obj_id == 3
+} ]
+
+E F [ { event fojelzo.F_VU_lez.val and parameter fojelzo.F_VU_lez.val::val_VU_tip == valasz_t::SIKERES
+} ]

@@ -1,2 +1,2 @@
-include "ComplexStatechart/BottomUpComplexStatechart.ggen"
-include "ComplexStatechart/TopDownComplexStatechart.ggen"
+parallel exec "ComplexStatechart/BottomUpComplexStatechart.ggen"
+parallel exec "ComplexStatechart/TopDownComplexStatechart.ggen"

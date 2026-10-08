@@ -25,8 +25,8 @@ import java.util.Map
 import java.util.Set
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.xsts.ocra.transformation.NamingSerializer.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.ocra.transformation.NamingSerializer.*
 
 class ModelSerializer {
 	// Singleton
@@ -92,10 +92,10 @@ class ModelSerializer {
 	
 	
 	def String serializeRefinement(Component component, String instanceName, Set<Pair<ComponentInstance, String>> instanceSet) {
-		val subcomponents = extractSubcomponentInstances(component)
-		val bindings = extractBindings(component)
-		val channels = extractChannels(component)
-		val parameters = component.parameterDeclarations
+		val subcomponents = component.extractSubcomponentInstances
+		val bindings = component.extractBindings
+		val channels = component.extractChannels
+//		val parameters = component.parameterDeclarations
 		'''
 			«FOR sub: subcomponents»
 				«serializeSubName(instanceSet.findFirst[ it.key == sub.value ]?.value)»
@@ -176,7 +176,7 @@ class ModelSerializer {
 	}
 	
 	def Set<Pair<String, ? extends ComponentInstance>> extractSubcomponentInstances(Component component) {
-		val subComponents = newHashSet
+		val subComponents = newLinkedHashSet
 		if (component instanceof CompositeComponent) {
 			for (componentInstanceReference : component.allSimpleInstanceReferences) {
 				if (componentInstanceReference.isLast) {

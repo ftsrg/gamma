@@ -81,7 +81,7 @@ private pattern relevantEvents(port : Port, event : Event) {
 	PortEventReference.port(portEventReference, port);
 	PortEventReference.event(portEventReference, event);
 } or {
-	Port.interfaceRealization.interface.events.event(port, event);
+	Port.interfaceRealization.interface.eventDeclarations.event(port, event);
 	AnyPortEventReference.port(_, port);
 } or {
 	RaiseEventAction.port(raiseEventAction, port);
