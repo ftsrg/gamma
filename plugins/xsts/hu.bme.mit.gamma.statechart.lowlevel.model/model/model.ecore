@@ -101,6 +101,8 @@
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="exitAction" eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="internalTransitions" upperBound="-1"
+        eType="#//Reaction" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="invariants" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
@@ -119,17 +121,20 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="persistency" lowerBound="1"
         eType="#//Persistency"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Transition">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="source" lowerBound="1"
-        eType="#//StateNode" eOpposite="#//StateNode/outgoingTransitions"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="target" lowerBound="1"
-        eType="#//StateNode" eOpposite="#//StateNode/incomingTransitions"/>
+  <eClassifiers xsi:type="ecore:EClass" name="AbstractReaction" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EReference" name="guard" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="action" eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="priority" lowerBound="1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt" defaultValueLiteral="0"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Reaction" eSuperTypes="#//AbstractReaction"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Transition" eSuperTypes="#//AbstractReaction">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="source" lowerBound="1"
+        eType="#//StateNode" eOpposite="#//StateNode/outgoingTransitions"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="target" lowerBound="1"
+        eType="#//StateNode" eOpposite="#//StateNode/incomingTransitions"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="PseudoState" abstract="true" eSuperTypes="#//StateNode"/>
   <eClassifiers xsi:type="ecore:EClass" name="PrecursoryState" abstract="true" eSuperTypes="#//PseudoState"/>

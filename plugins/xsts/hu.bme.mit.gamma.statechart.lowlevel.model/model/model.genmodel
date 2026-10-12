@@ -77,6 +77,7 @@
     <genClasses ecoreClass="model.ecore#//State">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//State/entryAction"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//State/exitAction"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//State/internalTransitions"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//State/invariants"/>
     </genClasses>
     <genClasses ecoreClass="model.ecore#//EventDeclaration">
@@ -86,12 +87,15 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//EventDeclaration/component"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//EventDeclaration/persistency"/>
     </genClasses>
+    <genClasses image="false" ecoreClass="model.ecore#//AbstractReaction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AbstractReaction/guard"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AbstractReaction/action"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//AbstractReaction/priority"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//Reaction"/>
     <genClasses ecoreClass="model.ecore#//Transition">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//Transition/source"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//Transition/target"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//Transition/guard"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//Transition/action"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//Transition/priority"/>
     </genClasses>
     <genClasses ecoreClass="model.ecore#//PseudoState"/>
     <genClasses ecoreClass="model.ecore#//PrecursoryState"/>
