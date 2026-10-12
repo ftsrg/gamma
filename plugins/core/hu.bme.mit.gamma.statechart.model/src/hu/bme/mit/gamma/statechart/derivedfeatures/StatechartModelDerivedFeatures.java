@@ -110,6 +110,7 @@ import hu.bme.mit.gamma.statechart.interface_.WrapperComponentAnnotation;
 import hu.bme.mit.gamma.statechart.phase.History;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseAnnotation;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation;
+import hu.bme.mit.gamma.statechart.statechart.AbstractReaction;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.AsynchronousStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger;
@@ -2910,6 +2911,20 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 	}
 	
+	public static StateNode getSourceNode(AbstractReaction reaction) {
+		if (reaction instanceof Transition transition) {
+			return transition.getSourceState();
+		}
+		return ecoreUtil.getContainerOfType(reaction, StateNode.class);
+	}
+	
+	public static StateNode getTargetNode(AbstractReaction reaction) {
+		if (reaction instanceof Transition transition) {
+			return transition.getTargetState();
+		}
+		return ecoreUtil.getContainerOfType(reaction, StateNode.class);
+	}
+	
 	public static List<Transition> getNonTrappingOutgoingTransitions(StateNode node) {
 		List<Transition> nonTrappingOutgoingTransitions = new ArrayList<Transition>();
 		for (Transition transition : getOutgoingTransitions(node)) {
@@ -2933,6 +2948,19 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		StatechartDefinition statechart = getContainingStatechart(node);
 		return statechart.getTransitions().stream().filter(it -> it.getSourceState() == node)
 				.toList();
+	}
+	
+	public static List<AbstractReaction> getOutgoingAndInternalTransitions(StateNode node) {
+		List<AbstractReaction> reactions = new ArrayList<AbstractReaction>();
+		
+		reactions.addAll(
+				getOutgoingTransitions(node));
+		if (node instanceof State state) {
+			reactions.addAll(
+					state.getInternalTransitions());
+		}
+		
+		return reactions;
 	}
 	
 	public static List<Transition> getAllOutgoingTransitions(StateNode node) {
@@ -3561,15 +3589,15 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return max;
 	}
 	
-	public static BigInteger calculatePriority(Transition transition) {
+	public static BigInteger calculatePriority(AbstractReaction transition) {
 		StatechartDefinition statechart = getContainingStatechart(transition);
 		TransitionPriority transitionPriority = statechart.getTransitionPriority();
-		StateNode source = transition.getSourceState();
-		List<Transition> outgoingTransitions = getOutgoingTransitions(source);
+		StateNode source = getSourceNode(transition);
+		List<AbstractReaction> transitions = getOutgoingAndInternalTransitions(source);
 		// If it is an else transition, its priority is always the lowest
 		Expression guard = transition.getGuard();
 		if (isElseOrDefault(guard)) {
-			BigInteger min = outgoingTransitions.stream()
+			BigInteger min = transitions.stream()
 				.filter(it -> !isElseOrDefault(it.getGuard()))
 				.map(it -> calculatePriority(it)) // There must not be multiple else guards
 				.min((lhs, rhs) -> lhs.compareTo(rhs))
@@ -3579,8 +3607,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		// Normal transition
 		switch (transitionPriority) {
 			case ORDER_BASED : {
-				int size = outgoingTransitions.size();
-				int index = outgoingTransitions.indexOf(transition);
+				int size = transitions.size();
+				int index = transitions.indexOf(transition);
 				int priority = size - index;
 				return BigInteger.valueOf(priority);
 			}
@@ -3590,9 +3618,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			case OFF : { // Default value is 0
 				return transition.getPriority();
 			}
-			default: {
+			default:
 				throw new IllegalArgumentException("Not supported literal: " + transitionPriority);
-			}
 		}
 	}
 

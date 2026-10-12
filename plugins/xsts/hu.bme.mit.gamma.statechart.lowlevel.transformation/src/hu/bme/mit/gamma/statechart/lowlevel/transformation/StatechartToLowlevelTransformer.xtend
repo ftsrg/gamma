@@ -27,11 +27,13 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.lowlevel.util.LowlevelStatechartUtil
+import hu.bme.mit.gamma.statechart.statechart.AbstractReaction
 import hu.bme.mit.gamma.statechart.statechart.DeepHistoryState
 import hu.bme.mit.gamma.statechart.statechart.GuardEvaluation
 import hu.bme.mit.gamma.statechart.statechart.InitialState
 import hu.bme.mit.gamma.statechart.statechart.OrthogonalRegionSchedulingOrder
 import hu.bme.mit.gamma.statechart.statechart.PseudoState
+import hu.bme.mit.gamma.statechart.statechart.Reaction
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.RunUponExternalEventAnnotation
 import hu.bme.mit.gamma.statechart.statechart.RunUponExternalEventOrInternalTimeoutAnnotation
@@ -433,6 +435,10 @@ class StatechartToLowlevelTransformer {
 		lowlevelState.entryAction = state.entryActions.transformActions
 		lowlevelState.exitAction = state.exitActions.transformActions
 		
+		for (internalTransition : state.internalTransitions) {
+			lowlevelState.internalTransitions += internalTransition.transform
+		}
+		
 		val invariants = state.invariants
 		if (!invariants.empty) {
 			lowlevelState.invariants += invariants.map[it.transformSimpleExpression]
@@ -468,16 +474,28 @@ class StatechartToLowlevelTransformer {
 		return lowlevelTransition
 	}
 	
+	protected def hu.bme.mit.gamma.statechart.lowlevel.model.Reaction transform(Reaction gammaReaction) {
+		val lowlevelReaction = createReaction
+		trace.put(gammaReaction, lowlevelReaction) // Saving in trace
+		
+		lowlevelReaction.priority = gammaReaction.calculatePriority.intValue // Priority is handled later
+		// Important to trace the Gamma transition as the trigger transformer depends on it
+		lowlevelReaction.guard = gammaReaction.transformTriggerAndGuard
+		lowlevelReaction.action = gammaReaction.effects.transformActions
+		
+		return lowlevelReaction
+	}
+	
 	/**
 	 * Can return null.
 	 */
-	protected def Expression transformTriggerAndGuard(Transition transition) {
+	protected def Expression transformTriggerAndGuard(AbstractReaction reaction) {
 		val lowlevelGuardList = newArrayList
-		val gammaTrigger = transition.trigger
+		val gammaTrigger = reaction.trigger
 		if (gammaTrigger !== null) {
 			lowlevelGuardList += gammaTrigger.transformTrigger // Trigger guard
 		}
-		var guard = transition.guard
+		var guard = reaction.guard
 		if (guard !== null && !guard.elseOrDefault) {
 			lowlevelGuardList += guard.transformExpression
 			// We do not transform the else guard: priority is already set during the creation of the transition

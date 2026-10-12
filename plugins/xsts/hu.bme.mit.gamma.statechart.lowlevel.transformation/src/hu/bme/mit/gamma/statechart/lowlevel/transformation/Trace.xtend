@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -25,6 +25,7 @@ import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.PseudoState
+import hu.bme.mit.gamma.statechart.statechart.Reaction
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
@@ -63,6 +64,7 @@ class Trace {
 	final Map<State, hu.bme.mit.gamma.statechart.lowlevel.model.State> stateMappings = newHashMap
 	final Map<PseudoState, hu.bme.mit.gamma.statechart.lowlevel.model.PseudoState> pseudoStateMappings = newHashMap
 	final Map<Transition, hu.bme.mit.gamma.statechart.lowlevel.model.Transition> transitionMappings = newHashMap
+	final Map<Reaction, hu.bme.mit.gamma.statechart.lowlevel.model.Reaction> internalTransitionMappings = newHashMap
 	// For timeout declaration optimization
 	final Map<Region, VariableDeclaration> regionTimeoutMappings = newHashMap
 	// Else guarded transitions
@@ -551,6 +553,24 @@ class Trace {
 	def get(Transition gammaTransition) {
 		checkNotNull(gammaTransition)
 		transitionMappings.get(gammaTransition)
+	}
+	
+	// Internal transition
+	def put(Reaction gammaTransition,
+			hu.bme.mit.gamma.statechart.lowlevel.model.Reaction lowlevelTransition) {
+		checkNotNull(gammaTransition)
+		checkNotNull(lowlevelTransition)
+		internalTransitionMappings.put(gammaTransition, lowlevelTransition)
+	}
+
+	def isMapped(Reaction gammaTransition) {
+		checkNotNull(gammaTransition)
+		internalTransitionMappings.containsKey(gammaTransition)
+	}
+
+	def get(Reaction gammaTransition) {
+		checkNotNull(gammaTransition)
+		internalTransitionMappings.get(gammaTransition)
 	}
 	
 	// TimeoutDeclaration optimization
