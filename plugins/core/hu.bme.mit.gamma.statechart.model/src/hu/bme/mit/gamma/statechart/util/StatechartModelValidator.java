@@ -766,7 +766,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.ERROR,
 					"This transition must have a trigger",  
-						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TRIGGER)));
+						new ReferenceInfo(StatechartModelPackage.Literals.ABSTRACT_REACTION__TRIGGER)));
 		}
 		return validationResultMessages;
 	}
@@ -830,7 +830,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.ERROR, 
 						"This guard is not a boolean expression",
-							new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__GUARD)));
+							new ReferenceInfo(StatechartModelPackage.Literals.ABSTRACT_REACTION__GUARD)));
 				return validationResultMessages;
 			}
 			for (DirectReferenceExpression reference :
@@ -1015,13 +1015,13 @@ public class StatechartModelValidator extends ActionModelValidator {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.ERROR, 
 					"Entry node transitions must not have triggers", 
-						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TRIGGER)));
+						new ReferenceInfo(StatechartModelPackage.Literals.ABSTRACT_REACTION__TRIGGER)));
 		}
 		if (transition.getGuard() != null) {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.ERROR, 
 					"Entry node transitions must not have guards", 
-						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__GUARD)));
+						new ReferenceInfo(StatechartModelPackage.Literals.ABSTRACT_REACTION__GUARD)));
 		}
 		return validationResultMessages;
 	}
@@ -1205,7 +1205,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.WARNING, 
 						"Transitions from choice nodes should have a trigger or a guard if deterministic behavior is expected", 
-							new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__GUARD)));
+							new ReferenceInfo(StatechartModelPackage.Literals.ABSTRACT_REACTION__GUARD)));
 			}
 		}
 		if (source instanceof ForkState) {
@@ -1213,14 +1213,14 @@ public class StatechartModelValidator extends ActionModelValidator {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.ERROR, 
 						"Transitions from fork nodes must not have triggers", 
-							new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TRIGGER)));
+							new ReferenceInfo(StatechartModelPackage.Literals.ABSTRACT_REACTION__TRIGGER)));
 				
 			}
 			if (guard != null) {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.ERROR, 
 						"Transitions from fork nodes must not have guards", 
-							new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__GUARD)));
+							new ReferenceInfo(StatechartModelPackage.Literals.ABSTRACT_REACTION__GUARD)));
 			}
 		}
 		if (source instanceof MergeState) {
@@ -1228,14 +1228,14 @@ public class StatechartModelValidator extends ActionModelValidator {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.ERROR, 
 						"Transitions from merge nodes must not have triggers", 
-							new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TRIGGER)));
+							new ReferenceInfo(StatechartModelPackage.Literals.ABSTRACT_REACTION__TRIGGER)));
 				
 			}
 			if (guard != null) {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.ERROR, 
 						"Transitions from merge nodes must not have guards", 
-							new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__GUARD)));
+							new ReferenceInfo(StatechartModelPackage.Literals.ABSTRACT_REACTION__GUARD)));
 			}
 		}
 		if (source instanceof JoinState) {
@@ -1243,13 +1243,13 @@ public class StatechartModelValidator extends ActionModelValidator {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.ERROR, 
 						"Transitions from join nodes must not have triggers", 
-							new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TRIGGER)));
+							new ReferenceInfo(StatechartModelPackage.Literals.ABSTRACT_REACTION__TRIGGER)));
 			}
 			if (guard != null) {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.ERROR, 
 						"Transitions from join nodes must not have guards", 
-							new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__GUARD)));
+							new ReferenceInfo(StatechartModelPackage.Literals.ABSTRACT_REACTION__GUARD)));
 			}
 		}
 		if (target instanceof JoinState) {
@@ -1257,7 +1257,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.ERROR, 
 						"Transitions targeted to join nodes must not have actions", 
-							new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__EFFECTS)));
+							new ReferenceInfo(StatechartModelPackage.Literals.ABSTRACT_REACTION__EFFECTS)));
 			}
 		}
 		if ((source instanceof EntryState || source instanceof ChoiceState ||
@@ -1293,7 +1293,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.WARNING, 
 					"This transitions is in a non-deterministic relation with other transitions from the same source", 
-						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TRIGGER)));
+						new ReferenceInfo(StatechartModelPackage.Literals.ABSTRACT_REACTION__TRIGGER)));
 		}
 		return validationResultMessages;
 	}
@@ -1392,7 +1392,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.WARNING, 
 						"This transitions is occluded by a higher level transition", 
-							new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TRIGGER)));
+							new ReferenceInfo(StatechartModelPackage.Literals.ABSTRACT_REACTION__TRIGGER)));
 			}
 		}
 		return validationResultMessages;
@@ -1409,7 +1409,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 				new ValidationResultMessage(ValidationResult.WARNING, 
 					"Both this transition and the transition between " + source.getName() + " and " +
 						target.getName() + " assign value to the same variable " + declaration.getName(),
-							new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__EFFECTS)));
+							new ReferenceInfo(StatechartModelPackage.Literals.ABSTRACT_REACTION__EFFECTS)));
 		}
 		return validationResultMessages;
 	}
@@ -1424,7 +1424,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 					"Both this and transition between " + sameTriggerParallelTransition.getSourceState().getName() + 
 						" and " + sameTriggerParallelTransition.getTargetState().getName() + " raises the same event " +
 						portEvent.getValue().getName() + " with potentionally overwriting parameters", 
-							new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__EFFECTS)));
+							new ReferenceInfo(StatechartModelPackage.Literals.ABSTRACT_REACTION__EFFECTS)));
 		}
 		return validationResultMessages;
 	}

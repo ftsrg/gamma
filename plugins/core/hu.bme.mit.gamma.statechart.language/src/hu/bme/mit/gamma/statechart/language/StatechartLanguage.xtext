@@ -317,6 +317,13 @@ Region returns Region:
 	'}'
 ;
 
+Reaction returns Reaction:
+	('(' priority=INTEGER ')')?
+	'when' trigger=Trigger
+	('[' guard=Expression ']')?
+	('/' effects+=Action* )?
+;
+
 Transition returns Transition:
 	(annotations+=TransitionAnnotation)*
 	'transition' ('(' priority=INTEGER ')')?
@@ -324,7 +331,7 @@ Transition returns Transition:
 	(
 		('when' trigger=Trigger)?
 		('[' guard=Expression ']')?
-		('/' ( => effects+=Action)* )?
+		('/' effects+=Action* )?
 	)
 ;
 
@@ -349,8 +356,9 @@ State returns State:
 		(
 			(
 				('invariant' invariants+=Expression)*
-				('entry' '/' (=> entryActions+=Action)* )?
-				('exit' '/' (=> exitActions+=Action)* )?
+				('entry' '/' entryActions+=Action* )?
+				('internal' internalTransitions+=Reaction )*
+				('exit' '/' exitActions+=Action* )?
 			)
 			(regions+=Region)*
 		)
