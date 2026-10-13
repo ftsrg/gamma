@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.plantuml.transformation
 
 import hu.bme.mit.gamma.action.model.Action
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.util.TypeSerializer
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
@@ -191,6 +192,11 @@ class StatechartToPlantUmlTransformer {
 		return action.serialize
 				.replaceAll("\r\n|\n", "\\\\n") // PlantUML needs \\n
 	}
+	
+	protected def transformExpression(Expression expression) {
+		return expression.serialize
+				.replaceAll("\\|\\|", "||\\\\n").replaceAll("\\&\\&", "&&\\\\n") // PlantUML needs \\n
+	}
 
 ///////////////////// OTHER FUNCTIONS /////////////////////
 	// Other methods that are required in the transformation
@@ -260,23 +266,28 @@ class StatechartToPlantUmlTransformer {
 	 * returns them in the "result" variable.
 	 * 
 	 */
-	protected def stateActionsSearch(StateNode statenode) {
-		val state = statenode as State
-		if (!state.entryActions.empty || !state.exitActions.empty || !state.invariants.empty) {
+	protected def stateActionsSearch(StateNode node) {
+		val state = node as State
+		if (!state.entryActions.empty || !state.internalTransitions.empty || !state.exitActions.empty || !state.invariants.empty) {
 			val result = '''
 				«IF !state.invariants.empty»
 					«FOR invariant: state.invariants»
-						«statenode.name» : invariant «invariant.serialize»
+						«node.name» : invariant «invariant.serialize»
 					«ENDFOR»
 				«ENDIF»
 				«IF !state.entryActions.empty»
 					«FOR entry: state.entryActions»
-						«statenode.name» : entry / «entry.transformAction»
+						«node.name» : entry / «entry.transformAction»
+					«ENDFOR»
+				«ENDIF»
+				«IF !state.internalTransitions.empty»
+					«FOR internalTransition: state.internalTransitions»
+						«node.name» : «internalTransition.trigger.transformTrigger»«IF internalTransition.guard !== null» [«internalTransition.guard.transformExpression»]«ENDIF»«IF !internalTransition.effects.empty» / «FOR effect : internalTransition.effects»«effect.transformAction»«ENDFOR»«ENDIF»
 					«ENDFOR»
 				«ENDIF»
 				«IF !state.exitActions.empty»
 					«FOR exit: state.exitActions»
-						«statenode.name» : exit / «exit.transformAction»
+						«node.name» : exit / «exit.transformAction»
 					«ENDFOR»
 				«ENDIF»
 			'''
@@ -368,8 +379,10 @@ class StatechartToPlantUmlTransformer {
 		val target = transition.targetState
 		val arrow = (source instanceof EntryState || (source.parentRegion.orthogonal && target.state)) ? "->" : "-->"
 		return '''
-			«transition.sourceText» «arrow» «target.name»«IF !transition.empty» : «ENDIF»«IF trigger !== null»«trigger.transformTrigger»«ENDIF» «IF guard !== null»\n[«guard.serialize
-				.replaceAll("\\|\\|", "||\\\\n").replaceAll("\\&\\&", "&&\\\\n")»]«ENDIF»«FOR effect : effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformAction»«ENDFOR»
+			«transition.sourceText» «arrow» «target.name»«IF !transition.empty» : «ENDIF»«
+				IF trigger !== null»«trigger.transformTrigger»«ENDIF» «
+				IF guard !== null»\n[«guard.transformExpression»]«ENDIF»«
+				FOR effect : effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformAction»«ENDFOR»
 		'''
 	}
 
