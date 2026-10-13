@@ -1,0 +1,4 @@
+# Tycho pomless writes a virtual pom next to every MANIFEST.MF
+.polyglot.META-INF
+# Maven build output
+target/

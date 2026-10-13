@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Classpath holder for the MWE2 code generation run by ../generate.sh.
+
+  This is deliberately NOT part of the Tycho reactor and has no OSGi content:
+  the generators only need EMF and the Xtext generator, both of which are on
+  Maven Central. Keeping them apart means generation needs no target platform
+  and no Eclipse installation, so it runs in a plain JDK+Maven container.
+
+  org.eclipse.xtext.xtext.generator already depends on org.eclipse.emf.mwe2.lib,
+  org.eclipse.emf.mwe.utils and org.eclipse.emf.codegen.ecore, which is where
+  Mwe2Launcher, EcoreGenerator, DirectoryCleaner and StandaloneSetup come from,
+  so one dependency pulls in a consistent set.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>hu.bme.mit</groupId>
+  <artifactId>hu.bme.mit.gamma.generator-classpath</artifactId>
+  <version>2.13.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <name>Gamma MWE2 generator classpath</name>
+
+  <properties>
+    <xtext-version>2.38.0</xtext-version>
+    <!-- must match the org.eclipse.emf.mwe2.lib version xtext.generator resolves to -->
+    <mwe2-version>2.21.0</mwe2-version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.eclipse.xtext</groupId>
+      <artifactId>org.eclipse.xtext.xtext.generator</artifactId>
+      <version>${xtext-version}</version>
+    </dependency>
+    <dependency>
+      <!-- Mwe2Launcher itself: pulled in by neither mwe2.lib nor the generator -->
+      <groupId>org.eclipse.emf</groupId>
+      <artifactId>org.eclipse.emf.mwe2.launch</artifactId>
+      <version>${mwe2-version}</version>
+    </dependency>
+    <dependency>
+      <!--
+        The MWE2 language is itself an Xtext language and needs the Xtext type
+        system at run time, but org.eclipse.emf.mwe2.language's pom declares
+        only mwe2.runtime, so its Xtext dependencies have to be named here.
+      -->
+      <groupId>org.eclipse.xtext</groupId>
+      <artifactId>org.eclipse.xtext.xbase</artifactId>
+      <version>${xtext-version}</version>
+    </dependency>
+  </dependencies>
+</project>

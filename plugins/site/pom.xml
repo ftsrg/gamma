@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>hu.bme.mit</groupId>
+    <artifactId>hu.bme.mit.gamma</artifactId>
+    <version>2.13.0-SNAPSHOT</version>
+    <relativePath>../</relativePath>
+  </parent>
+  <artifactId>hu.bme.mit.gamma.site</artifactId>
+  <packaging>eclipse-repository</packaging>
+  <name>Gamma p2 repository</name>
+
+  <!--
+    Publishes every Gamma bundle as a p2 repository under target/repository.
+    This is how the other two builds consume Gamma: the SysML v2 frontend in
+    gamma-internal and anything else adds this directory as a p2 repository
+    rather than sharing a Maven reactor, which keeps the three repositories
+    independently buildable - the same way the SysML v2 Pilot Implementation
+    publishes itself through org.omg.sysml.site.
+  -->
+</project>
