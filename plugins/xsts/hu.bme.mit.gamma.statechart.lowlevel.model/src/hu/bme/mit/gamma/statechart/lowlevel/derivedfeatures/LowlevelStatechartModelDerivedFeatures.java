@@ -18,11 +18,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.lowlevel.model.AbstractReaction;
 import hu.bme.mit.gamma.statechart.lowlevel.model.CompositeElement;
 import hu.bme.mit.gamma.statechart.lowlevel.model.DeepHistoryState;
 import hu.bme.mit.gamma.statechart.lowlevel.model.EntryState;
@@ -30,6 +30,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration;
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection;
 import hu.bme.mit.gamma.statechart.lowlevel.model.HistoryState;
 import hu.bme.mit.gamma.statechart.lowlevel.model.InitialState;
+import hu.bme.mit.gamma.statechart.lowlevel.model.Reaction;
 import hu.bme.mit.gamma.statechart.lowlevel.model.Region;
 import hu.bme.mit.gamma.statechart.lowlevel.model.ShallowHistoryState;
 import hu.bme.mit.gamma.statechart.lowlevel.model.State;
@@ -79,9 +80,9 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 		
 		List<EventDeclaration> internalEventDeclarations = statechart.getInternalEventDeclarations();
 		List<EventDeclaration> inEventDeclarations = internalEventDeclarations.stream()
-				.filter(it -> it.getDirection() == EventDirection.IN).collect(Collectors.toList());
+				.filter(it -> it.getDirection() == EventDirection.IN).toList();
 		List<EventDeclaration> outEventDeclarations = internalEventDeclarations.stream()
-				.filter(it -> it.getDirection() == EventDirection.OUT).collect(Collectors.toList());
+				.filter(it -> it.getDirection() == EventDirection.OUT).toList();
 		
 		int inIndex = inEventDeclarations.indexOf(lowlevelEventDeclaration);
 		if (inIndex >= 0) {
@@ -99,7 +100,7 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 
 	public static List<Region> getOrthogonalRegions(Region lowlevelRegion) {
 		return lowlevelRegion.getParentElement().getRegions().stream()
-				.filter(it-> it != lowlevelRegion).collect(Collectors.toList());
+				.filter(it-> it != lowlevelRegion).toList();
 	}
 	
 	public static boolean hasInitialState(Region lowlevelRegion) {
@@ -125,7 +126,7 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 	public static EntryState getEntryState(Region region) {
 		Collection<StateNode> entryStates = region.getStateNodes().stream()
 				.filter(it -> it instanceof EntryState)
-				.collect(Collectors.toList());
+				.toList();
 		Optional<StateNode> entryState = entryStates.stream().filter(it -> it instanceof InitialState).findFirst();
 		if (entryState.isPresent()) {
 			return (EntryState) entryState.get();
@@ -307,8 +308,8 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 	
 	public static State getParentState(StateNode lowlevelState) {
 		CompositeElement parentElement = lowlevelState.getParentRegion().getParentElement();
-		if (parentElement instanceof State) {
-			return (State) parentElement;
+		if (parentElement instanceof State state) {
+			return state;
 		}
 		throw new IllegalArgumentException("Incorrect state node: " + lowlevelState);
 	}
@@ -317,6 +318,52 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 		return lowlevelRegion.getStateNodes().stream()
 				.filter(it -> it instanceof State)
 				.allMatch(it -> ((State) it).getRegions().isEmpty());
+	}
+	
+	public static List<AbstractReaction> getOutgoingAndInternalTransitions(StateNode node) {
+		List<AbstractReaction> reactions = new ArrayList<AbstractReaction>();
+		
+		reactions.addAll(
+				node.getOutgoingTransitions());
+		if (node instanceof State state) {
+			reactions.addAll(
+					state.getInternalTransitions());
+		}
+		
+		return reactions;
+	}
+	
+	public static List<AbstractReaction> getIncomingAndInternalTransitions(StateNode node) {
+		List<AbstractReaction> reactions = new ArrayList<AbstractReaction>();
+		
+		reactions.addAll(
+				node.getIncomingTransitions());
+		if (node instanceof State state) {
+			reactions.addAll(
+					state.getInternalTransitions());
+		}
+		
+		return reactions;
+	}
+	
+	public static StateNode getSourceNode(AbstractReaction reaction) {
+		if (reaction instanceof Transition transition) {
+			return transition.getSource();
+		}
+		if (reaction instanceof Reaction) {
+			return ecoreUtil.getContainerOfType(reaction, State.class);
+		}
+		throw new IllegalArgumentException("Unknown: " + reaction);
+	}
+	
+	public static StateNode getTargetNode(AbstractReaction reaction) {
+		if (reaction instanceof Transition transition) {
+			return transition.getTarget();
+		}
+		if (reaction instanceof Reaction) {
+			return ecoreUtil.getContainerOfType(reaction, State.class);
+		}
+		throw new IllegalArgumentException("Unknown: " + reaction);
 	}
 	
 	public static Transition getInitialTransition(Region region) {
@@ -331,7 +378,7 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 	public static List<Transition> getOutgoingTransitions(StateNode node) {
 		StatechartDefinition statechart = getStatechart(node);
 		return statechart.getTransitions().stream().filter(it -> it.getSource() == node)
-				.collect(Collectors.toList());
+				.toList();
 	}
 	
 	public static List<Transition> getHigherPriorityTransitions(Transition lowlevelTransition) {
@@ -340,8 +387,18 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 		List<Transition> outgoingTransitions = source.getOutgoingTransitions();
 		List<Transition> higherPriorityTransitions =  outgoingTransitions.stream()
 			.filter(it -> it.getPriority() > priority)
-			.collect(Collectors.toList());
+			.toList();
 		return higherPriorityTransitions;
+	}
+	
+	public static List<AbstractReaction> getHigherPriorityReactions(AbstractReaction lowlevelReaction) {
+		int priority = lowlevelReaction.getPriority();
+		StateNode source = getSourceNode(lowlevelReaction);
+		List<AbstractReaction> outgoingReactions = getOutgoingAndInternalTransitions(source);
+		List<AbstractReaction> higherPriorityReactions =  outgoingReactions.stream()
+			.filter(it -> it.getPriority() > priority)
+			.toList();
+		return higherPriorityReactions;
 	}
 	
 	public static List<Transition> getAncestorTransitions(Transition lowlevelTransition) {
@@ -349,9 +406,21 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 		List<State> parentStates = ecoreUtil.getAllContainersOfType(source, State.class);
 		List<Transition> outgoingTransition = new ArrayList<Transition>();
 		for (State parentState : parentStates) {
-			outgoingTransition.addAll(parentState.getOutgoingTransitions());
+			outgoingTransition.addAll(
+					parentState.getOutgoingTransitions());
 		}
 		return outgoingTransition;
+	}
+	
+	public static List<AbstractReaction> getAncestorReactions(AbstractReaction lowlevelReaction) {
+		StateNode source = getSourceNode(lowlevelReaction);
+		List<State> parentStates = ecoreUtil.getAllContainersOfType(source, State.class);
+		List<AbstractReaction> relevantReactions = new ArrayList<AbstractReaction>();
+		for (State parentState : parentStates) {
+			relevantReactions.addAll(
+					getOutgoingAndInternalTransitions(parentState));
+		}
+		return relevantReactions;
 	}
 	
 	public static List<Transition> getDescendantTransitions(Transition lowlevelTransition) {
@@ -359,18 +428,29 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 		List<State> childStates = ecoreUtil.getAllContentsOfType(source, State.class);
 		List<Transition> outgoingTransition = new ArrayList<Transition>();
 		for (State childState : childStates) {
-			outgoingTransition.addAll(childState.getOutgoingTransitions());
+			outgoingTransition.addAll(
+					childState.getOutgoingTransitions());
 		}
 		return outgoingTransition;
 	}
 	
-	public static List<Transition> getSortingAccordingToPriority(
-			Collection<? extends Transition> lowlevelTransitions) {
-		List<Transition> sortedTransitions = new ArrayList<Transition>();
-		sortedTransitions.addAll(lowlevelTransitions);
+	public static List<AbstractReaction> getDescendantReactions(AbstractReaction lowlevelReaction) {
+		StateNode source = getSourceNode(lowlevelReaction);
+		List<State> childStates = ecoreUtil.getAllContentsOfType(source, State.class);
+		List<AbstractReaction> relevantReactions = new ArrayList<AbstractReaction>();
+		for (State childState : childStates) {
+			relevantReactions.addAll(
+					getOutgoingAndInternalTransitions(childState));
+		}
+		return relevantReactions;
+	}
+	
+	public static <T extends AbstractReaction> List<T> getSortingAccordingToPriority(Collection<T> lowlevelReactions) {
+		List<T> sortedTransitions = new ArrayList<T>();
+		sortedTransitions.addAll(lowlevelReactions);
 		sortedTransitions.sort(
-			new Comparator<Transition>() {
-				public int compare(Transition lhs, Transition rhs) {
+			new Comparator<AbstractReaction>() {
+				public int compare(AbstractReaction lhs, AbstractReaction rhs) {
 					Integer l = lhs.getPriority();
 					Integer r = rhs.getPriority();
 					return r.compareTo(l);
@@ -380,22 +460,22 @@ public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFe
 		return sortedTransitions;
 	}
 	
-	public static boolean arePrioritiesUnique(
-			Collection<? extends Transition> lowlevelTransitions) {
+	public static boolean arePrioritiesUnique(Collection<? extends AbstractReaction> lowlevelReactions) {
 		Set<Integer> priorites = new HashSet<Integer>();
 		// Watch out for join nodes
-		for (Transition lowlevelTransition : lowlevelTransitions) {
-			priorites.add(lowlevelTransition.getPriority());
+		for (AbstractReaction lowlevelTransition : lowlevelReactions) {
+			priorites.add(
+					lowlevelTransition.getPriority());
 		}
-		return lowlevelTransitions.size() == priorites.size();
+		return lowlevelReactions.size() == priorites.size();
 	}
 	
-	public static boolean arePrioritiesSame(
-			Collection<? extends Transition> lowlevelTransitions) {
+	public static boolean arePrioritiesSame(Collection<? extends AbstractReaction> lowlevelReactions) {
 		Set<Integer> priorites = new HashSet<Integer>();
 		// Watch out for join nodes
-		for (Transition lowlevelTransition : lowlevelTransitions) {
-			priorites.add(lowlevelTransition.getPriority());
+		for (AbstractReaction lowlevelReaction : lowlevelReactions) {
+			priorites.add(
+					lowlevelReaction.getPriority());
 		}
 		return priorites.size() == 1;
 	}

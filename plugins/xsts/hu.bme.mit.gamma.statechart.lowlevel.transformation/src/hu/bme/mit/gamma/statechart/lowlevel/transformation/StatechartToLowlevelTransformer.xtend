@@ -102,7 +102,8 @@ class StatechartToLowlevelTransformer {
 		// Transform event any port parameter here as later, record and array accesses complicate things
 		statechart.preprocessEventAnyPortParameters
 		//
-		return statechart.transformComponent as hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
+		val lowlevelStatechart = statechart.transformComponent as hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
+		return lowlevelStatechart
 	}
 	
 	protected def hu.bme.mit.gamma.statechart.lowlevel.model.Package transform(Package _package) {
@@ -201,8 +202,8 @@ class StatechartToLowlevelTransformer {
 			val source = transition.sourceState
 			if (source instanceof State) {
 				// We can optimize, if this is an after N sec trigger (each timeout is set only once, hence the "== 1" if it is one)
-				if (source.getAllContentsOfType(
-						TimeoutAction).exists[it.timeoutDeclaration === timeout]) {
+				if (source.getAllContentsOfType(TimeoutAction)
+							.exists[it.timeoutDeclaration === timeout]) {
 					// We can optimize, if all outgoing transitions use (potentially) only this timeout
 					if (source.outgoingTransitions.map[it.getAllContentsOfType(
 							TimeoutEventReference).toList].flatten.forall[it.timeout === timeout]) {
@@ -355,46 +356,36 @@ class StatechartToLowlevelTransformer {
 
 	protected def transform(SchedulingOrder order) {
 		switch (order) {
-			case SchedulingOrder.BOTTOM_UP: {
+			case SchedulingOrder.BOTTOM_UP:
 				return hu.bme.mit.gamma.statechart.lowlevel.model.SchedulingOrder.BOTTOM_UP
-			}
-			case SchedulingOrder.TOP_DOWN: {
+			case SchedulingOrder.TOP_DOWN:
 				return hu.bme.mit.gamma.statechart.lowlevel.model.SchedulingOrder.TOP_DOWN
-			}
-			default: {
+			default:
 				throw new IllegalArgumentException("Not known scheduling order: " + order)
-			}
 		}
 	}
 	
 	protected def transform(GuardEvaluation guardEvaluation) {
 		switch (guardEvaluation) {
-			case GuardEvaluation.ON_THE_FLY: {
+			case GuardEvaluation.ON_THE_FLY:
 				return hu.bme.mit.gamma.statechart.lowlevel.model.GuardEvaluation.ON_THE_FLY
-			}
-			case GuardEvaluation.BEGINNING_OF_STEP: {
+			case GuardEvaluation.BEGINNING_OF_STEP:
 				return hu.bme.mit.gamma.statechart.lowlevel.model.GuardEvaluation.BEGINNING_OF_STEP
-			}
-			default: {
+			default:
 				throw new IllegalArgumentException("Not known guard evaluation: " + guardEvaluation)
-			}
 		}
 	}
 	
 	protected def transform(OrthogonalRegionSchedulingOrder schedulingOrder) {
 		switch (schedulingOrder) {
-			case OrthogonalRegionSchedulingOrder.SEQUENTIAL: {
+			case OrthogonalRegionSchedulingOrder.SEQUENTIAL:
 				return hu.bme.mit.gamma.statechart.lowlevel.model.OrthogonalRegionSchedulingOrder.SEQUENTIAL
-			}
-			case OrthogonalRegionSchedulingOrder.UNORDERED: {
+			case OrthogonalRegionSchedulingOrder.UNORDERED:
 				return hu.bme.mit.gamma.statechart.lowlevel.model.OrthogonalRegionSchedulingOrder.UNORDERED
-			}
-			case OrthogonalRegionSchedulingOrder.PARALLEL: {
+			case OrthogonalRegionSchedulingOrder.PARALLEL:
 				return hu.bme.mit.gamma.statechart.lowlevel.model.OrthogonalRegionSchedulingOrder.PARALLEL
-			}
-			default: {
+			default:
 				throw new IllegalArgumentException("Not known scheduling order: " + schedulingOrder)
-			}
 		}
 	}
 
@@ -451,16 +442,8 @@ class StatechartToLowlevelTransformer {
 		// Trivial simple transitions
 		val gammaSource = gammaTransition.sourceState
 		val gammaTarget = gammaTransition.targetState
-		val lowlevelSource = if (gammaSource instanceof State) {
-			trace.get(gammaSource)
-		} else if (gammaSource instanceof PseudoState) {
-			trace.get(gammaSource)
-		}
-		val lowlevelTarget = if (gammaTarget instanceof State) {
-			trace.get(gammaTarget)
-		} else if (gammaTarget instanceof PseudoState) {
-			trace.get(gammaTarget)
-		}
+		val lowlevelSource = trace.get(gammaSource)
+		val lowlevelTarget = trace.get(gammaTarget)
 		val lowlevelTransition = createTransition => [
 			it.source = lowlevelSource
 			it.target = lowlevelTarget

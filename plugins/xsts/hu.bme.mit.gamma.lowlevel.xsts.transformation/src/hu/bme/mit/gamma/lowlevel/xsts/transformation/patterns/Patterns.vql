@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -170,6 +170,10 @@ pattern transitionsToHigherAndLowerNodes(source : StateNode, sourceAncestor : St
 	neg find transitionsBetweenSameRegionNodes(source, transition, target);
 	// Note that this pattern returns transitions through orthogonal regions, which
 	// is essential when transforming complex transitions with junctions
+}
+
+pattern internalTransitions(reaction : Reaction) {
+	State.internalTransitions(_, reaction);
 }
 
 // Simple transition patterns

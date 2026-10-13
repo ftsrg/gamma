@@ -48,6 +48,10 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="xStsPrecondition" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ReactionTrace" eSuperTypes="#//TransitionTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="lowlevelReaction" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.lowlevel.model/model/model.ecore#//Reaction"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SimpleTransitionTrace" eSuperTypes="#//TransitionTrace">
     <eStructuralFeatures xsi:type="ecore:EReference" name="lowlevelTransition" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.lowlevel.model/model/model.ecore#//Transition"/>

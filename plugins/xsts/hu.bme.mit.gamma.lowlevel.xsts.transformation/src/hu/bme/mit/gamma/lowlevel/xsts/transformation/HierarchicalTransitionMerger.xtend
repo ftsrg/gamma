@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020-2025 Contributors to the Gamma project
+ * Copyright (c) 2020-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -82,8 +82,7 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		xSts.changeTransitions(xStsMergedAction.wrap)
 	}
 	
-	private def Action mergeAllTransitionsOfRegion(CompositeElement element,
-			Map<Region, ? extends Action> regionActions) {
+	private def Action mergeAllTransitionsOfRegion(CompositeElement element, Map<Region, ? extends Action> regionActions) {
 		val lowlevelRegions = element.regions
 		
 		if (lowlevelRegions.empty) {
@@ -98,8 +97,7 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 			
 			val isExecVariableNamePostfix = lowlevelRegions.map[it.uniqueIndex].join // Deterministic name
 			val xStsExecutedVariableAction = createBooleanTypeDefinition
-					.createVariableDeclarationAction('''isExec_«isExecVariableNamePostfix»''',
-						createFalseExpression)
+					.createVariableDeclarationAction('''isExec_«isExecVariableNamePostfix»''', createFalseExpression)
 			val xStsExecutedVariable = xStsExecutedVariableAction.variableDeclaration
 			xStsSequentialAction.actions += xStsExecutedVariableAction
 			
@@ -120,8 +118,7 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		}
 	}
 	
-	private def Action mergeAllTransitionsOfRegion(Region region,
-			Map<Region, ? extends Action> regionActions) {
+	private def Action mergeAllTransitionsOfRegion(Region region, Map<Region, ? extends Action> regionActions) {
 		val lowlevelStatechart = region.statechart
 		val lowlevelSchedulingOrder = lowlevelStatechart.schedulingOrder
 		
@@ -166,15 +163,15 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 		
 		val lowlevelStates = lowlevelRegion.states
 		val arePrioritiesUnique = lowlevelStates.forall[
-				it.outgoingTransitions.arePrioritiesUnique]
+				it.outgoingAndInternalTransitions.arePrioritiesUnique]
 		val arePrioritiesSame = lowlevelStates.forall[
-				it.outgoingTransitions.arePrioritiesSame]
+				it.outgoingAndInternalTransitions.arePrioritiesSame]
 				
 		// Simple outgoing transitions
 		for (lowlevelState : lowlevelStates) {
-			val lowlevelOutgoingTransitions = lowlevelState.outgoingTransitions
+			val lowlevelOutgoingTransitions = lowlevelState.outgoingAndInternalTransitions
 			for (lowlevelOutgoingTransition : lowlevelOutgoingTransitions
-						.filter[trace.isTraced(it)] /* Simple transitions */ ) {
+						.filter[trace.isTraced(it)] /* Simple and internal transitions */ ) {
 				val priority = lowlevelOutgoingTransition.priority
 				val xTransitionList = xStsTransitions.getOrCreateList(priority)
 				xTransitionList += trace.getXStsTransition(lowlevelOutgoingTransition)
@@ -187,7 +184,7 @@ class HierarchicalTransitionMerger extends AbstractTransitionMerger {
 			xTransitionList += trace.getXStsTransition(lastJoinState)
 		}
 		for (lastMergeState : lowlevelRegion.stateNodes.filter(MergeState).filter[it.isLastMergeState]) {
-			throw new IllegalArgumentException("Merge states are not handled")
+			throw new IllegalArgumentException("Merge states are not handled here")
 		}
 		for (firstForkState : lowlevelRegion.stateNodes.filter(ForkState).filter[it.isFirstForkState]) {
 			val priority = firstForkState.incomingTransitions.map[it.priority].max

@@ -15,11 +15,11 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.TrueExpression
+import hu.bme.mit.gamma.statechart.lowlevel.model.AbstractReaction
 import hu.bme.mit.gamma.statechart.lowlevel.model.JoinState
 import hu.bme.mit.gamma.statechart.lowlevel.model.MergeState
 import hu.bme.mit.gamma.statechart.lowlevel.model.SchedulingOrder
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
-import hu.bme.mit.gamma.statechart.lowlevel.model.Transition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.transformation.util.VariableGroupRetriever
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
@@ -61,8 +61,8 @@ class TransitionPreconditionCreator {
 	/**
 	 * Creates the precondition of an xSTS transition based on the low-level transition.
 	 */
-	def createXStsTransitionPrecondition(Transition lowlevelTransition) {
-		val lowlevelSource = lowlevelTransition.source
+	def createXStsTransitionPrecondition(AbstractReaction lowlevelTransition) {
+		val lowlevelSource = lowlevelTransition.sourceNode
 		checkArgument(lowlevelSource instanceof State)
 		val order = lowlevelTransition.statechart.schedulingOrder
 		checkArgument(order == SchedulingOrder.TOP_DOWN || order == SchedulingOrder.BOTTOM_UP)
@@ -72,14 +72,13 @@ class TransitionPreconditionCreator {
 		if (order == SchedulingOrder.BOTTOM_UP) {
 			// Not that join transitions CANNOT leave states that are ancestors of each other
 			// Such a model could cause trouble here, think of the join semantics
-			lowlevelTransition.descendantTransitions
+			lowlevelTransition.descendantReactions
 		}
 		else {
-			lowlevelTransition.ancestorTransitions 
-			
+			lowlevelTransition.ancestorReactions
 		}
 		
-		val lowlevelHigherPriorityTransitions = lowlevelTransition.higherPriorityTransitions
+		val lowlevelHigherPriorityTransitions = lowlevelTransition.higherPriorityReactions
 		val xStsPriorityExpression = (addPriorityGuard) ?
 				lowlevelHigherPriorityTransitions.createXStsTransitionConflictExclusion : null
 		
@@ -113,18 +112,18 @@ class TransitionPreconditionCreator {
 	/**
 	 * Creates an expression which is true iff NONE of the given lowlevel transition is enabled. 
 	 */
-	def createXStsTransitionConflictExclusion(Collection<Transition> lowlevelTransitions) {
+	def createXStsTransitionConflictExclusion(Collection<AbstractReaction> lowlevelTransitions) {
 		return lowlevelTransitions.map[it.isEnabledExpression]
 				.connectViaNegations
 	}
 	
 	// Dispatch isActive (source elements are active and guard is true) expression
 	
-	private def getIsEnabledExpression(Transition lowlevelTransition) {
+	private def getIsEnabledExpression(AbstractReaction lowlevelTransition) {
 		val andExpression = createAndExpression
 		val xStsOperands = andExpression.operands
 		// IsActive
-		val lowlevelSourceNode = lowlevelTransition.source
+		val lowlevelSourceNode = lowlevelTransition.sourceNode
 		if (lowlevelSourceNode instanceof State) { // Theoretically constant true
 			// e.g., local var a := region == Region.A
 			// e.g., local var b := region == Region.A (extractable) && region2 == Region.B
@@ -146,8 +145,8 @@ class TransitionPreconditionCreator {
 		return andExpression
 	}
 	
-	protected def getGuardExpression(Transition lowlevelTransition,
-			Map<Transition, List<Expression>> cache /* So state and choice guards can be distinguished */) {
+	protected def getGuardExpression(AbstractReaction lowlevelTransition,
+			Map<AbstractReaction, List<Expression>> cache /* So state and choice guards can be distinguished */) {
 		val xSts = trace.XSts
 		val guard = lowlevelTransition.guard
 		if (guard !== null) {

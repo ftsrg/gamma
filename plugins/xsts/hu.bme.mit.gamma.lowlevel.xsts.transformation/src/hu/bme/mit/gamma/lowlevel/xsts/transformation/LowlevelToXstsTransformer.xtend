@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -76,6 +76,7 @@ import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionMo
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InternalTransitions
 
 class LowlevelToXstsTransformer {
 	extension BatchTransformation transformation
@@ -123,6 +124,7 @@ class LowlevelToXstsTransformer {
 	protected BatchTransformationRule<Timeouts.Match, Timeouts.Matcher> timeoutsRule
 	protected BatchTransformationRule<GlobalVariables.Match, GlobalVariables.Matcher> variableInitializationsRule
 	protected BatchTransformationRule<Statecharts.Match, Statecharts.Matcher> topRegionInitializationRule
+	protected BatchTransformationRule<InternalTransitions.Match, InternalTransitions.Matcher> internalTransitionsRule
 	protected BatchTransformationRule<SimpleTransitionsBetweenStates.Match,
 				SimpleTransitionsBetweenStates.Matcher> simpleTransitionBetweenStatesRule
 	protected BatchTransformationRule<SimpleTransitionsToEntryStates.Match,
@@ -207,6 +209,7 @@ class LowlevelToXstsTransformer {
 		getVariableInitializationsRule.fireAllCurrent
 		initializeVariableInitializingAction // After getVariableInitializationsRule, but before getTopRegionsInitializationRule
 		getTopRegionsInitializationRule.fireAllCurrent // Setting the top region (variables) into their initial states
+		getInternalTransitionsRule.fireAllCurrent
 		getSimpleTransitionsBetweenStatesRule.fireAllCurrent
 		getSimpleTransitionsToHistoryStatesRule.fireAllCurrent
 		getLastJoinTransitionsRule.fireAllCurrent
@@ -651,7 +654,19 @@ class LowlevelToXstsTransformer {
 			]
 		}
 	}
-
+	
+	protected def getInternalTransitionsRule() {
+		if (internalTransitionsRule === null) {
+			internalTransitionsRule = createRule(InternalTransitions.instance).action [
+				val lowlevelReaction = it.reaction
+				val xStsTransition = lowlevelReaction.transform
+				// Tracing is done in the transformation part
+				xSts.transitions += xStsTransition
+			].build
+		}
+		return internalTransitionsRule
+	}
+	
 	/**
 	 * Simple transitions between any states, composite states are not differentiated.
 	 */

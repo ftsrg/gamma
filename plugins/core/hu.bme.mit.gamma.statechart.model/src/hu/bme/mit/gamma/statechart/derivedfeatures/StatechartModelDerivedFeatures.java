@@ -3589,13 +3589,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return max;
 	}
 	
-	public static BigInteger calculatePriority(AbstractReaction transition) {
-		StatechartDefinition statechart = getContainingStatechart(transition);
+	public static BigInteger calculatePriority(AbstractReaction reaction) {
+		StatechartDefinition statechart = getContainingStatechart(reaction);
 		TransitionPriority transitionPriority = statechart.getTransitionPriority();
-		StateNode source = getSourceNode(transition);
+		StateNode source = getSourceNode(reaction);
 		List<AbstractReaction> transitions = getOutgoingAndInternalTransitions(source);
 		// If it is an else transition, its priority is always the lowest
-		Expression guard = transition.getGuard();
+		Expression guard = reaction.getGuard();
 		if (isElseOrDefault(guard)) {
 			BigInteger min = transitions.stream()
 				.filter(it -> !isElseOrDefault(it.getGuard()))
@@ -3608,16 +3608,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		switch (transitionPriority) {
 			case ORDER_BASED : {
 				int size = transitions.size();
-				int index = transitions.indexOf(transition);
+				int index = transitions.indexOf(reaction);
 				int priority = size - index;
 				return BigInteger.valueOf(priority);
 			}
-			case VALUE_BASED : {
-				return transition.getPriority();
-			}
-			case OFF : { // Default value is 0
-				return transition.getPriority();
-			}
+			case VALUE_BASED :
+				return reaction.getPriority();
+			case OFF : // Default value is 0
+				return reaction.getPriority();
 			default:
 				throw new IllegalArgumentException("Not supported literal: " + transitionPriority);
 		}

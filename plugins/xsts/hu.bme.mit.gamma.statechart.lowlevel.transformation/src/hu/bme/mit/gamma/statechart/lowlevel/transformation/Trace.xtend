@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.statechart.statechart.PseudoState
 import hu.bme.mit.gamma.statechart.statechart.Reaction
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.util.Triple
@@ -535,6 +536,14 @@ class Trace {
 	def get(PseudoState gammaPseudoState) {
 		checkNotNull(gammaPseudoState)
 		pseudoStateMappings.get(gammaPseudoState)
+	}
+	
+	def get(StateNode gammaStateNode) {
+		switch (gammaStateNode) {
+			State: gammaStateNode.get
+			PseudoState: gammaStateNode.get
+			default: throw new IllegalArgumentException("Unknown: " + gammaStateNode)
+		}
 	}
 	
 	// Regular transition
