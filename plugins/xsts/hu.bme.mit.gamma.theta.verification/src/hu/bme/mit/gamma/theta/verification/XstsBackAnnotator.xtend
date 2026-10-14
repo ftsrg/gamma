@@ -654,11 +654,15 @@ class XstsBackAnnotator {
 						val statechart = simpleInstance.getStatechart
 						val topRegions = statechart.regions
 						for (topRegion : topRegions) {
-							val potentialState = topRegion.states.filter[!it.composite && it.outgoingTransitions.empty].head
-							if (potentialState !== null) {
-								logger_.warning("Adding sliced state reference to step " + step.index + ": " + simpleInstance.name + "->" + topRegion.name + "." + potentialState.name)
-								val stateReference = simpleInstance.createInstanceReference.createStateReference(potentialState)
-								asserts += stateReference
+							val states = topRegion.states
+							val potentialStates = states.filter[!it.composite /* && it.outgoingTransitions.empty */]
+							if (potentialStates.size == 1) {
+								val potentialState = potentialStates.head
+								if (potentialState !== null) {
+									logger_.warning("Adding sliced state reference to step " + step.index + ": " + simpleInstance.name + "->" + topRegion.name + "." + potentialState.name)
+									val stateReference = simpleInstance.createInstanceReference.createStateReference(potentialState)
+									asserts += stateReference
+								}
 							}
 						}
 					}
