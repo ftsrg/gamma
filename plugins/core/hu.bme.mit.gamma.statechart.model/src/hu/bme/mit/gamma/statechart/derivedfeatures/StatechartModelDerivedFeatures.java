@@ -500,8 +500,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return state.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
 	}
 	
-	public static boolean hasAnnotation(Transition transition, Class<? extends TransitionAnnotation> annotation) {
-		return transition.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
+	public static boolean hasAnnotation(AbstractReaction reaction, Class<? extends TransitionAnnotation> annotation) {
+		if (reaction instanceof Transition transition) {
+			return transition.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
+		}
+		return false;
 	}
 	
 	public static TimeUnit getSmallestTimeUnit(NamedElement element) {
@@ -3038,6 +3041,19 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return javaUtil.getOnlyElement(loopTransitions);
 	}
 	
+	public static Collection<AbstractReaction> getAllTransitions(StatechartDefinition statechart) {
+		List<AbstractReaction> transitions = new ArrayList<AbstractReaction>();
+		
+		transitions.addAll(
+				statechart.getTransitions());
+		for (State state : getAllStates(statechart)) {
+			transitions.addAll(
+					state.getInternalTransitions());
+		}
+		
+		return transitions;
+	}
+	
 	public static Collection<StateNode> getAllStateNodes(CompositeElement compositeElement) {
 		Set<StateNode> stateNodes = new LinkedHashSet<StateNode>();
 		for (Region region : compositeElement.getRegions()) {
@@ -3523,12 +3539,15 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return null;
 	}
 	
-	public static String getId(Transition transition) {
-		TransitionIdAnnotation idAnnotation = getIdAnnotation(transition);
-		if (idAnnotation == null) {
-			return null;
+	public static String getId(AbstractReaction reaction) {
+		if (reaction instanceof Transition transition) {
+			TransitionIdAnnotation idAnnotation = getIdAnnotation(transition);
+			if (idAnnotation == null) {
+				return null;
+			}
+			return idAnnotation.getName();
 		}
-		return idAnnotation.getName();
+		return null;
 	}
 	
 	public static Collection<PortEventReference> getPortEventReferences(Transition transition) {
@@ -3962,7 +3981,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			transition.getEffects().isEmpty();
 	}
 	
-	public static boolean isElse(Transition transition) {
+	public static boolean isElse(AbstractReaction transition) {
 		return transition.getGuard() instanceof ElseExpression;
 	}
 	

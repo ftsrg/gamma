@@ -34,8 +34,10 @@ import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeature
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.AbstractReaction
 import hu.bme.mit.gamma.statechart.statechart.CoverageAvoidanceAnnotation
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
+import hu.bme.mit.gamma.statechart.statechart.Reaction
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
@@ -225,10 +227,10 @@ class PropertyGenerator {
 		val formulas = newArrayList
 		
 		val transitions = transitionAnnotations.transitions
-		val leafStates = transitions.map[it.sourceState].filter(State).filter[!it.composite].toSet
+		val leafStates = transitions.map[it.sourceNode].filter(State).filter[!it.composite].toSet
 		for (leafState : leafStates) {
 			val consideredStates = leafState.ancestorsAndSelf
-			val allOutgoingTransitions = transitions.filter[consideredStates.contains(it.sourceState)].toSet
+			val allOutgoingTransitions = transitions.filter[consideredStates.contains(it.sourceNode)].toSet
 			val variables = allOutgoingTransitions.map[transitionAnnotations.getVariable(it)].toSet
 			// CTL should be used for real deadlock check: 'E F(state && A G (!outgoingTransitionFireable1 && .. && !outgoingTransitionFireableN))'
 			if (!variables.empty) {  // A G(state -> (G (!outgoingTransitionFireable1 && .. && !outgoingTransitionFireableN))
@@ -390,7 +392,7 @@ class PropertyGenerator {
 			return formulas
 		}
 		// Order optimization - "further" transitions are put earlier in the list - makes sense if there is no slicing
-		var List<Transition> transitions = newArrayList
+		var List<AbstractReaction> transitions = newArrayList
 		transitions += transitionAnnotations.transitions
 		if (optimizePropertyOrder) {
 			val transitionDistances = newLinkedHashMap
@@ -404,7 +406,7 @@ class PropertyGenerator {
 		//
 		for (transition : transitions) {
 			val variable = transitionAnnotations.getVariable(transition)
-			val reference = createVariableReference(variable)
+			val reference = variable.createVariableReference
 			val stateFormula = propertyUtil.createEF(
 					propertyUtil.createAtomicFormula(reference))
 			// Comment
@@ -593,7 +595,7 @@ class PropertyGenerator {
 	}
 	
 	def dispatch protected String getId(RaiseEventAction action) {
-		val transition = ecoreUtil.getContainerOfType(action, Transition)
+		val transition = ecoreUtil.getContainerOfType(action, AbstractReaction)
 		if (transition === null) {
 			val state = ecoreUtil.getContainerOfType(action, State)
 			if (state === null) {
@@ -611,6 +613,10 @@ class PropertyGenerator {
 	
 	def dispatch protected String getId(Transition transition) {
 		return '''«transition.sourceState.id» --> «transition.targetState.id»'''
+	}
+	
+	def dispatch protected String getId(Reaction transition) {
+		return '''internal «transition.sourceNode.id»'''
 	}
 	
 	def dispatch protected String getId(DirectReferenceExpression reference) {

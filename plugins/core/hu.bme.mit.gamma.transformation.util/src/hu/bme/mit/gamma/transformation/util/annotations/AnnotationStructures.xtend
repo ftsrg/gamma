@@ -21,12 +21,11 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceTransitionReferenc
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
+import hu.bme.mit.gamma.statechart.statechart.AbstractReaction
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
-import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.util.JavaUtil
-import hu.bme.mit.gamma.util.Triple
 import java.util.Collection
 import java.util.Map
 import java.util.Set
@@ -44,9 +43,9 @@ class AnnotationStructures { }
 
 class TransitionAnnotations {
 	
-	final Map<Transition, VariableDeclaration> transitionPairVariables
+	final Map<AbstractReaction, VariableDeclaration> transitionPairVariables
 	
-	new(Map<Transition, VariableDeclaration> transitionPairVariables) {
+	new(Map<AbstractReaction, VariableDeclaration> transitionPairVariables) {
 		this.transitionPairVariables = transitionPairVariables
 	}
 	
@@ -58,11 +57,11 @@ class TransitionAnnotations {
 		return transitionPairVariables.values
 	}
 	
-	def isAnnotated(Transition transition) {
+	def isAnnotated(AbstractReaction transition) {
 		return transitionPairVariables.containsKey(transition)
 	}
 	
-	def getVariable(Transition transition) {
+	def getVariable(AbstractReaction transition) {
 		return transitionPairVariables.get(transition)
 	}
 	
@@ -89,7 +88,7 @@ class VariablePair {
 
 @Data
 class TransitionAnnotation {
-	Transition transition
+	AbstractReaction transition
 	VariableDeclaration transitionVariable
 	Long transitionId
 }
@@ -103,7 +102,7 @@ class TransitionPairAnnotation {
 @Data
 class Interaction {
 	RaiseEventAction sender
-	Transition receiver
+	AbstractReaction receiver
 	VariablePair variablePair
 	Long senderId
 	Long receiverId
@@ -196,8 +195,8 @@ class AnnotationNamings {
 	def String getTrapStateName() '''_TrapState_'''
 	def String getTrapChoiceStateName(Object object) '''_TrapChoice_«object.hashCode.toString.replaceAll("-", "_")»'''
 	
-	def String getVariableName(Transition transition)
-		'''«IF transition.id !== null»«transition.id»«ELSE»«PREFIX»«transition.sourceState.name»_«transition.indexOrZero»_«transition.targetState.name»«POSTFIX»«ENDIF»'''
+	def String getVariableName(AbstractReaction transition)
+		'''«IF transition.id !== null»«transition.id»«ELSE»«PREFIX»«transition.sourceNode.name»_«transition.indexOrZero»_«transition.targetNode.name»«POSTFIX»«ENDIF»'''
 	def String getFirstVariableName(StatechartDefinition statechart)
 		'''«PREFIX»first_«statechart.name»«id.increment(statechart)»«POSTFIX»'''
 	def String getSecondVariableName(StatechartDefinition statechart)
