@@ -122,6 +122,7 @@ import hu.bme.mit.gamma.statechart.statechart.EntryState;
 import hu.bme.mit.gamma.statechart.statechart.EventAnyPortReference;
 import hu.bme.mit.gamma.statechart.statechart.ForkState;
 import hu.bme.mit.gamma.statechart.statechart.InitialState;
+import hu.bme.mit.gamma.statechart.statechart.InternalTransition;
 import hu.bme.mit.gamma.statechart.statechart.JoinState;
 import hu.bme.mit.gamma.statechart.statechart.MergeState;
 import hu.bme.mit.gamma.statechart.statechart.MutantAnnotation;
@@ -2991,6 +2992,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return outgoingTransitionsOfAncestors;
 	}
 	
+	public static Collection<AbstractTransition> getOutgoingAndInternalTransitionsOfAncestors(StateNode node) {
+		Set<AbstractTransition> outgoingTransitionsOfAncestors = new LinkedHashSet<AbstractTransition>();
+		List<State> ancestors = getAncestors(node);
+		for (State ancestor : ancestors) {
+			outgoingTransitionsOfAncestors.addAll(
+					getOutgoingAndInternalTransitions(ancestor));
+		}
+		return outgoingTransitionsOfAncestors;
+	}
+	
 	public static List<Transition> getOutgoingTransitionsUntilState(StateNode node) {
 		List<Transition> transitions = new ArrayList<Transition>();
 		
@@ -3047,12 +3058,21 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		
 		transitions.addAll(
 				statechart.getTransitions());
+		transitions.addAll(
+				getInternalTransitions(statechart));
+		
+		return transitions;
+	}
+	
+	public static Collection<InternalTransition> getInternalTransitions(StatechartDefinition statechart) {
+		List<InternalTransition> internalTransitions = new ArrayList<InternalTransition>();
+		
 		for (State state : getAllStates(statechart)) {
-			transitions.addAll(
+			internalTransitions.addAll(
 					state.getInternalTransitions());
 		}
 		
-		return transitions;
+		return internalTransitions;
 	}
 	
 	public static Collection<StateNode> getAllStateNodes(CompositeElement compositeElement) {

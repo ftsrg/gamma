@@ -20,6 +20,7 @@ import hu.bme.mit.gamma.statechart.composite.SimpleChannel
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.SynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.statechart.AbstractTransition
 import hu.bme.mit.gamma.statechart.statechart.EntryState
 import hu.bme.mit.gamma.statechart.statechart.GuardEvaluation
 import hu.bme.mit.gamma.statechart.statechart.OrthogonalRegionSchedulingOrder
@@ -32,7 +33,6 @@ import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
-import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
 import hu.bme.mit.gamma.transformation.util.queries.Regions
 import hu.bme.mit.gamma.transformation.util.queries.RemovableTransitions
@@ -127,9 +127,9 @@ class SystemReducer implements Reducer {
 		}
 	}
 	
-	private def void removeTransition(Transition transition) {
-		val target = transition.targetState
-		info("Removing transition " + transition.sourceState.name + " -> " + target.name)
+	private def void removeTransition(AbstractTransition transition) {
+		val target = transition.targetNode
+		info("Removing transition " + transition.sourceNode.name + " -> " + target.name)
 		transition.remove
 		try {
 			if (target.allIncomingTransitions.empty /* 0 due to transition.remove */) {
@@ -194,6 +194,7 @@ class SystemReducer implements Reducer {
 					states.forall[(!it.composite && it.outgoingTransitions.empty &&
 							it.incomingTransitions.forall[states.contains(it.sourceState)] && // Considering transitions via regions
 							it.entryActions.forall[it.effectlessAction] &&
+							it.internalTransitions.map[it.effects].flatten.forall[it.effectlessAction] &&
 							it.exitActions.forall[it.effectlessAction] // && it.invariants.forall[it.definitelyTrueExpression]
 							) ||
 							it.allIncomingTransitions.empty]) { // Never true due to initial transition?
@@ -242,7 +243,7 @@ class SystemReducer implements Reducer {
 	}
 	
 	private def getFalseGuardedTransitions(Collection<StatechartDefinition> statecharts) {
-		val transitions = statecharts.map[it.transitions].flatten.reject[it.guard === null]
+		val transitions = statecharts.map[it.allTransitions].flatten.reject[it.guard === null]
 		val falseGuardedTransitions = newArrayList
 		for (transition : transitions) {
 			try {
@@ -279,7 +280,8 @@ class SystemReducer implements Reducer {
 						val regions = orthogonalRegionState.regions
 						for (region : regions) {
 							val regionStates = region.allStates
-							val transitions = regionStates.map[it.outgoingTransitionsUntilState].flatten
+							val transitions = (regionStates.map[it.outgoingTransitionsUntilState] +
+									regionStates.map[it.internalTransitions]).flatten
 							val objectsOfInterest = transitions +
 										regionStates.map[it.entryActions + it.exitActions + it.invariants].flatten
 							val referencedVariables = objectsOfInterest
@@ -339,10 +341,11 @@ class SystemReducer implements Reducer {
 					// Top-down region scheduling if there are no occluding transitions
 					areTriggersDisjoint = true
 					if (stateNodes.exists[it.hasParentState]) {
-						val transitions = statechart.transitions.filter[it.leavingState] // Only for states
+						val transitions = statechart.transitions.filter[it.leavingState] + // Only for states
+								statechart.internalTransitions
 						for (transition : transitions) {
-							val source = transition.sourceState
-							val outgoingTransitionsOfAncestors = source.outgoingTransitionsOfAncestors
+							val source = transition.sourceNode
+							val outgoingTransitionsOfAncestors = source.outgoingAndInternalTransitionsOfAncestors
 							for (outgoingTransitionsOfAncestor : outgoingTransitionsOfAncestors) {
 								if (!transition.areTriggersDisjoint(outgoingTransitionsOfAncestor)) {
 									areTriggersDisjoint = false
@@ -358,7 +361,7 @@ class SystemReducer implements Reducer {
 			}
 			
 			if (statechart.transitionPriority != TransitionPriority.ORDER_BASED &&
-					stateNodes.forall[it.outgoingTransitions.size < 2]) { // Every state has at most one outgoing transition
+					stateNodes.forall[it.outgoingAndInternalTransitions.size < 2]) { // Every state has at most one outgoing transition
 				statechart.transitionPriority = TransitionPriority.ORDER_BASED
 				info("Setting transition priority to order-based")
 			}

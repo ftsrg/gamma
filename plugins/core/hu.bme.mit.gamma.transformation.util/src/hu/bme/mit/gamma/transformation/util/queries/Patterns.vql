@@ -707,12 +707,12 @@ private pattern internalPorts(port : Port) {
 	EventDeclaration.direction(eventDeclaration, EventDirection::INTERNAL);
 }
 
-pattern removableTransitions(transition : Transition) {
+pattern removableTransitions(transition : AbstractTransition) {
 	find transitionEventTrigger(transition, _, _); // It is important that the transition has an event trigger
 	neg find triggerableTransition(transition);
 }
 
-private pattern triggerableTransition(transition : Transition) {
+private pattern triggerableTransition(transition : AbstractTransition) {
 	find relevantEvents(outPort, raisedEvent);
 	find simpleInstanceChannelEndings(_, _, outPort, raisedEvent, _, inPort);
 	find transitionEventTrigger(transition, inPort, raisedEvent);
@@ -724,8 +724,8 @@ private pattern triggerableTransition(transition : Transition) {
 	find transitionEventTrigger(transition, internalPort, _raisedEvent);
 }
 
-private pattern transitionEventTrigger(transition : Transition, inPort : Port, raisedEvent : Event) {
-	Transition.trigger(transition, parentTrigger);
+private pattern transitionEventTrigger(transition : AbstractTransition, inPort : Port, raisedEvent : Event) {
+	AbstractTransition.trigger(transition, parentTrigger);
 	find triggerToTriggerThroughAndTriggers(parentTrigger, trigger);
 	find eventTriggers(trigger, inPort, raisedEvent);
 }
