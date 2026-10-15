@@ -269,6 +269,11 @@ public class GenmodelValidator extends ExpressionModelValidator {
 				"After the first execution, this setting shall be 'true' unless the analysis model is regenerated",
 					new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__OPTIMIZE_MODEL)));
 		}
+		if (verification.isSerializePostprocessingResults()) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+				"For post-processing, back-annotation to the original component must be set",
+					new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__SERIALIZE_POSTPROCESSING_RESULTS)));
+		}
 		
 		return validationResultMessages;
 	}
