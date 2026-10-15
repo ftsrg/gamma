@@ -34,10 +34,10 @@ import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeature
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Port
-import hu.bme.mit.gamma.statechart.statechart.AbstractReaction
+import hu.bme.mit.gamma.statechart.statechart.AbstractTransition
 import hu.bme.mit.gamma.statechart.statechart.CoverageAvoidanceAnnotation
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
-import hu.bme.mit.gamma.statechart.statechart.Reaction
+import hu.bme.mit.gamma.statechart.statechart.InternalTransition
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
@@ -392,7 +392,7 @@ class PropertyGenerator {
 			return formulas
 		}
 		// Order optimization - "further" transitions are put earlier in the list - makes sense if there is no slicing
-		var List<AbstractReaction> transitions = newArrayList
+		var List<AbstractTransition> transitions = newArrayList
 		transitions += transitionAnnotations.transitions
 		if (optimizePropertyOrder) {
 			val transitionDistances = newLinkedHashMap
@@ -595,7 +595,7 @@ class PropertyGenerator {
 	}
 	
 	def dispatch protected String getId(RaiseEventAction action) {
-		val transition = ecoreUtil.getContainerOfType(action, AbstractReaction)
+		val transition = ecoreUtil.getContainerOfType(action, AbstractTransition)
 		if (transition === null) {
 			val state = ecoreUtil.getContainerOfType(action, State)
 			if (state === null) {
@@ -615,7 +615,7 @@ class PropertyGenerator {
 		return '''«transition.sourceState.id» --> «transition.targetState.id»'''
 	}
 	
-	def dispatch protected String getId(Reaction transition) {
+	def dispatch protected String getId(InternalTransition transition) {
 		return '''internal «transition.sourceNode.id»'''
 	}
 	

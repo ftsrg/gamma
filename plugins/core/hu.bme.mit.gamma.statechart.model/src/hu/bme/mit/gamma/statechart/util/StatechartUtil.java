@@ -90,7 +90,7 @@ import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
 import hu.bme.mit.gamma.statechart.interface_.Trigger;
 import hu.bme.mit.gamma.statechart.phase.History;
-import hu.bme.mit.gamma.statechart.statechart.AbstractReaction;
+import hu.bme.mit.gamma.statechart.statechart.AbstractTransition;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.AsynchronousStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger;
@@ -100,9 +100,9 @@ import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
 import hu.bme.mit.gamma.statechart.statechart.EntryState;
 import hu.bme.mit.gamma.statechart.statechart.EventAnyPortReference;
 import hu.bme.mit.gamma.statechart.statechart.InitialState;
+import hu.bme.mit.gamma.statechart.statechart.InternalTransition;
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
-import hu.bme.mit.gamma.statechart.statechart.Reaction;
 import hu.bme.mit.gamma.statechart.statechart.Region;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StateNode;
@@ -1001,11 +1001,11 @@ public class StatechartUtil extends ActionUtil {
 		return transition;
 	}
 	
-	public Transition createTransition(AbstractReaction reaction) {
+	public Transition createTransition(AbstractTransition reaction) {
 		if (reaction instanceof Transition transition) {
 			return ecoreUtil.clone(transition);
 		}
-		if (reaction instanceof Reaction) {
+		if (reaction instanceof InternalTransition) {
 			Transition loopTransition = createLoopTransition(
 					StatechartModelDerivedFeatures.getSourceNode(reaction));
 			loopTransition.setTrigger(

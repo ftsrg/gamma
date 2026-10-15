@@ -110,7 +110,7 @@ import hu.bme.mit.gamma.statechart.interface_.WrapperComponentAnnotation;
 import hu.bme.mit.gamma.statechart.phase.History;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseAnnotation;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation;
-import hu.bme.mit.gamma.statechart.statechart.AbstractReaction;
+import hu.bme.mit.gamma.statechart.statechart.AbstractTransition;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.AsynchronousStatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger;
@@ -488,23 +488,24 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static boolean hasAnnotation(Package gammaPackage,
 			Class<? extends PackageAnnotation> annotation) {
-		return gammaPackage.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
+		return gammaPackage.getAnnotations().stream()
+				.anyMatch(it -> annotation.isInstance(it));
 	}
 	
 	public static boolean hasAnnotation(StatechartDefinition statechart,
 			Class<? extends StatechartAnnotation> annotation) {
-		return statechart.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
+		return statechart.getAnnotations().stream()
+				.anyMatch(it -> annotation.isInstance(it));
 	}
 	
 	public static boolean hasAnnotation(State state, Class<? extends StateAnnotation> annotation) {
-		return state.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
+		return state.getAnnotations().stream()
+				.anyMatch(it -> annotation.isInstance(it));
 	}
 	
-	public static boolean hasAnnotation(AbstractReaction reaction, Class<? extends TransitionAnnotation> annotation) {
-		if (reaction instanceof Transition transition) {
-			return transition.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
-		}
-		return false;
+	public static boolean hasAnnotation(AbstractTransition transition, Class<? extends TransitionAnnotation> annotation) {
+		return transition.getAnnotations().stream()
+				.anyMatch(it -> annotation.isInstance(it));
 	}
 	
 	public static TimeUnit getSmallestTimeUnit(NamedElement element) {
@@ -2914,14 +2915,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 	}
 	
-	public static StateNode getSourceNode(AbstractReaction reaction) {
+	public static StateNode getSourceNode(AbstractTransition reaction) {
 		if (reaction instanceof Transition transition) {
 			return transition.getSourceState();
 		}
 		return ecoreUtil.getContainerOfType(reaction, StateNode.class);
 	}
 	
-	public static StateNode getTargetNode(AbstractReaction reaction) {
+	public static StateNode getTargetNode(AbstractTransition reaction) {
 		if (reaction instanceof Transition transition) {
 			return transition.getTargetState();
 		}
@@ -2953,8 +2954,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				.toList();
 	}
 	
-	public static List<AbstractReaction> getOutgoingAndInternalTransitions(StateNode node) {
-		List<AbstractReaction> reactions = new ArrayList<AbstractReaction>();
+	public static List<AbstractTransition> getOutgoingAndInternalTransitions(StateNode node) {
+		List<AbstractTransition> reactions = new ArrayList<AbstractTransition>();
 		
 		reactions.addAll(
 				getOutgoingTransitions(node));
@@ -3041,8 +3042,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return javaUtil.getOnlyElement(loopTransitions);
 	}
 	
-	public static Collection<AbstractReaction> getAllTransitions(StatechartDefinition statechart) {
-		List<AbstractReaction> transitions = new ArrayList<AbstractReaction>();
+	public static Collection<AbstractTransition> getAllTransitions(StatechartDefinition statechart) {
+		List<AbstractTransition> transitions = new ArrayList<AbstractTransition>();
 		
 		transitions.addAll(
 				statechart.getTransitions());
@@ -3539,7 +3540,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return null;
 	}
 	
-	public static String getId(AbstractReaction reaction) {
+	public static String getId(AbstractTransition reaction) {
 		if (reaction instanceof Transition transition) {
 			TransitionIdAnnotation idAnnotation = getIdAnnotation(transition);
 			if (idAnnotation == null) {
@@ -3608,11 +3609,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return max;
 	}
 	
-	public static BigInteger calculatePriority(AbstractReaction reaction) {
+	public static BigInteger calculatePriority(AbstractTransition reaction) {
 		StatechartDefinition statechart = getContainingStatechart(reaction);
 		TransitionPriority transitionPriority = statechart.getTransitionPriority();
 		StateNode source = getSourceNode(reaction);
-		List<AbstractReaction> transitions = getOutgoingAndInternalTransitions(source);
+		List<AbstractTransition> transitions = getOutgoingAndInternalTransitions(source);
 		// If it is an else transition, its priority is always the lowest
 		Expression guard = reaction.getGuard();
 		if (isElseOrDefault(guard)) {
@@ -3981,7 +3982,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			transition.getEffects().isEmpty();
 	}
 	
-	public static boolean isElse(AbstractReaction transition) {
+	public static boolean isElse(AbstractTransition transition) {
 		return transition.getGuard() instanceof ElseExpression;
 	}
 	

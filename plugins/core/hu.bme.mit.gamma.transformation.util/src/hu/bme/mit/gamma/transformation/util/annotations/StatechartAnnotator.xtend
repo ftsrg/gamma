@@ -30,7 +30,7 @@ import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
-import hu.bme.mit.gamma.statechart.statechart.AbstractReaction
+import hu.bme.mit.gamma.statechart.statechart.AbstractTransition
 import hu.bme.mit.gamma.statechart.statechart.BinaryType
 import hu.bme.mit.gamma.statechart.statechart.CoverageAvoidanceAnnotation
 import hu.bme.mit.gamma.statechart.statechart.EntryState
@@ -73,40 +73,40 @@ class StatechartAnnotator {
 	// Deadlock state coverage
 	protected boolean DEADLOCK_STATE_COVERAGE
 	protected final Set<SynchronousComponentInstance> deadlockStateCoverableComponents = newHashSet
-	protected final Set<AbstractReaction> coverableDeadlockStateTransitions = newHashSet
-	protected final Map<AbstractReaction, VariableDeclaration> deadlockStateTransitionVariables = newHashMap // Boolean variables
+	protected final Set<AbstractTransition> coverableDeadlockStateTransitions = newHashSet
+	protected final Map<AbstractTransition, VariableDeclaration> deadlockStateTransitionVariables = newHashMap // Boolean variables
 	
 	// Deadlock coverage
 	protected boolean DEADLOCK_COVERAGE
 	protected final Set<SynchronousComponentInstance> deadlockCoverableComponents = newHashSet
-	protected final Set<AbstractReaction> coverableDeadlockTransitions = newHashSet
-	protected final Map<AbstractReaction, VariableDeclaration> deadlockTransitionVariables = newHashMap // Boolean variables
+	protected final Set<AbstractTransition> coverableDeadlockTransitions = newHashSet
+	protected final Map<AbstractTransition, VariableDeclaration> deadlockTransitionVariables = newHashMap // Boolean variables
 	
 	// Completeness coverage
 	protected boolean COMPLETENESS_COVERAGE
 	protected final Set<SynchronousComponentInstance> completenessCoverableComponents = newHashSet
 	protected final Set<State> coverableCompletenessStates = newHashSet
-	protected final Map<AbstractReaction, VariableDeclaration> completenessTransitionVariables = newHashMap // Boolean variables
+	protected final Map<AbstractTransition, VariableDeclaration> completenessTransitionVariables = newHashMap // Boolean variables
 	
 	// Nondeterministic transition coverage
 	protected boolean NONDETERMINISTIC_TRANSITION_COVERAGE
 	protected final Set<SynchronousComponentInstance> nondeterministicTransitionCoverableComponents = newHashSet
-	protected final Set<AbstractReaction> coverableNondeterministicTransitions = newHashSet
+	protected final Set<AbstractTransition> coverableNondeterministicTransitions = newHashSet
 	protected final Map<Region, State> nondeterministicTrapStates = newHashMap
 	
 	// Transition coverage
 	protected boolean TRANSITION_COVERAGE
 	protected final Set<SynchronousComponentInstance> transitionCoverableComponents = newHashSet
-	protected final Set<AbstractReaction> coverableTransitions = newHashSet
-	protected final Map<AbstractReaction, VariableDeclaration> transitionVariables = newHashMap // Boolean variables
+	protected final Set<AbstractTransition> coverableTransitions = newHashSet
+	protected final Map<AbstractTransition, VariableDeclaration> transitionVariables = newHashMap // Boolean variables
 	
 	// Transition pair coverage (same as the normal transition coverage, the difference is that the values are reused in pairs)
 	protected boolean TRANSITION_PAIR_COVERAGE
 	protected boolean CONSIDER_SUPERSTATES_OUTGOING_TRANSITIONS = true
 	protected final Set<SynchronousComponentInstance> transitionPairCoverableComponents = newHashSet
-	protected final Set<AbstractReaction> coverableTransitionPairs = newHashSet
+	protected final Set<AbstractTransition> coverableTransitionPairs = newHashSet
 	protected long transitionId = 1 // As 0 is the reset value
-	protected final Map<AbstractReaction, Long> transitionIds = newHashMap
+	protected final Map<AbstractTransition, Long> transitionIds = newHashMap
 	protected final Map<State, VariablePair> transitionPairVariables = newHashMap
 	protected final List<TransitionPairAnnotation> transitionPairAnnotations = newArrayList
 	
@@ -118,14 +118,14 @@ class StatechartAnnotator {
 	
 	protected final Set<Port> interactionCoverablePorts = newHashSet
 	protected final Set<State> interactionCoverableStates = newHashSet
-	protected final Set<AbstractReaction> interactionCoverableTransitions = newHashSet
+	protected final Set<AbstractTransition> interactionCoverableTransitions = newHashSet
 	
 	protected long senderId = 1 // As 0 is the reset value
 	protected long recevierId = 1 // As 0 is the reset value
 	
 	protected final Map<RaiseEventAction, Long> sendingIds = newHashMap
-	protected final Map<AbstractReaction, Long> receivingIds = newHashMap
-	protected final Map<AbstractReaction, List<Entry<Port, Event>>> receivingInteractions = newHashMap // Check: list must be unique
+	protected final Map<AbstractTransition, Long> receivingIds = newHashMap
+	protected final Map<AbstractTransition, List<Entry<Port, Event>>> receivingInteractions = newHashMap // Check: list must be unique
 	protected final Map<Region, List<VariablePair>> regionInteractionVariables = newHashMap // Check: list must be unique
 	protected final Map<StatechartDefinition, // Optimization: stores the variable pairs of other regions for reuse
 		List<VariablePair>> statechartInteractionVariables = newHashMap // Check: list must be unique
@@ -323,7 +323,7 @@ class StatechartAnnotator {
 		return nondeterministicTrapStates.get(region)
 	}
 	
-	protected def getNondeterministicTrapState(AbstractReaction transition) {
+	protected def getNondeterministicTrapState(AbstractTransition transition) {
 		val source = transition.sourceNode
 		val parentRegion = source.parentRegion
 		
@@ -371,13 +371,13 @@ class StatechartAnnotator {
 	
 	// Transition coverage
 	
-	protected def needsAnnotation(AbstractReaction transition) {
+	protected def needsAnnotation(AbstractTransition transition) {
 		return !(transition.sourceNode instanceof EntryState) &&
 				!transition.hasAnnotation(CoverageAvoidanceAnnotation)
 	}
 	
-	protected def createTransitionVariable(AbstractReaction transition,
-			Map<AbstractReaction, VariableDeclaration> variables) {
+	protected def createTransitionVariable(AbstractTransition transition,
+			Map<AbstractTransition, VariableDeclaration> variables) {
 		val statechart = transition.containingStatechart
 		val variableDeclarations = statechart.variableDeclarations
 		
@@ -417,15 +417,15 @@ class StatechartAnnotator {
 	
 	// Transition pair coverage
 	
-	protected def isIncomingTransition(AbstractReaction transition) {
+	protected def isIncomingTransition(AbstractTransition transition) {
 		return transition.targetNode instanceof State
 	}
 	
-	protected def isOutgoingTransition(AbstractReaction transition) {
+	protected def isOutgoingTransition(AbstractTransition transition) {
 		return transition.sourceNode instanceof State
 	}
 	
-	protected def getTransitionId(AbstractReaction transition) {
+	protected def getTransitionId(AbstractTransition transition) {
 		if (!transitionIds.containsKey(transition)) {
 			transitionIds.put(transition, transitionId++)
 		}
@@ -552,7 +552,7 @@ class StatechartAnnotator {
 		return action.containingOrSourceStateNode
 	}
 	
-	protected def getReceivingId(AbstractReaction transition) {
+	protected def getReceivingId(AbstractTransition transition) {
 		if (!receivingIds.containsKey(transition)) {
 			if (RECEIVER_INTERACTION_TUPLE == InteractionCoverageCriterion.EVERY_INTERACTION) {
 				receivingIds.put(transition, recevierId++)
@@ -576,7 +576,7 @@ class StatechartAnnotator {
 		return receivingIds.get(transition)
 	}
 	
-	protected def needSameId(AbstractReaction lhs, AbstractReaction rhs) {
+	protected def needSameId(AbstractTransition lhs, AbstractTransition rhs) {
 		if (RECEIVER_INTERACTION_TUPLE == InteractionCoverageCriterion.EVERY_INTERACTION ||
 				lhs.containingStatechart !== rhs.containingStatechart) {
 			// This way, the transitions in different statecharts get different ids: crucial during property generation
@@ -601,32 +601,32 @@ class StatechartAnnotator {
 		return statechartInteractionVariables.getOrCreateList(statechart)
 	}
 	
-	protected def getReceivingInteractions(AbstractReaction transition) {
+	protected def getReceivingInteractions(AbstractTransition transition) {
 		return receivingInteractions.getOrCreateList(transition)
 	}
 	
-	protected def putReceivingInteraction(AbstractReaction transition, Port port, Event event) {
+	protected def putReceivingInteraction(AbstractTransition transition, Port port, Event event) {
 		val interactions = transition.receivingInteractions
 		interactions += new SimpleEntry(port, event)
 	}
 	
-	protected def hasReceivingInteraction(AbstractReaction transition, Port port, Event event) {
+	protected def hasReceivingInteraction(AbstractTransition transition, Port port, Event event) {
 		val receivingInteractionsOfTransition = transition.receivingInteractions
 		return receivingInteractionsOfTransition.contains(new SimpleEntry(port, event))
 	}
 	
-	protected def isThereEnoughInteractionVariable(AbstractReaction transition) {
+	protected def isThereEnoughInteractionVariable(AbstractTransition transition) {
 		val region = transition.correspondingRegion
 		val interactionVariablesList = region.interactionVariables
 		val receivingInteractionsList = transition.receivingInteractions
 		return receivingInteractionsList.size <= interactionVariablesList.size
 	}
 	
-	protected def getCorrespondingRegion(AbstractReaction transition) {
+	protected def getCorrespondingRegion(AbstractTransition transition) {
 		return transition.sourceNode.parentRegion
 	}
 	
-	protected def getOrCreateInteractionVariablePair(AbstractReaction transition) {
+	protected def getOrCreateInteractionVariablePair(AbstractTransition transition) {
 		val region = transition.correspondingRegion
 		val statechart = region.containingStatechart
 		val regionInteractionVariables = region.interactionVariables
@@ -635,7 +635,7 @@ class StatechartAnnotator {
 			statechartInteractionVariables, RECEIVER_CONSIDERATION, true)
 	}
 	
-	protected def getInteractionVariables(AbstractReaction transition, Port port, Event event) {
+	protected def getInteractionVariables(AbstractTransition transition, Port port, Event event) {
 		if (!transition.isThereEnoughInteractionVariable) {
 			transition.getOrCreateInteractionVariablePair
 		}

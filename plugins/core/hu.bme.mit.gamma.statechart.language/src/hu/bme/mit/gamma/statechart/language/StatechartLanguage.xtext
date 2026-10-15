@@ -317,7 +317,7 @@ Region returns Region:
 	'}'
 ;
 
-Reaction returns Reaction:
+InternalTransition returns InternalTransition:
 	('(' priority=INTEGER ')')?
 	'when' trigger=Trigger
 	('[' guard=Expression ']')?
@@ -357,7 +357,7 @@ State returns State:
 			(
 				('invariant' invariants+=Expression)*
 				('entry' '/' entryActions+=Action* )?
-				('internal' internalTransitions+=Reaction )*
+				('internal' internalTransitions+=InternalTransition)*
 				('exit' '/' exitActions+=Action* )?
 			)
 			(regions+=Region)*

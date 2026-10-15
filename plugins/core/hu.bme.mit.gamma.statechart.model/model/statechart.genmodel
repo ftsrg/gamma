@@ -333,16 +333,16 @@
     <genClasses ecoreClass="statechart.ecore#//ForkState"/>
     <genClasses ecoreClass="statechart.ecore#//JoinState"/>
     <genClasses ecoreClass="statechart.ecore#//InitialState"/>
-    <genClasses image="false" ecoreClass="statechart.ecore#//AbstractReaction">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//AbstractReaction/trigger"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//AbstractReaction/guard"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//AbstractReaction/effects"/>
+    <genClasses image="false" ecoreClass="statechart.ecore#//AbstractTransition">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//AbstractTransition/trigger"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//AbstractTransition/guard"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//AbstractTransition/effects"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//AbstractTransition/annotations"/>
     </genClasses>
-    <genClasses ecoreClass="statechart.ecore#//Reaction"/>
+    <genClasses ecoreClass="statechart.ecore#//InternalTransition"/>
     <genClasses ecoreClass="statechart.ecore#//Transition">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statechart.ecore#//Transition/sourceState"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference statechart.ecore#//Transition/targetState"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//Transition/annotations"/>
     </genClasses>
     <genClasses ecoreClass="statechart.ecore#//RaiseEventAction"/>
     <genClasses image="false" ecoreClass="statechart.ecore#//TimeoutAction">

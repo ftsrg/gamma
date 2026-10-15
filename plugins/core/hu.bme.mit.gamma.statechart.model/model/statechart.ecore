@@ -63,7 +63,7 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="internalTransitions" upperBound="-1"
-        eType="#//Reaction" containment="true"/>
+        eType="#//InternalTransition" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
         eType="#//StateAnnotation" containment="true"/>
   </eClassifiers>
@@ -78,7 +78,8 @@
   <eClassifiers xsi:type="ecore:EClass" name="ForkState" eSuperTypes="#//PseudoState"/>
   <eClassifiers xsi:type="ecore:EClass" name="JoinState" eSuperTypes="#//PseudoState"/>
   <eClassifiers xsi:type="ecore:EClass" name="InitialState" eSuperTypes="#//EntryState"/>
-  <eClassifiers xsi:type="ecore:EClass" name="AbstractReaction" abstract="true" eSuperTypes="composite.ecore#//PrioritizedElement">
+  <eClassifiers xsi:type="ecore:EClass" name="AbstractTransition" abstract="true"
+      eSuperTypes="composite.ecore#//PrioritizedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="trigger" eType="ecore:EClass interface.ecore#//Trigger"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="guard" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
@@ -86,13 +87,13 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="effects" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action"
         containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Reaction" eSuperTypes="#//AbstractReaction"/>
-  <eClassifiers xsi:type="ecore:EClass" name="Transition" eSuperTypes="#//AbstractReaction">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="sourceState" eType="#//StateNode"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="targetState" eType="#//StateNode"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
         eType="#//TransitionAnnotation" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InternalTransition" eSuperTypes="#//AbstractTransition"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Transition" eSuperTypes="#//AbstractTransition">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sourceState" eType="#//StateNode"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="targetState" eType="#//StateNode"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RaiseEventAction" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Statement interface.ecore#//PortReferenceExpression interface.ecore#//EventReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="TimeoutAction" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.action.model/model/action.ecore#//Statement">
