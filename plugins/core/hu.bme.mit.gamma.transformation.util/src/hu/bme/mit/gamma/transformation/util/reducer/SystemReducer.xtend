@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -326,7 +326,7 @@ class SystemReducer implements Reducer {
 					// Transition priority if outgoing transitions are always disjoint
 					var areTriggersDisjoint = true
 					for (stateNode : stateNodes) {
-						val outgoingTransitions = stateNode.outgoingTransitions
+						val outgoingTransitions = stateNode.outgoingAndInternalTransitions
 						if (!outgoingTransitions.areTriggersDisjoint) {
 							areTriggersDisjoint = false
 						}

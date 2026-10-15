@@ -109,6 +109,7 @@ import hu.bme.mit.gamma.statechart.phase.InstanceVariableReference;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation;
 import hu.bme.mit.gamma.statechart.phase.PhaseModelPackage;
 import hu.bme.mit.gamma.statechart.phase.VariableBinding;
+import hu.bme.mit.gamma.statechart.statechart.AbstractTransition;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
@@ -702,7 +703,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkTransitionPriority(Transition transition) {
+	public Collection<ValidationResultMessage> checkTransitionPriority(AbstractTransition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(transition);
 		BigInteger priority = transition.getPriority();
@@ -734,16 +735,16 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkElseTransitionPriority(Transition transition) {
+	public Collection<ValidationResultMessage> checkElseTransitionPriority(AbstractTransition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (StatechartModelDerivedFeatures.isElse(transition)) {
 			StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(transition);
 			TransitionPriority priority = statechart.getTransitionPriority();
 			if (priority == TransitionPriority.ORDER_BASED) {
-				StateNode source = transition.getSourceState();
-				List<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(source);
+				StateNode source = StatechartModelDerivedFeatures.getSourceNode(transition);
+				List<AbstractTransition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingAndInternalTransitions(source);
 				int size = outgoingTransitions.size();
-				Transition lastOutgoingTransition = outgoingTransitions.get(size - 1);
+				AbstractTransition lastOutgoingTransition = outgoingTransitions.get(size - 1);
 				if (lastOutgoingTransition != transition) {
 					validationResultMessages.add(
 						new ValidationResultMessage(ValidationResult.WARNING,
@@ -756,7 +757,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkTransitionTriggers(Transition transition) {
+	public Collection<ValidationResultMessage> checkTransitionTriggers(AbstractTransition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (!StatechartModelDerivedFeatures.needsTrigger(transition)) {
 			return validationResultMessages;
@@ -822,7 +823,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkTransitionGuards(Transition transition) {
+	public Collection<ValidationResultMessage> checkTransitionGuards(AbstractTransition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Expression guard = transition.getGuard();
 		if (guard != null) {
@@ -1286,9 +1287,9 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkOutgoingTransitionDeterminism(Transition transition) {
+	public Collection<ValidationResultMessage> checkOutgoingTransitionDeterminism(AbstractTransition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		Transition nonDeterministicTransition = checkTransitionDeterminism(transition);
+		AbstractTransition nonDeterministicTransition = checkTransitionDeterminism(transition);
 		if (nonDeterministicTransition != null) {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.WARNING, 
@@ -1298,16 +1299,17 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Transition checkTransitionDeterminism(Transition transition) {
-		List<Transition> siblingTransitions = StatechartModelDerivedFeatures.getSiblingTransitions(transition);
+	public AbstractTransition checkTransitionDeterminism(AbstractTransition transition) {
+		List<AbstractTransition> siblingTransitions = StatechartModelDerivedFeatures.getSiblingTransitions(transition);
 		return checkTransitionDeterminism(transition, siblingTransitions);
 	}
 	
-	public Transition checkTransitionDeterminism(Transition transition, Collection<Transition> transitions) {
+	public AbstractTransition checkTransitionDeterminism(AbstractTransition transition,
+			Collection<? extends AbstractTransition> transitions) {
 		Trigger potentialTrigger = transition.getTrigger();
 		Expression guard = transition.getGuard();
 		
-		for (Transition siblingTransition : transitions) {
+		for (AbstractTransition siblingTransition : transitions) {
 			Trigger siblingTrigger = siblingTransition.getTrigger();
 			Expression siblingGuard = siblingTransition.getGuard();
 			boolean oneIsUnguarded = guard == null || siblingGuard == null;
@@ -1337,7 +1339,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return null;
 	}
 	
-	public boolean isTransitionTriggeredByPortEvent(Transition transition, Port port, Event event) {
+	public boolean isTransitionTriggeredByPortEvent(AbstractTransition transition, Port port, Event event) {
 		Trigger trigger = transition.getTrigger();
 		if (trigger instanceof AnyTrigger) {
 			return true;
@@ -1358,7 +1360,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return false;
 	}
 	
-	public boolean isTransitionTriggeredByPortEvent(Transition transition, Port port) {
+	public boolean isTransitionTriggeredByPortEvent(AbstractTransition transition, Port port) {
 		Trigger trigger = transition.getTrigger();
 		if (trigger instanceof AnyTrigger) {
 			return true;
@@ -1379,15 +1381,15 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return false;
 	}
 	
-	public Collection<ValidationResultMessage> checkTransitionOcclusion(Transition transition) {
+	public Collection<ValidationResultMessage> checkTransitionOcclusion(AbstractTransition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(transition);
 		SchedulingOrder schedulingOrder = statechart.getSchedulingOrder();
 		if (schedulingOrder == SchedulingOrder.TOP_DOWN) {
-			StateNode sourceState = transition.getSourceState();
+			StateNode sourceState = StatechartModelDerivedFeatures.getSourceNode(transition);
 			Collection<Transition> parentTransitions = StatechartModelDerivedFeatures
 					.getOutgoingTransitionsOfAncestors(sourceState);
-			Transition nonDeterministicTransition = checkTransitionDeterminism(transition, parentTransitions);
+			AbstractTransition nonDeterministicTransition = checkTransitionDeterminism(transition, parentTransitions);
 			if (nonDeterministicTransition != null) {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.WARNING, 
@@ -1398,13 +1400,13 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkParallelTransitionAssignments(Transition transition) {
+	public Collection<ValidationResultMessage> checkParallelTransitionAssignments(AbstractTransition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		Transition sameTriggerParallelTransition = getSameTriggedTransitionOfParallelRegions(transition);
+		AbstractTransition sameTriggerParallelTransition = getSameTriggedTransitionOfParallelRegions(transition);
 		Declaration declaration = getSameVariableOfAssignments(transition, sameTriggerParallelTransition);
 		if (declaration != null) {
-			StateNode source = sameTriggerParallelTransition.getSourceState();
-			StateNode target = sameTriggerParallelTransition.getTargetState();
+			StateNode source = StatechartModelDerivedFeatures.getSourceNode(sameTriggerParallelTransition);
+			StateNode target = StatechartModelDerivedFeatures.getTargetNode(sameTriggerParallelTransition);
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.WARNING, 
 					"Both this transition and the transition between " + source.getName() + " and " +
@@ -1414,23 +1416,23 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkParallelEventRaisings(Transition transition) {
+	public Collection<ValidationResultMessage> checkParallelEventRaisings(AbstractTransition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		Transition sameTriggerParallelTransition = getSameTriggedTransitionOfParallelRegions(transition);
+		AbstractTransition sameTriggerParallelTransition = getSameTriggedTransitionOfParallelRegions(transition);
 		Entry<Port, Event> portEvent = getSameEventOfParameteredRaisings(transition, sameTriggerParallelTransition);
 		if (portEvent != null) {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.WARNING, 
-					"Both this and transition between " + sameTriggerParallelTransition.getSourceState().getName() + 
-						" and " + sameTriggerParallelTransition.getTargetState().getName() + " raises the same event " +
+					"Both this and transition between " + StatechartModelDerivedFeatures.getSourceNode(sameTriggerParallelTransition).getName() + 
+						" and " + StatechartModelDerivedFeatures.getTargetNode(sameTriggerParallelTransition).getName() + " raises the same event " +
 						portEvent.getValue().getName() + " with potentionally overwriting parameters", 
 							new ReferenceInfo(StatechartModelPackage.Literals.ABSTRACT_TRANSITION__EFFECTS)));
 		}
 		return validationResultMessages;
 	}
 	
-	public Transition getSameTriggedTransitionOfParallelRegions(Transition transition) {
-		StateNode sourceState = transition.getSourceState();
+	public AbstractTransition getSameTriggedTransitionOfParallelRegions(AbstractTransition transition) {
+		StateNode sourceState = StatechartModelDerivedFeatures.getSourceNode(transition);
 		Region parentRegion = (Region) sourceState.eContainer();
 		if (parentRegion.eContainer() instanceof hu.bme.mit.gamma.statechart.statechart.State) {
 			hu.bme.mit.gamma.statechart.statechart.State parentState =
@@ -1438,21 +1440,21 @@ public class StatechartModelValidator extends ActionModelValidator {
 			Collection<Region> siblingRegions = new HashSet<Region>(
 					parentState.getRegions());
 			siblingRegions.remove(parentRegion);
-			Collection<Transition> parallelTransitions = getTransitionsOfSiblingRegions(siblingRegions);
+			Collection<AbstractTransition> parallelTransitions = getTransitionsOfSiblingRegions(siblingRegions);
 			return checkTransitionDeterminism(transition, parallelTransitions);
 		}
 		return null;
 	}
 	
-	public Collection<Transition> getTransitionsOfSiblingRegions(Collection<Region> siblingRegions) {
-		Collection<Transition> siblingTransitions = new HashSet<Transition>();
+	public Collection<AbstractTransition> getTransitionsOfSiblingRegions(Collection<Region> siblingRegions) {
+		Collection<AbstractTransition> siblingTransitions = new HashSet<AbstractTransition>();
 		siblingRegions.stream().map(it -> it.getStateNodes()).forEach(it -> it.stream()
-				.map(node -> StatechartModelDerivedFeatures.getOutgoingTransitions(node))
+				.map(node -> StatechartModelDerivedFeatures.getOutgoingAndInternalTransitions(node))
 				.forEach(sibling -> siblingTransitions.addAll(sibling)));
 		return siblingTransitions;
 	}
 	
-	public Declaration getSameVariableOfAssignments(Transition lhs, Transition rhs) {
+	public Declaration getSameVariableOfAssignments(AbstractTransition lhs, AbstractTransition rhs) {
 		for (Action action : lhs.getEffects()) {
 			if (action instanceof AssignmentStatement assignment) {
 				ReferenceExpression lhs2 = assignment.getLhs();
@@ -1474,7 +1476,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return null;
 	}
 	
-	public Entry<Port, Event> getSameEventOfParameteredRaisings(Transition lhs, Transition rhs) {
+	public Entry<Port, Event> getSameEventOfParameteredRaisings(AbstractTransition lhs, AbstractTransition rhs) {
 		for (Action action : lhs.getEffects()) {
 			if (action instanceof RaiseEventAction lhsRaiseEvent) {
 				for (Action raiseEvent : rhs.getEffects().stream().filter(it -> it instanceof RaiseEventAction)

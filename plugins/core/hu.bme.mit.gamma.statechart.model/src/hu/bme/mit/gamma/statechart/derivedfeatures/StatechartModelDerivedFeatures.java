@@ -168,7 +168,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		
 		// Events and parameters
 		for (InterfaceRealization realization :
-				ecoreUtil.getAllContentsOfType(_package, InterfaceRealization.class)) {
+					ecoreUtil.getAllContentsOfType(_package, InterfaceRealization.class)) {
 			Interface _interface = realization.getInterface();
 			references.addAll(
 					ecoreUtil.getAllContentsOfType(_interface, TypeReference.class));
@@ -2941,9 +2941,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return nonTrappingOutgoingTransitions;
 	}
 	
-	public static List<Transition> getSiblingTransitions(Transition transition) {
-		StateNode sourceState = transition.getSourceState();
-		List<Transition> siblingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(sourceState).stream()
+	public static List<AbstractTransition> getSiblingTransitions(AbstractTransition transition) {
+		StateNode sourceState = getSourceNode(transition);
+		List<AbstractTransition> siblingTransitions = StatechartModelDerivedFeatures.getOutgoingAndInternalTransitions(sourceState).stream()
 				.filter(it -> it != transition).toList();
 		return siblingTransitions;
 	}
@@ -3906,10 +3906,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		throw new IllegalArgumentException("Not supported trigger: " + trigger);
 	}
 	
-	public static boolean areSiblingTriggersDisjoint(Transition transition) {
-		List<Transition> siblingTransitions = StatechartModelDerivedFeatures.getSiblingTransitions(transition);
+	public static boolean areSiblingTriggersDisjoint(AbstractTransition transition) {
+		List<AbstractTransition> siblingTransitions = StatechartModelDerivedFeatures.getSiblingTransitions(transition);
 		
-		for (Transition siblingTransition : siblingTransitions) {
+		for (AbstractTransition siblingTransition : siblingTransitions) {
 			if (!areTriggersDisjoint(transition, siblingTransition)) {
 				return false;
 			}
@@ -3918,8 +3918,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return true;
 	}
 	
-	public static boolean areTriggersDisjoint(Transition lhs, Transition rhs) {
-		List<Transition> transitions = new ArrayList<Transition>();
+	public static boolean areTriggersDisjoint(AbstractTransition lhs, AbstractTransition rhs) {
+		List<AbstractTransition> transitions = new ArrayList<AbstractTransition>();
 		
 		transitions.add(lhs);
 		transitions.add(rhs);
@@ -3927,14 +3927,14 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return areTriggersDisjoint(transitions);
 	}
 	
-	public static boolean areTriggersDisjoint(Collection<? extends Transition> transitions) {
+	public static boolean areTriggersDisjoint(Collection<? extends AbstractTransition> transitions) {
 		if (transitions.size() < 2) {
 			return true;
 		}
 		
-		Map<Transition, List<EventTrigger>> triggers = new LinkedHashMap<Transition, List<EventTrigger>>();
+		Map<AbstractTransition, List<EventTrigger>> triggers = new LinkedHashMap<AbstractTransition, List<EventTrigger>>();
 		
-		for (Transition transition : transitions) {
+		for (AbstractTransition transition : transitions) {
 			Trigger trigger = transition.getTrigger();
 			if (trigger instanceof OnCycleTrigger) {
 				return false; // Note that 'transitions.size >= 2' at this point
@@ -3962,22 +3962,22 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return true;
 	}
 	
-	public static boolean hasTrigger(Transition transition) {
+	public static boolean hasTrigger(AbstractTransition transition) {
 		return transition.getTrigger() != null;
 	}
 	
-	public static boolean needsTrigger(Transition transition) {
-		StateNode source = transition.getSourceState();
+	public static boolean needsTrigger(AbstractTransition transition) {
+		StateNode source = getSourceNode(transition);
 		return !(source instanceof EntryState || source instanceof ChoiceState ||
 				source instanceof MergeState || source instanceof ForkState ||
 				source instanceof JoinState);
 	}
 	
-	public static boolean hasGuard(Transition transition) {
+	public static boolean hasGuard(AbstractTransition transition) {
 		return transition.getGuard() != null;
 	}
 	
-	public static boolean isEmpty(Transition transition) {
+	public static boolean isEmpty(AbstractTransition transition) {
 		return !hasTrigger(transition) && !hasGuard(transition) &&
 			transition.getEffects().isEmpty();
 	}

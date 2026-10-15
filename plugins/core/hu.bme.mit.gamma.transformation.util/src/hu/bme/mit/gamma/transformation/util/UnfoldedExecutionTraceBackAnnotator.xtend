@@ -32,6 +32,7 @@ import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
+import hu.bme.mit.gamma.statechart.statechart.AbstractTransition
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
@@ -464,7 +465,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 				// There should be one 'true' or 'integer literal' assignment to this variable
 				val statechart = instance.derivedType
 				if (statechart instanceof StatechartDefinition) {
-					val transitions = statechart.transitions
+					val transitions = statechart.allTransitions
 					val executedTransitions = transitions.filter[
 							it.effects.filter(AssignmentStatement)
 								.exists[it.lhs.declaration == variable && it.rhs.helperEquals(rhs)]]
@@ -481,7 +482,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 					}
 					else {
 						var allStates = statechart.allStates
-						var allTransitions = statechart.transitions
+						var allTransitions = statechart.allTransitions
 						var actions = allStates.map[it.entryActions + it.exitActions].flatten +
 								allTransitions.map[it.effects].flatten
 						val assignmentStatements = actions.map[it.getSelfAndAllContentsOfType(AssignmentStatement)].flatten.toSet
@@ -535,7 +536,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 							val originalSenderInstance = senderInstance.getOriginalSimpleInstanceReference(originalTopComponent)
 							
 							allStates = senderStatechart.allStates
-							allTransitions = senderStatechart.transitions
+							allTransitions = senderStatechart.allTransitions
 							actions = allStates.map[it.entryActions + it.exitActions].flatten +
 									allTransitions.map[it.effects].flatten
 							val raiseEventActions = actions.map[it.getSelfAndAllContentsOfType(RaiseEventAction)].flatten.toSet
@@ -583,7 +584,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 		return null
 	}
 	
-	protected def getMetadata(Transition newTransition,
+	protected def getMetadata(AbstractTransition newTransition,
 			ComponentInstanceReferenceExpression originalInstance, String prefix) {
 		val transition = newTransition.backAnnotateTransition(originalInstance)
 		val instanceName = originalInstance.name
@@ -601,7 +602,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 		return metadataMessage
 	}
 	
-	protected def backAnnotateTransition(Transition newTransition, ComponentInstanceReferenceExpression originalInstance) {
+	protected def backAnnotateTransition(AbstractTransition newTransition, ComponentInstanceReferenceExpression originalInstance) {
 		return try {
 			originalInstance.getOriginalTransition(newTransition)
 		} catch (IllegalArgumentException e) {
@@ -614,14 +615,14 @@ class UnfoldedExecutionTraceBackAnnotator {
 	
 	protected def getMessage(String prefix, EObject transitionOrState, ComponentInstanceReferenceExpression originalInstance) {
 		val instanceName = originalInstance.name
-		return (transitionOrState instanceof Transition) ?
+		return (transitionOrState instanceof AbstractTransition) ?
 				prefix.getTransitionMessage(transitionOrState.backAnnotateTransition(originalInstance), instanceName) :
 				prefix.getStateMessage(transitionOrState as State, instanceName)
 	}
 	
 	protected def getMessage(EObject transitionOrState, ComponentInstanceReferenceExpression originalInstance) {
 		val instanceName = originalInstance.name
-		return (transitionOrState instanceof Transition) ?
+		return (transitionOrState instanceof AbstractTransition) ?
 				transitionOrState.backAnnotateTransition(originalInstance).getTransitionMessage(instanceName) :
 				(transitionOrState as State).getStateMessage(instanceName)
 	}
@@ -632,13 +633,13 @@ class UnfoldedExecutionTraceBackAnnotator {
 				(transitionOrState as State).stateMessage
 	}
 	
-	protected def getTransitionMessage(String prefix, Transition transition, String instanceName)
+	protected def getTransitionMessage(String prefix, AbstractTransition transition, String instanceName)
 		'''«prefix»«transition.getTransitionMessage(instanceName)»'''
 	
-	protected def getTransitionMessage(Transition transition, String instanceName)
+	protected def getTransitionMessage(AbstractTransition transition, String instanceName)
 		'''«transition.transitionMessage» of «instanceName»'''
 	
-	protected def getTransitionMessage(Transition transition) '''«transition.serialize»'''
+	protected def getTransitionMessage(AbstractTransition transition) '''«transition.serialize»'''
 	
 	protected def getStateMessage(String prefix, State state, String instanceName)
 		'''«prefix»«state.getStateMessage(instanceName)»'''

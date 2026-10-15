@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.AbstractTransition
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
@@ -532,19 +533,19 @@ class UnfoldingTraceability {
 		return lhs.containingComponent.name == rhs.containingComponent.name && lhs.name == rhs.name
 	}
 	
-	def getOriginalTransition(ComponentInstanceReferenceExpression originalInstance, Transition newTransition) {
+	def getOriginalTransition(ComponentInstanceReferenceExpression originalInstance, AbstractTransition newTransition) {
 		val statechartInstance = originalInstance.lastInstance
 		return statechartInstance.getOriginalTransition(newTransition)
 	}
 	
-	def getOriginalTransition(ComponentInstance originalInstance, Transition newTransition) {
+	def getOriginalTransition(ComponentInstance originalInstance, AbstractTransition newTransition) {
 		val originalType = originalInstance.getStatechart
 		val originalTransitions = originalType.transitions
 		
 		val sameSource = originalTransitions.filter[
-				it.sourceState.fullContainmentHierarchy == newTransition.sourceState.fullContainmentHierarchy]
+				it.sourceState.fullContainmentHierarchy == newTransition.sourceNode.fullContainmentHierarchy]
 		val sameTarget = originalTransitions.filter[
-				it.targetState.fullContainmentHierarchy == newTransition.targetState.fullContainmentHierarchy]
+				it.targetState.fullContainmentHierarchy == newTransition.targetNode.fullContainmentHierarchy]
 		val sameSourceAndTarget = sameSource.intersection(sameTarget)
 		
 		if (sameSourceAndTarget.size == 1) {

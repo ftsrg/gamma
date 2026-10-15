@@ -18,9 +18,9 @@ import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Trigger;
+import hu.bme.mit.gamma.statechart.statechart.AbstractTransition;
 import hu.bme.mit.gamma.statechart.statechart.Region;
 import hu.bme.mit.gamma.statechart.statechart.State;
-import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.util.JavaUtil;
 
 public class ElementSerializer {
@@ -39,7 +39,7 @@ public class ElementSerializer {
 		return "state " + region.getName() + "." + state.getName();
 	}
 	
-	public String serialize(Transition transition) {
+	public String serialize(AbstractTransition transition) {
 		String sourceString = serializeSourceAndTargetAndTriggerAndGuard(transition);
 		
 		List<Action> effects = transition.getEffects();
@@ -53,24 +53,24 @@ public class ElementSerializer {
 					.replaceAll("\\s+", " ");
 	}
 	
-	public String serializeSourceAndTrigger(Transition transition) {
-		String source = "from " + transition.getSourceState().getName();
+	public String serializeSourceAndTrigger(AbstractTransition transition) {
+		String source = "from " + StatechartModelDerivedFeatures.getSourceNode(transition).getName();
 		Trigger trigger = transition.getTrigger();
 		String string = source + serialize(trigger);
 		
 		return string;
 	}
 	
-	public String serializeSourceAndTargetAndTrigger(Transition transition) {
-		String source = "from " + transition.getSourceState().getName();
-		String target = " to " + transition.getTargetState().getName();
+	public String serializeSourceAndTargetAndTrigger(AbstractTransition transition) {
+		String source = "from " + StatechartModelDerivedFeatures.getSourceNode(transition).getName();
+		String target = " to " + StatechartModelDerivedFeatures.getTargetNode(transition).getName();
 		Trigger trigger = transition.getTrigger();
 		String string = source + target + serialize(trigger);
 		
 		return string;
 	}
 	
-	public String serializeSourceAndTargetAndTriggerAndGuard(Transition transition) {
+	public String serializeSourceAndTargetAndTriggerAndGuard(AbstractTransition transition) {
 		String string = serializeSourceAndTargetAndTrigger(transition);
 		Expression guard = transition.getGuard();
 		String guardString = (guard == null) ? "" : " [" + javaUtil.deparenthesize(
@@ -91,7 +91,7 @@ public class ElementSerializer {
 		if (stateOrTransition instanceof State state) {
 			return serialize(state);
 		}
-		if (stateOrTransition instanceof Transition transition) {
+		if (stateOrTransition instanceof AbstractTransition transition) {
 			return serialize(transition);
 		}
 		throw new IllegalArgumentException("Unknown object: " + stateOrTransition);
