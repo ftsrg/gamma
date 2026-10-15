@@ -25,7 +25,7 @@ import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.PseudoState
-import hu.bme.mit.gamma.statechart.statechart.Reaction
+import hu.bme.mit.gamma.statechart.statechart.InternalTransition
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StateNode
@@ -65,7 +65,7 @@ class Trace {
 	final Map<State, hu.bme.mit.gamma.statechart.lowlevel.model.State> stateMappings = newHashMap
 	final Map<PseudoState, hu.bme.mit.gamma.statechart.lowlevel.model.PseudoState> pseudoStateMappings = newHashMap
 	final Map<Transition, hu.bme.mit.gamma.statechart.lowlevel.model.Transition> transitionMappings = newHashMap
-	final Map<Reaction, hu.bme.mit.gamma.statechart.lowlevel.model.Reaction> internalTransitionMappings = newHashMap
+	final Map<InternalTransition, hu.bme.mit.gamma.statechart.lowlevel.model.InternalTransition> internalTransitionMappings = newHashMap
 	// For timeout declaration optimization
 	final Map<Region, VariableDeclaration> regionTimeoutMappings = newHashMap
 	// Else guarded transitions
@@ -565,19 +565,19 @@ class Trace {
 	}
 	
 	// Internal transition
-	def put(Reaction gammaTransition,
-			hu.bme.mit.gamma.statechart.lowlevel.model.Reaction lowlevelTransition) {
+	def put(InternalTransition gammaTransition,
+			hu.bme.mit.gamma.statechart.lowlevel.model.InternalTransition lowlevelTransition) {
 		checkNotNull(gammaTransition)
 		checkNotNull(lowlevelTransition)
 		internalTransitionMappings.put(gammaTransition, lowlevelTransition)
 	}
 
-	def isMapped(Reaction gammaTransition) {
+	def isMapped(InternalTransition gammaTransition) {
 		checkNotNull(gammaTransition)
 		internalTransitionMappings.containsKey(gammaTransition)
 	}
 
-	def get(Reaction gammaTransition) {
+	def get(InternalTransition gammaTransition) {
 		checkNotNull(gammaTransition)
 		internalTransitionMappings.get(gammaTransition)
 	}

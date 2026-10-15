@@ -87,12 +87,12 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//EventDeclaration/component"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//EventDeclaration/persistency"/>
     </genClasses>
-    <genClasses image="false" ecoreClass="model.ecore#//AbstractReaction">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AbstractReaction/guard"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AbstractReaction/action"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//AbstractReaction/priority"/>
+    <genClasses image="false" ecoreClass="model.ecore#//AbstractTransition">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AbstractTransition/guard"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AbstractTransition/action"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//AbstractTransition/priority"/>
     </genClasses>
-    <genClasses ecoreClass="model.ecore#//Reaction"/>
+    <genClasses ecoreClass="model.ecore#//InternalTransition"/>
     <genClasses ecoreClass="model.ecore#//Transition">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//Transition/source"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//Transition/target"/>

@@ -24,9 +24,9 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ChoiceTransitionTr
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.EventTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ForkTransitionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FunctionDeclarationTrace
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InternalTransitionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.JoinTransitionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.MergeTransitionTrace
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ReactionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.RegionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.SimpleTransitionTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.StateHistoryTrace
@@ -36,14 +36,14 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.VariableTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.L2STrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.ParameterTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.TraceabilityFactory
-import hu.bme.mit.gamma.statechart.lowlevel.model.AbstractReaction
+import hu.bme.mit.gamma.statechart.lowlevel.model.AbstractTransition
 import hu.bme.mit.gamma.statechart.lowlevel.model.ChoiceState
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.ForkState
+import hu.bme.mit.gamma.statechart.lowlevel.model.InternalTransition
 import hu.bme.mit.gamma.statechart.lowlevel.model.JoinState
 import hu.bme.mit.gamma.statechart.lowlevel.model.MergeState
 import hu.bme.mit.gamma.statechart.lowlevel.model.Package
-import hu.bme.mit.gamma.statechart.lowlevel.model.Reaction
 import hu.bme.mit.gamma.statechart.lowlevel.model.Region
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
@@ -85,9 +85,9 @@ package class Trace {
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
 	// Maps for caching transitions
 	protected final List<Expression> primaryIsActiveExpressions = newArrayList // Source state and its parent states - only ponated
-	protected final Map<AbstractReaction, List<Expression>> isActiveExpressions = newHashMap  // Source state and its parent states - also negated due to priority
-	protected final Map<AbstractReaction, List<Expression>> guards = newHashMap // Guars of transitions leaving states - also negated due to priority
-	protected final Map<AbstractReaction, List<Expression>> choiceGuards = newHashMap // Guards of transitions leaving choices - also negated due to priority
+	protected final Map<AbstractTransition, List<Expression>> isActiveExpressions = newHashMap  // Source state and its parent states - also negated due to priority
+	protected final Map<AbstractTransition, List<Expression>> guards = newHashMap // Guars of transitions leaving states - also negated due to priority
+	protected final Map<AbstractTransition, List<Expression>> choiceGuards = newHashMap // Guards of transitions leaving choices - also negated due to priority
 	protected final Map<State, List<Expression>> stateReferenceExpressions = newHashMap
 	protected final List<Expression> timeoutExpressions = newArrayList // 500 <= timeout
 	
@@ -482,7 +482,7 @@ package class Trace {
 		checkArgument(xStsTransition !== null)
 		var matches = SimpleTransitionTrace.Matcher.on(tracingEngine).getAllValuesOfxStsPrecondition(null, xStsTransition)
 		if (matches.size < 1) {
-			matches = ReactionTrace.Matcher.on(tracingEngine).getAllValuesOfxStsPrecondition(null, xStsTransition)
+			matches = InternalTransitionTrace.Matcher.on(tracingEngine).getAllValuesOfxStsPrecondition(null, xStsTransition)
 		}
 		// No else
 		if (matches.size < 1) {
@@ -532,42 +532,42 @@ package class Trace {
 		return matches.head
 	}
 	
-	// Reaction - xTransition
-	def put(Reaction lowlevelReaction, XTransition xStsTransition, Expression xStsPrecondition) {
-		checkArgument(lowlevelReaction !== null)
+	// InternalTransition - xTransition
+	def put(InternalTransition lowlevelInternalTransition, XTransition xStsTransition, Expression xStsPrecondition) {
+		checkArgument(lowlevelInternalTransition !== null)
 		checkArgument(xStsTransition !== null)
-		trace.traces += createReactionTrace => [
-			it.lowlevelReaction = lowlevelReaction
+		trace.traces += createInternalTransitionTrace => [
+			it.lowlevelInternalTransition = lowlevelInternalTransition
 			it.XStsTransition= xStsTransition
 			it.XStsPrecondition = xStsPrecondition
 		]
 	}
 	
-	def isTraced(Reaction lowlevelReaction) {
-		checkArgument(lowlevelReaction !== null)
-		return ReactionTrace.Matcher.on(tracingEngine).hasMatch(lowlevelReaction, null, null)
+	def isTraced(InternalTransition lowlevelInternalTransition) {
+		checkArgument(lowlevelInternalTransition !== null)
+		return InternalTransitionTrace.Matcher.on(tracingEngine).hasMatch(lowlevelInternalTransition, null, null)
 	}
 	
-	def getXStsTransition(Reaction lowlevelReaction) {
-		checkArgument(lowlevelReaction !== null)
-		val matches = ReactionTrace.Matcher.on(tracingEngine).getAllValuesOfxStsTransition(lowlevelReaction, null)
+	def getXStsTransition(InternalTransition lowlevelInternalTransition) {
+		checkArgument(lowlevelInternalTransition !== null)
+		val matches = InternalTransitionTrace.Matcher.on(tracingEngine).getAllValuesOfxStsTransition(lowlevelInternalTransition, null)
 		checkState(matches.size == 1, matches.size)
 		return matches.head
 	}
 	
-	def isTraced(AbstractReaction lowlevelReaction) {
-		return switch (lowlevelReaction) {
-			Transition: lowlevelReaction.traced
-			Reaction: lowlevelReaction.traced
-			default: throw new IllegalArgumentException("Unknown: " + lowlevelReaction)
+	def isTraced(AbstractTransition lowlevelInternalTransition) {
+		return switch (lowlevelInternalTransition) {
+			Transition: lowlevelInternalTransition.traced
+			InternalTransition: lowlevelInternalTransition.traced
+			default: throw new IllegalArgumentException("Unknown: " + lowlevelInternalTransition)
 		}
 	}
 	
-	def getXStsTransition(AbstractReaction lowlevelReaction) {
-		return switch (lowlevelReaction) {
-			Transition: lowlevelReaction.XStsTransition
-			Reaction: lowlevelReaction.XStsTransition
-			default: throw new IllegalArgumentException("Unknown: " + lowlevelReaction)
+	def getXStsTransition(AbstractTransition lowlevelInternalTransition) {
+		return switch (lowlevelInternalTransition) {
+			Transition: lowlevelInternalTransition.XStsTransition
+			InternalTransition: lowlevelInternalTransition.XStsTransition
+			default: throw new IllegalArgumentException("Unknown: " + lowlevelInternalTransition)
 		}
 	}
 	

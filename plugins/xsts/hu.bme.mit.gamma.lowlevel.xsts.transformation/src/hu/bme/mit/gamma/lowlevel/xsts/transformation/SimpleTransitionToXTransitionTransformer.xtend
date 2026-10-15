@@ -11,7 +11,7 @@
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
 import hu.bme.mit.gamma.statechart.lowlevel.model.EntryState
-import hu.bme.mit.gamma.statechart.lowlevel.model.Reaction
+import hu.bme.mit.gamma.statechart.lowlevel.model.InternalTransition
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.Transition
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
@@ -81,14 +81,14 @@ class SimpleTransitionToXTransitionTransformer extends LowlevelTransitionToXTran
 		return xStsTransition
 	}
 	
-	def transform(Reaction lowlevelReaction) {
-		val xStsPrecondition = lowlevelReaction.createXStsTransitionPrecondition
+	def transform(InternalTransition lowlevelInternalTransition) {
+		val xStsPrecondition = lowlevelInternalTransition.createXStsTransitionPrecondition
 		val xStsTransitionAction = createSequentialAction => [
 			it.actions += xStsPrecondition.createAssumeAction
-			it.actions += lowlevelReaction.action.transformAction
+			it.actions += lowlevelInternalTransition.action.transformAction
 		]
 		val xStsTransition = xStsTransitionAction.createXStsTransition
-		trace.put(lowlevelReaction, xStsTransition, xStsPrecondition)
+		trace.put(lowlevelInternalTransition, xStsTransition, xStsPrecondition)
 		return xStsTransition
 	}
 	

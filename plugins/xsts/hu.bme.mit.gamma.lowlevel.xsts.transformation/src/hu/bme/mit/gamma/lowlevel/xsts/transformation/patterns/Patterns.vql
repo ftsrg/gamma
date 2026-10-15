@@ -172,7 +172,7 @@ pattern transitionsToHigherAndLowerNodes(source : StateNode, sourceAncestor : St
 	// is essential when transforming complex transitions with junctions
 }
 
-pattern internalTransitions(reaction : Reaction) {
+pattern internalTransitions(reaction : InternalTransition) {
 	State.internalTransitions(_, reaction);
 }
 

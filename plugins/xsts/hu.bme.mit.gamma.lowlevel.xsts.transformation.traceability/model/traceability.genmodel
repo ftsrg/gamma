@@ -40,8 +40,8 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//TransitionTrace/xStsTransition"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//TransitionTrace/xStsPrecondition"/>
     </genClasses>
-    <genClasses ecoreClass="traceability.ecore#//ReactionTrace">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ReactionTrace/lowlevelReaction"/>
+    <genClasses ecoreClass="traceability.ecore#//InternalTransitionTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//InternalTransitionTrace/lowlevelInternalTransition"/>
     </genClasses>
     <genClasses ecoreClass="traceability.ecore#//SimpleTransitionTrace">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//SimpleTransitionTrace/lowlevelTransition"/>

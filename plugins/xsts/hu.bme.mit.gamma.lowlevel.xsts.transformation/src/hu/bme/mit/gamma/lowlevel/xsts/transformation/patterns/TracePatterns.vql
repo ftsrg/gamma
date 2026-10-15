@@ -51,11 +51,11 @@ pattern stateHistoryTrace(stateTrace : StateTrace,
 	StateTrace.xStsInactiveHistoryEnumLiteral(stateTrace, xStsInactiveHistoryEnumLiteral);
 }
 
-pattern reactionTrace(lowlevelReaction : Reaction, xStsTransition : XTransition, 
+pattern internalTransitionTrace(lowlevelInternalTransition : InternalTransition, xStsTransition : XTransition, 
 		xStsPrecondition : Expression) {
-	ReactionTrace.lowlevelReaction(trace, lowlevelReaction);
-	ReactionTrace.xStsTransition(trace, xStsTransition);
-	ReactionTrace.xStsPrecondition(trace, xStsPrecondition);
+	InternalTransitionTrace.lowlevelInternalTransition(trace, lowlevelInternalTransition);
+	InternalTransitionTrace.xStsTransition(trace, xStsTransition);
+	InternalTransitionTrace.xStsPrecondition(trace, xStsPrecondition);
 }
 
 pattern simpleTransitionTrace(lowlevelSimpleTransition : Transition, xStsTransition : XTransition, 
