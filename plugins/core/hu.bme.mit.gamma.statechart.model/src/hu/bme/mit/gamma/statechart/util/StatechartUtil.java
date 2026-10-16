@@ -16,7 +16,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
@@ -53,6 +52,7 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueOverflowExpre
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceQueueSizeExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceTransitionReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory;
@@ -1265,9 +1265,13 @@ public class StatechartUtil extends ActionUtil {
 		return reference;
 	}
 	
-	public Entry<ComponentInstanceReferenceExpression, Transition> createTransitionReference(
-			ComponentInstanceReferenceExpression instance, Transition transition) {
-		return Map.entry(instance, transition);
+	public ComponentInstanceTransitionReferenceExpression createTransitionReference(
+			ComponentInstanceReferenceExpression instance, AbstractTransition transition) {
+		ComponentInstanceTransitionReferenceExpression reference =
+				compositeFactory.createComponentInstanceTransitionReferenceExpression();
+		reference.setInstance(instance);
+		reference.setTransition(transition);
+		return reference;
 	}
 	
 	public ComponentInstanceVariableReferenceExpression createVariableReference(ComponentInstanceReferenceExpression instance,

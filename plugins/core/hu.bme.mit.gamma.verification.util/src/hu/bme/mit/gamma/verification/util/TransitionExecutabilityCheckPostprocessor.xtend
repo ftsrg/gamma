@@ -12,16 +12,13 @@ package hu.bme.mit.gamma.verification.util
 
 import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceTransitionReferenceExpression
 import hu.bme.mit.gamma.statechart.statechart.EntryState
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
-import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import java.util.Collection
 import java.util.List
-import java.util.Map
-import java.util.Map.Entry
 import java.util.regex.Pattern
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -32,13 +29,13 @@ class TransitionExecutabilityCheckPostprocessor extends VerificationPostprocesso
 	public static final String metadataBeginning = TraceModelDerivedFeatures.TRANSITION_EXEC_PREFIX
 	//
 	protected final List<Collection<? extends
-			Entry<ComponentInstanceReferenceExpression, Transition>>> executedTransitions = newArrayList
+			ComponentInstanceTransitionReferenceExpression>> executedTransitions = newArrayList
 	//
 	
 	override execute(ExecutionTrace trace) {
 		trace.saveTrace
 		
-		val executedTransitions = <Entry<ComponentInstanceReferenceExpression, Transition>>newArrayList
+		val executedTransitions = <ComponentInstanceTransitionReferenceExpression>newArrayList
 		
 		val steps = trace.allSteps
 		for (step : steps) {
@@ -46,10 +43,8 @@ class TransitionExecutabilityCheckPostprocessor extends VerificationPostprocesso
 			for (assertion : asserts.filter(OpaqueExpression)
 						.filter[it.expression.startsWith(metadataBeginning)]) {
 				val instanceTransition = trace.parseTransition(assertion)
-				val instance = instanceTransition.key
-				val transition = instanceTransition.value
 				
-				executedTransitions += instance.createTransitionReference(transition)
+				executedTransitions += instanceTransition
 			}
 		}
 		
@@ -77,14 +72,14 @@ class TransitionExecutabilityCheckPostprocessor extends VerificationPostprocesso
 		val statechart = instance.lastInstance.derivedType as StatechartDefinition
 		val transition = statechart.transitions.findFirst[it.serialize == transitionString]
 		
-		return Map.entry(instance, transition)
+		return instance.createTransitionReference(transition)
 	}
 	
 	//
 	
-	def getId(Entry<ComponentInstanceReferenceExpression, Transition> transitionInstance) {
-		val instance = transitionInstance.key
-		val transition = transitionInstance.value
+	def getId(ComponentInstanceTransitionReferenceExpression transitionInstance) {
+		val instance = transitionInstance.instance
+		val transition = transitionInstance.transition
 		return instance.name + "." + transition.serialize
 	}
 	
@@ -129,7 +124,7 @@ class TransitionExecutabilityCheckPostprocessor extends VerificationPostprocesso
 			«ENDFOR»
 		Unexecutable transitions:
 			«FOR id : unexecutedTransitions
-					.reject[it.value.sourceState instanceof EntryState]
+					.reject[it.transition.sourceNode instanceof EntryState]
 					.map[it.printElementReference].toSet.sort»
 				«id»
 			«ENDFOR»

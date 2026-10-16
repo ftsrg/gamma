@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2025 Contributors to the Gamma project
+ * Copyright (c) 2025-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,8 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.verification.util
 
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
-import hu.bme.mit.gamma.statechart.statechart.Transition
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceTransitionReferenceExpression
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import java.util.Map
 import java.util.Map.Entry
@@ -31,8 +30,8 @@ class TransitionPairExecutabilityCheckPostprocessor extends VerificationPostproc
 	
 	//
 	
-	def getId(Entry<Entry<ComponentInstanceReferenceExpression, Transition>,
-				Entry<ComponentInstanceReferenceExpression, Transition>> transitionInstancePair) {
+	def getId(Entry<ComponentInstanceTransitionReferenceExpression,
+				ComponentInstanceTransitionReferenceExpression> transitionInstancePair) {
 		val first = transitionInstancePair.key
 		val operator = "->"
 		val second = transitionInstancePair.value
@@ -66,8 +65,8 @@ class TransitionPairExecutabilityCheckPostprocessor extends VerificationPostproc
 			for (node : nodes) {
 				for (incoming : node.incomingTransitions) {
 					for (outgoing : node.outgoingTransitions) {
-						val first = Map.entry(instance, incoming)
-						val second = Map.entry(instance, outgoing)
+						val first = instance.createTransitionReference(incoming)
+						val second = instance.createTransitionReference(outgoing)
 						val pair = Map.entry(first, second)
 						
 						if (!executedTransitionPairIds.contains(pair.id)) {
@@ -93,5 +92,5 @@ class TransitionPairExecutabilityCheckPostprocessor extends VerificationPostproc
 				«id»
 			«ENDFOR»
 	'''
-
+	
 }

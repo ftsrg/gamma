@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2025 Contributors to the Gamma project
+ * Copyright (c) 2025-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,7 +15,7 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.OpaqueExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceTransitionReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
@@ -34,7 +34,6 @@ import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.transformation.util.UnfoldedExecutionTraceBackAnnotator
 import java.util.Collection
 import java.util.List
-import java.util.Map.Entry
 import java.util.regex.Pattern
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
@@ -43,8 +42,8 @@ import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerived
 
 class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 	//
-	protected final List<Collection<? extends Entry<
-			ComponentInstanceReferenceExpression, Transition>>> nondeterministicTransitions = newArrayList
+	protected final List<Collection<? extends 
+			ComponentInstanceTransitionReferenceExpression>> nondeterministicTransitions = newArrayList
 	//
 	
 	override execute(ExecutionTrace trace) {
@@ -157,12 +156,6 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 				// Note that 'nondeterministicTransitions.size' my still be ' < 2' here
 			}
 		}
-		
-		// Pretty printing
-//		for (transition : nondeterministicTransitions) {
-//			println(elementSerializer.serialize(transition.value))
-//		}
-		//
 		
 		this.nondeterministicTransitions += nondeterministicTransitions
 		
