@@ -17,7 +17,7 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceTransitionReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceTransitionIdReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
@@ -251,8 +251,8 @@ class ComponentVariableReferences {
 
 @Data
 class ComponentTransitionReferences {
-	Collection<ComponentInstanceTransitionReferenceExpression> include
-	Collection<ComponentInstanceTransitionReferenceExpression> exclude
+	Collection<ComponentInstanceTransitionIdReferenceExpression> include
+	Collection<ComponentInstanceTransitionIdReferenceExpression> exclude
 }
 
 @Data

@@ -64,17 +64,17 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 		if (reference == GenmodelModelPackage.Literals.CODE_GENERATION__COMPONENT ||
 				reference == GenmodelModelPackage.Literals.COMPONENT_REFERENCE__COMPONENT) {
 			val genmodel = ecoreUtil.getSelfOrContainerOfType(context, GenModel)
-			val components = genmodel.packageImports.map[it.components].flatten
+			val components = genmodel.packageImports.flatMap[it.components]
 			return Scopes.scopeFor(components)
 		}
 		if (reference == GenmodelModelPackage.Literals.EVENT_PRIORITY_TRANSFORMATION__STATECHART) {
 			val genmodel = context.eContainer as GenModel
-			val components = genmodel.packageImports.map[it.components].flatten.filter(StatechartDefinition)
+			val components = genmodel.packageImports.flatMap[it.components].filter(StatechartDefinition)
 			return Scopes.scopeFor(components)
 		}
 		if (reference == GenmodelModelPackage.Literals.PHASE_STATECHART_GENERATION__STATECHART) {
 			val genmodel = context.eContainer as GenModel
-			val components = genmodel.packageImports.map[it.components].flatten.filter(StatechartDefinition)
+			val components = genmodel.packageImports.flatMap[it.components].filter(StatechartDefinition)
 			return Scopes.scopeFor(components)
 		}
 		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE_EXPRESSION__COMPONENT_INSTANCE) {
@@ -87,7 +87,7 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 					context, ComponentInstanceReferenceExpression)
 				val parent = instanceContainer?.parent
 				val instances = (parent === null) ?	component.allInstances :
-					parent.getComponentInstance.instances
+						parent.getComponentInstance.instances
 				return Scopes.scopeFor(instances)
 			}
 		}
@@ -134,41 +134,46 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 				}
 			}
 		}
-		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_TRANSITION_REFERENCE_EXPRESSION__TRANSITION_ID) {
+		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_TRANSITION_ID_REFERENCE_EXPRESSION__TRANSITION_ID) {
 			val componentInstanceReference = context as ComponentInstanceTransitionReferenceExpression
 			val componentInstance = componentInstanceReference.instance.lastInstance
 			if (componentInstance !== null) {
 				val component = componentInstance.derivedType
 				if (component instanceof StatechartDefinition) {
 					val transitions = component.transitions
-					val annotations = transitions.map[it.annotations].flatten
+					val annotations = transitions.flatMap[it.annotations]
 						.filter(TransitionIdAnnotation)
 					return Scopes.scopeFor(annotations)
 				}
 			}
 		}
 		if (reference == GenmodelModelPackage.Literals.TEST_GENERATION__EXECUTION_TRACE || 
-				reference == GenmodelModelPackage.Literals.TRACE_REPLAY_MODEL_GENERATION__EXECUTION_TRACE) {
+					reference == GenmodelModelPackage.Literals.TRACE_REPLAY_MODEL_GENERATION__EXECUTION_TRACE) {
 			val genmodel = context.eContainer as GenModel
 			return Scopes.scopeFor(genmodel.traceImports)
 		}
 		if (context instanceof InterfaceMapping &&
-			reference == GenmodelModelPackage.Literals.INTERFACE_MAPPING__GAMMA_INTERFACE) {
-			val yakinduCompilation = (context as InterfaceMapping).eContainer as YakinduCompilation
+					reference == GenmodelModelPackage.Literals.INTERFACE_MAPPING__GAMMA_INTERFACE) {
+			val interfaceMapping = context as InterfaceMapping
+			val yakinduCompilation = interfaceMapping.eContainer as YakinduCompilation
 			val genModel = yakinduCompilation.eContainer as GenModel
 			val gammaInterfaceRoots = genModel.packageImports
 			if (!gammaInterfaceRoots.empty) {
-				return Scopes.scopeFor(gammaInterfaceRoots.map[it.interfaces].flatten)
+				val interfaces_ = gammaInterfaceRoots.flatMap[it.interfaces]
+				return Scopes.scopeFor(interfaces_)
 			}
 		}
 		if (context instanceof EventMapping && reference == GenmodelModelPackage.Literals.EVENT_MAPPING__GAMMA_EVENT) {
-			val gammaInterface = ((context as EventMapping).eContainer as InterfaceMapping).gammaInterface
+			val eventMapping = context as EventMapping
+			val interfaceMapping = eventMapping.eContainer as InterfaceMapping
+			val gammaInterface = interfaceMapping.gammaInterface
 			val events = gammaInterface.allEventDeclarations.map[it.event]
 			return Scopes.scopeFor(events)
 		}
 		if (context instanceof StatechartContractGeneration && reference == GenmodelModelPackage.Literals.STATECHART_CONTRACT_GENERATION__SCENARIO){
 			val genmodel = context.eContainer as GenModel
-			return Scopes.scopeFor(genmodel.scenarioImports.flatMap[it.scenarios])
+			val scenarios = genmodel.scenarioImports.flatMap[it.scenarios]
+			return Scopes.scopeFor(scenarios)
 		}
 		// Expression scoping
 		if (reference == ExpressionModelPackage.Literals.ABSTRACT_DIRECT_REFERENCE_EXPRESSION__DECLARATION) {

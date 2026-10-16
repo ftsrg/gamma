@@ -17,7 +17,7 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpr
 import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceTransitionReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceTransitionIdReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Component
@@ -127,7 +127,7 @@ class PropertyUnfolder {
 		]
 	}
 	
-	def dispatch EObject unfold(ComponentInstanceTransitionReferenceExpression reference) {
+	def dispatch EObject unfold(ComponentInstanceTransitionIdReferenceExpression reference) {
 		val oldInstance = reference.instance
 		val newInstance = oldInstance.newSimpleInstance
 		val newInstanceReference = newInstance.createInstanceReference

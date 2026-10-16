@@ -189,7 +189,7 @@ ComponentInstanceStateConfigurationReferenceExpression returns composite::Compon
 	instance=ComponentInstanceReferenceExpression '.' region=[statechart::Region] '.' state=[statechart::State] 
 ;
 
-ComponentInstanceTransitionReferenceExpression returns composite::ComponentInstanceTransitionReferenceExpression:
+ComponentInstanceTransitionIdReferenceExpression returns composite::ComponentInstanceTransitionIdReferenceExpression:
 	instance=ComponentInstanceReferenceExpression '.' transitionId=[statechart::TransitionIdAnnotation]
 ;
 
@@ -334,8 +334,8 @@ InteractionCoverage returns InteractionCoverage:
 		('port-exclude' ':' '[' portExclude+=ComponentInstancePortReferenceExpression (',' portExclude+=ComponentInstancePortReferenceExpression)* ']')?
 		('state-include' ':' '[' stateInclude+=ComponentInstanceStateConfigurationReferenceExpression (',' stateInclude+=ComponentInstanceStateConfigurationReferenceExpression)* ']')?
 		('state-exclude' ':' '[' stateExclude+=ComponentInstanceStateConfigurationReferenceExpression (',' stateExclude+=ComponentInstanceStateConfigurationReferenceExpression)* ']')?
-		('transition-include' ':' '[' transitionInclude+=ComponentInstanceTransitionReferenceExpression (',' transitionInclude+=ComponentInstanceTransitionReferenceExpression)* ']')?
-		('transition-exclude' ':' '[' transitionExclude+=ComponentInstanceTransitionReferenceExpression (',' transitionExclude+=ComponentInstanceTransitionReferenceExpression)* ']')?
+		('transition-include' ':' '[' transitionInclude+=ComponentInstanceTransitionIdReferenceExpression (',' transitionInclude+=ComponentInstanceTransitionIdReferenceExpression)* ']')?
+		('transition-exclude' ':' '[' transitionExclude+=ComponentInstanceTransitionIdReferenceExpression (',' transitionExclude+=ComponentInstanceTransitionIdReferenceExpression)* ']')?
 	'}')?
 ;
 

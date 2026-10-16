@@ -142,10 +142,15 @@
       eSuperTypes="#//ComponentInstanceElementReferenceExpression interface.ecore#//PortReferenceExpression interface.ecore#//EventReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceEventParameterReferenceExpression"
       eSuperTypes="#//ComponentInstanceElementReferenceExpression interface.ecore#//PortReferenceExpression interface.ecore#//EventReferenceExpression ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParameterReferenceExpression"/>
-  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceTransitionReferenceExpression"
+  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceTransitionIdReferenceExpression"
       eSuperTypes="#//ComponentInstanceElementReferenceExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="transitionId" lowerBound="1"
         eType="ecore:EClass statechart.ecore#//TransitionIdAnnotation"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceTransitionReferenceExpression"
+      eSuperTypes="#//ComponentInstanceElementReferenceExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="transition" lowerBound="1"
+        eType="ecore:EClass statechart.ecore#//AbstractTransition"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceReflectiveElementReferenceExpression"
       eSuperTypes="#//ComponentInstanceElementReferenceExpression">

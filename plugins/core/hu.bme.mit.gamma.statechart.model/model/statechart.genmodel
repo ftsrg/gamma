@@ -109,8 +109,11 @@
     <genClasses ecoreClass="composite.ecore#//ComponentInstancePortReferenceExpression"/>
     <genClasses ecoreClass="composite.ecore#//ComponentInstanceEventReferenceExpression"/>
     <genClasses ecoreClass="composite.ecore#//ComponentInstanceEventParameterReferenceExpression"/>
+    <genClasses ecoreClass="composite.ecore#//ComponentInstanceTransitionIdReferenceExpression">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstanceTransitionIdReferenceExpression/transitionId"/>
+    </genClasses>
     <genClasses ecoreClass="composite.ecore#//ComponentInstanceTransitionReferenceExpression">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstanceTransitionReferenceExpression/transitionId"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstanceTransitionReferenceExpression/transition"/>
     </genClasses>
     <genClasses ecoreClass="composite.ecore#//ComponentInstanceReflectiveElementReferenceExpression">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute composite.ecore#//ComponentInstanceReflectiveElementReferenceExpression/identifier"/>

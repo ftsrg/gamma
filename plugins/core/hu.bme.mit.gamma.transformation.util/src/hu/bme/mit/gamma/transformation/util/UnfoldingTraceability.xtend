@@ -21,7 +21,7 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression
-import hu.bme.mit.gamma.statechart.composite.ComponentInstanceTransitionReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceTransitionIdReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceVariableReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
@@ -63,8 +63,8 @@ class UnfoldingTraceability {
 	// Component instance transition references
 	
 	def getNewIncludedSimpleInstanceTransitions(
-			Collection<ComponentInstanceTransitionReferenceExpression> includedOriginalReferences,
-			Collection<ComponentInstanceTransitionReferenceExpression> excludedOriginalReferences,
+			Collection<ComponentInstanceTransitionIdReferenceExpression> includedOriginalReferences,
+			Collection<ComponentInstanceTransitionIdReferenceExpression> excludedOriginalReferences,
 			Component newType) {
 		val newTransitions = newArrayList
 		// The semantics is defined here: including has priority over excluding
@@ -74,7 +74,7 @@ class UnfoldingTraceability {
 	}
 	
 	def getNewSimpleInstanceTransitions(
-			Collection<ComponentInstanceTransitionReferenceExpression> originalReferences,
+			Collection<ComponentInstanceTransitionIdReferenceExpression> originalReferences,
 			Component newType) {
 		val newTransitions = newArrayList
 		for (originalReference : originalReferences) {
