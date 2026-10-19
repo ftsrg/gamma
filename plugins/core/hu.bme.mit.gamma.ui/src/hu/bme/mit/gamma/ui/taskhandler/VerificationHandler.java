@@ -845,7 +845,8 @@ public class VerificationHandler extends TaskHandler {
 			PropertyPackage propertyPackage = propertyPackages.getFirst();
 			List<String> coverages = propertyPackage.getCoverages();
 			if (!coverages.isEmpty()) {
-				Component topComponent = getOriginalTopComponent();
+				String fileName = verification.getFileName().getFirst();
+				Component topComponent = getOriginalTopComponent(fileName);
 				String coverage = coverages.getFirst();
 				String shortCoverage = coverage.replace("Coverage", "");
 				switch (shortCoverage) {
@@ -901,8 +902,7 @@ public class VerificationHandler extends TaskHandler {
 		return javaUtil.getOnlyElement(components);
 	}
 	
-	public Component getOriginalTopComponent() {
-		String path = file.getFullPath().toString();
+	public Component getOriginalTopComponent(String path) {
 		String originalGcdComponentUri = fileNamer.getOriginalGcdComponentUri(path);
 		
 		Package _package = (Package) ecoreUtil.normalLoad(originalGcdComponentUri);

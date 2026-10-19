@@ -1257,6 +1257,10 @@ public class StatechartUtil extends ActionUtil {
 	
 	public ComponentInstanceStateReferenceExpression createStateReference(
 			ComponentInstanceReferenceExpression instance, State state) {
+		if (state == null) {
+			throw new IllegalArgumentException("State is null");
+		}
+		
 		ComponentInstanceStateReferenceExpression reference =
 				compositeFactory.createComponentInstanceStateReferenceExpression();
 		reference.setInstance(instance);
@@ -1267,6 +1271,10 @@ public class StatechartUtil extends ActionUtil {
 	
 	public ComponentInstanceTransitionReferenceExpression createTransitionReference(
 			ComponentInstanceReferenceExpression instance, AbstractTransition transition) {
+		if (transition == null) {
+			throw new IllegalArgumentException("Transition is null");
+		}
+		
 		ComponentInstanceTransitionReferenceExpression reference =
 				compositeFactory.createComponentInstanceTransitionReferenceExpression();
 		reference.setInstance(instance);
@@ -1276,6 +1284,10 @@ public class StatechartUtil extends ActionUtil {
 	
 	public ComponentInstanceVariableReferenceExpression createVariableReference(ComponentInstanceReferenceExpression instance,
 			VariableDeclaration variable) {
+		if (variable == null) {
+//			throw new IllegalArgumentException("Variable is null");
+		}
+		
 		ComponentInstanceVariableReferenceExpression reference =
 				compositeFactory.createComponentInstanceVariableReferenceExpression();
 		reference.setInstance(instance);
@@ -1285,6 +1297,10 @@ public class StatechartUtil extends ActionUtil {
 	
 	public ComponentInstancePortVariableReferenceExpression createPortVariableReference(ComponentInstanceReferenceExpression instance,
 			Port port, VariableDeclaration variable) {
+		if (variable == null) {
+			throw new IllegalArgumentException("Variable is null");
+		}
+		
 		ComponentInstancePortVariableReferenceExpression reference =
 				compositeFactory.createComponentInstancePortVariableReferenceExpression();
 		reference.setInstance(instance);
@@ -1295,6 +1311,10 @@ public class StatechartUtil extends ActionUtil {
 	
 	public ComponentInstanceQueueSizeExpression createQueueSizeReference(ComponentInstanceReferenceExpression instance,
 			MessageQueue queue) {
+		if (queue == null) {
+			throw new IllegalArgumentException("Queue is null");
+		}
+		
 		ComponentInstanceQueueSizeExpression reference =
 				compositeFactory.createComponentInstanceQueueSizeExpression();
 		reference.setInstance(instance);
@@ -1304,6 +1324,10 @@ public class StatechartUtil extends ActionUtil {
 	
 	public ComponentInstanceQueueOverflowExpression createQueueOverflowReference(ComponentInstanceReferenceExpression instance,
 			MessageQueue queue) {
+		if (queue == null) {
+			throw new IllegalArgumentException("Queue is null");
+		}
+		
 		ComponentInstanceQueueOverflowExpression reference =
 				compositeFactory.createComponentInstanceQueueOverflowExpression();
 		reference.setInstance(instance);
@@ -1313,6 +1337,10 @@ public class StatechartUtil extends ActionUtil {
 	
 	public ComponentInstanceEventReferenceExpression createEventReference(ComponentInstanceReferenceExpression instance,
 			Port port, Event event) {
+		if (event == null) {
+			throw new IllegalArgumentException("Event is null");
+		}
+		
 		ComponentInstanceEventReferenceExpression reference =
 				compositeFactory.createComponentInstanceEventReferenceExpression();
 		reference.setInstance(instance);
@@ -1343,6 +1371,10 @@ public class StatechartUtil extends ActionUtil {
 	
 	public ComponentInstanceEventParameterReferenceExpression createParameterReference(
 			ComponentInstanceReferenceExpression instance, Port port, Event event, ParameterDeclaration parameter) {
+		if (event == null) {
+			throw new IllegalArgumentException("Event is null");
+		}
+		
 		ComponentInstanceEventParameterReferenceExpression reference =
 				compositeFactory.createComponentInstanceEventParameterReferenceExpression();
 		reference.setInstance(instance);

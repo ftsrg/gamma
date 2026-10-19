@@ -262,7 +262,7 @@ class UnfoldedExecutionTraceBackAnnotator {
 			null
 		}
 		
-		val variableState = statechartUtil.createVariableReference(
+		var variableState = statechartUtil.createVariableReference(
 				originalInstance, originalVariable)
 		if (originalVariable === null) {
 			dummyAsserts += variableState

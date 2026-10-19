@@ -540,12 +540,12 @@ class UnfoldingTraceability {
 	
 	def getOriginalTransition(ComponentInstance originalInstance, AbstractTransition newTransition) {
 		val originalType = originalInstance.getStatechart
-		val originalTransitions = originalType.transitions
+		val originalTransitions = originalType.allTransitions
 		
 		val sameSource = originalTransitions.filter[
-				it.sourceState.fullContainmentHierarchy == newTransition.sourceNode.fullContainmentHierarchy]
+				it.sourceNode.fullContainmentHierarchy == newTransition.sourceNode.fullContainmentHierarchy]
 		val sameTarget = originalTransitions.filter[
-				it.targetState.fullContainmentHierarchy == newTransition.targetNode.fullContainmentHierarchy]
+				it.targetNode.fullContainmentHierarchy == newTransition.targetNode.fullContainmentHierarchy]
 		val sameSourceAndTarget = sameSource.intersection(sameTarget)
 		
 		if (sameSourceAndTarget.size == 1) {

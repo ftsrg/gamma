@@ -70,7 +70,7 @@ class TransitionExecutabilityCheckPostprocessor extends VerificationPostprocesso
 		
 		val instance = instances.findFirst[it.name == instanceName].clone
 		val statechart = instance.lastInstance.derivedType as StatechartDefinition
-		val transition = statechart.transitions.findFirst[it.serialize == transitionString]
+		val transition = statechart.allTransitions.findFirst[it.serialize == transitionString]
 		
 		return instance.createTransitionReference(transition)
 	}
@@ -102,7 +102,7 @@ class TransitionExecutabilityCheckPostprocessor extends VerificationPostprocesso
 		for (instance : instances) {
 			val statechartInstance = instance.lastInstance
 			val statechart = statechartInstance.getStatechart
-			val transitions = statechart.transitions
+			val transitions = statechart.allTransitions
 			for (transition : transitions) {
 				val transitionReference = instance.clone
 						.createTransitionReference(transition)
