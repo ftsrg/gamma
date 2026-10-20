@@ -689,7 +689,14 @@ class UnfoldedExecutionTraceBackAnnotator {
 				val topmostExpression = data.getChildOfContainerOfType(Step)
 				data.replace(topmostExpression)
 			}
+			
+			// Uniquate
+			if (metadata.exists[it !== data && it.containerOrSelf === data.containerOrSelf &&
+					it.expression == data.expression]) {
+				data.remove
+			}
 		}
+		
 		
 		metadata.clear
 	}

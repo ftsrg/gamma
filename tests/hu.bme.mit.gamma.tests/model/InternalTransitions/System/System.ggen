@@ -1,7 +1,11 @@
 import "Statechart/_1.gcd"
 import "System/System_1.gcd"
+
 import "Statechart/_2.gcd"
 import "System/System_2.gcd"
+
+import "Statechart/_3.gcd"
+import "System/System_3.gcd"
 
 code {
 	component : _1
@@ -55,4 +59,32 @@ verification {
 	test-language : java
 	optimize : true
 	serialize-results : false
+}
+
+code {
+	component : _3
+	language : java
+}
+
+code {
+	component : System_3
+	language : java
+}
+
+
+analysis {
+	component : System_3
+	language : XUPPAAL
+	transition-pair-coverage
+}
+
+verification {
+	file : "System_3"
+	property-file : ".System_3.gpd"
+	language : XUPPAAL
+	back-annotate-to-original : true
+	test-language : java
+	optimize : true
+	serialize-results : false
+	serialize-postprocessing-results : true
 }

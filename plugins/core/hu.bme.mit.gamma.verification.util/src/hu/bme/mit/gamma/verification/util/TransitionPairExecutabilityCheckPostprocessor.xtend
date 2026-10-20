@@ -65,8 +65,8 @@ class TransitionPairExecutabilityCheckPostprocessor extends VerificationPostproc
 			for (node : nodes) {
 				for (incoming : node.incomingTransitions) {
 					for (outgoing : node.outgoingTransitions) {
-						val first = instance.createTransitionReference(incoming)
-						val second = instance.createTransitionReference(outgoing)
+						val first = instance.clone.createTransitionReference(incoming)
+						val second = instance.clone.createTransitionReference(outgoing)
 						val pair = Map.entry(first, second)
 						
 						if (!executedTransitionPairIds.contains(pair.id)) {
