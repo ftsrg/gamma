@@ -7,6 +7,15 @@ import "System/System_2.gcd"
 import "Statechart/_3.gcd"
 import "System/System_3.gcd"
 
+import "Statechart/_4.gcd"
+import "System/System_4.gcd"
+
+import "Statechart/_5.gcd"
+import "System/System_5.gcd"
+
+import "Statechart/_6.gcd"
+import "System/System_6.gcd"
+
 code {
 	component : _1
 	language : java
@@ -44,7 +53,6 @@ code {
 	language : java
 }
 
-
 analysis {
 	component : System_2
 	language : XUPPAAL
@@ -71,7 +79,6 @@ code {
 	language : java
 }
 
-
 analysis {
 	component : System_3
 	language : XUPPAAL
@@ -86,5 +93,82 @@ verification {
 	test-language : java
 	optimize : true
 	serialize-results : false
-	serialize-postprocessing-results : true
+}
+
+code {
+	component : _4
+	language : java
+}
+
+code {
+	component : System_4
+	language : java
+}
+
+analysis {
+	component : System_4
+	language : XUPPAAL
+	transition-coverage
+}
+
+verification {
+	file : "System_4"
+	property-file : ".System_4.gpd"
+	language : XUPPAAL
+	back-annotate-to-original : true
+	test-language : java
+	optimize : true
+	serialize-results : false
+}
+
+code {
+	component : _5
+	language : java
+}
+
+code {
+	component : System_5
+	language : java
+}
+
+analysis {
+	component : System_5
+	language : XUPPAAL
+	transition-coverage
+}
+
+verification {
+	file : "System_5"
+	property-file : ".System_5.gpd"
+	language : XUPPAAL
+	back-annotate-to-original : true
+	test-language : java
+	optimize : true
+	serialize-results : false
+}
+
+code {
+	component : _6
+	language : java
+}
+
+code {
+	component : System_6
+	language : java
+}
+
+analysis {
+	component : System_6
+	language : XUPPAAL
+	transition-coverage
+}
+
+verification {
+	file : "System_6"
+	property-file : ".System_6.gpd"
+	language : XUPPAAL
+	back-annotate-to-original : true
+	test-language : java
+	optimize : true
+	serialize-results : false
 }

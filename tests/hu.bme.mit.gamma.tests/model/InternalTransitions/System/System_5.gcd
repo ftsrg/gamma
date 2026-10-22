@@ -1,0 +1,14 @@
+package internal_transitions
+
+import "Interfaces/Interfaces.gcd"
+
+import "Statechart/_5.gcd"
+
+cascade System_5 [
+	port Execute : requires Execute
+] {
+	component c : _5
+	
+	bind Execute -> c.Execute
+	
+}
