@@ -195,10 +195,11 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Component component = StatechartModelDerivedFeatures.getContainingComponent(trigger);
 		if (StatechartModelDerivedFeatures.isAsynchronousStatechart(component)) {
+			AbstractTransition abstractTransition = ecoreUtil.getContainerOfType(trigger, AbstractTransition.class);
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.ERROR,
 					"Asynchronous statecharts do not support complex triggers",
-						new ReferenceInfo(trigger.eContainingFeature())));
+						new ReferenceInfo(StatechartModelPackage.Literals.ABSTRACT_TRANSITION__TRIGGER, abstractTransition)));
 		}
 		return validationResultMessages;
 	}

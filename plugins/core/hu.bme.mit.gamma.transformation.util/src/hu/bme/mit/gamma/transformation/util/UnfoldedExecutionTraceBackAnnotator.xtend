@@ -697,7 +697,6 @@ class UnfoldedExecutionTraceBackAnnotator {
 			}
 		}
 		
-		
 		metadata.clear
 	}
 	

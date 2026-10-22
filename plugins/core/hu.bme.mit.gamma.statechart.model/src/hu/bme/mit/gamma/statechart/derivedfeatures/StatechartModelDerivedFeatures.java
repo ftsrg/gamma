@@ -4494,7 +4494,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static String getName(ComponentInstanceReferenceExpression reference, String delimeter) {
-		return getComponentInstanceChain(reference).stream()
+		List<ComponentInstance> instanceChain = getComponentInstanceChain(reference);
+		return instanceChain.stream()
 			.map(it -> it.getName())
 			.reduce((a, b) -> a + delimeter + b)
 			.get();

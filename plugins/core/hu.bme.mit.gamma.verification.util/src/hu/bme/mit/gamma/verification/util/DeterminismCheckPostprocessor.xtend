@@ -115,7 +115,7 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 					.reject[trapStates.map[it.state].contains(it.targetState)]
 			if (transitions.size <= 2) {
 				// No need to compute anything - two transitions are needed for nondeterministic behavior
-				nondeterministicTransitions += transitions.map[instance.createTransitionReference(it)]
+				nondeterministicTransitions += transitions.map[instance.clone.createTransitionReference(it)]
 			}
 			else {
 				val instancePortFilter = [ Iterable<? extends RaiseEventAction> rea |
@@ -140,11 +140,11 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 					try {
 						if (transition.isEnabled(instancePersistentRaiseEvents,
 									instanceLastRaiseEvents, instanceEnabledTimeouts, instanceVariableValues)) {
-							enabledTransitions += instance.createTransitionReference(transition)
+							enabledTransitions += instance.clone.createTransitionReference(transition)
 						}
 					} catch (IllegalArgumentException e) {
 						// Unevaluable trigger or guard
-						unevaluableTransitions += instance.createTransitionReference(transition)
+						unevaluableTransitions += instance.clone.createTransitionReference(transition)
 					}
 				}
 				
@@ -367,17 +367,18 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 		// Note: works for records too, as there is a maximal record literal in the trace
 		val variableReferences = clone.getSelfAndAllContentsOfType(DirectReferenceExpression)
 		for (variableReference : variableReferences) {
-			val variable = variableReference.accessedDeclaration as VariableDeclaration
-			val variableValues = values
-					.filter[it.key == variable]
-					.map[it.value]
-			val value = (!variableValues.empty) ?
-					variableValues.onlyElement :
-					(variable.unwritten) ?
-						variable.initialValue :
-						throw new IllegalArgumentException("Not known value") // Due to model reduction or slicing
-			
-			value.replace(variableReference)
+			val declaration = variableReference.accessedDeclaration
+			if (declaration instanceof VariableDeclaration) {
+				val variableValues = values
+						.filter[it.key == declaration]
+						.map[it.value]
+				val value = (!variableValues.empty) ? variableValues.onlyElement :
+						(declaration.unwritten) ? declaration.initialValue :
+							throw new IllegalArgumentException("Not known value") // Due to model reduction or slicing
+				
+				value.replace(variableReference)
+			}
+			// TODO lambdas
 		}
 		
 		val eventReferences = clone.getSelfAndAllContentsOfType(EventParameterReferenceExpression)

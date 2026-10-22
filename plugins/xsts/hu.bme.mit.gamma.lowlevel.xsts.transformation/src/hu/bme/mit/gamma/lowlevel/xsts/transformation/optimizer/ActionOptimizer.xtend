@@ -628,7 +628,7 @@ class ActionOptimizer {
 				val xStsFirstAssignment = xStsFirstAssignments.head
 				if (xStsFirstAssignment.getAllContainersUntil(xStsFirstAction).forall[it.last]) {
 					xStsFirstAction = xStsFirstAssignment
-					logger.info("Potentially optimizable assignment in composite action found: " + xStsFirstAssignment.lhs.declaration.name)
+					logger.finest("Potentially optimizable assignment in composite action found: " + xStsFirstAssignment.lhs.declaration.name)
 				}
 			}
 			//
