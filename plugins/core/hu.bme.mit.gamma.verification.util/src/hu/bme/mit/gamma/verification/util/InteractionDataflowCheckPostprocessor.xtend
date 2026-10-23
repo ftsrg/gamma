@@ -33,8 +33,7 @@ class InteractionDataflowCheckPostprocessor extends AbstractDataflowCheckPostpro
 		val _package = statechart.containingPackage // Unfolded
 		val statecharts = _package.allStatechartComponents
 		val actions = statecharts.map[allEffects].flatten
-		val raiseEventActions = actions.map[it.getSelfAndAllContentsOfType(RaiseEventAction)]
-				.flatten
+		val raiseEventActions = actions.flatMap[it.getSelfAndAllContentsOfType(RaiseEventAction)]
 				.filter[/* sender vs. receiver ports */ it.event.helperEquals(event) && it.arguments.lastOrNull.helperEquals(id) /* Global id */]
 				.toSet
 		

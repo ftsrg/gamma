@@ -26,8 +26,8 @@ class DataflowCheckPostprocessor extends AbstractDataflowCheckPostprocessor {
 	
 	protected override filterDefAction(StatechartDefinition statechart, Expression useRhs, Expression id) {
 		val actions = statechart.allEffects
-		val assignmentStatements = actions.map[it.getSelfAndAllContentsOfType(AssignmentStatement)]
-				.flatten.toSet
+		val assignmentStatements = actions.flatMap[it.getSelfAndAllContentsOfType(AssignmentStatement)]
+				.toSet
 		return assignmentStatements
 				.filter[it.lhs.helperEquals(useRhs) && it.rhs.helperEquals(id)]
 				.head

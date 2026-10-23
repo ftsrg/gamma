@@ -61,7 +61,7 @@ class TransitionExecutabilityCheckPostprocessor extends VerificationPostprocesso
 			throw new IllegalArgumentException("Not found pattern: " + string)
 		}
 		
-		val instances = trace.steps.map[it.asserts].flatten
+		val instances = trace.steps.flatMap[it.asserts]
 				.filter(ComponentInstanceElementReferenceExpression)
 				.map[it.instance]
 		

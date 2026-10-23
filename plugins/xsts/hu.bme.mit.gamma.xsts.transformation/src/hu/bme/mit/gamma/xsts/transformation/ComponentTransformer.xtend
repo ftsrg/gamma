@@ -1159,8 +1159,8 @@ class ComponentTransformer {
 			val inEventAction = xSts.inEventTransition
 			// Deleting synchronous event assignments
 			val xStsSynchronousInEventVariables = xSts.variableGroups
-				.filter[it.annotation instanceof InEventGroup].map[it.variables]
-				.flatten.toSet // There are more than one
+				.filter[it.annotation instanceof InEventGroup].flatMap[it.variables]
+				.toSet // There are more than one
 			for (xStsAssignment : inEventAction.getAllContentsOfType(AbstractAssignmentAction)) {
 				val xStsReference = xStsAssignment.lhs
 				val xStsDeclaration = xStsReference.declaration
@@ -1179,7 +1179,7 @@ class ComponentTransformer {
 			val min = messageQueue.minEventId
 			val max = messageQueue.maxEventId
 			val allXStsInputEventVariables = storedEvents
-					.map[it.value.getInputEventVariables(it.key)].flatten.toList
+					.flatMap[it.value.getInputEventVariables(it.key)].toList
 			
 			val randomActions = createChoiceActionForRandomValues(
 					messageQueue.name + "_" + messageQueue.hashCode.abs, min, max + 1 + 1 /* exclusive '1' + else branch '1' */)
@@ -1568,7 +1568,7 @@ class ComponentTransformer {
 			}
 			// Customizing region type declaration name
 			for (regionType : xSts.variableGroups.filter[it.annotation instanceof RegionGroup]
-					.map[it.variables].flatten
+					.flatMap[it.variables]
 					.map[it.type].filter(TypeReference)
 					.map[it.reference]) {
 				regionType.name = regionType.customizeRegionTypeName(type)

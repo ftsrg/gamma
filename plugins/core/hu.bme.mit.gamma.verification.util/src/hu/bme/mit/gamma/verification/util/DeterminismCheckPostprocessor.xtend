@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceTransitionReferenc
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
+import hu.bme.mit.gamma.statechart.statechart.AbstractTransition
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference
 import hu.bme.mit.gamma.statechart.statechart.OnCycleTrigger
@@ -26,7 +27,6 @@ import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
-import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
@@ -111,8 +111,8 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 			val instance = nondeterministicState.instance
 			val state = nondeterministicState.state
 			
-			val transitions = state.outgoingTransitions
-					.reject[trapStates.map[it.state].contains(it.targetState)]
+			val transitions = state.outgoingAndInternalTransitions
+					.reject[trapStates.map[it.state].contains(it.targetNode)]
 			if (transitions.size <= 2) {
 				// No need to compute anything - two transitions are needed for nondeterministic behavior
 				nondeterministicTransitions += transitions.map[instance.clone.createTransitionReference(it)]
@@ -227,7 +227,7 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 					if (!setTimeouts.containsKey(instanceNameTimeout) ||
 								setTimeouts.get(instanceNameTimeout) == state) {
 						if (i == 0 ||
-								state.ancestorsAndSelf.map[it.loopTransitions].flatten.empty) {
+								state.ancestorsAndSelf.flatMap[it.loopTransitions.reject[it.isTriggeredBy(timeout)]].empty) {
 							if (time.isLessThanOrEqualTo(elapsedTimeSpecification)) {
 								enabledTimeouts += instanceTimeout
 							}
@@ -239,7 +239,7 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 				
 				// No support for set timeout actions on transitions and in state exit actions
 				val undhandledSetTimeoutActions = newHashSet
-				undhandledSetTimeoutActions += state.incomingTransitions.map[it.effects].flatten.filter(SetTimeoutAction)
+				undhandledSetTimeoutActions += state.incomingTransitions.flatMap[it.effects].filter(SetTimeoutAction)
 				undhandledSetTimeoutActions += state.exitActions.filter(SetTimeoutAction)
 				
 				val undhandledSetTimeouts = undhandledSetTimeoutActions.map[it.timeoutDeclaration]
@@ -255,7 +255,7 @@ class DeterminismCheckPostprocessor extends VerificationPostprocessor {
 	
 	//
 	
-	protected def isEnabled(Transition transition,
+	protected def isEnabled(AbstractTransition transition,
 			Iterable<? extends RaiseEventAction> persistentActs,
 			Iterable<? extends RaiseEventAction> acts,
 			Iterable<? extends TimeoutDeclaration> timeouts,

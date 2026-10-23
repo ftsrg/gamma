@@ -89,7 +89,7 @@ abstract class AbstractDataflowCheckPostprocessor extends VerificationPostproces
 		val statechart = instance.lastInstance.getStatechart
 		var allEffects = statechart.allEffects
 		
-		val assignmentStatements = allEffects.map[it.getSelfAndAllContentsOfType(AssignmentStatement)].flatten.toSet
+		val assignmentStatements = allEffects.flatMap[it.getSelfAndAllContentsOfType(AssignmentStatement)].toSet
 		val executedUseActions = assignmentStatements.filter[it.lhs.declaration.helperEquals(useVariable)]
 		if (executedUseActions.empty) {
 			return null // TODO procedures

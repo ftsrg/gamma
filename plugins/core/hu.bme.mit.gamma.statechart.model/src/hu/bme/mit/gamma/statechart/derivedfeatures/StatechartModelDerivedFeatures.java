@@ -36,6 +36,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures;
 import hu.bme.mit.gamma.action.model.AbstractAssignmentStatement;
 import hu.bme.mit.gamma.action.model.Action;
+import hu.bme.mit.gamma.expression.model.AbstractDirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.Declaration;
@@ -62,7 +63,12 @@ import hu.bme.mit.gamma.statechart.composite.BroadcastChannel;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceTransitionReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.ControlFunction;
 import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
@@ -2184,8 +2190,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				.anyMatch(it -> isStoredInMessageQueue(clock, it));
 	}
 	
-	public static boolean isEnvironmental(MessageQueue queue,
-			Collection<? extends Port> systemPorts) {
+	public static boolean isEnvironmental(MessageQueue queue, Collection<? extends Port> systemPorts) {
 		if (!storesOnlyNotInternalEvents(queue)) {
 			return false;
 		}
@@ -2251,7 +2256,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return events;
 	}
 
-	private static List<Entry<Port, Event>> getTriggeringInputEvents(Transition transition) {
+	private static List<Entry<Port, Event>> getTriggeringInputEvents(AbstractTransition transition) {
 		List<Entry<Port, Event>> events = new ArrayList<Entry<Port, Event>>();
 		
 		Trigger trigger = transition.getTrigger();
@@ -2267,9 +2272,21 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return events;
 	}
 	
-	public static boolean isTriggeredBy(Transition transition, Entry<Port, Event> portEvent) {
+	public static boolean isTriggeredBy(AbstractTransition transition, Entry<Port, Event> portEvent) {
 		List<Entry<Port, Event>> triggeringInputEvents = getTriggeringInputEvents(transition);
 		return triggeringInputEvents.contains(portEvent);
+	}
+	
+	public static boolean isTriggeredBy(AbstractTransition transition, TimeoutDeclaration timeoutDeclaration) {
+		Trigger trigger = transition.getTrigger();
+		if (trigger instanceof EventTrigger eventTrigger) {
+			OccurrenceReferenceExpression eventReference = eventTrigger.getEventReference();
+			if (eventReference instanceof TimeoutEventReference timeoutEventReference) {
+				TimeoutDeclaration timeout = timeoutEventReference.getTimeout();
+				return timeout == timeoutDeclaration;
+			}
+		}
+		return false;
 	}
 	
 	public static List<Entry<Port, Event>> getPortInputEvents(Component component) {
@@ -4487,6 +4504,17 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			children.add(0, instance); // See above: mutable list is returned
 			return children;
 		}
+	}
+	
+	public static EObject getReferencedElement(ComponentInstanceElementReferenceExpression reference) {
+		return switch (reference) {
+			case ComponentInstanceStateReferenceExpression r -> r.getState();
+			case ComponentInstanceTransitionReferenceExpression r -> r.getTransition();
+			case ComponentInstancePortReferenceExpression r -> r.getPort();
+			case ComponentInstanceEventReferenceExpression r -> r.getEvent();
+			case AbstractDirectReferenceExpression r -> r.getDeclaration();
+			default -> throw new IllegalArgumentException("Unkown: " + reference);
+		};
 	}
 	
 	public static String getName(ComponentInstanceReferenceExpression reference) {

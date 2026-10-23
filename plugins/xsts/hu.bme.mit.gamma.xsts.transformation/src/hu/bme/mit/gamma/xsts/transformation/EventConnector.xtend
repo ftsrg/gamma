@@ -126,7 +126,7 @@ class EventConnector {
 					optimizableSimplePorts += providedSimplePort
 				}
 				optimizableSimplePorts += component.derivedComponents
-					.map[it.unusedPorts].flatten.map[it.allBoundSimplePorts].flatten
+					.flatMap[it.unusedPorts].flatMap[it.allBoundSimplePorts]
 			}
 		}
 		// Out-event optimization - maybe this should be moved to the SystemReducer?

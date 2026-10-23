@@ -642,7 +642,7 @@ class LowlevelToXstsTransformer {
 		// Parameters must not be given initial value
 		xStsVariables -= xSts.componentParameterGroup.variables
 		// The region variables must be set to __Inactive__
-		xStsVariables += xSts.regionGroups.map[it.variables].flatten
+		xStsVariables += xSts.regionGroups.flatMap[it.variables]
 		// Initial value to the events and parameters, their order is not interesting
 		xStsVariables += xSts.inEventVariableGroup.variables + xSts.outEventVariableGroup.variables +
 				xSts.inEventParameterVariableGroup.variables + xSts.outEventParameterVariableGroup.variables

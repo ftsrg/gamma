@@ -11,16 +11,16 @@
 package hu.bme.mit.gamma.verification.util
 
 import hu.bme.mit.gamma.expression.model.OpaqueExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceTransitionReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Component
-import hu.bme.mit.gamma.statechart.statechart.Transition
+import hu.bme.mit.gamma.statechart.statechart.AbstractTransition
 import hu.bme.mit.gamma.statechart.util.ElementSerializer
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.transformation.util.UnfoldedExecutionTraceBackAnnotator
 import java.util.Collection
 import java.util.List
-import java.util.Map
-import java.util.Map.Entry
 import java.util.regex.Pattern
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend.lib.annotations.Data
@@ -45,8 +45,8 @@ class InteractionCheckPostprocessor extends VerificationPostprocessor {
 		
 		val steps = trace.allSteps
 		for (step : steps) {
-			var Entry<ComponentInstanceReferenceExpression, ? extends EObject> sender = null
-			var Entry<ComponentInstanceReferenceExpression, Transition> receiver = null
+			var ComponentInstanceElementReferenceExpression sender = null
+			var ComponentInstanceTransitionReferenceExpression receiver = null
 			
 			val asserts = step.asserts
 			val metadata = asserts.filter(OpaqueExpression)
@@ -74,7 +74,7 @@ class InteractionCheckPostprocessor extends VerificationPostprocessor {
 			
 			if (sender !== null && receiver !== null) {
 				val interaction = new Interaction(
-					sender.key, sender.value, receiver.key, receiver.value)
+					sender.instance, sender.referencedElement, receiver.instance, receiver.transition)
 				interactions += interaction
 			}
 		}
@@ -98,7 +98,7 @@ class InteractionCheckPostprocessor extends VerificationPostprocessor {
 			val statechart = instance.lastInstance.getStatechart
 			val state = statechart.allStates.findFirst[it.serialize == stateName]
 					
-			return Map.entry(instance, state)
+			return instance.createStateReference(state)
 		}
 		
 		return null
@@ -119,7 +119,7 @@ class InteractionCheckPostprocessor extends VerificationPostprocessor {
 			val transition = statechart.transitions.findFirst[it.serialize == transitionString]
 			
 			if (instance !== null && transition !== null) {
-				return Map.entry(instance, transition)
+				return instance.clone.createTransitionReference(transition)
 			}
 		}
 		
@@ -146,7 +146,7 @@ class InteractionCheckPostprocessor extends VerificationPostprocessor {
 		ComponentInstanceReferenceExpression senderInstance
 		EObject sender
 		ComponentInstanceReferenceExpression receiverInstance
-		Transition receiver
+		AbstractTransition receiver
 		
 		override toString() {
 			return senderInstance.name + "." + sender.serialize + " -i- " + receiverInstance.name + "." + receiver.serialize

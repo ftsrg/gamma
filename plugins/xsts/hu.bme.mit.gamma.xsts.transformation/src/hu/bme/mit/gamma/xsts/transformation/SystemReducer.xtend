@@ -555,7 +555,7 @@ class SystemReducer {
 			Collection<? extends EnumerationLiteralDefinition> keepableLiterals) {
 		val xStsEnums = xSts.typeDeclarations.map[it.typeDefinition]
 				.filter(EnumerationTypeDefinition).toList
-		val xStsLiterals = xStsEnums.map[it.literals].flatten.toList
+		val xStsLiterals = xStsEnums.flatMap[it.literals].toList
 		
 		val xStsLiteralReferences = xSts.getAllContentsOfType(EnumerationLiteralExpression)
 		
@@ -572,11 +572,11 @@ class SystemReducer {
 		// Could make progress here if we knew what literals are referenced in a 'positive' or 'negative' way
 		
 		val xStsKeepableLiterals = keepableLiterals // customizeName? - remains the same
-									.map[val name = it.name
+									.flatMap[val name = it.name
 										val typeDeclarationName = it.getContainerOfType(TypeDeclaration).name
 										xStsLiterals
 											.filter[it.getContainerOfType(TypeDeclaration).name == typeDeclarationName &&
-													it.name === name]].flatten.toSet
+													it.name === name]].toSet
 		
 		val xStsDeletableLiterals = newArrayList
 		xStsDeletableLiterals += xStsLiterals

@@ -83,8 +83,7 @@ abstract class VerificationPostprocessor {
 				#{ allComponents.head } : allComponents
 		
 		val instanceReferences = components
-				.map[it.allSimpleInstanceReferences]
-				.flatten
+				.flatMap[it.allSimpleInstanceReferences]
 				.toList
 		
 		return instanceReferences
