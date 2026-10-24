@@ -45,6 +45,7 @@ import hu.bme.mit.gamma.statechart.composite.BroadcastChannel;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceElementReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceEventReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortVariableReferenceExpression;
@@ -1254,6 +1255,20 @@ public class StatechartUtil extends ActionUtil {
 	}
 	
 	// Atomic component instance reference expressions
+	
+	public ComponentInstanceElementReferenceExpression createElementReference(
+			ComponentInstanceReferenceExpression instance, EObject element) {
+		if (element == null) {
+			throw new IllegalArgumentException("Element is null");
+		}
+		
+		return switch (element) {
+			case State state -> createStateReference(instance, state);
+			case AbstractTransition transition -> createTransitionReference(instance, transition);
+			case VariableDeclaration variable -> createVariableReference(instance, variable);
+			default -> throw new IllegalArgumentException("Unknown element: " + element);
+		};
+	}
 	
 	public ComponentInstanceStateReferenceExpression createStateReference(
 			ComponentInstanceReferenceExpression instance, State state) {
