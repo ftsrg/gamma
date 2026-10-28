@@ -1700,11 +1700,21 @@ public class ExpressionUtil {
 		return inequalityExpression;
 	}
 	
+	public LessExpression createLessExpression(Declaration lhs, Expression rhs) {
+		DirectReferenceExpression referenceExpression = createReferenceExpression(lhs);
+		return createLessExpression(referenceExpression, rhs);
+	}
+	
 	public LessExpression createLessExpression(Expression lhs, Expression rhs) {
 		LessExpression lessExpression = factory.createLessExpression();
 		lessExpression.setLeftOperand(lhs);
 		lessExpression.setRightOperand(rhs);
 		return lessExpression;
+	}
+	
+	public LessEqualExpression createLessEqualExpression(Declaration lhs, Expression rhs) {
+		DirectReferenceExpression referenceExpression = createReferenceExpression(lhs);
+		return createLessEqualExpression(referenceExpression, rhs);
 	}
 	
 	public LessEqualExpression createLessEqualExpression(Expression lhs, Expression rhs) {
@@ -1714,11 +1724,21 @@ public class ExpressionUtil {
 		return lessEqualExpression;
 	}
 	
+	public GreaterExpression createGreaterExpression(Declaration lhs, Expression rhs) {
+		DirectReferenceExpression referenceExpression = createReferenceExpression(lhs);
+		return createGreaterExpression(referenceExpression, rhs);
+	}
+	
 	public GreaterExpression createGreaterExpression(Expression lhs, Expression rhs) {
 		GreaterExpression greaterExpression = factory.createGreaterExpression();
 		greaterExpression.setLeftOperand(lhs);
 		greaterExpression.setRightOperand(rhs);
 		return greaterExpression;
+	}
+	
+	public GreaterEqualExpression createGreaterEqualExpression(Declaration lhs, Expression rhs) {
+		DirectReferenceExpression referenceExpression = createReferenceExpression(lhs);
+		return createGreaterEqualExpression(referenceExpression, rhs);
 	}
 	
 	public GreaterEqualExpression createGreaterEqualExpression(Expression lhs, Expression rhs) {

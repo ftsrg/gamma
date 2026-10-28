@@ -18,6 +18,8 @@ import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration
+import hu.bme.mit.gamma.expression.model.SelectExpression
+import hu.bme.mit.gamma.expression.model.SubrangeTypeDefinition
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.RemovableVariableRemover
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.XstsOptimizer
@@ -27,6 +29,7 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FirstForkStates
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FunctionDeclarations
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.GlobalVariables
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InEvents
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InternalTransitions
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.LastJoinStates
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.LastMergeStates
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.OutEvents
@@ -76,7 +79,6 @@ import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionMo
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InternalTransitions
 
 class LowlevelToXstsTransformer {
 	extension BatchTransformation transformation
@@ -95,7 +97,7 @@ class LowlevelToXstsTransformer {
 	protected final extension TerminalTransitionToXTransitionTransformer terminalTransitionToXTransitionTransformer
 	protected final extension AbstractTransitionMerger transitionMerger
 	
-	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension UnorderedActionTransformer unorderedActionTransformer = UnorderedActionTransformer.INSTANCE
 	protected final extension XstsOptimizer optimizer = XstsOptimizer.INSTANCE
@@ -233,6 +235,7 @@ class LowlevelToXstsTransformer {
 		handleStateInvariants
 		handleStatechartInvariants
 		handleEnvironmentalInvariants
+		handleSelectExpressions
 		
 		handleTransientAndResettableVariableAnnotations
 		handleRunUponExternalEventAnnotation
@@ -874,7 +877,7 @@ class LowlevelToXstsTransformer {
 		if (!lowlevelStatechartInvariants.empty) {
 			val xStsInvariants = lowlevelStatechartInvariants.map[it.transformExpression]
 			val xStsStatechartInvariant = xStsInvariants.wrapIntoAndExpression
-
+			
 			val xStsAssumeStatechartInvariant = xStsStatechartInvariant.createAssumeAction
 			xStsAssumeStatechartInvariant.addInternalInvariantAnnotation
 			
@@ -892,12 +895,35 @@ class LowlevelToXstsTransformer {
 		if (!lowlevelEnvironmentalInvariants.empty) {
 			val xStsInvariants = lowlevelEnvironmentalInvariants.map[it.transformExpression]
 			val xStsEnvironmentalInvariant = xStsInvariants.wrapIntoAndExpression
-
+			
 			val xStsAssumeEnvironmentalInvariant = xStsEnvironmentalInvariant.createAssumeAction
 			xStsAssumeEnvironmentalInvariant.addEnvironmentalInvariantAnnotation
 			
 			val xStsMergedAction = xSts.mergedAction
 			xStsAssumeEnvironmentalInvariant.prependToAction(xStsMergedAction)
+		}
+	}
+	
+	protected def handleSelectExpressions() {
+		val mergedAction = xSts.mergedAction
+		for (selectExpression : mergedAction.getAllContentsOfType(SelectExpression)) {
+			val type = selectExpression.type
+			val typeDefinition = type.typeDefinition
+			val name = "select_" + selectExpression.uniqueIndex
+			
+			val localDeclarationAction = type.createVariableDeclarationAction(name)
+			val localDeclaration = localDeclarationAction.variableDeclaration
+			val havoc = localDeclaration.createHavocAction
+			val assume = (typeDefinition instanceof SubrangeTypeDefinition) ?
+					(localDeclaration.createGreaterEqualExpression(typeDefinition.lowerBound.clone)
+							.wrapIntoAndExpression(localDeclaration.createGreaterEqualExpression(typeDefinition.upperBound.clone)))
+								.createAssumeAction :
+					createEmptyAction
+			#[assume, havoc, localDeclarationAction]
+					.prependToAction(mergedAction)
+					
+			localDeclaration.createReferenceExpression
+					.replace(selectExpression)
 		}
 	}
 	

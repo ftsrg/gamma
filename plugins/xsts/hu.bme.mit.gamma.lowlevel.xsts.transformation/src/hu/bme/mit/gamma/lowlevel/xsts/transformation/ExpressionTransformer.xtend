@@ -25,6 +25,7 @@ import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.NullaryExpression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
+import hu.bme.mit.gamma.expression.model.SelectExpression
 import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
 import hu.bme.mit.gamma.expression.model.TupleTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
@@ -70,6 +71,12 @@ class ExpressionTransformer {
 			it.leftOperand = expression.leftOperand.transformExpression
 			it.rightInclusive = expression.rightInclusive
 			it.rightOperand = expression.rightOperand.transformExpression
+		]
+	}
+	
+	def dispatch Expression transformExpression(SelectExpression expression) {
+		return expression.clone => [
+			it.type = it.type.transformType
 		]
 	}
 

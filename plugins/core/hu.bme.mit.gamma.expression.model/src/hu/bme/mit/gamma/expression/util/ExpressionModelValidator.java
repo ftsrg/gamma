@@ -34,7 +34,6 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.DivExpression;
 import hu.bme.mit.gamma.expression.model.DivideExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
-import hu.bme.mit.gamma.expression.model.EnumerableTypeDefinition;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.EquivalenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
@@ -405,14 +404,14 @@ public class ExpressionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkSelectExpression(SelectExpression expression){
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		// Check if the referred object
-		TypeDefinition type = ExpressionModelDerivedFeatures.getTypeDefinition(expression.getType());
-		if (type instanceof EnumerableTypeDefinition) {
-			return validationResultMessages; // All good
-		}
-		validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-			"The specified type is not selectable, this type is: " + typeDeterminator.print(type), 
-				new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND)));
+//		// Check if the referred object
+//		TypeDefinition type = ExpressionModelDerivedFeatures.getTypeDefinition(expression.getType());
+//		if (type instanceof EnumerableTypeDefinition) {
+//			return validationResultMessages; // All good
+//		}
+//		validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+//			"The specified type is not selectable, this type is: " + typeDeterminator.print(type), 
+//				new ReferenceInfo(ExpressionModelPackage.Literals.SELECT_EXPRESSION__TYPE)));
 		return validationResultMessages;
 	}
 	

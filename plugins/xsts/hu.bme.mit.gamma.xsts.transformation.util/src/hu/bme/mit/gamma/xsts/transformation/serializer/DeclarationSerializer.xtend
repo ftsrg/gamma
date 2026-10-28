@@ -115,7 +115,7 @@ class DeclarationSerializer {
 	
 	def dispatch String serializeType(RationalTypeDefinition type) '''rational'''
 	
-	def dispatch String serializeType(SubrangeTypeDefinition type) '''«type.lowerBound.serialize» : «type.upperBound.serialize»'''
+	def dispatch String serializeType(SubrangeTypeDefinition type) '''integer''' // TODO '''«type.lowerBound.serialize» : «type.upperBound.serialize»'''
 	
 	def dispatch String serializeType(EnumerationTypeDefinition type) '''{ «FOR literal : type.literals SEPARATOR ', '»«literal.serializeLiteral»«ENDFOR» }'''
 

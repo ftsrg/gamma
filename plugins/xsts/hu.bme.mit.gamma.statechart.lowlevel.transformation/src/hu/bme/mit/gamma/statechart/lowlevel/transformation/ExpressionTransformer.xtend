@@ -31,6 +31,7 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
+import hu.bme.mit.gamma.expression.model.SelectExpression
 import hu.bme.mit.gamma.expression.model.UnaryExpression
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.util.ArgumentInliner
@@ -116,6 +117,18 @@ class ExpressionTransformer {
 	
 	def dispatch List<Expression> transformExpression(NullaryExpression expression) {
 		return #[ expression.clone ]
+	}
+
+	def dispatch List<Expression> transformExpression(SelectExpression expression) {
+		val expressions = <Expression>newArrayList
+		val type = expression.type
+		val nativeTypes = type.nativeTypes
+		
+		for (nativeType : nativeTypes.map[it.transformType]) {
+			expressions += createSelectExpression => [ it.type = nativeType ]
+		}
+		
+		return expressions
 	}
 	
 	def dispatch List<Expression> transformExpression(DefaultExpression expression) {
