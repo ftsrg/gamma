@@ -1,0 +1,29 @@
+package select_expressions
+
+import "Interfaces/Interfaces.gcd"
+
+@TransitionPriority = order-based
+@RegionSchedule = bottom-up
+statechart _1 [
+	port Execute : requires Execute
+] {
+	var id : integer
+	var count : integer
+	
+	region main {
+		initial IMain
+		state A {
+			region a {
+				initial IA
+				state B
+				state C
+			}
+		}
+	}
+	
+	transition from IMain to A
+	transition from IA to B
+	transition from B to B when Execute.^execute [count < 3] / count := select->integer;
+	transition from B to C when Execute.^execute [count >= 3] / id := 2;
+	
+}
