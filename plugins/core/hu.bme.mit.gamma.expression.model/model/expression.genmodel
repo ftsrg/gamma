@@ -166,7 +166,9 @@
     </genClasses>
     <genClasses ecoreClass="expression.ecore#//NonAssignableAccessExpression"/>
     <genClasses ecoreClass="expression.ecore#//FunctionAccessExpression"/>
-    <genClasses ecoreClass="expression.ecore#//SelectExpression"/>
+    <genClasses ecoreClass="expression.ecore#//SelectExpression">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//SelectExpression/type"/>
+    </genClasses>
     <genClasses ecoreClass="expression.ecore#//IfThenElseExpression">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//IfThenElseExpression/condition"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//IfThenElseExpression/then"/>

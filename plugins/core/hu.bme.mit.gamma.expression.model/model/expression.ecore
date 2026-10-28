@@ -209,7 +209,10 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="NonAssignableAccessExpression" eSuperTypes="#//AccessExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="FunctionAccessExpression" eSuperTypes="#//NonAssignableAccessExpression #//ArgumentedElement"/>
-  <eClassifiers xsi:type="ecore:EClass" name="SelectExpression" eSuperTypes="#//NonAssignableAccessExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="SelectExpression" eSuperTypes="#//NullaryExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="type" lowerBound="1" eType="#//Type"
+        containment="true"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="IfThenElseExpression" eSuperTypes="#//Expression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="condition" lowerBound="1"
         eType="#//Expression" containment="true"/>

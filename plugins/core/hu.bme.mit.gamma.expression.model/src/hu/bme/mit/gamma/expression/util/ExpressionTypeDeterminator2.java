@@ -203,8 +203,7 @@ public class ExpressionTypeDeterminator2 {
 			return getType(fieldReference);
 		}
 		if (expression instanceof SelectExpression selectExpression) {
-			Expression operand = selectExpression.getOperand();
-			Type operandType = getType(operand);
+			Type operandType = selectExpression.getType();
 			TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(operandType);
 			if (typeDefinition instanceof ArrayTypeDefinition arrayTypeDefinition) {
 				Type elementType = arrayTypeDefinition.getElementType();

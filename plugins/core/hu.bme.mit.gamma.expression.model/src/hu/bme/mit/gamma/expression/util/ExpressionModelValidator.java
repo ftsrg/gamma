@@ -406,13 +406,12 @@ public class ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkSelectExpression(SelectExpression expression){
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		// Check if the referred object
-		Expression operand = expression.getOperand();
-		TypeDefinition type = typeDeterminator.getTypeDefinition(operand);
+		TypeDefinition type = ExpressionModelDerivedFeatures.getTypeDefinition(expression.getType());
 		if (type instanceof EnumerableTypeDefinition) {
 			return validationResultMessages; // All good
 		}
 		validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-			"The specified object is not selectable, this type is: " + typeDeterminator.print(operand), 
+			"The specified type is not selectable, this type is: " + typeDeterminator.print(type), 
 				new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND)));
 		return validationResultMessages;
 	}
