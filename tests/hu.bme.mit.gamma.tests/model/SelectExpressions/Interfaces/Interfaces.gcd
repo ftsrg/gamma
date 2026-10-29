@@ -4,7 +4,7 @@ interface Execute {
 	out event ^execute
 }
 
-type Letters : enum {
+type Enumeration : enum {
 	A_, B_
 }
 
@@ -15,6 +15,6 @@ type Record : record {
 }
 
 type CompositeRecord : record {
-	enumeration : Letters,
+	enumeration : Enumeration,
 	rec0rd : Record
 }

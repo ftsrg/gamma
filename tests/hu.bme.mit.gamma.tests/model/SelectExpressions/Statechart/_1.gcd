@@ -11,8 +11,13 @@ statechart _1 [
 	var selectInteger : integer
 //	var selectDecimal : decimal
 	var selectIntegerArray : [2]integer
+	
 	var selectSubrange : integer
-	var selectEnum : Letters
+	var selectSubrange_22 : integer
+	var selectSubrangeInteger_Inf : integer
+	var selectSubrangeIntegerInf : integer
+	
+	var selectEnum : Enumeration
 	var selectRecord : Record
 	var selectCompositeRecord : CompositeRecord
 	
@@ -34,8 +39,13 @@ statechart _1 [
 		selectInteger := select->integer;
 //		selectDecimal := select->decimal;
 		selectIntegerArray := select->[2]integer;
-		selectSubrange := select->#[2 to 4];
-		selectEnum := select->Letters;
+		
+		selectSubrange := select->#[-infinity + 1 to infinity - 1);
+		selectSubrange_22 := select->#[1 to 100);
+		selectSubrangeInteger_Inf := select->#[-infinity to -1);
+		selectSubrangeIntegerInf := select->#[1 to infinity);
+			
+		selectEnum := select->Enumeration;
 		selectRecord := select->Record;
 		selectCompositeRecord := select->CompositeRecord;
 	
