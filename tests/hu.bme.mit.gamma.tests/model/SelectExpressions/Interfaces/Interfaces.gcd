@@ -3,3 +3,18 @@ package select_expressions
 interface Execute {
 	out event ^execute
 }
+
+type Letters : enum {
+	A_, B_
+}
+
+type Record : record {
+	int : integer,
+	bool : boolean
+//	double : decimal
+}
+
+type CompositeRecord : record {
+	enumeration : Letters,
+	rec0rd : Record
+}

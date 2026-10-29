@@ -7,23 +7,36 @@ import "Interfaces/Interfaces.gcd"
 statechart _1 [
 	port Execute : requires Execute
 ] {
-	var id : integer
-	var count : integer
+	var selectBoolean : boolean
+	var selectInteger : integer
+//	var selectDecimal : decimal
+	var selectIntegerArray : [2]integer
+	var selectSubrange : integer
+	var selectEnum : Letters
+	var selectRecord : Record
+	var selectCompositeRecord : CompositeRecord
 	
 	region main {
 		initial IMain
-		state A {
+		state _0 {
 			region a {
 				initial IA
-				state B
-				state C
+				state _1
+				state _2
 			}
 		}
 	}
 	
-	transition from IMain to A
-	transition from IA to B
-	transition from B to B when Execute.^execute [count < 3] / count := select->integer;
-	transition from B to C when Execute.^execute [count >= 3] / id := 2;
+	transition from IMain to _0
+	transition from IA to _1
+	transition from _1 to _2 when Execute.^execute /
+		selectBoolean := select->boolean;
+		selectInteger := select->integer;
+//		selectDecimal := select->decimal;
+		selectIntegerArray := select->[2]integer;
+		selectSubrange := select->#[2 to 4];
+		selectEnum := select->Letters;
+		selectRecord := select->Record;
+		selectCompositeRecord := select->CompositeRecord;
 	
 }

@@ -1,27 +1,26 @@
 import "Statechart/_1.gcd"
 import "System/System_1.gcd"
 
-code {
-	component : _1
-	language : java
-}
-
-code {
-	component : System_1
-	language : java
-}
-
+//code {
+//	component : _1
+//	language : java
+//}
+//
+//code {
+//	component : System_1
+//	language : java
+//}
 
 analysis {
 	component : System_1
-	language : XUPPAAL
+	language : Theta
 	transition-coverage
 }
 
 verification {
 	file : "System_1"
 	property-file : ".System_1.gpd"
-	language : XUPPAAL
+	language : Theta
 	back-annotate-to-original : true
 	test-language : java
 	optimize : true
