@@ -529,6 +529,16 @@ class GammaEcoreUtil {
 		return contents
 	}
 	
+	def <T extends EObject> List<T> getSelfAndAllContentsOfTypes(EObject object, Collection<? extends Class<? extends T>> types) {
+		val contents = newArrayList
+		
+		for (type : types) {
+			contents += object.getSelfAndAllContentsOfType(type)
+		}
+		
+		return contents
+	}
+	
 	def <T extends EObject, E extends EObject> List<E> getAllContentsOfTypeBetweenTypes(EObject object,
 			Class<T> typeRootAndLeaf, Class<E> typeElement) {
 		val root = object.getSelfOrContainerOfType(typeRootAndLeaf)

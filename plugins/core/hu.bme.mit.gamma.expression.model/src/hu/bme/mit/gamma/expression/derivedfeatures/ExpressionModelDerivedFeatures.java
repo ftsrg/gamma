@@ -57,6 +57,7 @@ import hu.bme.mit.gamma.expression.model.InternalParameterDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.InternalVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration;
 import hu.bme.mit.gamma.expression.model.NotExpression;
+import hu.bme.mit.gamma.expression.model.NullaryExpression;
 import hu.bme.mit.gamma.expression.model.OpaqueExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ParameterDeclarationAnnotation;
@@ -70,6 +71,8 @@ import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ResettableVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.ScheduledClockVariableDeclarationAnnotation;
+import hu.bme.mit.gamma.expression.model.SelectExpression;
+import hu.bme.mit.gamma.expression.model.SubrangeTypeDefinition;
 import hu.bme.mit.gamma.expression.model.TransientVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.TupleReferenceExpression;
 import hu.bme.mit.gamma.expression.model.TupleTypeDefinition;
@@ -334,7 +337,9 @@ public class ExpressionModelDerivedFeatures {
 	
 	public static boolean isNative(Type type) {
 		TypeDefinition typeDefinition = getTypeDefinition(type);
-		return isPrimitive(typeDefinition) || typeDefinition instanceof EnumerationTypeDefinition;
+		return isPrimitive(typeDefinition) ||
+				typeDefinition instanceof EnumerationTypeDefinition ||
+				typeDefinition instanceof SubrangeTypeDefinition;
 	}
 	
 	public static boolean isArray(Declaration declaration) {
@@ -359,7 +364,8 @@ public class ExpressionModelDerivedFeatures {
 	
 	public static boolean isEmptyArrayLiteral(Expression expression) {
 		if (expression instanceof ArrayLiteralExpression literal) {
-			return literal.getOperands().isEmpty();
+			List<Expression> operands = literal.getOperands();
+			return operands.isEmpty();
 		}
 		return false;
 	}
@@ -795,9 +801,9 @@ public class ExpressionModelDerivedFeatures {
 	}
 	
 	public static boolean isEvaluable(Expression expression) {
-		List<OpaqueExpression> opaqueExpressions = ecoreUtil.getSelfAndAllContentsOfType(
-				expression, OpaqueExpression.class);
-		if (!opaqueExpressions.isEmpty()) {
+		List<NullaryExpression> unevaluableExpressions = ecoreUtil.getSelfAndAllContentsOfTypes(
+				expression, List.of(OpaqueExpression.class, SelectExpression.class));
+		if (!unevaluableExpressions.isEmpty()) {
 			return false;
 		}
 		

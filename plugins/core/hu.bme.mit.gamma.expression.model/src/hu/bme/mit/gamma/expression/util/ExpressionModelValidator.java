@@ -90,7 +90,7 @@ public class ExpressionModelValidator {
 			Type lhs, Type rhs, ReferenceInfo referenceInfo) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
-		if (!typeDeterminator.equals(lhs, rhs)) {
+		if (!typeDeterminator.conformsOrEquals(lhs, rhs)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 				"The types of the left hand side and the right hand side are not the same: " +
 					typeDeterminator.print(lhs) + " and " + typeDeterminator.print(rhs), referenceInfo));

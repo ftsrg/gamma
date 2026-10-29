@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
+import hu.bme.mit.gamma.expression.model.SubrangeTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeReference;
@@ -57,6 +58,9 @@ public class TypeSerializer {
 			return _serialize(_type);
 		}
 		else if (type instanceof RecordTypeDefinition _type) {
+			return _serialize(_type);
+		}
+		else if (type instanceof SubrangeTypeDefinition _type) {
 			return _serialize(_type);
 		}
 		else {
@@ -112,6 +116,10 @@ public class TypeSerializer {
 	protected String _serialize(RecordTypeDefinition type) {
 		TypeDeclaration typeDeclaration = ExpressionModelDerivedFeatures.getTypeDeclaration(type);
 		return typeDeclaration.getName();
+	}
+	
+	protected String _serialize(SubrangeTypeDefinition type) {
+		return "subrange";
 	}
 	
 	//

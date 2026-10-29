@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition
+import hu.bme.mit.gamma.expression.model.SubrangeTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
@@ -64,6 +65,8 @@ class TypeSerializer {
 	def dispatch String serializeType(RationalTypeDefinition type) '''real'''
 	
 	def dispatch String serializeType(DecimalTypeDefinition type) '''real'''
+	
+	def dispatch String serializeType(SubrangeTypeDefinition type) '''integer'''
 	
 	def dispatch String serializeType(EnumerationTypeDefinition type) '''{ «FOR literal : type.literals SEPARATOR ', '»«literal.name»«ENDFOR» }'''
 	

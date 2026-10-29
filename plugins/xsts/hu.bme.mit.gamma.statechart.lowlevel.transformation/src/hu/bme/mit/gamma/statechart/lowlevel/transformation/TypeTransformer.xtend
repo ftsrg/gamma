@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
+import hu.bme.mit.gamma.expression.model.SubrangeTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
@@ -32,7 +33,7 @@ import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionMo
 
 class TypeTransformer {
 	// Auxiliary object
-	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	// Expression factory
@@ -71,6 +72,14 @@ class TypeTransformer {
 	
 	protected def dispatch Type transformType(EnumerationTypeDefinition type) {
 		return type.clone
+	}
+	
+	protected def dispatch Type transformType(SubrangeTypeDefinition type) {
+		val extension expressionTransformer = new ExpressionTransformer(trace)
+		return type.clone => [
+			it.lowerBound = it.lowerBound?.transformSimpleExpression
+			it.upperBound = it.upperBound?.transformSimpleExpression
+		]
 	}
 	
 	protected def dispatch Type transformType(ArrayTypeDefinition type) {

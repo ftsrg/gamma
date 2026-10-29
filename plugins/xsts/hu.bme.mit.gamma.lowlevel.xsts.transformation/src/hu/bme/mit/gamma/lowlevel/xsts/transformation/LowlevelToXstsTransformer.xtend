@@ -916,7 +916,7 @@ class LowlevelToXstsTransformer {
 			val havoc = localDeclaration.createHavocAction
 			val assume = (typeDefinition instanceof SubrangeTypeDefinition) ?
 					(localDeclaration.createGreaterEqualExpression(typeDefinition.lowerBound.clone)
-							.wrapIntoAndExpression(localDeclaration.createGreaterEqualExpression(typeDefinition.upperBound.clone)))
+							.wrapIntoAndExpression(localDeclaration.createLessExpression(typeDefinition.upperBound.clone)))
 								.createAssumeAction :
 					createEmptyAction
 			#[assume, havoc, localDeclarationAction]

@@ -59,6 +59,7 @@ import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
+import hu.bme.mit.gamma.expression.model.SubrangeTypeDefinition;
 import hu.bme.mit.gamma.expression.model.SubtractExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
@@ -203,22 +204,8 @@ public class ExpressionTypeDeterminator2 {
 			return getType(fieldReference);
 		}
 		if (expression instanceof SelectExpression selectExpression) {
-			Type operandType = selectExpression.getType();
-			TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(operandType);
-			if (typeDefinition instanceof ArrayTypeDefinition arrayTypeDefinition) {
-				Type elementType = arrayTypeDefinition.getElementType();
-				return ecoreUtil.clone(elementType);
-			}
-			else if (typeDefinition instanceof IntegerRangeTypeDefinition) {
-				return factory.createIntegerTypeDefinition();
-			}
-			else if (typeDefinition instanceof EnumerationTypeDefinition) {
-				return operandType;
-			}
-			else {
-				throw new IllegalArgumentException(
-					"The type of the operand of the select expression is not an enumerable type: " + typeDefinition);
-			}
+			Type type = selectExpression.getType();
+			return type;
 		}
 		// Some expressions are expected to return an empty value, for example:
 		// return; - in a procedure declaration
@@ -243,8 +230,8 @@ public class ExpressionTypeDeterminator2 {
 	}
 	
 	public TypeDefinition getTypeDefinition(Expression expression) {
-		return ExpressionModelDerivedFeatures.getTypeDefinition(
-				getType(expression));
+		Type type = getType(expression);
+		return ExpressionModelDerivedFeatures.getTypeDefinition(type);
 	}
 	
 	// TypeReference handling auxiliary methods
@@ -310,6 +297,14 @@ public class ExpressionTypeDeterminator2 {
 		return ecoreUtil.helperEquals(typeOneRemovedReferences, typeTwoRemovedReferences);
 	}
 	
+	public boolean conformsOrEquals(Type lhs, Type rhs) {
+		Type _rhs = rhs;
+		if (rhs instanceof SubrangeTypeDefinition subrangeTypeDefinition) {
+			_rhs = factory.createIntegerTypeDefinition();
+		}
+		return equals(lhs, _rhs);
+	}
+	
 	// Extension methods
 	
 	// Arithmetics
@@ -339,7 +334,8 @@ public class ExpressionTypeDeterminator2 {
 	// Unary plus and minus
 	
 	private <T extends ArithmeticExpression & UnaryExpression> Type getArithmeticUnaryType(T expression) {
-		Type type = getType(expression.getOperand());
+		Expression operand = expression.getOperand();
+		Type type = getType(operand);
 		if (isNumber(type)) {
 			return type;
 		}
@@ -483,6 +479,9 @@ public class ExpressionTypeDeterminator2 {
 		}
 		if (type instanceof RationalTypeDefinition) {
 			return "Rational";
+		}
+		if (type instanceof SubrangeTypeDefinition) {
+			return "Subrange";
 		}
 		if (type instanceof ArrayTypeDefinition arrayType) {
 			Type elementType = arrayType.getElementType();
