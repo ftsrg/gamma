@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.InfinityExpression
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration
 import hu.bme.mit.gamma.expression.model.SelectExpression
 import hu.bme.mit.gamma.expression.model.SubrangeTypeDefinition
@@ -914,14 +915,27 @@ class LowlevelToXstsTransformer {
 			val localDeclarationAction = type.createVariableDeclarationAction(name)
 			val localDeclaration = localDeclarationAction.variableDeclaration
 			val havoc = localDeclaration.createHavocAction
-			val assume = (typeDefinition instanceof SubrangeTypeDefinition) ?
-					(localDeclaration.createGreaterEqualExpression(typeDefinition.lowerBound.clone)
-							.wrapIntoAndExpression(localDeclaration.createLessExpression(typeDefinition.upperBound.clone)))
-								.createAssumeAction :
-					createEmptyAction
+			val assume =
+			if (typeDefinition instanceof SubrangeTypeDefinition) {
+				val lowerBound = typeDefinition.lowerBound
+				val upperBound = typeDefinition.upperBound
+				val lhs = lowerBound.isOrContainsType(InfinityExpression) ? null : localDeclaration.createGreaterEqualExpression(lowerBound)
+				val rhs = upperBound.isOrContainsType(InfinityExpression) ? null : localDeclaration.createLessExpression(upperBound)
+				
+				val expression = (lhs === null && rhs === null) ? createTrueExpression :
+						(lhs === null) ? rhs :
+						(rhs === null) ? lhs :
+						lhs.wrapIntoAndExpression(rhs)
+				
+				expression.createAssumeAction
+			}
+			else {
+				createEmptyAction
+			}
+			
 			#[assume, havoc, localDeclarationAction]
 					.prependToAction(mergedAction)
-					
+			
 			localDeclaration.createReferenceExpression
 					.replace(selectExpression)
 		}

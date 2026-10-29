@@ -26,7 +26,7 @@ class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvide
 			if (reference == PropertyModelPackage.Literals.PROPERTY_PACKAGE__COMPONENT) {
 				val imports = context.imports
 				if (!imports.empty) {
-					return Scopes.scopeFor(imports.map[it.components].flatten)
+					return Scopes.scopeFor(imports.flatMap[it.components])
 				}
 			}
 		}

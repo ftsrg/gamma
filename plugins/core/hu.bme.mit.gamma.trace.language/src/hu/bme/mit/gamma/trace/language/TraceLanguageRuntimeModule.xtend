@@ -26,11 +26,11 @@ class TraceLanguageRuntimeModule extends AbstractTraceLanguageRuntimeModule {
 	
 	// Theoretically, needed for serialization
 	override bindIScopeProvider() {
-		return TraceLanguageScopeProvider;
+		return TraceLanguageScopeProvider
 	}
 
 	override configureSerializerIScopeProvider(Binder binder) {
-		binder.bind(IScopeProvider).annotatedWith(SerializerScopeProviderBinding).to(TraceLanguageScopeProvider);
+		binder.bind(IScopeProvider).annotatedWith(SerializerScopeProviderBinding).to(TraceLanguageScopeProvider)
 	}
 	//
 	

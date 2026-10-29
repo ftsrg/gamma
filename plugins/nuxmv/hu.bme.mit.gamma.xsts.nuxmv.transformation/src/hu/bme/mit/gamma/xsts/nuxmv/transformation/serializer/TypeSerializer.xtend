@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Gamma project
+ * Copyright (c) 2023-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -66,7 +66,7 @@ class TypeSerializer {
 	
 	def dispatch String serializeType(DecimalTypeDefinition type) '''real'''
 	
-	def dispatch String serializeType(SubrangeTypeDefinition type) '''integer'''
+	def dispatch String serializeType(SubrangeTypeDefinition type) '''«type.subrangeTypeDefinition.serializeType»'''
 	
 	def dispatch String serializeType(EnumerationTypeDefinition type) '''{ «FOR literal : type.literals SEPARATOR ', '»«literal.name»«ENDFOR» }'''
 	

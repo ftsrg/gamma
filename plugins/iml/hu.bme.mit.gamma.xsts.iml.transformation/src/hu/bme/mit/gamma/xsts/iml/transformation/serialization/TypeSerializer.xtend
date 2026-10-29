@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024-2025 Contributors to the Gamma project
+ * Copyright (c) 2024-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition
+import hu.bme.mit.gamma.expression.model.SubrangeTypeDefinition
 import hu.bme.mit.gamma.expression.model.TupleTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeReference
@@ -62,6 +63,8 @@ class TypeSerializer {
 	def dispatch String serializeType(RationalTypeDefinition type) '''real'''
 	
 	def dispatch String serializeType(DecimalTypeDefinition type) '''real'''
+	
+	def dispatch String serializeType(SubrangeTypeDefinition type) '''«type.subrangeTypeDefinition.serializeType»'''
 	
 	def dispatch String serializeType(EnumerationTypeDefinition type) '''«FOR literal : type.literals SEPARATOR ' | '»«literal.serializeName»«ENDFOR»'''
 	

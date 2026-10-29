@@ -49,6 +49,7 @@ import hu.bme.mit.gamma.expression.model.FinalVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
+import hu.bme.mit.gamma.expression.model.InfinityExpression;
 import hu.bme.mit.gamma.expression.model.InjectedVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
@@ -86,6 +87,7 @@ import hu.bme.mit.gamma.expression.model.VariableReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VoidTypeDefinition;
 import hu.bme.mit.gamma.expression.util.ComplexTypeUtil;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
+import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.expression.util.FieldHierarchy;
 import hu.bme.mit.gamma.expression.util.LiteralExpressionCreator;
@@ -547,6 +549,28 @@ public class ExpressionModelDerivedFeatures {
 		} catch (IllegalArgumentException e) {
 			return null;
 		}
+	}
+	
+	public static TypeDefinition getSubrangeTypeDefinition(SubrangeTypeDefinition type) {
+		Expression lowerBound = type.getLowerBound();
+		Expression upperBound = type.getUpperBound();
+		
+		boolean isLowerInfinity = lowerBound == null || ecoreUtil.isOrContainsType(lowerBound, InfinityExpression.class);
+		boolean isUpperInfinity = upperBound == null || ecoreUtil.isOrContainsType(upperBound, InfinityExpression.class);
+		
+		if (isLowerInfinity && isUpperInfinity) {
+			return factory.createIntegerTypeDefinition(); // Design choice
+		}
+		
+		ExpressionTypeDeterminator2 typeDeterminator = ExpressionTypeDeterminator2.INSTANCE;
+		if (isUpperInfinity) {
+			return typeDeterminator.getTypeDefinition(lowerBound);
+		}
+		if (isLowerInfinity) {
+			return typeDeterminator.getTypeDefinition(upperBound);
+		}
+		
+		throw new IllegalArgumentException("Unkown SubrangeTypeDefinition state");
 	}
 	
 	public static List<Type> getNativeTypes(TupleTypeDefinition tupleType) {

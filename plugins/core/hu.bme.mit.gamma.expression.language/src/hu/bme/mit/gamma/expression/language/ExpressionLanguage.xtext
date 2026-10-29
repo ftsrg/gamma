@@ -146,7 +146,7 @@ RecordTypeDefinition returns RecordTypeDefinition:
 ;
 
 SubrangeTypeDefinition returns SubrangeTypeDefinition:
-	{SubrangeTypeDefinition} '#[' ('-' 'inf' | lowerBound=Expression) 'to' ('inf' | upperBound=Expression) ']'
+	{SubrangeTypeDefinition} '#[' lowerBound=Expression 'to' upperBound=Expression ')'
 ;
 
 ////////////////////////////////////////

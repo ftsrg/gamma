@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
+import hu.bme.mit.gamma.expression.model.SubrangeTypeDefinition
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
 import uppaal.NTA
@@ -21,6 +22,8 @@ import uppaal.expressions.Expression
 import uppaal.expressions.ExpressionsFactory
 import uppaal.types.TypeDefinition
 import uppaal.types.TypesFactory
+
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class TypeTransformer {
 	// NTA builder
@@ -61,6 +64,10 @@ class TypeTransformer {
 	
 	def dispatch TypeDefinition transformType(BooleanTypeDefinition type) {
 		return createTypeReference => [it.referredType = nta.bool]
+	}
+	
+	def dispatch TypeDefinition transformType(SubrangeTypeDefinition type) {
+		return type.subrangeTypeDefinition.transformType
 	}
 	
 	def TypeDefinition createRange(Expression lowerBound, Expression upperBound) {
