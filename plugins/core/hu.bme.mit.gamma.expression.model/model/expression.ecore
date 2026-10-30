@@ -272,4 +272,11 @@
       eSuperTypes="#//VariableDeclarationAnnotation"/>
   <eClassifiers xsi:type="ecore:EClass" name="InjectedVariableDeclarationAnnotation"
       eSuperTypes="#//VariableDeclarationAnnotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ValueBoundVariableDeclarationAnnotation"
+      eSuperTypes="#//VariableDeclarationAnnotation">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="lowerBound" lowerBound="1"
+        eType="#//Expression" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="upperBound" lowerBound="1"
+        eType="#//Expression" containment="true"/>
+  </eClassifiers>
 </ecore:EPackage>

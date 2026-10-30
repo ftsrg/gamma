@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,15 +11,22 @@
 package hu.bme.mit.gamma.xsts.codegeneration.java
 
 import hu.bme.mit.gamma.codegeneration.java.util.Namings
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.InfinityExpression
+import hu.bme.mit.gamma.expression.model.NumericalTypeDefinition
 import hu.bme.mit.gamma.expression.model.TupleReferenceExpression
+import hu.bme.mit.gamma.expression.model.ValueBoundVariableDeclarationAnnotation
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.FunctionCallAction
+import hu.bme.mit.gamma.xsts.model.HavocAction
 import hu.bme.mit.gamma.xsts.model.IfAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
@@ -149,6 +156,53 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 		}
 		
 		return string
+	}
+	
+	def dispatch CharSequence serialize(HavocAction action) {
+		val lhs = action.lhs
+		val declaration = lhs.declaration as VariableDeclaration
+		
+		val rhs = declaration.serializeRandomValue
+		
+		return '''«lhs.serialize» = «rhs»;'''
+	}
+	
+	protected def serializeRandomValue(VariableDeclaration declaration) {
+		val type = declaration.typeDefinition
+		return if (type instanceof EnumerationTypeDefinition) {
+			val i = '''java.util.concurrent.ThreadLocalRandom.current().nextInt(«type.literals.size»)'''
+			'''«type.containingDeclaration.name».values()[«i»]'''
+		}
+		else if (type instanceof ArrayTypeDefinition) {
+			type.initialValueOfType.serialize // TODO
+		}
+		else {
+			var bounds = ""
+			if (declaration.hasAnnotation(ValueBoundVariableDeclarationAnnotation)) {
+				val annotation = declaration.getAnnotation(ValueBoundVariableDeclarationAnnotation)
+				val lowerBound = annotation.lowerBound
+				val upperBound = annotation.upperBound
+				
+				if (lowerBound === null || lowerBound.isOrContainsType(InfinityExpression)) {
+					bounds += Integer.MIN_VALUE
+				}
+				else {
+					bounds += lowerBound.serialize
+				}
+				bounds += ", "
+				if (upperBound === null || upperBound.isOrContainsType(InfinityExpression)) {
+					bounds += Integer.MAX_VALUE
+				}
+				else {
+					bounds += upperBound.serialize
+				}
+			}
+			else if (type instanceof NumericalTypeDefinition) {
+				bounds = Integer.MIN_VALUE + ", " + Integer.MAX_VALUE
+			}
+			
+			'''java.util.concurrent.ThreadLocalRandom.current().next«type.serialize.toFirstUpper»(«bounds»)'''
+		}
 	}
 	
 	def dispatch CharSequence serialize(VariableDeclarationAction action) {

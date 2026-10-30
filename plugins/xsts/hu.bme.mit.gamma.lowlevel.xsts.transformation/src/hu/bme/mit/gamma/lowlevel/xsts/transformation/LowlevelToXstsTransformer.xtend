@@ -927,6 +927,11 @@ class LowlevelToXstsTransformer {
 						(rhs === null) ? lhs :
 						lhs.wrapIntoAndExpression(rhs)
 				
+				localDeclaration.annotations += createValueBoundVariableDeclarationAnnotation => [
+					it.lowerBound = lowerBound.clone
+					it.upperBound = upperBound.clone
+				]
+				
 				expression.createAssumeAction
 			}
 			else {

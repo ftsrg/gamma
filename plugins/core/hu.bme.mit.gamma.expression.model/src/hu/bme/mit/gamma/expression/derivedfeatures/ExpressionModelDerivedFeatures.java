@@ -266,6 +266,13 @@ public class ExpressionModelDerivedFeatures {
 		return variable.getAnnotations().stream().anyMatch(it -> annotation.isInstance(it));
 	}
 	
+	@SuppressWarnings("unchecked")
+	public static <T extends VariableDeclarationAnnotation> T getAnnotation(
+			VariableDeclaration variable, Class<T> annotation) {
+		return (T) variable.getAnnotations().stream()
+				.filter(it -> annotation.isInstance(it)).findFirst().get();
+	}
+	
 	public static List<DeclarationReferenceAnnotation> getDeclarationReferenceAnnotations(VariableDeclaration variable) {
 		List<DeclarationReferenceAnnotation> annotations = new ArrayList<DeclarationReferenceAnnotation>();
 		for (VariableDeclarationAnnotation annotation : variable.getAnnotations()) {

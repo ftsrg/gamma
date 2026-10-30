@@ -82,6 +82,7 @@ import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
+import hu.bme.mit.gamma.expression.model.SubrangeTypeDefinition;
 import hu.bme.mit.gamma.expression.model.SubtractExpression;
 import hu.bme.mit.gamma.expression.model.TrueExpression;
 import hu.bme.mit.gamma.expression.model.TupleLiteralExpression;
@@ -773,28 +774,35 @@ public class ExpressionUtil {
 		return getInitialValueOfType(
 				reference.getType());
 	}
-
+	
 	protected Expression _getInitialValueOfType(BooleanTypeDefinition type) {
 		return factory.createFalseExpression();
 	}
-
+	
 	protected Expression _getInitialValueOfType(IntegerTypeDefinition type) {
-		return toIntegerLiteral(0);
+		return createLiteralZero();
 	}
-
+	
+	protected Expression _getInitialValueOfType(SubrangeTypeDefinition type) {
+		Expression lowerBound = type.getLowerBound();
+		Expression upperBound = type.getUpperBound();
+		// TODO
+		return createLiteralZero();
+	}
+	
 	protected Expression _getInitialValueOfType(DecimalTypeDefinition type) {
 		DecimalLiteralExpression decimalLiteralExpression = factory.createDecimalLiteralExpression();
 		decimalLiteralExpression.setValue(BigDecimal.valueOf(0.0)); // .ZERO cannot be parsed by Xtext
 		return decimalLiteralExpression;
 	}
-
+	
 	protected Expression _getInitialValueOfType(RationalTypeDefinition type) {
 		RationalLiteralExpression rationalLiteralExpression = factory.createRationalLiteralExpression();
 		rationalLiteralExpression.setNumerator(BigInteger.ZERO);
 		rationalLiteralExpression.setDenominator(BigInteger.ONE);
 		return rationalLiteralExpression;
 	}
-
+	
 	protected Expression _getInitialValueOfType(EnumerationTypeDefinition type) {
 		List<EnumerationLiteralDefinition> literals = type.getLiterals();
 		EnumerationLiteralDefinition literal = literals.get(0);
@@ -865,6 +873,9 @@ public class ExpressionUtil {
 			return _getInitialValueOfType(_type);
 		}
 		else if (type instanceof RecordTypeDefinition _type) {
+			return _getInitialValueOfType(_type);
+		}
+		else if (type instanceof SubrangeTypeDefinition _type) {
 			return _getInitialValueOfType(_type);
 		}
 		else if (type instanceof TupleTypeDefinition _type) {

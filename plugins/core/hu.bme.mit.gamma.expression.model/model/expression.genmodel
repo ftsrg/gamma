@@ -212,5 +212,9 @@
     </genClasses>
     <genClasses ecoreClass="expression.ecore#//UnremovableVariableDeclarationAnnotation"/>
     <genClasses ecoreClass="expression.ecore#//InjectedVariableDeclarationAnnotation"/>
+    <genClasses ecoreClass="expression.ecore#//ValueBoundVariableDeclarationAnnotation">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//ValueBoundVariableDeclarationAnnotation/lowerBound"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//ValueBoundVariableDeclarationAnnotation/upperBound"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

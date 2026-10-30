@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
+import hu.bme.mit.gamma.expression.model.SubrangeTypeDefinition
 import hu.bme.mit.gamma.expression.model.TupleTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeReference
@@ -45,6 +46,8 @@ class TypeSerializer {
 	def dispatch String serialize(DecimalTypeDefinition type) '''double'''
 	
 	def dispatch String serialize(RationalTypeDefinition type) '''double'''
+	
+	def dispatch String serialize(SubrangeTypeDefinition type) '''«type.subrangeTypeDefinition.serialize»'''
 	
 	def dispatch String serialize(ArrayTypeDefinition type) '''«type.elementType.serialize»[]'''
 	
