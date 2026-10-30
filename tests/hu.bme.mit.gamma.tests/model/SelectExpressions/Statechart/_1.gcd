@@ -13,9 +13,9 @@ statechart _1 [
 	var selectIntegerArray : [2]integer
 	
 	var selectSubrange : integer
-	var selectSubrange_22 : integer
-	var selectSubrangeInteger_Inf : integer
-	var selectSubrangeIntegerInf : integer
+	var selectSubrange_1_100 : integer
+	var selectSubrangeInteger_Inf__1 : integer
+	var selectSubrangeInteger1_Inf : integer
 	
 	var selectEnum : Enumeration
 	var selectRecord : Record
@@ -41,9 +41,9 @@ statechart _1 [
 		selectIntegerArray := select->[2]integer;
 		
 		selectSubrange := select->#[-infinity + 1 to infinity - 1);
-		selectSubrange_22 := select->#[1 to 100);
-		selectSubrangeInteger_Inf := select->#[-infinity to -1);
-		selectSubrangeIntegerInf := select->#[1 to infinity);
+		selectSubrange_1_100 := select->#[1 to 100);
+		selectSubrangeInteger_Inf__1 := select->#[-infinity to -1);
+		selectSubrangeInteger1_Inf := select->#[1 to infinity);
 			
 		selectEnum := select->Enumeration;
 		selectRecord := select->Record;

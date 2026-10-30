@@ -9,8 +9,8 @@ type Enumeration : enum {
 }
 
 type Record : record {
-	int : integer,
-	bool : boolean
+	int_ : integer,
+	bool_ : boolean
 //	double : decimal
 }
 

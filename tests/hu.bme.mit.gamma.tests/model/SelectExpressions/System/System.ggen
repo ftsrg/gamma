@@ -1,15 +1,15 @@
 import "Statechart/_1.gcd"
 import "System/System_1.gcd"
 
-//code {
-//	component : _1
-//	language : java
-//}
-//
-//code {
-//	component : System_1
-//	language : java
-//}
+code {
+	component : _1
+	language : java
+}
+
+code {
+	component : System_1
+	language : java
+}
 
 analysis {
 	component : System_1
