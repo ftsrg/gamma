@@ -1,0 +1,25 @@
+package select_expressions
+
+import "Interfaces/Interfaces.gcd"
+
+@TransitionPriority = order-based
+@RegionSchedule = bottom-up
+statechart _1 [
+	port Execute : requires Execute
+] {
+	region main {
+		initial IMain
+		state _0 {
+			region a {
+				initial IA
+				state _1
+				state _2
+			}
+		}
+	}
+	
+	transition from IMain to _0
+	transition from IA to _1
+	transition from _1 to _2 when Execute.^execute /
+	
+}

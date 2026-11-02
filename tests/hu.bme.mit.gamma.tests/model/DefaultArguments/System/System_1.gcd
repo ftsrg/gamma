@@ -1,0 +1,14 @@
+package select_expressions
+
+import "Interfaces/Interfaces.gcd"
+
+import "Statechart/_1.gcd"
+
+cascade System_1 [
+	port Execute : requires Execute
+] {
+	component c : _1
+	
+	bind Execute -> c.Execute
+	
+}

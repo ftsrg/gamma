@@ -1,0 +1,20 @@
+package select_expressions
+
+interface Execute {
+	out event ^execute
+}
+
+type Enumeration : enum {
+	A_, B_
+}
+
+type Record : record {
+	int_ : integer,
+	bool_ : boolean
+//	double : decimal
+}
+
+type CompositeRecord : record {
+	enumeration : Enumeration,
+	rec0rd : Record
+}

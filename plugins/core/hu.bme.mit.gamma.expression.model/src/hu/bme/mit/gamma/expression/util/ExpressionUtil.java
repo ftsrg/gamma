@@ -60,6 +60,7 @@ import hu.bme.mit.gamma.expression.model.GreaterExpression;
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.ImplyExpression;
 import hu.bme.mit.gamma.expression.model.InequalityExpression;
+import hu.bme.mit.gamma.expression.model.InfinityExpression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
@@ -786,8 +787,16 @@ public class ExpressionUtil {
 	protected Expression _getInitialValueOfType(SubrangeTypeDefinition type) {
 		Expression lowerBound = type.getLowerBound();
 		Expression upperBound = type.getUpperBound();
-		// TODO
-		return createLiteralZero();
+		
+		if (lowerBound == null || lowerBound instanceof InfinityExpression) {
+			if (upperBound == null || upperBound instanceof InfinityExpression) {
+				return createLiteralZero();
+			}
+			return wrapIntoMultiply(
+					ecoreUtil.clone(upperBound), 1);
+		}
+		
+		return ecoreUtil.clone(lowerBound);
 	}
 	
 	protected Expression _getInitialValueOfType(DecimalTypeDefinition type) {

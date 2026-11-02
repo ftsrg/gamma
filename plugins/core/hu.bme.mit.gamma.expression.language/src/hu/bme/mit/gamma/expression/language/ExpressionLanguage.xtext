@@ -29,7 +29,7 @@ ExpressionPackage returns ExpressionPackage:
 ///////////////////////////////////////////
 
 ParameterDeclaration returns ParameterDeclaration:
-	{ParameterDeclaration} name=ID ':' type=Type
+	{ParameterDeclaration} name=ID ':' type=Type ( ':=' expression=Expression )?
 ;
 
 FieldDeclaration returns FieldDeclaration:
