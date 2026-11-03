@@ -198,7 +198,7 @@ class CompositeComponentCodeGenerator {
 			this.«parameter.name» = «parameter.name»;
 		«ENDFOR»
 		«FOR instance : component.derivedComponents»
-			«instance.name» = new «instance.derivedType.generateComponentClassName»(«FOR argument : instance.arguments SEPARATOR ", "»«argument.serialize»«ENDFOR»);
+			«instance.name» = new «instance.derivedType.generateComponentClassName»(«FOR argument : instance.getAllArguments(instance.derivedType) SEPARATOR ", "»«argument.serialize»«ENDFOR»);
 		«ENDFOR»
 		«FOR port : component.allPorts»
 			«port.name.toFirstLower» = new «port.name.toFirstUpper»(); «IF !component.portBindings.exists[it.compositeSystemPort === port]»// Unbound«ENDIF»

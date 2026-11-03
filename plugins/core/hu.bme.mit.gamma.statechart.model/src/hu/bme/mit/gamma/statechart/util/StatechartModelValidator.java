@@ -34,6 +34,7 @@ import hu.bme.mit.gamma.action.model.Branch;
 import hu.bme.mit.gamma.action.model.ExpressionStatement;
 import hu.bme.mit.gamma.action.model.ProcedureDeclaration;
 import hu.bme.mit.gamma.action.util.ActionModelValidator;
+import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
@@ -866,10 +867,11 @@ public class StatechartModelValidator extends ActionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkTransitionEventRaisings(RaiseEventAction raiseEvent) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
 		Port port = raiseEvent.getPort();
 		Event event = raiseEvent.getEvent();
 		List<ParameterDeclaration> parameterDeclarations = event.getParameterDeclarations();
-		List<Expression> arguments = raiseEvent.getArguments();
+		List<Expression> arguments = ExpressionModelDerivedFeatures.getAllArguments(event, raiseEvent);
 		List<Event> outputEvents = StatechartModelDerivedFeatures.getOutputEvents(port);
 		if (!outputEvents.contains(event)) {
 			validationResultMessages.add(
@@ -889,12 +891,12 @@ public class StatechartModelValidator extends ActionModelValidator {
 			EObject eContainer = raiseEvent.eContainer();
 			for (EObject raiseEventObject : ecoreUtil.getContentsOfType(eContainer, RaiseEventAction.class).stream()
 					.filter(it -> eContainer.eContents().indexOf(it) > eContainer.eContents().indexOf(raiseEvent))
-					.collect(Collectors.toList())) {
+					.toList()) {
 				RaiseEventAction otherRaiseEvent = (RaiseEventAction) raiseEventObject;
 				if (otherRaiseEvent.eContainmentFeature() == raiseEvent.eContainmentFeature() &&
-						otherRaiseEvent.getPort() == raiseEvent.getPort() &&
-						otherRaiseEvent.getEvent() == raiseEvent.getEvent() &&
-						!otherRaiseEvent.getArguments().isEmpty()) {
+							otherRaiseEvent.getPort() == port &&
+							otherRaiseEvent.getEvent() == event &&
+						!ExpressionModelDerivedFeatures.getAllArguments(event, otherRaiseEvent).isEmpty()) {
 					validationResultMessages.add(
 						new ValidationResultMessage(ValidationResult.WARNING, 
 							"This event raise argument is overriden by other event raise arguments", 
@@ -1483,11 +1485,14 @@ public class StatechartModelValidator extends ActionModelValidator {
 				for (Action raiseEvent : rhs.getEffects().stream().filter(it -> it instanceof RaiseEventAction)
 						.collect(Collectors.toSet())) {
 					RaiseEventAction rhsRaiseEvent = (RaiseEventAction) raiseEvent;
+					Event event = lhsRaiseEvent.getEvent();
 					if (lhsRaiseEvent.getPort() == rhsRaiseEvent.getPort() && 
-						lhsRaiseEvent.getEvent() == rhsRaiseEvent.getEvent()) {
-						if (!lhsRaiseEvent.getArguments().isEmpty() && !rhsRaiseEvent.getArguments().isEmpty()) {
+							event == rhsRaiseEvent.getEvent()) {
+						List<Expression> arguments = ExpressionModelDerivedFeatures.getAllArguments(event, lhsRaiseEvent);
+						List<Expression> arguments2 = ExpressionModelDerivedFeatures.getAllArguments(event, rhsRaiseEvent);
+						if (!arguments.isEmpty() && !arguments2.isEmpty()) {
 							return new SimpleEntry<Port, Event>(
-									lhsRaiseEvent.getPort(), lhsRaiseEvent.getEvent());
+									lhsRaiseEvent.getPort(), event);
 						}
 					}
 				}
@@ -1575,15 +1580,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 	}
 	
 	public Collection<ValidationResultMessage> checkParameters(ComponentInstance instance) {
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
-		if (instance.getArguments().size() != type.getParameterDeclarations().size()) {
-			validationResultMessages.add(
-				new ValidationResultMessage(ValidationResult.ERROR, 
-					"The number of arguments is wrong", 
-						new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)));
-		}
-		return validationResultMessages;
+		return super.checkArgumentTypes(instance, type);
 	}
 	
 	public Collection<ValidationResultMessage> checkComponentInstanceArguments(ComponentInstance instance) {
@@ -1591,9 +1589,10 @@ public class StatechartModelValidator extends ActionModelValidator {
 		try {
 			Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
 			List<ParameterDeclaration> parameters = type.getParameterDeclarations();
+			List<Expression> arguments = ExpressionModelDerivedFeatures.getAllArguments(type, instance);
 			for (int i = 0; i < parameters.size(); ++i) {
 				ParameterDeclaration parameter = parameters.get(i);
-				Expression argument = instance.getArguments().get(i);
+				Expression argument = arguments.get(i);
 				Type declarationType = parameter.getType();
 				if (!typeDeterminator.equalsType(declarationType, argument)) {
 					validationResultMessages.add(

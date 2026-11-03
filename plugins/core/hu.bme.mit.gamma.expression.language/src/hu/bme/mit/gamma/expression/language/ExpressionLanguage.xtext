@@ -16,7 +16,7 @@ import "http://www.eclipse.org/emf/2002/Ecore" as Ecore
 ///////////////////////////////////////////
 
 ExpressionPackage returns ExpressionPackage:
-	"specification" name=ID ('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')? '{'
+	"specification" name=ID ('(' (parameterDeclarations+=ParameterDeclaration (',' parameterDeclarations+=ParameterDeclaration)*)? ')')? '{'
 		(
 			typeDeclarations+=TypeDeclaration |
 			constantDeclarations+=ConstantDeclaration |
@@ -29,7 +29,7 @@ ExpressionPackage returns ExpressionPackage:
 ///////////////////////////////////////////
 
 ParameterDeclaration returns ParameterDeclaration:
-	{ParameterDeclaration} name=ID ':' type=Type ( ':=' expression=Expression )?
+	{ParameterDeclaration} name=ID ':' type=Type (':=' expression=Expression)?
 ;
 
 FieldDeclaration returns FieldDeclaration:
@@ -37,7 +37,7 @@ FieldDeclaration returns FieldDeclaration:
 ;
 
 ConstantDeclaration returns ConstantDeclaration:
-	'const' name=ID ':' type=Type ( ':=' expression=Expression )?
+	'const' name=ID ':' type=Type (':=' expression=Expression)?
 ;
 
 // Referred in the statechart language
@@ -73,7 +73,7 @@ FunctionDeclaration:
 ;
 
 LambdaDeclaration returns LambdaDeclaration:
-	'lambda' name=ID ('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')? ':' type=Type ( ':=' expression=Expression )?
+	'lambda' name=ID ('(' (parameterDeclarations+=ParameterDeclaration (',' parameterDeclarations+=ParameterDeclaration)*)? ')')? ':' type=Type ( ':=' expression=Expression )?
 ;
 
 ////////////////////////////////////////
@@ -134,7 +134,7 @@ IntegerRangeTypeDefinition returns IntegerRangeTypeDefinition:
 ;
 
 EnumerationTypeDefinition returns EnumerationTypeDefinition:
-	'enum' '{' (literals+=EnumerationLiteralDefinition)(',' literals+=EnumerationLiteralDefinition)* '}'
+	'enum' '{' literals+=EnumerationLiteralDefinition (',' literals+=EnumerationLiteralDefinition)* '}'
 ;
 
 EnumerationLiteralDefinition:
@@ -142,7 +142,7 @@ EnumerationLiteralDefinition:
 ;
 
 RecordTypeDefinition returns RecordTypeDefinition:
-	'record' '{' (fieldDeclarations+=FieldDeclaration)(',' fieldDeclarations+=FieldDeclaration)* '}'
+	'record' '{' fieldDeclarations+=FieldDeclaration (',' fieldDeclarations+=FieldDeclaration)* '}'
 ;
 
 SubrangeTypeDefinition returns SubrangeTypeDefinition:

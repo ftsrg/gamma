@@ -163,20 +163,44 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
+	public Collection<ValidationResultMessage> checkDefaultArguments(ParametricElement parametricElement) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		boolean reachedDefault = false;
+		List<ParameterDeclaration> parameterDeclarations = parametricElement.getParameterDeclarations();
+		for (ParameterDeclaration parameterDeclaration : parameterDeclarations) {
+			Expression expression = parameterDeclaration.getExpression();
+			if (expression != null) {
+				reachedDefault = true;
+			}
+			else if (reachedDefault && expression == null) {
+				int i = ExpressionModelDerivedFeatures.getIndex(parameterDeclaration);
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					"A parameter declaration with default argument cannot be followed by one without a default argument", 
+						new ReferenceInfo(ExpressionModelPackage.Literals.PARAMETRIC_ELEMENT__PARAMETER_DECLARATIONS, i)));
+			}
+		}
+		
+		return validationResultMessages;
+	}
+	
 	public Collection<ValidationResultMessage> checkArgumentTypes(
 			ArgumentedElement argumentedElement, ParametricElement parametricElement) {
-		return checkArgumentTypes(argumentedElement, parametricElement.getParameterDeclarations());
+		List<ParameterDeclaration> parameterDeclarations = parametricElement.getParameterDeclarations();
+		return checkArgumentTypes(argumentedElement, parameterDeclarations);
 	}
 	
 	public Collection<ValidationResultMessage> checkArgumentTypes(ArgumentedElement element,
 			List<ParameterDeclaration> parameterDeclarations) {
-		return checkArgumentTypes(element.getArguments(), parameterDeclarations);
+		List<Expression> arguments = element.getArguments();
+		return checkArgumentTypes(arguments, parameterDeclarations);
 	}
 	
-	protected Collection<ValidationResultMessage> checkArgumentTypes(List<Expression> arguments,
+	protected Collection<ValidationResultMessage> checkArgumentTypes(List<Expression> extensibleArguments,
 			List<ParameterDeclaration> parameterDeclarations) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
+		List<Expression> arguments = ExpressionModelDerivedFeatures.getAllArguments(parameterDeclarations, extensibleArguments);
 		if (arguments.size() != parameterDeclarations.size()) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 				"The number of arguments must match the number of parameters", 
@@ -296,7 +320,6 @@ public class ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkFunctionAccessExpression(FunctionAccessExpression functionAccessExpression) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
-		List<Expression> arguments = functionAccessExpression.getArguments();
 		ReferenceExpression operand = null;
 		try {
 			operand = expressionUtil.getAccessReference(functionAccessExpression);
@@ -321,11 +344,12 @@ public class ExpressionModelValidator {
 		
 		FunctionDeclaration functionDeclaration = (FunctionDeclaration) declaration;
 		List<ParameterDeclaration> parameters = functionDeclaration.getParameterDeclarations();
+		List<Expression> arguments = ExpressionModelDerivedFeatures.getAllArguments(functionDeclaration, functionAccessExpression);
 		if (arguments.size() != parameters.size()) {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.ERROR,
 					"The number of arguments does not match the number of declared parameters for the function", 
-					new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)));
+						new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)));
 			return validationResultMessages;
 		}
 		// Check if the types of the arguments are the types of the parameters

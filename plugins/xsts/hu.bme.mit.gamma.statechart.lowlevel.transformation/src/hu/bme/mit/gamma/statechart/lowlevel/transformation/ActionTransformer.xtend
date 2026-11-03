@@ -321,11 +321,12 @@ class ActionTransformer {
 		
 		val port = action.port
 		val event = action.event
+		val arguments = action.getAllArguments(event)
 		val lowlevelEvent = trace.get(port, event, EventDirection.OUT)
 		
 		// Parameter setting
 		val lowlevelLhs = lowlevelEvent.parameters.map[it.createReferenceExpression].toList
-		val lowlevelRhs = action.arguments.map[it.transformExpression].flatten.toList
+		val lowlevelRhs = arguments.map[it.transformExpression].flatten.toList
 		result += lowlevelLhs.createAssignments(lowlevelRhs)
 		
 		// Setting IsRaised flag to true

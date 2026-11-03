@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.AccessExpression;
+import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
@@ -822,6 +823,41 @@ public class ExpressionModelDerivedFeatures {
 	
 	public static VariableDeclaration getContainingVariable(Type type) {
 		return ecoreUtil.getContainerOfType(type, VariableDeclaration.class);
+	}
+	
+	public static List<Expression> getAllArguments(
+			ArgumentedElement argumentedElement, ParametricElement parametricElement) {
+		return getAllArguments(parametricElement, argumentedElement);
+	}
+	
+	public static List<Expression> getAllArguments(
+			ParametricElement parametricElement, ArgumentedElement argumentedElement) {
+		List<ParameterDeclaration> parameterDeclarations = parametricElement.getParameterDeclarations();
+		List<Expression> arguments = argumentedElement.getArguments();
+		return getAllArguments(parameterDeclarations, arguments);
+	}
+	
+	public static List<Expression> getAllArguments(
+			List<? extends ParameterDeclaration> parameterDeclarations, List<? extends Expression> arguments) {
+		 List<Expression> extendedArgumentsWithDefaultArguments = new ArrayList<Expression>(arguments);
+		 
+		 for (int i = arguments.size(); i < parameterDeclarations.size(); i++) {
+			 ParameterDeclaration parameterDeclaration = parameterDeclarations.get(i);
+			 Expression expression = parameterDeclaration.getExpression();
+			 
+			 if (expression == null) {
+				 throw new IllegalArgumentException("No default argument: " + parameterDeclaration);
+			 }
+			 
+			 Expression argument = ecoreUtil.clone(expression);
+			 extendedArgumentsWithDefaultArguments.add(argument);
+		 }
+		 
+		 if (extendedArgumentsWithDefaultArguments.size() != parameterDeclarations.size()) {
+			 throw new IllegalArgumentException("Inconsistent argument list size");
+		 }
+		 
+		 return extendedArgumentsWithDefaultArguments;
 	}
 	
 	public static int getIndex(ParameterDeclaration parameter) {

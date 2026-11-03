@@ -300,7 +300,7 @@ public class ExpressionTypeDeterminator2 {
 	public boolean conformsOrEquals(Type lhs, Type rhs) {
 		Type _rhs = rhs;
 		if (rhs instanceof SubrangeTypeDefinition subrangeTypeDefinition) {
-			_rhs = factory.createIntegerTypeDefinition();
+			_rhs = ExpressionModelDerivedFeatures.getSubrangeTypeDefinition(subrangeTypeDefinition);
 		}
 		return equals(lhs, _rhs);
 	}

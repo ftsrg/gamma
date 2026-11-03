@@ -146,7 +146,8 @@ class AsynchronousAdapterCodeGenerator {
 			
 			/** Creates the subqueues, clocks and enters the wrapped synchronous component. */
 			private void init() {
-				«component.generateWrappedComponentName» = new «component.wrappedComponent.type.generateComponentClassName»(«FOR argument : component.wrappedComponent.arguments SEPARATOR ", "»«argument.serialize»«ENDFOR»);
+				«val wrappedComponent = component.wrappedComponent»
+				«component.generateWrappedComponentName» = new «wrappedComponent.type.generateComponentClassName»(«FOR argument : wrappedComponent.getAllArguments(wrappedComponent.type) SEPARATOR ", "»«argument.serialize»«ENDFOR»);
 				// Creating subqueues: the negative conversion regarding priorities is needed,
 				// because the lbmq marks higher priority with lower integer values
 				«FOR queue : component.messageQueues.sortWith(a, b | -1 * (a.priority.compareTo(b.priority)))»
@@ -380,7 +381,8 @@ class AsynchronousAdapterCodeGenerator {
 		«FOR parameter : component.parameterDeclarations»
 			this.«parameter.name» = «parameter.name»;
 		«ENDFOR»
-		«component.generateWrappedComponentName» = new «component.wrappedComponent.type.generateComponentClassName»(«FOR argument : component.wrappedComponent.arguments SEPARATOR ", "»«argument.serialize»«ENDFOR»);
+		«val wrappedComponent = component.wrappedComponent»
+		«component.generateWrappedComponentName» = new «wrappedComponent.type.generateComponentClassName»(«FOR argument : wrappedComponent.getAllArguments(wrappedComponent.type) SEPARATOR ", "»«argument.serialize»«ENDFOR»);
 		«FOR port : component.ports»
 			«port.name.toFirstLower» = new «port.name.toFirstUpper»();
 		«ENDFOR»

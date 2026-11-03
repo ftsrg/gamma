@@ -44,8 +44,8 @@ class FunctionInliner {
 	
 	def Action execute(FunctionAccessExpression expression) {
 		val procedure = expression.functionDeclaration as ProcedureDeclaration
-		val arguments = expression.arguments
 		val parameterDeclarations = procedure.parameterDeclarations
+		val arguments = procedure.getAllArguments(expression)
 		val size = arguments.size
 		checkState(size == parameterDeclarations.size)
 		

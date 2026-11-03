@@ -709,7 +709,8 @@ public class ExpressionUtil {
 	
 	public List<ConstantDeclaration> extractParameters(
 			List<? extends ParameterDeclaration> parameters, List<String> names,
-			List<? extends Expression> arguments) {
+			List<? extends Expression> extensibleArguments) {
+		List<Expression> arguments = ExpressionModelDerivedFeatures.getAllArguments(parameters, extensibleArguments);
 		List<ConstantDeclaration> constants = new ArrayList<ConstantDeclaration>();
 		int size = parameters.size();
 		for (int i = 0; i < size; i++) {

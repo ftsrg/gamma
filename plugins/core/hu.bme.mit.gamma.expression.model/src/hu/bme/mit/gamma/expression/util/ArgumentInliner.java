@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.expression.util;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
 
@@ -41,7 +40,7 @@ public class ArgumentInliner {
 			for (DirectReferenceExpression reference : ecoreUtil.getSelfAndAllContentsOfType(
 					root, DirectReferenceExpression.class).stream()
 						.filter(it -> it.getDeclaration() == parameter)
-						.collect(Collectors.toList())) {
+						.toList()) {
 				Expression clonedArgument = ecoreUtil.clone(argument);
 				ecoreUtil.replace(clonedArgument, reference);
 			}
@@ -61,7 +60,7 @@ public class ArgumentInliner {
 			for (DirectReferenceExpression directReference : ecoreUtil.getSelfAndAllContentsOfType(
 						result, DirectReferenceExpression.class).stream()
 					.filter(it -> it.getDeclaration() == parameter)
-					.collect(Collectors.toList())) {
+					.toList()) {
 				Expression clonedArgument = ecoreUtil.clone(argument);
 				if (directReference == result) {
 					return clonedArgument; // A single direct reference to the parameter
@@ -79,8 +78,8 @@ public class ArgumentInliner {
 		FunctionDeclaration function = ExpressionUtil.INSTANCE
 					.getFunctionDeclaration(expression);
 		
-		List<Expression> arguments = expression.getArguments();
 		List<ParameterDeclaration> parameters = function.getParameterDeclarations();
+		List<Expression> arguments = ExpressionModelDerivedFeatures.getAllArguments(function, expression);
 		if (arguments.size() != parameters.size()) {
 			throw new IllegalArgumentException("Incorrect number of arguments");
 		}

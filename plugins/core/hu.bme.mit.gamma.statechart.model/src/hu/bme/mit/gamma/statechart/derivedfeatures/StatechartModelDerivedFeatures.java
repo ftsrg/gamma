@@ -466,8 +466,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		List<Expression> topComponentArguments = new ArrayList<Expression>();
 		for (PackageAnnotation annotation : unfoldedPackage.getAnnotations()) {
 			if (annotation instanceof TopComponentArgumentsAnnotation argumentsAnnotation) {
-				topComponentArguments.addAll(
-						argumentsAnnotation.getArguments());
+				Component firstComponent = getFirstComponent(unfoldedPackage);
+				List<Expression> arguments = getAllArguments(firstComponent, argumentsAnnotation);
+				topComponentArguments.addAll(arguments);
 				return topComponentArguments; // There must be only one annotation
 			}
 		}

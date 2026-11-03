@@ -30,6 +30,8 @@ import hu.bme.mit.gamma.expression.model.InitializableElement;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration;
 import hu.bme.mit.gamma.expression.model.NamedElement;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.PredicateExpression;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
@@ -118,6 +120,11 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	@Check
 	public void checkTypeDeclaration(TypeDeclaration typeDeclaration) {
 		handleValidationResultMessage(expressionModelValidator.checkTypeDeclaration(typeDeclaration));
+	}
+	
+	@Check
+	public void checkDefaultArguments(ParametricElement parametricElement) {
+		handleValidationResultMessage(expressionModelValidator.checkDefaultArguments(parametricElement));
 	}
 	
 	@Check

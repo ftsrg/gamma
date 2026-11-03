@@ -16,6 +16,7 @@ import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
 
+import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.Expression;
@@ -64,7 +65,7 @@ public class TraceModelValidator extends StatechartModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
 		if (element instanceof RaiseEventAct act) { // Assert acts do not have to have arguments
-			List<Expression> arguments = act.getArguments();
+			List<Expression> arguments = ExpressionModelDerivedFeatures.getAllArguments(act.getEvent(), act);
 			if (arguments.isEmpty()) {
 				Step step = ecoreUtil.getContainerOfType(act, Step.class);
 				List<Expression> asserts = step.getAsserts();
