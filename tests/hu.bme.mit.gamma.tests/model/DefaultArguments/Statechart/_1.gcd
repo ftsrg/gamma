@@ -1,12 +1,17 @@
-package select_expressions
+package default_arguments
 
 import "Interfaces/Interfaces.gcd"
 
 @TransitionPriority = order-based
 @RegionSchedule = bottom-up
-statechart _1 [
+statechart _1(i : integer, b : boolean) [
 	port Execute : requires Execute
 ] {
+	var int_ : integer
+	var int2 : integer
+	var bool_ : boolean
+	var bool2 : boolean
+	
 	region main {
 		initial IMain
 		state _0 {
@@ -21,5 +26,22 @@ statechart _1 [
 	transition from IMain to _0
 	transition from IA to _1
 	transition from _1 to _2 when Execute.^execute /
+		int_ := int_ + i;
+		increment(int_);
+		bool_ := bool_ xor b;
+		bool2 := _and(bool_);
+		useRecord(#Record{ int_ := 19,  bool_ := true });
+		raise Execute.result(15);
+		
+	procedure increment(a : integer) : void {
+		int2 := int_ + a;
+	}
+	
+	lambda _and(a : boolean) : boolean := bool_ and a
+	
+	procedure useRecord(r : Record) : void {
+		int2 := r.int_ + int2;
+		bool2 := r.bool_ xor bool2;
+	}
 	
 }

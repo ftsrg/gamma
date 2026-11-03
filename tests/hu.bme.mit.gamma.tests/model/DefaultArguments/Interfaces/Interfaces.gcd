@@ -1,7 +1,9 @@
-package select_expressions
+package default_arguments
 
 interface Execute {
 	out event ^execute
+	
+	in event result(value : integer := 47)
 }
 
 type Enumeration : enum {
@@ -11,7 +13,6 @@ type Enumeration : enum {
 type Record : record {
 	int_ : integer,
 	bool_ : boolean
-//	double : decimal
 }
 
 type CompositeRecord : record {

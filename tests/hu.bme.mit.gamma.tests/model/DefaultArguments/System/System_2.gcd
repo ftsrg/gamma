@@ -1,0 +1,14 @@
+package default_arguments
+
+import "Interfaces/Interfaces.gcd"
+
+import "Statechart/_2.gcd"
+
+cascade System_2 [
+	port Execute : requires Execute
+] {
+	component c : _2(5)
+	
+	bind Execute -> c.Execute
+	
+}
