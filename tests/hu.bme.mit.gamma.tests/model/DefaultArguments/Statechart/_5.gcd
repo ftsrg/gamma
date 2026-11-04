@@ -1,0 +1,55 @@
+package default_arguments
+
+import "Interfaces/Interfaces.gcd"
+
+@Asynchronous
+@TransitionPriority = order-based
+@RegionSchedule = bottom-up
+statechart _5(c : CompositeRecord :=
+		#CompositeRecord{ enumeration := Enumeration::B_, rec0rd := #Record{ int_ := 3, bool_ := true } }) [
+	port Execute : requires Execute
+] {
+	var int_ : integer
+	var int2 : integer
+	var bool_ : boolean
+	var bool2 : boolean
+	var enum_ : Enumeration
+	
+	region main {
+		initial IMain
+		state _0 {
+			region a {
+				initial IA
+				state _1
+				state _2
+			}
+		}
+	}
+	
+	transition from IMain to _0
+	transition from IA to _1
+	transition from _1 to _2 when Execute.^execute /
+		int_ := int_ + c.rec0rd.int_;
+		increment();
+		bool_ := bool_ xor c.rec0rd.bool_;
+		bool2 := _and();
+		useRecord();
+		if (c.rec0rd.bool_) {
+			enum_ := c.enumeration;
+		}
+		raise Execute.result;
+		
+	procedure increment(a : integer := -1000 + c.rec0rd.int_, b : integer := c.rec0rd.int_) : void {
+		int2 := int_ + a + b;
+	}
+	
+	lambda _and(a : boolean := false, b : boolean := true) : boolean := bool_ and a or b
+	
+	procedure useRecord(r : Record := #Record{ int_ := 19,  bool_ := true }) : void {
+		if (c.enumeration != Enumeration::B_) {
+			int2 := r.int_ + int2;
+		}
+		bool2 := r.bool_ xor bool2;
+	}
+	
+}

@@ -276,10 +276,12 @@ class ExpressionTransformer {
 	}
 		
 	def dispatch List<Expression> transformExpression(RecordAccessExpression expression) {
+		// TODO
 		return expression.transformReferenceExpression
 	}
 	
 	def dispatch List<Expression> transformExpression(ArrayAccessExpression expression) {
+		// TODO
 		return expression.transformReferenceExpression
 	}
 

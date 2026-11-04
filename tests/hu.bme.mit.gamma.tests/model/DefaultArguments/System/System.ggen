@@ -10,6 +10,9 @@ import "System/System_3.gcd"
 import "Statechart/_4.gcd"
 import "System/System_4.gcd"
 
+import "Statechart/_5.gcd"
+import "System/System_5.gcd"
+
 //
 
 code {
@@ -115,6 +118,34 @@ analysis {
 verification {
 	file : "System_4"
 	property-file : ".System_4.gpd"
+	language : Theta
+	back-annotate-to-original : true
+	test-language : java
+	optimize : true
+	serialize-results : false
+}
+
+//
+
+code {
+	component : _5
+	language : java
+}
+
+code {
+	component : System_5
+	language : java
+}
+
+analysis {
+	component : System_5
+	language : Theta
+	state-coverage
+}
+
+verification {
+	file : "System_5"
+	property-file : ".System_5.gpd"
 	language : Theta
 	back-annotate-to-original : true
 	test-language : java

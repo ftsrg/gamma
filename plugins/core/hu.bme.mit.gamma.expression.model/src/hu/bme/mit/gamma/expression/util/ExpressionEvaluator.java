@@ -802,7 +802,7 @@ public class ExpressionEvaluator {
 				access.getOperand(), RecordLiteralExpression.class);
 		FieldReferenceExpression fieldReference = access.getFieldReference();
 		FieldAssignment fieldAssignment = literal.getFieldAssignments().stream()
-				.filter(it -> it.getReference() == fieldReference)
+				.filter(it -> it.getReference().getFieldDeclaration() == fieldReference.getFieldDeclaration())
 				.findFirst().get();
 		Expression value = fieldAssignment.getValue();
 		return value;
