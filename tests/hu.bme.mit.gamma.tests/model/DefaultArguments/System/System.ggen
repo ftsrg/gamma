@@ -13,139 +13,170 @@ import "System/System_4.gcd"
 import "Statechart/_5.gcd"
 import "System/System_5.gcd"
 
+import "Statechart/_6.gcd"
+import "System/System_6.gcd"
+
+//
+
+//code {
+//	component : _1
+//	language : java
+//}
+//
+//code {
+//	component : System_1
+//	language : java
+//}
+//
+//analysis {
+//	component : System_1
+//	language : Theta
+//	state-coverage
+//}
+//
+//verification {
+//	file : "System_1"
+//	property-file : ".System_1.gpd"
+//	language : Theta
+//	back-annotate-to-original : true
+//	test-language : java
+//	optimize : true
+//	serialize-results : false
+//}
+//
+////
+//
+//code {
+//	component : _2
+//	language : java
+//}
+//
+//code {
+//	component : System_2
+//	language : java
+//}
+//
+//analysis {
+//	component : System_2
+//	language : Theta
+//	state-coverage
+//}
+//
+//verification {
+//	file : "System_2"
+//	property-file : ".System_2.gpd"
+//	language : Theta
+//	back-annotate-to-original : true
+//	test-language : java
+//	optimize : true
+//	serialize-results : false
+//}
+//
+////
+//
+//code {
+//	component : _3
+//	language : java
+//}
+//
+//code {
+//	component : System_3
+//	language : java
+//}
+//
+//analysis {
+//	component : System_3
+//	language : Theta
+//	state-coverage
+//}
+//
+//verification {
+//	file : "System_3"
+//	property-file : ".System_3.gpd"
+//	language : Theta
+//	back-annotate-to-original : true
+//	test-language : java
+//	optimize : true
+//	serialize-results : false
+//}
+
+//
+
+//code {
+//	component : _4
+//	language : java
+//}
+//
+//code {
+//	component : System_4
+//	language : java
+//}
+//
+//analysis {
+//	component : System_4
+//	language : Theta
+//	state-coverage
+//}
+//
+//verification {
+//	file : "System_4"
+//	property-file : ".System_4.gpd"
+//	language : Theta
+//	back-annotate-to-original : true
+//	test-language : java
+//	optimize : true
+//	serialize-results : false
+//}
+
+//
+
+//code {
+//	component : _5
+//	language : java
+//}
+//
+//code {
+//	component : System_5
+//	language : java
+//}
+//
+//analysis {
+//	component : System_5
+//	language : Theta
+//	state-coverage
+//}
+//
+//verification {
+//	file : "System_5"
+//	property-file : ".System_5.gpd"
+//	language : Theta
+//	back-annotate-to-original : true
+//	test-language : java
+//	optimize : true
+//	serialize-results : false
+//}
+
 //
 
 code {
-	component : _1
+	component : _6
 	language : java
 }
 
 code {
-	component : System_1
+	component : System_6
 	language : java
 }
 
 analysis {
-	component : System_1
+	component : System_6
 	language : Theta
 	state-coverage
 }
 
 verification {
-	file : "System_1"
-	property-file : ".System_1.gpd"
-	language : Theta
-	back-annotate-to-original : true
-	test-language : java
-	optimize : true
-	serialize-results : false
-}
-
-//
-
-code {
-	component : _2
-	language : java
-}
-
-code {
-	component : System_2
-	language : java
-}
-
-analysis {
-	component : System_2
-	language : Theta
-	state-coverage
-}
-
-verification {
-	file : "System_2"
-	property-file : ".System_2.gpd"
-	language : Theta
-	back-annotate-to-original : true
-	test-language : java
-	optimize : true
-	serialize-results : false
-}
-
-//
-
-code {
-	component : _3
-	language : java
-}
-
-code {
-	component : System_3
-	language : java
-}
-
-analysis {
-	component : System_3
-	language : Theta
-	state-coverage
-}
-
-verification {
-	file : "System_3"
-	property-file : ".System_3.gpd"
-	language : Theta
-	back-annotate-to-original : true
-	test-language : java
-	optimize : true
-	serialize-results : false
-}
-
-//
-
-code {
-	component : _4
-	language : java
-}
-
-code {
-	component : System_4
-	language : java
-}
-
-analysis {
-	component : System_4
-	language : Theta
-	state-coverage
-}
-
-verification {
-	file : "System_4"
-	property-file : ".System_4.gpd"
-	language : Theta
-	back-annotate-to-original : true
-	test-language : java
-	optimize : true
-	serialize-results : false
-}
-
-//
-
-code {
-	component : _5
-	language : java
-}
-
-code {
-	component : System_5
-	language : java
-}
-
-analysis {
-	component : System_5
-	language : Theta
-	state-coverage
-}
-
-verification {
-	file : "System_5"
-	property-file : ".System_5.gpd"
+	file : "System_6"
+	property-file : ".System_6.gpd"
 	language : Theta
 	back-annotate-to-original : true
 	test-language : java

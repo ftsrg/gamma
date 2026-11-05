@@ -276,12 +276,20 @@ class ExpressionTransformer {
 	}
 		
 	def dispatch List<Expression> transformExpression(RecordAccessExpression expression) {
-		// TODO
+		if (expression.recordAccessEvaluable) {
+			val evaluatedRecordAccess = expression.evaluateRecordAccess
+			return evaluatedRecordAccess.transformExpression
+		}
+		
 		return expression.transformReferenceExpression
 	}
 	
 	def dispatch List<Expression> transformExpression(ArrayAccessExpression expression) {
-		// TODO
+		if (expression.arrayAccessEvaluable) {
+			val evaluatedRecordAccess = expression.evaluateArrayAccess
+			return evaluatedRecordAccess.transformExpression
+		}
+		
 		return expression.transformReferenceExpression
 	}
 

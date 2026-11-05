@@ -746,7 +746,7 @@ public class ExpressionEvaluator {
 				EClass _eClass_1 = multiaryExpression.eClass();
 				boolean _equals = Objects.equals(_eClass, _eClass_1);
 				if (_equals) {
-					MultiaryExpression _container = ((MultiaryExpression) container);
+					MultiaryExpression _container = (MultiaryExpression) container;
 					List<Expression> _operands = _container.getOperands();
 					_operands.addAll(operands);
 					ecoreUtil.remove(multiaryExpression);
@@ -788,8 +788,9 @@ public class ExpressionEvaluator {
 	}
 	
 	public Expression evaluateArrayAccess(ArrayAccessExpression access) {
+		Expression operandAccess = access.getOperand();
 		ArrayLiteralExpression literal = ExpressionModelDerivedFeatures.getAsIsOrReferencedElement(
-				access.getOperand(), ArrayLiteralExpression.class);
+				operandAccess, ArrayLiteralExpression.class);
 		Expression index = access.getIndex();
 		int i = evaluate(index);
 		List<Expression> operands = literal.getOperands();
@@ -798,8 +799,10 @@ public class ExpressionEvaluator {
 	}
 	
 	public Expression evaluateRecordAccess(RecordAccessExpression access) {
-		RecordLiteralExpression literal = ExpressionModelDerivedFeatures.getAsIsOrReferencedElement(
-				access.getOperand(), RecordLiteralExpression.class);
+		Expression operand = access.getOperand();
+		RecordLiteralExpression literal = (operand instanceof RecordAccessExpression operandAccess) ?
+				(RecordLiteralExpression) evaluateRecordAccess(operandAccess) :
+				ExpressionModelDerivedFeatures.getAsIsOrReferencedElement(operand, RecordLiteralExpression.class);
 		FieldReferenceExpression fieldReference = access.getFieldReference();
 		FieldAssignment fieldAssignment = literal.getFieldAssignments().stream()
 				.filter(it -> it.getReference().getFieldDeclaration() == fieldReference.getFieldDeclaration())

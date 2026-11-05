@@ -19,3 +19,13 @@ type CompositeRecord : record {
 	enumeration : Enumeration,
 	rec0rd : Record
 }
+
+type ArrayRecord : record {
+	int_ : integer,
+	boolArray : [2]boolean
+}
+
+type CompositeArrayRecord : record {
+	arrayRecord : ArrayRecord,
+	intArray : [2]integer
+}

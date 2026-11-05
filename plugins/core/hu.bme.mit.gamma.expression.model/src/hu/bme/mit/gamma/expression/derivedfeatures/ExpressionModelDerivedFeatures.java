@@ -894,7 +894,8 @@ public class ExpressionModelDerivedFeatures {
 		return evaluator.isDefinitelyTrueExpression(condition) ||
 				evaluator.isDefinitelyFalseExpression(condition) ||
 				ecoreUtil.helperEquals(then, _else) ||
-				(isEvaluable(then) && isEvaluable(_else) && evaluator.evaluate(then) == evaluator.evaluate(_else));
+				(isEvaluable(then) && isEvaluable(_else) &&
+						evaluator.evaluate(then) == evaluator.evaluate(_else));
 	}
 	
 	public static boolean isArrayAccessEvaluable(ArrayAccessExpression access) {
@@ -908,6 +909,9 @@ public class ExpressionModelDerivedFeatures {
 	
 	public static boolean isRecordAccessEvaluable(RecordAccessExpression access) {
 		Expression operand = access.getOperand();
+		if (operand instanceof RecordAccessExpression operandAccess) {
+			return isRecordAccessEvaluable(operandAccess);
+		}
 		return isOrReferencedElement(operand, RecordLiteralExpression.class);
 	}
 	

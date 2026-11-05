@@ -6,7 +6,7 @@ import "Interfaces/Interfaces.gcd"
 @TransitionPriority = order-based
 @RegionSchedule = bottom-up
 statechart _5(c : CompositeRecord :=
-		#CompositeRecord{ enumeration := Enumeration::B_, rec0rd := #Record{ int_ := 3, bool_ := true } }) [
+		#CompositeRecord{ enumeration := Enumeration::B_, rec0rd := #Record{ int_ := 33, bool_ := true } }) [
 	port Execute : requires Execute
 ] {
 	var int_ : integer
