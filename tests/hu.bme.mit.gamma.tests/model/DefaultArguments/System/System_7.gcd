@@ -1,0 +1,14 @@
+package default_arguments
+
+import "Interfaces/Interfaces.gcd"
+
+import "Statechart/_7.gcd"
+
+scheduled-async System_7 [
+	port Execute : requires Execute
+] {
+	component c : _7
+	
+	bind Execute -> c.Execute
+	
+}

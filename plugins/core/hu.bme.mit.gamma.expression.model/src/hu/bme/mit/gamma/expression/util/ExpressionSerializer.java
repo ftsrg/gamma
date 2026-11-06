@@ -135,10 +135,11 @@ public class ExpressionSerializer {
 		builder.append("(");
 		List<Expression> operands = expression.getOperands();
 		boolean hasElements = false;
-		for (final Expression operand : operands) {
+		for (Expression operand : operands) {
 			if (!hasElements) {
 				hasElements = true;
-			} else {
+			}
+			else {
 				builder.append(" || ");
 			}
 			String serialize = this.serialize(operand);
@@ -153,10 +154,11 @@ public class ExpressionSerializer {
 		builder.append("(");
 		List<Expression> operands = expression.getOperands();
 		boolean hasElements = false;
-		for (final Expression operand : operands) {
+		for (Expression operand : operands) {
 			if (!hasElements) {
 				hasElements = true;
-			} else {
+			}
+			else {
 				builder.append(" ^^ ");
 			}
 			String serialize = this.serialize(operand);
@@ -171,10 +173,11 @@ public class ExpressionSerializer {
 		builder.append("(");
 		List<Expression> operands = expression.getOperands();
 		boolean hasElements = false;
-		for (final Expression operand : operands) {
+		for (Expression operand : operands) {
 			if (!hasElements) {
 				hasElements = true;
-			} else {
+			}
+			else {
 				builder.append(" && ");
 			}
 			String serialize = this.serialize(operand);
@@ -261,10 +264,11 @@ public class ExpressionSerializer {
 		builder.append("(");
 		List<Expression> operands = expression.getOperands();
 		boolean hasElements = false;
-		for (final Expression operand : operands) {
+		for (Expression operand : operands) {
 			if (!hasElements) {
 				hasElements = true;
-			} else {
+			}
+			else {
 				builder.append(" + ");
 			}
 			String serialize = this.serialize(operand);
@@ -291,10 +295,11 @@ public class ExpressionSerializer {
 		builder.append("(");
 		List<Expression> operands = expression.getOperands();
 		boolean hasElements = false;
-		for (final Expression operand : operands) {
+		for (Expression operand : operands) {
 			if (!hasElements) {
 				hasElements = true;
-			} else {
+			}
+			else {
 				builder.append(" * ");
 			}
 			String serialize = this.serialize(operand);
@@ -381,8 +386,9 @@ public class ExpressionSerializer {
 	protected String _serialize(final FunctionAccessExpression functionAccessExpression) {
 		String string = "";
 		List<Expression> _arguments = functionAccessExpression.getArguments();
-		for (final Expression expression : _arguments) {
-			string = string.concat(this.serialize(expression).toString());
+		for (Expression expression : _arguments) {
+			string = string.concat(
+					this.serialize(expression).toString());
 			List<Expression> arguments = functionAccessExpression.getArguments();
 			Expression _last = arguments.get(arguments.size() - 1);
 			boolean _notEquals = (!Objects.equals(expression, _last));
@@ -391,14 +397,14 @@ public class ExpressionSerializer {
 			}
 		}
 		String serialize = this.serialize(functionAccessExpression.getOperand());
-		String _plus = (serialize + "(");
-		String _plus_1 = (_plus + string);
+		String _plus = serialize + "(";
+		String _plus_1 = _plus + string;
 		return _plus_1 + ")";
 	}
 
 	protected String _serialize(final RecordAccessExpression recordAccessExpression) {
 		String _serialize = this.serialize(recordAccessExpression.getOperand());
-		String _plus = (_serialize + ".");
+		String _plus = _serialize + ".";
 		String _field = recordAccessExpression.getFieldReference().getFieldDeclaration().getName();
 		return _plus + _field;
 	}
@@ -411,10 +417,11 @@ public class ExpressionSerializer {
 	protected String _serialize(final ForallExpression forallExpression) {
 		String string = "";
 		List<ParameterDeclaration> _parameterDeclarations = forallExpression.getParameterDeclarations();
-		for (final ParameterDeclaration expression : _parameterDeclarations) {
-			string = string.concat(expression.getType().toString());
+		for (ParameterDeclaration expression : _parameterDeclarations) {
+			string = string.concat(
+					expression.getType().toString());
 			ParameterDeclaration _last = _parameterDeclarations.get(_parameterDeclarations.size() - 1);
-			boolean _notEquals = (!Objects.equals(expression, _last));
+			boolean _notEquals = !Objects.equals(expression, _last);
 			if (_notEquals) {
 				string = string.concat(", ");
 			}
@@ -426,10 +433,11 @@ public class ExpressionSerializer {
 	protected String _serialize(final ExistsExpression existsExpression) {
 		String string = "";
 		List<ParameterDeclaration> _parameterDeclarations = existsExpression.getParameterDeclarations();
-		for (final ParameterDeclaration expression : _parameterDeclarations) {
-			string = string.concat(expression.getType().toString());
+		for (ParameterDeclaration expression : _parameterDeclarations) {
+			string = string.concat(
+					expression.getType().toString());
 			ParameterDeclaration _last = _parameterDeclarations.get(_parameterDeclarations.size() - 1);
-			boolean _notEquals = (!Objects.equals(expression, _last));
+			boolean _notEquals = !Objects.equals(expression, _last);
 			if (_notEquals) {
 				string = string.concat(", ");
 			}
@@ -458,10 +466,10 @@ public class ExpressionSerializer {
 	protected String _serialize(final ArrayLiteralExpression arrayLiteralExpression) {
 		String string = "";
 		List<Expression> _operands = arrayLiteralExpression.getOperands();
-		for (final Expression expression : _operands) {
+		for (Expression expression : _operands) {
 			string = string.concat(this.serialize(expression).toString());
 			Expression _last = _operands.get(_operands.size() - 1);
-			boolean _notEquals = (!Objects.equals(expression, _last));
+			boolean _notEquals = !Objects.equals(expression, _last);
 			if (_notEquals) {
 				string = string.concat(", ");
 			}
@@ -478,14 +486,14 @@ public class ExpressionSerializer {
 	protected String _serialize(final RecordLiteralExpression recordLiteralExpression) {
 		String string = "";
 		List<FieldAssignment> _fieldAssignments = recordLiteralExpression.getFieldAssignments();
-		for (final FieldAssignment expression : _fieldAssignments) {
+		for (FieldAssignment expression : _fieldAssignments) {
 			String _reference = expression.getReference().getFieldDeclaration().getName();
-			String _plus = (_reference + ":=");
+			String _plus = _reference + ":=";
 			String _serialize = this.serialize(expression.getValue());
-			String _plus_1 = (_plus + _serialize);
+			String _plus_1 = _plus + _serialize;
 			string = string.concat(_plus_1);
 			FieldAssignment _last = _fieldAssignments.get(_fieldAssignments.size() - 1);
-			boolean _notEquals = (!Objects.equals(expression, _last));
+			boolean _notEquals = !Objects.equals(expression, _last);
 			if (_notEquals) {
 				string = string.concat(", ");
 			}
@@ -499,20 +507,22 @@ public class ExpressionSerializer {
 		boolean _isLeftInclusive = integerRangeLiteralExpression.isLeftInclusive();
 		if (_isLeftInclusive) {
 			leftinc = "[";
-		} else {
+		}
+		else {
 			leftinc = "(";
 		}
 		boolean _isRightInclusive = integerRangeLiteralExpression.isRightInclusive();
 		if (_isRightInclusive) {
 			rightinc = "]";
-		} else {
+		}
+		else {
 			rightinc = ")";
 		}
 		String _serialize = this.serialize(integerRangeLiteralExpression.getLeftOperand());
-		String _plus = (leftinc + _serialize);
-		String _plus_1 = (_plus + "..");
+		String _plus = leftinc + _serialize;
+		String _plus_1 = _plus + "..";
 		String _serialize_1 = this.serialize(integerRangeLiteralExpression.getRightOperand());
-		String _plus_2 = (_plus_1 + _serialize_1);
+		String _plus_2 = _plus_1 + _serialize_1;
 		return _plus_2 + rightinc;
 	}
 

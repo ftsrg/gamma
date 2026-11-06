@@ -14,6 +14,9 @@ statechart _6(c : CompositeArrayRecord :=
 	var bool_ : boolean
 	var bool2 : boolean
 	
+	var intArray : [2]integer
+	var boolArray : [2]boolean
+	
 	region main {
 		initial IMain
 		state _0 {
@@ -34,6 +37,15 @@ statechart _6(c : CompositeArrayRecord :=
 		useRecord();
 		if (c.arrayRecord.boolArray[0]) {
 			bool2 := c.arrayRecord.boolArray[1];
+		}
+		intArray := #[c.intArray[0], c.intArray[1]];
+		boolArray := c.arrayRecord.boolArray;
+		if (c.arrayRecord.boolArray[1] and select->boolean) {
+			boolArray := #[boolArray[0] or c.arrayRecord.boolArray[1], boolArray[1] xor c.arrayRecord.boolArray[0]];
+			intArray[0] := c.arrayRecord.int_ * c.intArray[1];
+			intArray[1] := (((c.arrayRecord.boolArray[1]) ?
+				c.arrayRecord.int_ * c.intArray[0] : -c.arrayRecord.int_ * c.intArray[1]
+			) + select->#[-3 to 3)) mod 5;
 		}
 		raise Execute.result;
 		

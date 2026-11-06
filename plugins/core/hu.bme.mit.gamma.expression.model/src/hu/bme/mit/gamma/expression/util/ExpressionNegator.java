@@ -71,38 +71,6 @@ public class ExpressionNegator {
 	}
 	
 	public Expression _negate(XorExpression expression) {
-//		AddExpression addExpression = factory.createAddExpression();
-//		for (Expression operand : expression.getOperands()) {
-//			IfThenElseExpression ifThenElseExpression = factory.createIfThenElseExpression();
-//			ifThenElseExpression.setCondition(
-//					ecoreUtil.clone(operand));
-//			
-//			IntegerLiteralExpression one = factory.createIntegerLiteralExpression();
-//			one.setValue(BigInteger.ONE);
-//			ifThenElseExpression.setThen(one);
-//			
-//			IntegerLiteralExpression zero = factory.createIntegerLiteralExpression();
-//			zero.setValue(BigInteger.ZERO);
-//			ifThenElseExpression.setElse(zero);
-//			
-//			addExpression.getOperands().add(
-//					ifThenElseExpression);
-//		}
-//		ModExpression modExpression = factory.createModExpression();
-//		modExpression.setLeftOperand(addExpression);
-//		
-//		IntegerLiteralExpression two = factory.createIntegerLiteralExpression();
-//		two.setValue(BigInteger.TWO);
-//		modExpression.setRightOperand(two);
-//		
-//		EqualityExpression equalityExpression = factory.createEqualityExpression();
-//		equalityExpression.setLeftOperand(modExpression);
-//		
-//		IntegerLiteralExpression zero = factory.createIntegerLiteralExpression();
-//		zero.setValue(BigInteger.ZERO);
-//		equalityExpression.setRightOperand(zero);
-//		
-//		return equalityExpression;
 		// Xnor = equivalence
 		
 		EqualityExpression firstEqualityExpression = factory.createEqualityExpression();

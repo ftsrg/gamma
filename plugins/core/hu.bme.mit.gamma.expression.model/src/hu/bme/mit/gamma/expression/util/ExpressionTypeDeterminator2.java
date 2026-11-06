@@ -118,8 +118,6 @@ public class ExpressionTypeDeterminator2 {
 			
 			List<Expression> operands = arrayLiteralExpression.getOperands();
 			if (operands.isEmpty()) {
-				// Maybe this should be changed to VoidTypeDefinition, as empty array literals could be useful
-//				throw new IllegalArgumentException();
 				arrayTypeDefinition.setElementType(
 						factory.createVoidTypeDefinition());
 				arrayTypeDefinition.setSize(
@@ -264,8 +262,8 @@ public class ExpressionTypeDeterminator2 {
 			TypeDeclaration clonedTypeDeclaration = ecoreUtil.clone(typeDeclaration);
 			clonedFinalTypeReference.setReference(clonedTypeDeclaration);
 			Type clonedType = clonedTypeDeclaration.getType();
-			clonedTypeDeclaration.setType(
-					getAliaslessTypeTree(clonedType));
+			Type aliaslessTypeTree = getAliaslessTypeTree(clonedType);
+			clonedTypeDeclaration.setType(aliaslessTypeTree);
 			return clonedFinalTypeReference;
 		}
 		Type clonedType = ecoreUtil.clone(type); // type instanceof TypeDefinition
@@ -351,10 +349,13 @@ public class ExpressionTypeDeterminator2 {
 		List<Type> types = new ArrayList<Type>();
 		Expression lhs = expression.getLeftOperand();
 		Expression rhs = expression.getRightOperand();
-		types.add(
-				getType(lhs));
-		types.add(
-				getType(rhs));
+		
+		Type lhsType = getType(lhs);
+		Type rhsType = getType(rhs);
+		
+		types.add(lhsType);
+		types.add(rhsType);
+		
 		return getArithmeticType(types);
 	}
 	
@@ -386,7 +387,8 @@ public class ExpressionTypeDeterminator2 {
 			TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
 			return typeDefinition instanceof DecimalTypeDefinition ||
 				typeDefinition instanceof IntegerTypeDefinition ||
-				typeDefinition instanceof RationalTypeDefinition;
+				typeDefinition instanceof RationalTypeDefinition ||
+				typeDefinition instanceof SubrangeTypeDefinition;
 		} catch (IllegalArgumentException e) {
 			return false; // Might be the result of inconsistent Xtext type reference (reference is null)
 		}
@@ -394,7 +396,8 @@ public class ExpressionTypeDeterminator2 {
 	
 	public boolean isNumber(Expression expression) {
 		try {
-			return expression != null && isNumber(getType(expression));
+			Type type = getType(expression);
+			return expression != null && isNumber(type);
 		} catch (IllegalArgumentException e) {
 			return false; // e.g., if getType(expression) throws an exception
 		}
@@ -404,7 +407,8 @@ public class ExpressionTypeDeterminator2 {
 	
 	public boolean isBoolean(Expression expression) {
 		try {
-			return expression != null && getTypeDefinition(expression) instanceof BooleanTypeDefinition;
+			return expression != null &&
+					getTypeDefinition(expression) instanceof BooleanTypeDefinition;
 		} catch (IllegalArgumentException e) {
 			return false; // e.g., if getTypeDefinition(expression) throws an exception
 		}

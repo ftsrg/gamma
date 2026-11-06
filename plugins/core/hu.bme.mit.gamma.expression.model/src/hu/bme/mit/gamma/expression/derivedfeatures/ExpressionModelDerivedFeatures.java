@@ -900,9 +900,13 @@ public class ExpressionModelDerivedFeatures {
 	
 	public static boolean isArrayAccessEvaluable(ArrayAccessExpression access) {
 		Expression operand = access.getOperand();
+		Expression index = access.getIndex();
+		boolean isIndexEvaluable = ExpressionModelDerivedFeatures.isEvaluable(index);
+		if (operand instanceof RecordAccessExpression recordAccessExpression) {
+			return isRecordAccessEvaluable(recordAccessExpression) && isIndexEvaluable;
+		}
 		if (isOrReferencedElement(operand, ArrayLiteralExpression.class)) {
-			Expression index = access.getIndex();
-			return ExpressionModelDerivedFeatures.isEvaluable(index);
+			return isIndexEvaluable;
 		}
 		return false;
 	}

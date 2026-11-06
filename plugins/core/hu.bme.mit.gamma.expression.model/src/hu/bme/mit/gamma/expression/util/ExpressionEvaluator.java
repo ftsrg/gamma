@@ -389,8 +389,7 @@ public class ExpressionEvaluator {
 			}
 			FieldAssignment fieldAssignment = recordLiteral.getFieldAssignments().stream()
 					.filter(it -> it.getReference().getFieldDeclaration() == field)
-					.findFirst()
-					.get();
+					.findFirst().get();
 			
 			Expression value = fieldAssignment.getValue();
 			return evaluateDecimal(value);
@@ -501,8 +500,7 @@ public class ExpressionEvaluator {
 			}
 			FieldAssignment fieldAssignment = recordLiteral.getFieldAssignments().stream()
 				.filter(it -> it.getReference().getFieldDeclaration() == field)
-				.findFirst()
-				.get();
+				.findFirst().get();
 			
 			Expression value = fieldAssignment.getValue();
 			return evaluateBoolean(value);
@@ -780,7 +778,8 @@ public class ExpressionEvaluator {
 		if (ecoreUtil.helperEquals(then, _else)) {
 			return then;
 		}
-		if (ExpressionModelDerivedFeatures.isEvaluable(then) && ExpressionModelDerivedFeatures.isEvaluable(_else) &&
+		if (ExpressionModelDerivedFeatures.isEvaluable(then) &&
+				ExpressionModelDerivedFeatures.isEvaluable(_else) &&
 					evaluate(then) == evaluate(_else)) {
 			return then;
 		}
@@ -789,8 +788,9 @@ public class ExpressionEvaluator {
 	
 	public Expression evaluateArrayAccess(ArrayAccessExpression access) {
 		Expression operandAccess = access.getOperand();
-		ArrayLiteralExpression literal = ExpressionModelDerivedFeatures.getAsIsOrReferencedElement(
-				operandAccess, ArrayLiteralExpression.class);
+		ArrayLiteralExpression literal = (operandAccess instanceof RecordAccessExpression recordAccess) ?
+				(ArrayLiteralExpression) evaluateRecordAccess(recordAccess) :
+				ExpressionModelDerivedFeatures.getAsIsOrReferencedElement(operandAccess, ArrayLiteralExpression.class);
 		Expression index = access.getIndex();
 		int i = evaluate(index);
 		List<Expression> operands = literal.getOperands();
