@@ -789,7 +789,9 @@ public class ExpressionEvaluator {
 	public Expression evaluateArrayAccess(ArrayAccessExpression access) {
 		Expression operandAccess = access.getOperand();
 		ArrayLiteralExpression literal = (operandAccess instanceof RecordAccessExpression recordAccess) ?
-				(ArrayLiteralExpression) evaluateRecordAccess(recordAccess) :
+					(ArrayLiteralExpression) evaluateRecordAccess(recordAccess) :
+				(operandAccess instanceof ArrayAccessExpression arrayAccess) ?
+					(ArrayLiteralExpression) evaluateArrayAccess(arrayAccess) :
 				ExpressionModelDerivedFeatures.getAsIsOrReferencedElement(operandAccess, ArrayLiteralExpression.class);
 		Expression index = access.getIndex();
 		int i = evaluate(index);

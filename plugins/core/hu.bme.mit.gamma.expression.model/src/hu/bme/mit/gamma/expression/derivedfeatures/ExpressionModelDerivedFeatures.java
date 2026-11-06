@@ -905,6 +905,9 @@ public class ExpressionModelDerivedFeatures {
 		if (operand instanceof RecordAccessExpression recordAccessExpression) {
 			return isRecordAccessEvaluable(recordAccessExpression) && isIndexEvaluable;
 		}
+		if (operand instanceof ArrayAccessExpression arrayAccessExpression) {
+			return isArrayAccessEvaluable(arrayAccessExpression) && isIndexEvaluable;
+		}
 		if (isOrReferencedElement(operand, ArrayLiteralExpression.class)) {
 			return isIndexEvaluable;
 		}
