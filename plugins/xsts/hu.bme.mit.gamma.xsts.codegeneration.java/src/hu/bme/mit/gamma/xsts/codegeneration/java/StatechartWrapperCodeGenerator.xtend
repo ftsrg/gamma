@@ -76,7 +76,8 @@ class StatechartWrapperCodeGenerator {
 			«gammaStatechart.createInternalPortHandlingAttributes»
 			
 			public «CLASS_NAME»(«FOR parameter : gammaStatechart.parameterDeclarations SEPARATOR ', '»«parameter.type.serialize» «parameter.name»«ENDFOR») {
-				«CLASS_NAME.toFirstLower» = new «gammaStatechart.wrappedStatemachineClassName»(«FOR parameter : gammaStatechart.parameterDeclarations»«parameter.name», «ENDFOR»this);
+				«CLASS_NAME.toFirstLower» = new «gammaStatechart.wrappedStatemachineClassName»(«
+					FOR parameter : gammaStatechart.parameterDeclarations»«parameter.typeDefinition.accessIn(parameter.name).join(", ")», «ENDFOR»this);
 			}
 			
 			//

@@ -29,3 +29,8 @@ type CompositeArrayRecord : record {
 	arrayRecord : ArrayRecord,
 	intArray : [2]integer
 }
+
+type CompositeMultidimensionalArrayRecord : record {
+	arrayRecord : ArrayRecord,
+	intArray : [2][2]integer
+}
