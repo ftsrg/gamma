@@ -12,6 +12,8 @@
         eType="#//PortBinding" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="channels" upperBound="-1"
         eType="#//Channel" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="compositeChannels" upperBound="-1"
+        eType="#//CompositeChannel" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SchedulableCompositeComponent" abstract="true"
       eSuperTypes="#//CompositeComponent">
@@ -27,14 +29,21 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="instancePortReference"
         lowerBound="1" eType="#//InstancePortReference" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Channel" abstract="true">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="providedPort" lowerBound="1"
-        eType="#//InstancePortReference" containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="InstancePortReference">
+  <eClassifiers xsi:type="ecore:EClass" name="AbstractInstancePortReference" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EReference" name="instance" lowerBound="1"
         eType="#//ComponentInstance"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InstancePortReference" eSuperTypes="#//AbstractInstancePortReference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="ecore:EClass interface.ecore#//Port"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InstanceCompositePortReference" eSuperTypes="#//AbstractInstancePortReference">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="compositePort" lowerBound="1"
+        eType="ecore:EClass interface.ecore#//CompositePort"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AbstractChannel" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Channel" abstract="true" eSuperTypes="#//AbstractChannel">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="providedPort" lowerBound="1"
+        eType="#//InstancePortReference" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="BroadcastChannel" eSuperTypes="#//Channel">
     <eStructuralFeatures xsi:type="ecore:EReference" name="requiredPorts" lowerBound="1"
@@ -43,6 +52,12 @@
   <eClassifiers xsi:type="ecore:EClass" name="SimpleChannel" eSuperTypes="#//Channel">
     <eStructuralFeatures xsi:type="ecore:EReference" name="requiredPort" lowerBound="1"
         eType="#//InstancePortReference" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="CompositeChannel" eSuperTypes="#//AbstractChannel">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="providedPort" lowerBound="1"
+        eType="#//InstanceCompositePortReference" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="requiredPort" lowerBound="1"
+        eType="#//InstanceCompositePortReference" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ControlSpecification">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="controlFunction" eType="#//ControlFunction"/>

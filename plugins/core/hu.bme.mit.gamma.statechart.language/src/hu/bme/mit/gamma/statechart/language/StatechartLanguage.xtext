@@ -177,6 +177,10 @@ enum RealizationMode returns InterfaceModel::RealizationMode:
 	PROVIDED = 'provides' | REQUIRED = 'requires'
 ;
 
+CompositePort returns InterfaceModel::CompositePort:
+	'composite-port' name=ID 'of' ports+=[InterfaceModel::AbstractPort] (',' ports+=[InterfaceModel::AbstractPort])*
+;
+
 SynchronousStatechartDefinition returns SynchronousStatechartDefinition:
 	(
 		('@RegionSchedule' '=' schedulingOrder=SchedulingOrder)? &
@@ -189,7 +193,10 @@ SynchronousStatechartDefinition returns SynchronousStatechartDefinition:
 	)
 	'statechart' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
-		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')? '{'
+		('['
+				(ports+=Port (','? ports+=Port)*)?
+				(compositePorts+=CompositePort (','? compositePorts+=CompositePort)*)? 
+			']' )? '{'
 			(
 				variableDeclarations+=VariableDeclaration |
 				timeoutDeclarations+=TimeoutDeclaration |
@@ -216,7 +223,10 @@ AsynchronousStatechartDefinition returns AsynchronousStatechartDefinition:
 	)
 	'statechart' name=ID ('capacity' '(' capacity=Expression ')')?
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
-		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')? '{'
+		('['
+				(ports+=Port (','? ports+=Port)*)?
+				(compositePorts+=CompositePort (','? compositePorts+=CompositePort)*)? 
+			']' )? '{'
 			(
 				variableDeclarations+=VariableDeclaration |
 				timeoutDeclarations+=TimeoutDeclaration |
@@ -472,12 +482,16 @@ CascadeCompositeComponent returns CompositeModel::CascadeCompositeComponent:
 	annotations+=ComponentAnnotation*
 	'cascade' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
-		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
+		('['
+				(ports+=Port (','? ports+=Port)*)?
+				(compositePorts+=CompositePort (','? compositePorts+=CompositePort)*)? 
+			']' )? 
 		'{'
 			(
 				components+=SynchronousComponentInstance |
 				portBindings+=PortBinding |
-				channels+=Channel
+				channels+=Channel |
+				compositeChannels+=CompositeChannel
 			)*
 			('initial' 'execute' initialExecutionList+=AtomicComponentInstanceReferenceExpression
 					(',' initialExecutionList+=AtomicComponentInstanceReferenceExpression)*)?
@@ -490,12 +504,16 @@ SynchronousCompositeComponent returns CompositeModel::SynchronousCompositeCompon
 	annotations+=ComponentAnnotation*
 	'sync' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
-		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
+		('['
+				(ports+=Port (','? ports+=Port)*)?
+				(compositePorts+=CompositePort (','? compositePorts+=CompositePort)*)? 
+			']' )? 
 		'{'			
 			(
 				components+=SynchronousComponentInstance |
 				portBindings+=PortBinding |
-				channels+=Channel
+				channels+=Channel |
+				compositeChannels+=CompositeChannel
 			)*
 		'}'
 ;
@@ -516,12 +534,16 @@ AsynchronousCompositeComponent returns CompositeModel::AsynchronousCompositeComp
 	annotations+=ComponentAnnotation*
 	'async' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
-		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
+		('['
+				(ports+=Port (','? ports+=Port)*)?
+				(compositePorts+=CompositePort (','? compositePorts+=CompositePort)*)? 
+			']' )? 
 		'{'
 			(
 				components+=AsynchronousComponentInstance |
 				portBindings+=PortBinding |
-				channels+=Channel
+				channels+=Channel |
+				compositeChannels+=CompositeChannel
 			)*
 		'}'
 ;
@@ -530,12 +552,16 @@ ScheduledAsynchronousCompositeComponent returns CompositeModel::ScheduledAsynchr
 	annotations+=ComponentAnnotation*
 	'scheduled-async' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration) (',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
-		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
+		('['
+				(ports+=Port (','? ports+=Port)*)?
+				(compositePorts+=CompositePort (','? compositePorts+=CompositePort)*)? 
+			']' )? 
 		'{'
 			(
 				components+=AsynchronousComponentInstance |
 				portBindings+=PortBinding |
-				channels+=Channel
+				channels+=Channel |
+				compositeChannels+=CompositeChannel
 			)*
 			('initial' 'execute' initialExecutionList+=AtomicComponentInstanceReferenceExpression
 					(',' initialExecutionList+=AtomicComponentInstanceReferenceExpression)*)?
@@ -549,14 +575,16 @@ AsynchronousAdapter returns CompositeModel::AsynchronousAdapter:
 	'adapter' name=ID ('(' ((parameterDeclarations+=ParameterDeclaration)
 			(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
 		'of' wrappedComponent=SynchronousComponentInstance
-		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
+		('['
+				(ports+=Port (','? ports+=Port)*)?
+				(compositePorts+=CompositePort (','? compositePorts+=CompositePort)*)? 
+			']' )? 
 		'{'
 			(
 				clocks+=ClockDeclaration |
 				controlSpecifications+=ControlSpecificaiton |
 				messageQueues+=MessageQueue
 			)*
-
 		'}'
 ;
 
@@ -612,6 +640,10 @@ InstancePortReference returns CompositeModel::InstancePortReference:
 	instance=[CompositeModel::ComponentInstance] '.' port=[InterfaceModel::Port] 
 ;
 
+InstanceCompositePortReference returns CompositeModel::InstanceCompositePortReference:
+	instance=[CompositeModel::ComponentInstance] '.' compositePort=[InterfaceModel::CompositePort] 
+;
+
 ComponentInstance returns CompositeModel::ComponentInstance:
 	SynchronousComponentInstance | 'async' AsynchronousComponentInstance
 ;
@@ -619,6 +651,7 @@ ComponentInstance returns CompositeModel::ComponentInstance:
 AtomicComponentInstanceReferenceExpression returns CompositeModel::ComponentInstanceReferenceExpression:
 	componentInstance=[CompositeModel::ComponentInstance]
 ;
+
 // Subgrammars can use this
 ComponentInstanceReferenceExpression returns CompositeModel::ComponentInstanceReferenceExpression:
 	componentInstance=[CompositeModel::ComponentInstance] ('->' child=ComponentInstanceReferenceExpression )?
@@ -636,6 +669,7 @@ Channel returns CompositeModel::Channel:
 	SimpleChannel | BroadcastChannel
 ;
 
+
 SimpleChannel returns CompositeModel::SimpleChannel:
 	// This is the channel's point of view: input is the input of the channel, i.e. the out port signals of statecharts
 	'channel' '[' providedPort=InstancePortReference ']' '-o)-' '[' requiredPort=InstancePortReference ']'
@@ -644,6 +678,10 @@ SimpleChannel returns CompositeModel::SimpleChannel:
 BroadcastChannel returns CompositeModel::BroadcastChannel:
 	// This is the channel's point of view: input is the input of the channel, i.e. the out port signals of statecharts
 	'channel' '[' providedPort=InstancePortReference ']' '-o)-' '[' (requiredPorts+=InstancePortReference) (',' requiredPorts+=InstancePortReference)+ ']'
+;
+
+CompositeChannel returns CompositeModel::CompositeChannel:
+	'composite-channel' '[' providedPort=InstanceCompositePortReference ']' '-o)-' '[' requiredPort=InstanceCompositePortReference ']'
 ;
 
 // Interface

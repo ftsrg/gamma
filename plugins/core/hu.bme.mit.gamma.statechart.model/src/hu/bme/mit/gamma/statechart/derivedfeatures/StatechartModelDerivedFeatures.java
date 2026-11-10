@@ -87,10 +87,12 @@ import hu.bme.mit.gamma.statechart.contract.NegativeContractStatechartAnnotation
 import hu.bme.mit.gamma.statechart.contract.ScenarioAllowedWaitAnnotation;
 import hu.bme.mit.gamma.statechart.contract.ScenarioContractAnnotation;
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
+import hu.bme.mit.gamma.statechart.interface_.AbstractPort;
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Clock;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.ComponentAnnotation;
+import hu.bme.mit.gamma.statechart.interface_.CompositePort;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
 import hu.bme.mit.gamma.statechart.interface_.EventDirection;
@@ -1695,6 +1697,36 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 		
 		return interfaces;
+	}
+	
+	public static List<AbstractPort> getAllAbstractPorts(Component component) {
+		List<AbstractPort> abstractPorts = new ArrayList<AbstractPort>(
+				getAllPorts(component));
+		abstractPorts.addAll(
+				component.getCompositePorts());
+		return abstractPorts;
+	}
+	
+	public static List<Port> getAllPorts(AbstractPort abstractPort) {
+		if (abstractPort instanceof Port port) {
+			return List.of(port);
+		}
+		if (abstractPort instanceof CompositePort compositePort) {
+			return getAllPorts(compositePort);
+		}
+		throw new IllegalArgumentException("Unknown: " + abstractPort);
+	}
+	
+	public static List<Port> getAllPorts(CompositePort compositePort) {
+		List<Port> ports = new ArrayList<Port>();
+		
+		List<AbstractPort> abstractPorts = compositePort.getPorts();
+		for (AbstractPort abstractPort : abstractPorts) {
+			abstractPorts.addAll(
+					getAllPorts(abstractPort));
+		}
+		
+		return ports;
 	}
 	
 	public static List<Port> getAllPorts(AsynchronousAdapter wrapper) {

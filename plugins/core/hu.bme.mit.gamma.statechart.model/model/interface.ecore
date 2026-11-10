@@ -37,12 +37,17 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="persistency" eType="#//Persistency"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EventSource" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement"/>
-  <eClassifiers xsi:type="ecore:EClass" name="Port" eSuperTypes="#//EventSource">
+  <eClassifiers xsi:type="ecore:EClass" name="AbstractPort" abstract="true" eSuperTypes="#//EventSource"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Port" eSuperTypes="#//AbstractPort">
     <eStructuralFeatures xsi:type="ecore:EReference" name="interfaceRealization" lowerBound="1"
         eType="#//InterfaceRealization" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="invariants" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="CompositePort" eSuperTypes="#//AbstractPort">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="ports" lowerBound="1" upperBound="-1"
+        eType="#//AbstractPort"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InterfaceRealization">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="realizationMode" eType="#//RealizationMode"/>
@@ -66,6 +71,8 @@
   <eClassifiers xsi:type="ecore:EClass" name="Component" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParametricElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="ports" upperBound="-1"
         eType="#//Port" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="compositePorts" upperBound="-1"
+        eType="#//CompositePort" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="functionDeclarations" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//FunctionDeclaration"
         containment="true"/>
