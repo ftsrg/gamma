@@ -28,7 +28,7 @@ class ImlArrayParser implements XstsArrayParser {
 			val values = newArrayList
 			
 			if (value.defaultMapArray) { // (Map.const (Map.const 0))
-				var parsedValue = value.deparenthesize // Map.const (Map.const 0)
+				val parsedValue = value.deparenthesize // Map.const (Map.const 0)
 				val parsableValue = parsedValue.substring(parsedValue.indexOf(" ")).trim // (Map.const 0)
 				
 				val parsed = id.parseArray(parsableValue)

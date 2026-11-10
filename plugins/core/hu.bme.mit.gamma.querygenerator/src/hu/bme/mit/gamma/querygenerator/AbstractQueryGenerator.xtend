@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -27,6 +27,7 @@ import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemInEvents
 import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemOutEvents
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.util.JavaUtil
 import hu.bme.mit.gamma.util.Triple
 import java.util.List
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
@@ -42,6 +43,7 @@ abstract class AbstractQueryGenerator {
 	protected final ViatraQueryEngine engine
 	
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final JavaUtil javaUtil = JavaUtil.INSTANCE
 	//
 	new(Component component) {
 		this.component = component
@@ -65,7 +67,14 @@ abstract class AbstractQueryGenerator {
 		var i = 0
 		for ( ; id.charAt(i).toString == "("; i++) {}
 		var j = id.length - i
-		return id.substring(i, j)
+		val substring = id.substring(i, j)
+		
+		val countL = javaUtil.countChar(substring, '(')
+		val countR = javaUtil.countChar(substring, ')')
+		
+		val finalString = substring.substring(0, substring.length - (countR - countL))
+		
+		return finalString
 	}
 	
 	// Gamma identifiers
@@ -87,7 +96,7 @@ abstract class AbstractQueryGenerator {
 	}
 	
 	def getStateName(SynchronousComponentInstance instance, Region parentRegion, State state) {
-		return (instance.name + "." + getFullRegionPathName(parentRegion) + "." + state.name).wrap
+		return (instance.name + "." + parentRegion.getFullRegionPathName + "." + state.name).wrap
 	}
 	
 	def getInstanceVariables() {

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -160,13 +160,16 @@ class TraceBackAnnotator {
 						}
 					}
 				}
-				// We parse in every turn
-				if (line.countChar(')') <= 0) { // I.e., has no a var-value pair
-					line = traceScanner.nextLine.trim
-				}
+				
 				// From v.6.5.4, '(ExplState ' precedes actual values, which has to be removed
-				if (line.startsWith(EXPL_STATE)) {
-					line = line.substring(EXPL_STATE.length).trim
+				line = line.trimStateLiteralPrefixes
+				// We parse in every turn
+				if (line.countChar('(') + line.countChar(')') <= 0) { // I.e., has no a var-value pair
+					line = traceScanner.nextLine.trim // We expect that the next line will have one
+				}
+				line = line.trimStateLiteralPrefixes
+				while (line.countChar(')') < line.countChar('(')) { // (intArray2_c__7 (array // Remainder in the next lines
+					line += " " + traceScanner.nextLine.trim
 				}
 				//
 				line = thetaQueryGenerator.unwrapAll(line)
@@ -238,6 +241,17 @@ class TraceBackAnnotator {
 		}
 		
 		return trace
+	}
+	
+	protected def trimStateLiteralPrefixes(String input) {
+		var line = input
+		if (line.startsWith(EXPL_STATE)) {
+			line = line.substring(EXPL_STATE.length).trim
+		}
+		if (line.startsWith(XSTS_STATE)) {
+			line = line.substring(XSTS_STATE.length).trim
+		}
+		return line
 	}
 	
 	enum BackAnnotatorState {INIT, STATE_CHECK, ENVIRONMENT_CHECK}

@@ -32,7 +32,7 @@ class ThetaArrayParser implements XstsArrayParser {
 			val unwrapped = value.unwrap.substring("array ".length) // (0 10) (default 0)
 			val splits = unwrapped.parseAlongParentheses // 0 10, default array
 			for (split : splits) {
-				val splitPair = split.split(" ") // 0, 10
+				val splitPair = split.split(" ", 2) // 0, 10
 				val index = splitPair.get(0) // 0
 				if (!index.equals("default")) { // Not parsing default values
 					val parsedIndex = Integer.parseInt(index) // 0
@@ -48,10 +48,14 @@ class ThetaArrayParser implements XstsArrayParser {
 			}
 			// Parsing default values if there are no other values in the array
 			if (values.empty && unwrapped.startsWith("(default")) {
-				// TODO (array (default (array (1 0) (0 0) (default 0))))
-				val i = value.lastIndexOf("default") 
-				val defaultValue = value.substring(i + "default".length + 1 /* Space */)
-				values += new IndexHierarchy(0) -> defaultValue
+				val ununwrapped = unwrapped.unwrap // default (array (1 0) (0 0) (default 0))
+				val i = ununwrapped.indexOf("default")
+				val defaultValue = ununwrapped.substring(i + "default".length + 1 /* Space */) // (array (1 0) (0 0) (default 0))
+				
+				val parsed = defaultValue.parseArray
+				parsed.forEach[it.key.prepend(0)] // This index surely exists in the array
+				
+				values += parsed
 			}
 			
 			return values
