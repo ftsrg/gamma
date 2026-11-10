@@ -64,9 +64,8 @@ abstract class AbstractQueryGenerator {
 	def unwrapAll(String id) {
 		var i = 0
 		for ( ; id.charAt(i).toString == "("; i++) {}
-		var j = id.length - 1
-		for ( ; id.charAt(j).toString == ")"; j--) {}
-		return id.substring(i, j + 1)
+		var j = id.length - i
+		return id.substring(i, j)
 	}
 	
 	// Gamma identifiers

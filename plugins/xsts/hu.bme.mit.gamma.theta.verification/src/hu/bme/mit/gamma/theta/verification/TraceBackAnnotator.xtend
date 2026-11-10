@@ -104,7 +104,8 @@ class TraceBackAnnotator {
 		var state = BackAnnotatorState.INIT
 		try {
 			while (traceScanner.hasNext) {
-				var line = traceScanner.nextLine.trim // Trimming leading white spaces
+				val originalLine = traceScanner.nextLine
+				var line = originalLine.trim // Trimming leading white spaces
 				switch (line) {
 					case line.startsWith(XSTS_TRACE): {
 						// Skipping the first state
