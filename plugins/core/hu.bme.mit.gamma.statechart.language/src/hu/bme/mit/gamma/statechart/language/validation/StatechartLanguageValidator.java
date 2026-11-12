@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
 import hu.bme.mit.gamma.statechart.composite.EventPassing;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
@@ -40,6 +41,7 @@ import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Clock;
 import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.CompositePort;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
@@ -358,6 +360,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		handleValidationResultMessage(statechartModelValidator.checkPortInvariants(port));
 	}
 	
+	@Check
+	public void checkCompositePorts(CompositePort compositePort) {
+		handleValidationResultMessage(statechartModelValidator.checkCompositePorts(compositePort));
+	}
+	
 	// Composite system
 	
 	@Check
@@ -460,6 +467,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkCascadeLoopChannels(BroadcastChannel channel) {
 		handleValidationResultMessage(statechartModelValidator.checkCascadeLoopChannels(channel));
+	}
+	
+	@Check
+	public void checkCompositeChannels(CompositeComponent component) {
+		handleValidationResultMessage(statechartModelValidator.checkCompositeChannels(component));
 	}
 	
 	// Wrapper

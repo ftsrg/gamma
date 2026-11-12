@@ -1,0 +1,26 @@
+package composite_ports
+
+import "Interfaces/Interfaces.gcd"
+
+@TransitionPriority = order-based
+statechart _1(i : integer := 10, b : boolean := false) [
+	port Execute : requires Execute
+	port Execute2 : provides Execute2
+	composite-port ExecuteC of Execute, Execute2
+] {
+	var int_ : integer
+
+	region main {
+		initial IMain
+		state _0 {
+			region a {
+				initial IA
+				state _1
+				state _2
+			}
+		}
+	}
+	transition from IMain to _0
+	transition from IA to _1
+	transition from _1 to _2 when Execute.^execute / int_ := int_ + i;
+}

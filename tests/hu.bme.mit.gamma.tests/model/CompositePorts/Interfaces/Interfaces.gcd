@@ -1,0 +1,40 @@
+package composite_ports
+
+interface Execute {
+	out event ^execute
+	
+	in event result(value : integer := 47)
+}
+
+interface Execute2 {
+	out event execute2
+}
+
+type Enumeration : enum {
+	A_, B_
+}
+
+type Record : record {
+	int_ : integer,
+	bool_ : boolean
+}
+
+type CompositeRecord : record {
+	enumeration : Enumeration,
+	rec0rd : Record
+}
+
+type ArrayRecord : record {
+	int_ : integer,
+	boolArray : [2]boolean
+}
+
+type CompositeArrayRecord : record {
+	arrayRecord : ArrayRecord,
+	intArray : [2]integer
+}
+
+type CompositeMultidimensionalArrayRecord : record {
+	arrayRecord : ArrayRecord,
+	intArray : [2][2]integer
+}

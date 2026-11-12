@@ -69,10 +69,12 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortReferenceExpre
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceTransitionReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.CompositeChannel;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.ControlFunction;
 import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
 import hu.bme.mit.gamma.statechart.composite.EventPassing;
+import hu.bme.mit.gamma.statechart.composite.InstanceCompositePortReference;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
@@ -1703,7 +1705,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		List<AbstractPort> abstractPorts = new ArrayList<AbstractPort>(
 				getAllPorts(component));
 		abstractPorts.addAll(
-				component.getCompositePorts());
+				getAllCompositePorts(component));
 		return abstractPorts;
 	}
 	
@@ -1722,7 +1724,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		
 		List<AbstractPort> abstractPorts = compositePort.getPorts();
 		for (AbstractPort abstractPort : abstractPorts) {
-			abstractPorts.addAll(
+			ports.addAll(
 					getAllPorts(abstractPort));
 		}
 		
@@ -1744,6 +1746,23 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			return getAllPorts(adapter);
 		}
 		return component.getPorts();
+	}
+	
+	public static List<CompositePort> getAllCompositePorts(AsynchronousAdapter wrapper) {
+		List<CompositePort> allPorts = new ArrayList<CompositePort>(
+				wrapper.getCompositePorts());
+		SynchronousComponentInstance wrappedComponent = wrapper.getWrappedComponent();
+		SynchronousComponent wrappedType = wrappedComponent.getType();
+		allPorts.addAll(
+				wrappedType.getCompositePorts());
+		return allPorts;
+	}
+	
+	public static List<CompositePort> getAllCompositePorts(Component component) {
+		if (component instanceof AsynchronousAdapter adapter) {
+			return getAllCompositePorts(adapter);
+		}
+		return component.getCompositePorts();
 	}
 	
 	public static List<Port> getAllProvidedPorts(Component component) {
@@ -2726,6 +2745,38 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 					broadcastChannel.getRequiredPorts());
 		}
 		throw new IllegalArgumentException("Not known channel type: " + channel);
+	}
+	
+	public static List<InstancePortReference> getAllPorts(Channel channel) {
+		List<InstancePortReference> instancePorts = new ArrayList<InstancePortReference>(
+				getRequiredPorts(channel));
+		instancePorts.add(channel.getProvidedPort());
+		return instancePorts;
+	}
+	
+	public static List<InstancePortReference> getAllPorts(CompositeChannel channel) {
+		InstanceCompositePortReference providedPort = channel.getProvidedPort();
+		InstanceCompositePortReference requiredPort = channel.getRequiredPort();
+		
+		List<InstancePortReference> references = getAllPorts(providedPort);
+		references.addAll(
+				getAllPorts(requiredPort));
+		
+		return references;
+	}
+	
+	public static List<InstancePortReference> getAllPorts(InstanceCompositePortReference reference) {
+		List<InstancePortReference> references = new ArrayList<InstancePortReference>();
+		
+		ComponentInstance instance = reference.getInstance();
+		CompositePort compositePort = reference.getCompositePort();
+		List<Port> ports = getAllPorts(compositePort);
+		for (Port port : ports) {
+			InstancePortReference instancePortReference = statechartUtil.createInstancePortReference(instance, port);
+			references.add(instancePortReference);
+		}
+		
+		return references;
 	}
 	
 	public static boolean equals(InstancePortReference p1, InstancePortReference p2) {

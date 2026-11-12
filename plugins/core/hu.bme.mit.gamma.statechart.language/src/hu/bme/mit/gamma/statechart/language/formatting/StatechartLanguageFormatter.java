@@ -80,6 +80,7 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1, 1, 2).after(f.getMessageQueueRule());
         c.setLinewrap(1, 1, 2).after(f.getPortBindingRule());
         c.setLinewrap(1, 1, 2).after(f.getChannelRule());
+        c.setLinewrap(1, 1, 2).after(f.getCompositeChannelRule());
         c.setLinewrap(1, 1, 2).after(f.getSynchronousComponentInstanceRule());
         c.setLinewrap(1, 1, 2).after(f.getAsynchronousComponentInstanceRule());
         c.setLinewrap(1, 1, 2).after(f.getCascadeCompositeComponentAccess().getGroup_7());
@@ -97,6 +98,9 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1, 1, 2).before(f.getPortRule());
         c.setIndentationIncrement().before(f.getPortRule());
         c.setIndentationDecrement().after(f.getPortRule());
+        c.setLinewrap(1, 1, 2).before(f.getCompositePortRule());
+        c.setIndentationIncrement().before(f.getCompositePortRule());
+        c.setIndentationDecrement().after(f.getCompositePortRule());
         for (Pair<Keyword, Keyword> p : f.findKeywordPairs("]", "{")) {
             c.setLinewrap(1).before(p.getFirst());
         }

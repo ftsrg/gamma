@@ -36,6 +36,7 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
+import hu.bme.mit.gamma.statechart.composite.AbstractInstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
@@ -49,7 +50,6 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpr
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
 import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
-import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.composite.ScheduledAsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
@@ -59,6 +59,7 @@ import hu.bme.mit.gamma.statechart.contract.ContractModelPackage;
 import hu.bme.mit.gamma.statechart.contract.ScenarioContractAnnotation;
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.interface_.AbstractPort;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventAnyPortParameterReferenceExpression;
@@ -254,7 +255,8 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			// Composite system
 
 			// Ports
-			if (context instanceof InterfaceRealization && reference == InterfaceModelPackage.Literals.INTERFACE_REALIZATION__INTERFACE ||
+			if (context instanceof InterfaceRealization &&
+					reference == InterfaceModelPackage.Literals.INTERFACE_REALIZATION__INTERFACE ||
 					reference == StatechartModelPackage.Literals.EVENT_ANY_PORT_REFERENCE__INTERFACE || 
 					reference == InterfaceModelPackage.Literals.EVENT_ANY_PORT_PARAMETER_REFERENCE_EXPRESSION__INTERFACE) {
 				Package gammaPackage = StatechartModelDerivedFeatures.getContainingPackage(context);
@@ -271,25 +273,27 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				List<Port> ports = StatechartModelDerivedFeatures.getAllPorts(type);
 				return Scopes.scopeFor(ports);
 			}
-			if (context instanceof InstancePortReference portInstance && reference == CompositeModelPackage.Literals.INSTANCE_PORT_REFERENCE__PORT) {
+			if (context instanceof AbstractInstancePortReference portInstance && 
+					(reference == CompositeModelPackage.Literals.INSTANCE_PORT_REFERENCE__PORT || reference == CompositeModelPackage.Literals.INSTANCE_COMPOSITE_PORT_REFERENCE__COMPOSITE_PORT)) {
 				ComponentInstance instance = portInstance.getInstance();
 				Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
 				if (type == null) {
 					return super.getScope(context, reference); 
 				}
-				List<Port> ports = new ArrayList<Port>(type.getPorts());
-				// In case of wrappers, we added the ports of the wrapped component as well
-				if (type instanceof AsynchronousAdapter wrapper) {
-					ports.addAll(wrapper.getWrappedComponent().getType().getPorts());
-				}				
+				List<? extends AbstractPort> ports = (reference == CompositeModelPackage.Literals.INSTANCE_PORT_REFERENCE__PORT) ?
+						StatechartModelDerivedFeatures.getAllPorts(type) :
+						StatechartModelDerivedFeatures.getAllCompositePorts(type);
 				return Scopes.scopeFor(ports);
 			}
-			if (context instanceof CompositeComponent component && reference == CompositeModelPackage.Literals.INSTANCE_PORT_REFERENCE__PORT) {
+			if (context instanceof CompositeComponent component &&
+					(reference == CompositeModelPackage.Literals.INSTANCE_PORT_REFERENCE__PORT || reference == CompositeModelPackage.Literals.INSTANCE_COMPOSITE_PORT_REFERENCE__COMPOSITE_PORT)) {
 				// If the branch above does not handle it
 				List<? extends ComponentInstance> components = StatechartModelDerivedFeatures.getDerivedComponents(component);
-				Collection<Port> ports = new HashSet<Port>();
+				Collection<AbstractPort> ports = new HashSet<AbstractPort>();
 				components.stream().map(it -> StatechartModelDerivedFeatures.getDerivedType(it))
-								.map(it ->StatechartModelDerivedFeatures.getAllPorts(it))
+								.map(type -> reference == CompositeModelPackage.Literals.INSTANCE_PORT_REFERENCE__PORT ?
+										StatechartModelDerivedFeatures.getAllPorts(type) :
+										StatechartModelDerivedFeatures.getAllCompositePorts(type))
 								.forEach(it -> ports.addAll(it));
 				return Scopes.scopeFor(ports); 
 			}

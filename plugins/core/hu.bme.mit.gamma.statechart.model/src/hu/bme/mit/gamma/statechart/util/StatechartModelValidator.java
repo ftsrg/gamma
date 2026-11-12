@@ -70,10 +70,12 @@ import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.CompositeChannel;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
 import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
 import hu.bme.mit.gamma.statechart.composite.EventPassing;
+import hu.bme.mit.gamma.statechart.composite.InstanceCompositePortReference;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
@@ -89,6 +91,7 @@ import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeature
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Clock;
 import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.CompositePort;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
@@ -166,8 +169,9 @@ public class StatechartModelValidator extends ActionModelValidator {
 	// Not supported elements
 
 	public Collection<ValidationResultMessage> checkComponentSepratation(Component component) {
-		Package parentPackage = (Package) component.eContainer();
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(component);
 		int index = parentPackage.getComponents().indexOf(component);
 		if (!parentPackage.getInterfaces().isEmpty()) {
 			validationResultMessages.add(
@@ -181,19 +185,23 @@ public class StatechartModelValidator extends ActionModelValidator {
 					"Components cannot be defined in package containing a type declaration", 
 						new ReferenceInfo(InterfaceModelPackage.Literals.PACKAGE__COMPONENTS, index, parentPackage)));
 		}
+		
 		return validationResultMessages;
 	}
 	
 	public Collection<ValidationResultMessage> checkUnsupportedTriggers(OpaqueTrigger trigger) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
 		validationResultMessages.add(
 			new ValidationResultMessage(ValidationResult.ERROR, "Not supported trigger", 
 				new ReferenceInfo(StatechartModelPackage.Literals.OPAQUE_TRIGGER__TRIGGER)));
+		
 		return validationResultMessages;
 	}
 	
 	public Collection<ValidationResultMessage> checkComplexTriggers(ComplexTrigger trigger) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
 		Component component = StatechartModelDerivedFeatures.getContainingComponent(trigger);
 		if (StatechartModelDerivedFeatures.isAsynchronousStatechart(component)) {
 			AbstractTransition abstractTransition = ecoreUtil.getContainerOfType(trigger, AbstractTransition.class);
@@ -202,6 +210,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 					"Asynchronous statecharts do not support complex triggers",
 						new ReferenceInfo(StatechartModelPackage.Literals.ABSTRACT_TRANSITION__TRIGGER, abstractTransition)));
 		}
+		
 		return validationResultMessages;
 	}
 	
@@ -589,7 +598,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 	public Collection<ValidationResultMessage> checkRegionEntries(Region region) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		List<StateNode> entries = region.getStateNodes().stream()
-				.filter(it -> it instanceof EntryState).collect(Collectors.toList());
+				.filter(it -> it instanceof EntryState).toList();
 		if (entries.isEmpty()) {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.ERROR, 
@@ -652,7 +661,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		}
 		if (timeoutSettings.size() > 1) {
 			List<TimeSpecification> times = timeoutSettings.stream()
-					.map(it -> it.getTime()).collect(Collectors.toList());
+					.map(it -> it.getTime()).toList();
 			if (!ecoreUtil.allHelperEquals(times)) {
 				// Time evaluation and comparison could be added here
 				for (SetTimeoutAction timeoutSetting : timeoutSettings) {
@@ -1771,7 +1780,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 				getAllContentsOfType(root, InstancePortReference.class);
 		for (InstancePortReference instancePortReference : instancePortReferences.stream()
 					.filter(it -> it != channel.getProvidedPort() && it.eContainer() instanceof Channel)
-					.collect(Collectors.toList())) {
+					.toList()) {
 			// Broadcast ports are also restricted to be used only in a single channel (restriction on syntax only)
 			if (StatechartModelDerivedFeatures.equals(instancePortReference, channel.getProvidedPort())) {
 				validationResultMessages.add(
@@ -1796,7 +1805,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		// Checking required instance ports in different simple channels
 		for (InstancePortReference instancePortReference : instancePortReferences.stream()
 				.filter(it -> it != channel.getRequiredPort() && it.eContainer() instanceof Channel)
-				.collect(Collectors.toList())) {
+				.toList()) {
 			if (StatechartModelDerivedFeatures.equals(instancePortReference, channel.getRequiredPort())) {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.WARNING,
@@ -1809,7 +1818,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkChannelRequiredPorts(BroadcastChannel channel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		Component parentComponent = (Component) channel.eContainer();
+		Component parentComponent = ecoreUtil.getContainerOfType(channel, Component.class);
 		// Ports inside asynchronous components can be connected to multiple ports
 		if (parentComponent instanceof AbstractAsynchronousCompositeComponent) {
 			return validationResultMessages;
@@ -1820,7 +1829,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		// Checking required instance ports in different broadcast channels
 		for (InstancePortReference instancePortReference : instancePortReferences.stream()
 				.filter(it -> it.eContainer() != channel && it.eContainer() instanceof Channel)
-				.collect(Collectors.toList())) {
+				.toList()) {
 			for (InstancePortReference requiredPort : channel.getRequiredPorts()) {
 				if (StatechartModelDerivedFeatures.equals(instancePortReference, requiredPort)) {
 					int index = channel.getRequiredPorts().indexOf(requiredPort);
@@ -1834,7 +1843,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		// Checking required instance ports in the same broadcast channel
 		for (InstancePortReference requiredPort : channel.getRequiredPorts()) {
 			for (InstancePortReference requiredPort2 : channel.getRequiredPorts().stream()
-					.filter(it -> it != requiredPort && it.eContainer() instanceof Channel).collect(Collectors.toList())) {
+					.filter(it -> it != requiredPort && it.eContainer() instanceof Channel).toList()) {
 				if (StatechartModelDerivedFeatures.equals(requiredPort2, requiredPort)) {
 					int index = channel.getRequiredPorts().indexOf(requiredPort2);
 					validationResultMessages.add(
@@ -1893,6 +1902,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkBroadcastChannelOutput(BroadcastChannel channel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
 		InstancePortReference providedPortReference = channel.getProvidedPort();
 		Port providedPort = providedPortReference.getPort();
 		if (!StatechartModelDerivedFeatures.isBroadcast(providedPort) &&
@@ -1923,12 +1933,62 @@ public class StatechartModelValidator extends ActionModelValidator {
 									new ReferenceInfo(CompositeModelPackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS)));
 			}
 		}
+		
 		return validationResultMessages;
 	}
 	
+	public Collection<ValidationResultMessage> checkCompositeChannels(CompositeComponent compositeComponent) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		List<Channel> channels = compositeComponent.getChannels();
+		List<CompositeChannel> compositeChannels = compositeComponent.getCompositeChannels();
+		for (CompositeChannel compositeChannel : compositeChannels) {
+			InstanceCompositePortReference providedPort = compositeChannel.getProvidedPort();
+			InstanceCompositePortReference requiredPort = compositeChannel.getRequiredPort();
+			
+			ComponentInstance providedInstance = providedPort.getInstance();
+			ComponentInstance requiredInstance = requiredPort.getInstance();
+			if (providedInstance == requiredInstance) {
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR, 
+						"The two instances must not be the same",
+							new ReferenceInfo(CompositeModelPackage.Literals.ABSTRACT_INSTANCE_PORT_REFERENCE__INSTANCE, requiredPort)));
+			}
+			
+			CompositePort _providedPort = providedPort.getCompositePort();
+			CompositePort _requiredPort = requiredPort.getCompositePort();
+			
+			List<Port> providedPorts = StatechartModelDerivedFeatures.getAllPorts(_providedPort);
+			List<Port> requiredPorts = StatechartModelDerivedFeatures.getAllPorts(_requiredPort);
+			if (!ecoreUtil.helperEquals(providedPorts, requiredPorts)) { // TODO opposite directions
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR, 
+						"The two composite ports must comprise the same simple ports in compatible realization modes",
+							new ReferenceInfo(CompositeModelPackage.Literals.ABSTRACT_INSTANCE_PORT_REFERENCE__INSTANCE, requiredPort)));
+			}
+			
+			List<InstancePortReference> allPorts = StatechartModelDerivedFeatures.getAllPorts(compositeChannel);
+			for (InstancePortReference port : allPorts) {
+				if (!StatechartModelDerivedFeatures.isProvided(port)) {
+					for (Channel channel : channels) {
+						List<InstancePortReference> ports2 = StatechartModelDerivedFeatures.getAllPorts(channel);
+						if (ports2.stream().anyMatch(it -> StatechartModelDerivedFeatures.equals(it, port))) {
+							validationResultMessages.add(
+								new ValidationResultMessage(ValidationResult.ERROR, 
+									port.getInstance() + "." + port.getPort().getName() + " is contained in both a simple and a composite channel",
+										new ReferenceInfo(channel)));
+						}
+					}
+				}
+			}
+		}
+		
+		return validationResultMessages;
+	}
 	
 	public Collection<ValidationResultMessage> checkCascadeLoopChannels(Channel channel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
 		ComponentInstance instance = channel.getProvidedPort().getInstance();
 		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
 		List<InstancePortReference> requiredPorts = StatechartModelDerivedFeatures.getRequiredPorts(channel);
@@ -1939,6 +1999,24 @@ public class StatechartModelValidator extends ActionModelValidator {
 					"Verification cannot be executed if different ports of a synchronous component are connected", 
 						new ReferenceInfo(CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT)));
 		}
+		
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkCompositeChannels(Channel channel) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		ComponentInstance instance = channel.getProvidedPort().getInstance();
+		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
+		List<InstancePortReference> requiredPorts = StatechartModelDerivedFeatures.getRequiredPorts(channel);
+		if (type instanceof AbstractSynchronousCompositeComponent &&
+					requiredPorts.stream().anyMatch(it -> it.getInstance() == instance)) {
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.WARNING, 
+					"Verification cannot be executed if different ports of a synchronous component are connected", 
+						new ReferenceInfo(CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT)));
+		}
+		
 		return validationResultMessages;
 	}
 	
@@ -2317,7 +2395,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.ERROR, 
 					"The following instances are never executed: " + containedInstances.stream()
-						.map(it -> it.getName()).collect(Collectors.toList()),
+						.map(it -> it.getName()).toList(),
 							new ReferenceInfo(CompositeModelPackage.Literals.SCHEDULABLE_COMPOSITE_COMPONENT__EXECUTION_LIST)));
 		}
 		
@@ -2390,6 +2468,12 @@ public class StatechartModelValidator extends ActionModelValidator {
 			}
 		}
 		
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkCompositePorts(CompositePort compositePort) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		// TODO
 		return validationResultMessages;
 	}
 	
