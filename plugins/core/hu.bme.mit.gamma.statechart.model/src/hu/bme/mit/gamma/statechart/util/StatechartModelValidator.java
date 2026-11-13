@@ -2517,9 +2517,9 @@ public class StatechartModelValidator extends ActionModelValidator {
 		}
 		
 		List<Port> allPorts = StatechartModelDerivedFeatures.getAllPorts(compositePort);
-		for (var i = 0; i < allPorts.size() - 1; i++) {
+		for (int i = 0; i < allPorts.size() - 1; i++) {
 			Port lhs = allPorts.get(i);
-			for (var j = i + 1; j < allPorts.size(); j++) {
+			for (int j = i + 1; j < allPorts.size(); j++) {
 				Port rhs = allPorts.get(j);
 				if (lhs == rhs && !StatechartModelDerivedFeatures.isBroadcast(lhs)) {
 					validationResultMessages.add(

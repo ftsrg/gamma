@@ -935,6 +935,16 @@ public class StatechartUtil extends ActionUtil {
 		return instancePortReference;
 	}
 	
+	public Channel createOrderedChannel(InstancePortReference lhs, InstancePortReference rhs) {
+		if (StatechartModelDerivedFeatures.isProvided(lhs) && StatechartModelDerivedFeatures.isRequired(rhs)) {
+			return createChannel(lhs, rhs);
+		}
+		else if (StatechartModelDerivedFeatures.isProvided(rhs) && StatechartModelDerivedFeatures.isRequired(lhs)) {
+			return createChannel(rhs, lhs);
+		}
+		throw new IllegalArgumentException("Incompatible ports: " + lhs + " " + rhs);
+	}
+	
 	public Channel createChannel(InstancePortReference provided, InstancePortReference required) {
 		return createChannel(provided, List.of(required));
 	}

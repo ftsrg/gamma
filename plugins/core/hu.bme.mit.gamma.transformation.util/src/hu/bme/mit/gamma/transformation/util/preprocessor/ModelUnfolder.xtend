@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -46,7 +46,7 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 import static extension hu.bme.mit.gamma.transformation.util.Namings.*
 
 class ModelUnfolder {
-	
+	//
 	protected final Package gammaPackage
 	
 	protected final extension JavaUtil javaUtil = JavaUtil.INSTANCE
@@ -55,6 +55,7 @@ class ModelUnfolder {
 	
 	protected final extension InterfaceModelFactory factory = InterfaceModelFactory.eINSTANCE
 	protected final extension StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE
+	//
 	
 	new(Package gammaPackage) {
 		this.gammaPackage = gammaPackage
@@ -70,7 +71,7 @@ class ModelUnfolder {
 			it.name = it.name + "View"
 			it.annotations += createUnfoldedPackageAnnotation // Denoting that the package is unfolded
 		]
-		val originalComponent = gammaPackage.topComponent
+		val originalComponent = gammaPackage.firstComponent
 		// Clearing other components to prevent potential duplication of components
 		val topComponent = clonedPackage.topComponentClearAdditionalComponents
 		
@@ -90,7 +91,7 @@ class ModelUnfolder {
 		clonedPackage.functionDeclarations.resolveNameCollisions
 		
 		// Reset top component if the original one is replaces (async statechart)
-		trace.topComponent = clonedPackage.topComponent
+		trace.topComponent = clonedPackage.firstComponent
 		
 		// The created package, and the top component are returned
 		return trace
@@ -103,6 +104,7 @@ class ModelUnfolder {
 	
 	private dispatch def void copyComponents(AbstractSynchronousCompositeComponent component,
 			Package gammaPackage, Trace trace) {
+		component.unfoldCompositeChannels
 		for (instance : component.components) {
 			val type = instance.type
 			val clonedPackage = type.containingPackage.clone
@@ -130,6 +132,7 @@ class ModelUnfolder {
 	
 	private dispatch def void copyComponents(AbstractAsynchronousCompositeComponent component,
 			Package gammaPackage, Trace trace) {
+		component.unfoldCompositeChannels
 		for (instance : component.components) {
 			val type = instance.type
 			
@@ -186,12 +189,9 @@ class ModelUnfolder {
 		
 		val capacity = component.capacity
 		val name = synchronousStatechart.name
-		val adapter = if (capacity !== null) {
-			synchronousStatechart.wrapIntoDefaultAdapter(name, name + "Queue", capacity.clone)
-		}
-		else {
-			synchronousStatechart.wrapIntoDefaultAdapter(name)
-		}
+		val adapter = (capacity !== null) ?
+				synchronousStatechart.wrapIntoDefaultAdapter(name, name + "Queue", capacity.clone) :
+				synchronousStatechart.wrapIntoDefaultAdapter(name)
 		adapter.addWrapperComponentAnnotation // The adapter is a wrapper component
 		
 		// Removing original async statechart as we create now an adapter
@@ -214,6 +214,32 @@ class ModelUnfolder {
 				}
 			}
 		}
+	}
+	
+	protected def void unfoldCompositeChannels(CompositeComponent composite) {
+		val compositePorts = composite.compositePorts
+		val compositeChannels = composite.compositeChannels
+		checkState(compositePorts.forall[it.hasCircularReferencesTo])
+		
+		val channels = composite.channels
+		
+		for (compositeChannel : compositeChannels) {
+			val lhs = compositeChannel.providedPort.allPorts
+			val rhs = compositeChannel.requiredPort.allPorts
+			
+			checkState(lhs.size == rhs.size, composite.name + "'s " + compositeChannel.index + "th composite channel connects incompatible ports")
+			
+			for (var i = 0; i < lhs.size; i++) {
+				val lhs_ = lhs.get(i)
+				val rhs_ = rhs.get(i)
+				
+				val channel = lhs_.createOrderedChannel(rhs_)
+				channels += channel
+			}
+		}
+		
+		compositePorts.clear
+		compositeChannels.clear
 	}
 	
 	protected def void fixChannelRequiredPorts(CompositeComponent composite, ComponentInstance instance) {
@@ -388,13 +414,8 @@ class ModelUnfolder {
 	
 	// Util
 	
-	private def getTopComponent(Package gammaPackage) {
-		// The first component is retrieved
-		return gammaPackage.components.head
-	}
-	
 	private def getTopComponentClearAdditionalComponents(Package gammaPackage) {
-		val topComponent = gammaPackage.topComponent
+		val topComponent = gammaPackage.firstComponent
 		// Trick: so if there are multiple components in the gammaPackage,
 		// they are not cloned and doubled
 		val transientPackage = createPackage => [
@@ -459,7 +480,7 @@ class ModelUnfolder {
 	}
 	
 	static class Trace {
-		
+		//
 		Package _package
 		Component topComponent
 		
