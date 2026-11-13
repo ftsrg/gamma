@@ -2021,6 +2021,32 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		throw new IllegalArgumentException("Not found event passing: " + eventReference);
 	}
 	
+	public static boolean areCompatible(Iterable<? extends Port> lhs, Iterable<? extends Port> rhs) {
+		Iterator<? extends Port> _iterator = rhs.iterator();
+		for (Iterator<? extends Port> iterator = lhs.iterator(); iterator.hasNext();) {
+			Port port = iterator.next();
+			if (!_iterator.hasNext()) {
+				return false;
+			}
+			Port _port = _iterator.next();
+			if (!areCompatible(port, _port)) {
+				return false;
+			}
+		}
+		if (_iterator.hasNext()) {
+			return false;
+		}
+		return true;
+	}
+	
+	public static boolean areCompatible(Port lhs, Port rhs) {
+		InterfaceRealization realization = lhs.getInterfaceRealization();
+		InterfaceRealization _realization = rhs.getInterfaceRealization();
+		
+		return realization.getInterface() == _realization.getInterface() &&
+				realization.getRealizationMode() != _realization.getRealizationMode();
+	}
+	
 	public static boolean isEventPassingCompatible(Port source, Port target) {
 		List<Event> sourceInputEvents = StatechartModelDerivedFeatures.getInputEvents(source);
 		List<Event> targetInputEvents = StatechartModelDerivedFeatures.getInputEvents(target);

@@ -44,6 +44,7 @@ class GammaEcoreUtil {
 	protected new() {}
 	//
 	protected final FileUtil fileUtil = FileUtil.INSTANCE
+	protected final JavaUtil javaUtil = JavaUtil.INSTANCE
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	//
 	
@@ -93,6 +94,22 @@ class GammaEcoreUtil {
 			val clonedNewObject = newObject.clone
 			clonedNewObject.replace(referenceHolder)
 		}
+	}
+	
+	def hasCircularReferencesTo(EObject object) {
+		return object.hasCircularReferencesTo(object, newHashSet)
+	}
+	
+	protected def boolean hasCircularReferencesTo(EObject target, EObject object, Collection<EObject> visitedNodes) {
+		val referencedObjects = newHashSet
+		referencedObjects += object.eCrossReferences
+		if (referencedObjects.contains(target)) {
+			return true
+		}
+		referencedObjects -= visitedNodes
+		visitedNodes += referencedObjects
+		
+		return referencedObjects.exists[target.hasCircularReferencesTo(it, visitedNodes)]
 	}
 	
 	def void replaceEachOther(EObject left, EObject right) {
