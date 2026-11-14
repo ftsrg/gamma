@@ -143,6 +143,24 @@ class SynchronousCompositeComponentCodeGenerator {
 					«providedPort.instance.name».get«providedPort.port.name.toFirstUpper»().registerListener(«requiredPort.instance.name».get«requiredPort.port.name.toFirstUpper»());
 					«IF providedPort.port.hasFunctionDeclarations»«requiredPort.instance.name».get«requiredPort.port.name.toFirstUpper»().registerListener(«providedPort.instance.name».get«providedPort.port.name.toFirstUpper»()); // Needed for potential function calls«ENDIF»
 				«ENDFOR»
+				// Registration of composite channels
+				«FOR compositeChannel : component.compositeChannels»
+					«val lhs = compositeChannel.providedPort.allPorts»
+					«val rhs = compositeChannel.requiredPort.allPorts»
+					«FOR lhs_ : lhs»
+						«val i = lhs.indexOf(lhs_)»
+						«val rhs_ = rhs.get(i)»
+						«val providedPort = lhs_.provided ? lhs_ : rhs_»
+						«val requiredPort = lhs_.required ? lhs_ : rhs_»
+«««						«IF !providedPort.broadcast»
+						«providedPort.instance.name».get«providedPort.port.name.toFirstUpper»().registerListener(«requiredPort.instance.name».get«requiredPort.port.name.toFirstUpper»());
+						«requiredPort.instance.name».get«requiredPort.port.name.toFirstUpper»().registerListener(«providedPort.instance.name».get«providedPort.port.name.toFirstUpper»());
+«««						«ELSE»
+«««							«providedPort.instance.name».get«providedPort.port.name.toFirstUpper»().registerListener(«requiredPort.instance.name».get«requiredPort.port.name.toFirstUpper»());
+«««							«IF providedPort.port.hasFunctionDeclarations»«requiredPort.instance.name».get«requiredPort.port.name.toFirstUpper»().registerListener(«providedPort.instance.name».get«providedPort.port.name.toFirstUpper»()); // Needed for potential function calls«ENDIF»
+«««						«ENDIF»
+					«ENDFOR»
+				«ENDFOR»
 				«component.createInternalPortHandlingSettingCode»
 			}
 			

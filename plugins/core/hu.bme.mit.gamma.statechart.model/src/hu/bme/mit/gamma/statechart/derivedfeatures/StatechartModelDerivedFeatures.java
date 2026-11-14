@@ -309,6 +309,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return allPorts.stream().allMatch(it -> isBroadcast(it));
 	}
 	
+	public static boolean isBroadcast(InstancePortReference instancePortReference) {
+		Port port = instancePortReference.getPort();
+		return isBroadcast(port);
+	}
+	
 	public static boolean isBroadcast(Port port) {
 		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
 		return isBroadcast(interfaceRealization);

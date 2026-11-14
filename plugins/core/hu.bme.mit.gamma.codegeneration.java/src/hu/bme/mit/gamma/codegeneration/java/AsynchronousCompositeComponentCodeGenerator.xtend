@@ -126,9 +126,22 @@ class AsynchronousCompositeComponentCodeGenerator {
 				// Registration of broadcast channels
 				«FOR channel : BroadcastChannels.Matcher.on(engine).getAllValuesOfbroadcastChannel(component, null, null)»
 					channel«channel.providedPort.port.name.toFirstUpper»Of«channel.providedPort.instance.name.toFirstUpper» = new «channel.providedPort.port.interfaceRealization.interface.generateChannelName»(«channel.providedPort.instance.name».get«channel.providedPort.port.name.toFirstUpper»());
-«««					Broadcast channels can have incoming messages in case of asynchronous components
+«««					Broadcast channels can have incoming messages in asynchronous components
 					«FOR channelMatch : BroadcastChannels.Matcher.on(engine).getAllMatches(component, channel, null, null)»
 						channel«channelMatch.providedPort.port.name.toFirstUpper»Of«channelMatch.providedPort.instance.name.toFirstUpper».registerPort(«channelMatch.requiredPort.instance.name».get«channelMatch.requiredPort.port.name.toFirstUpper»());
+					«ENDFOR»
+				«ENDFOR»
+				// Registration of composite channels
+				«FOR compositeChannel : component.compositeChannels»
+					«val lhs = compositeChannel.providedPort.allPorts»
+					«val rhs = compositeChannel.requiredPort.allPorts»
+					«FOR lhs_ : lhs»
+						«val i = lhs.indexOf(lhs_)»
+						«val rhs_ = rhs.get(i)»
+						«val providedPort = lhs_.provided ? lhs_ : rhs_»
+						«val requiredPort = lhs_.required ? lhs_ : rhs_»
+						channel«providedPort.port.name.toFirstUpper»Of«providedPort.instance.name.toFirstUpper» = new «providedPort.port.interfaceRealization.interface.generateChannelName»(«providedPort.instance.name».get«providedPort.port.name.toFirstUpper»());
+						channel«providedPort.port.name.toFirstUpper»Of«providedPort.instance.name.toFirstUpper».registerPort(«requiredPort.instance.name».get«requiredPort.port.name.toFirstUpper»());
 					«ENDFOR»
 				«ENDFOR»
 			}
