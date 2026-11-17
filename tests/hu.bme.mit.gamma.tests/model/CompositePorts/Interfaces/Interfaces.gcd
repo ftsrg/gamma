@@ -10,6 +10,10 @@ interface Execute2 {
 	out event execute2
 }
 
+interface Execute3 {
+	out event execute3
+}
+
 type Enumeration : enum {
 	A_, B_
 }

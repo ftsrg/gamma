@@ -13,6 +13,6 @@ cascade System_1 [
 	
 	bind Execute -> c.Execute
 	
-	composite-channel [c.ExecuteC] -o)- [d.ExecuteC]
+	channel [c.Execute2] -o)- [d.Execute2]
 	
 }

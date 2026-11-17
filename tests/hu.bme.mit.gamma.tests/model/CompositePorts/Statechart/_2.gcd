@@ -4,9 +4,10 @@ import "Interfaces/Interfaces.gcd"
 
 @TransitionPriority = order-based
 statechart _2(i : integer := 10, b : boolean := false) [
-	port Execute : provides Execute2
+	port Execute : provides Execute
 	port Execute2 : requires Execute2
 	composite-port ExecuteC of Execute, Execute2
+	composite-port ExecuteD of ExecuteC
 ] {
 	var int_ : integer
 

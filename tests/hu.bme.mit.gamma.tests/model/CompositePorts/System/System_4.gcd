@@ -1,0 +1,18 @@
+package composite_ports
+
+import "Interfaces/Interfaces.gcd"
+
+import "Statechart/_3.gcd"
+import "Statechart/_4.gcd"
+
+cascade System_4 [
+	port Execute : requires Execute3
+] {
+	component c : _3(1, false)
+	component d : _4(1, false)
+	
+	bind Execute -> c.Execute3
+	
+	composite-channel [c.ExecuteC] -o)- [d.ExecuteC]
+	
+}
