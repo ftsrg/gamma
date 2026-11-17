@@ -490,6 +490,7 @@ CascadeCompositeComponent returns CompositeModel::CascadeCompositeComponent:
 			(
 				components+=SynchronousComponentInstance |
 				portBindings+=PortBinding |
+				compositePortBindings+=CompositePortBinding |
 				channels+=Channel |
 				compositeChannels+=CompositeChannel
 			)*
@@ -512,6 +513,7 @@ SynchronousCompositeComponent returns CompositeModel::SynchronousCompositeCompon
 			(
 				components+=SynchronousComponentInstance |
 				portBindings+=PortBinding |
+				compositePortBindings+=CompositePortBinding |
 				channels+=Channel |
 				compositeChannels+=CompositeChannel
 			)*
@@ -542,6 +544,7 @@ AsynchronousCompositeComponent returns CompositeModel::AsynchronousCompositeComp
 			(
 				components+=AsynchronousComponentInstance |
 				portBindings+=PortBinding |
+				compositePortBindings+=CompositePortBinding |
 				channels+=Channel |
 				compositeChannels+=CompositeChannel
 			)*
@@ -560,6 +563,7 @@ ScheduledAsynchronousCompositeComponent returns CompositeModel::ScheduledAsynchr
 			(
 				components+=AsynchronousComponentInstance |
 				portBindings+=PortBinding |
+				compositePortBindings+=CompositePortBinding |
 				channels+=Channel |
 				compositeChannels+=CompositeChannel
 			)*
@@ -634,6 +638,10 @@ enum DiscardStrategy returns CompositeModel::DiscardStrategy:
 
 PortBinding returns CompositeModel::PortBinding:
 	'bind' compositeSystemPort=[InterfaceModel::Port] '->' instancePortReference=InstancePortReference
+;
+
+CompositePortBinding returns CompositeModel::CompositePortBinding:
+	'composite-bind' compositeSystemPort=[InterfaceModel::CompositePort] '->' instancePortReference=InstanceCompositePortReference
 ;
 
 InstancePortReference returns CompositeModel::InstancePortReference:

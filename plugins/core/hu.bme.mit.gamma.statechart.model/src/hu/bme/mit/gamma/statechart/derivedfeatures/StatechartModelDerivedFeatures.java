@@ -109,6 +109,7 @@ import hu.bme.mit.gamma.statechart.interface_.PackageAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.Persistency;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.PortDeclarationReferenceExpression;
+import hu.bme.mit.gamma.statechart.interface_.PortReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.interface_.SimpleTrigger;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
@@ -309,8 +310,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return allPorts.stream().allMatch(it -> isBroadcast(it));
 	}
 	
-	public static boolean isBroadcast(InstancePortReference instancePortReference) {
-		Port port = instancePortReference.getPort();
+	public static boolean isBroadcast(PortReferenceExpression portReference) {
+		Port port = portReference.getPort();
 		return isBroadcast(port);
 	}
 	
@@ -328,9 +329,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return isBroadcast(port) || isBroadcastMatcher(port);
 	}
 	
-	public static boolean isProvided(InstancePortReference port) {
-		Port port2 = port.getPort();
-		return isProvided(port2);
+	public static boolean isProvided(PortReferenceExpression portReference) {
+		Port port = portReference.getPort();
+		return isProvided(port);
 	}
 	
 	public static boolean isProvided(Port port) {
@@ -338,9 +339,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return isProvided(interfaceRealization);
 	}
 	
-	public static boolean isRequired(InstancePortReference port) {
-		Port port2 = port.getPort();
-		return isRequired(port2);
+	public static boolean isRequired(PortReferenceExpression portReferenceExpression) {
+		Port port = portReferenceExpression.getPort();
+		return isRequired(port);
 	}
 	
 	public static boolean isRequired(Port port) {
@@ -384,8 +385,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return true;
 	}
 	
-	public static boolean isInternal(InstancePortReference port) {
-		return isInternal(port.getPort());
+	public static boolean isInternal(PortReferenceExpression portReference) {
+		Port port = portReference.getPort();
+		return isInternal(port);
 	}
 	
 	public static Interface getInterface(Port port) {

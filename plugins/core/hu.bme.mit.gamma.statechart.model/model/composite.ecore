@@ -10,6 +10,8 @@
       eSuperTypes="interface.ecore#//Component">
     <eStructuralFeatures xsi:type="ecore:EReference" name="portBindings" upperBound="-1"
         eType="#//PortBinding" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="compositePortBindings"
+        upperBound="-1" eType="#//CompositePortBinding" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="channels" upperBound="-1"
         eType="#//Channel" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="compositeChannels" upperBound="-1"
@@ -29,13 +31,17 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="instancePortReference"
         lowerBound="1" eType="#//InstancePortReference" containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="CompositePortBinding">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="compositeSystemPort" lowerBound="1"
+        eType="ecore:EClass interface.ecore#//CompositePort"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instancePortReference"
+        lowerBound="1" eType="#//InstanceCompositePortReference" containment="true"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AbstractInstancePortReference" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EReference" name="instance" lowerBound="1"
         eType="#//ComponentInstance"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="InstancePortReference" eSuperTypes="#//AbstractInstancePortReference">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="ecore:EClass interface.ecore#//Port"/>
-  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InstancePortReference" eSuperTypes="#//AbstractInstancePortReference interface.ecore#//PortReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="InstanceCompositePortReference" eSuperTypes="#//AbstractInstancePortReference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="compositePort" lowerBound="1"
         eType="ecore:EClass interface.ecore#//CompositePort"/>

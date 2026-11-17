@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -79,6 +79,7 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1, 1, 2).after(f.getControlSpecificaitonRule());
         c.setLinewrap(1, 1, 2).after(f.getMessageQueueRule());
         c.setLinewrap(1, 1, 2).after(f.getPortBindingRule());
+        c.setLinewrap(1, 1, 2).after(f.getCompositePortBindingRule());
         c.setLinewrap(1, 1, 2).after(f.getChannelRule());
         c.setLinewrap(1, 1, 2).after(f.getCompositeChannelRule());
         c.setLinewrap(1, 1, 2).after(f.getSynchronousComponentInstanceRule());

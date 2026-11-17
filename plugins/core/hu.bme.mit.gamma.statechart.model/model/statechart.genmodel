@@ -30,6 +30,7 @@
     </genClasses>
     <genClasses image="false" ecoreClass="composite.ecore#//CompositeComponent">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//CompositeComponent/portBindings"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//CompositeComponent/compositePortBindings"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//CompositeComponent/channels"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//CompositeComponent/compositeChannels"/>
     </genClasses>
@@ -42,12 +43,14 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//PortBinding/compositeSystemPort"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//PortBinding/instancePortReference"/>
     </genClasses>
+    <genClasses ecoreClass="composite.ecore#//CompositePortBinding">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//CompositePortBinding/compositeSystemPort"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//CompositePortBinding/instancePortReference"/>
+    </genClasses>
     <genClasses image="false" ecoreClass="composite.ecore#//AbstractInstancePortReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//AbstractInstancePortReference/instance"/>
     </genClasses>
-    <genClasses ecoreClass="composite.ecore#//InstancePortReference">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//InstancePortReference/port"/>
-    </genClasses>
+    <genClasses ecoreClass="composite.ecore#//InstancePortReference"/>
     <genClasses ecoreClass="composite.ecore#//InstanceCompositePortReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//InstanceCompositePortReference/compositePort"/>
     </genClasses>

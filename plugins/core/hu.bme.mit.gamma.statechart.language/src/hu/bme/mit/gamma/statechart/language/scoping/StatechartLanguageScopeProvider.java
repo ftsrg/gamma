@@ -274,24 +274,24 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				return Scopes.scopeFor(ports);
 			}
 			if (context instanceof AbstractInstancePortReference portInstance && 
-					(reference == CompositeModelPackage.Literals.INSTANCE_PORT_REFERENCE__PORT || reference == CompositeModelPackage.Literals.INSTANCE_COMPOSITE_PORT_REFERENCE__COMPOSITE_PORT)) {
+					(reference == InterfaceModelPackage.Literals.PORT_REFERENCE_EXPRESSION__PORT || reference == CompositeModelPackage.Literals.INSTANCE_COMPOSITE_PORT_REFERENCE__COMPOSITE_PORT)) {
 				ComponentInstance instance = portInstance.getInstance();
 				Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
 				if (type == null) {
 					return super.getScope(context, reference); 
 				}
-				List<? extends AbstractPort> ports = (reference == CompositeModelPackage.Literals.INSTANCE_PORT_REFERENCE__PORT) ?
+				List<? extends AbstractPort> ports = (reference == InterfaceModelPackage.Literals.PORT_REFERENCE_EXPRESSION__PORT) ?
 						StatechartModelDerivedFeatures.getAllPorts(type) :
 						StatechartModelDerivedFeatures.getAllCompositePorts(type);
 				return Scopes.scopeFor(ports);
 			}
 			if (context instanceof CompositeComponent component &&
-					(reference == CompositeModelPackage.Literals.INSTANCE_PORT_REFERENCE__PORT || reference == CompositeModelPackage.Literals.INSTANCE_COMPOSITE_PORT_REFERENCE__COMPOSITE_PORT)) {
+					(reference == InterfaceModelPackage.Literals.PORT_REFERENCE_EXPRESSION__PORT || reference == CompositeModelPackage.Literals.INSTANCE_COMPOSITE_PORT_REFERENCE__COMPOSITE_PORT)) {
 				// If the branch above does not handle it
 				List<? extends ComponentInstance> components = StatechartModelDerivedFeatures.getDerivedComponents(component);
 				Collection<AbstractPort> ports = new HashSet<AbstractPort>();
 				components.stream().map(it -> StatechartModelDerivedFeatures.getDerivedType(it))
-								.map(type -> reference == CompositeModelPackage.Literals.INSTANCE_PORT_REFERENCE__PORT ?
+								.map(type -> reference == InterfaceModelPackage.Literals.PORT_REFERENCE_EXPRESSION__PORT ?
 										StatechartModelDerivedFeatures.getAllPorts(type) :
 										StatechartModelDerivedFeatures.getAllCompositePorts(type))
 								.forEach(it -> ports.addAll(it));

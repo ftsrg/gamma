@@ -1720,7 +1720,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.ERROR, 
 					"The specified port is not on instance " + instance.getName(),
-						new ReferenceInfo(CompositeModelPackage.Literals.INSTANCE_PORT_REFERENCE__PORT)));
+						new ReferenceInfo(InterfaceModelPackage.Literals.PORT_REFERENCE_EXPRESSION__PORT)));
 		}
 		
 		return validationResultMessages;
