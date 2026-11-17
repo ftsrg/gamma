@@ -104,6 +104,7 @@ class ModelUnfolder {
 	
 	private dispatch def void copyComponents(AbstractSynchronousCompositeComponent component,
 			Package gammaPackage, Trace trace) {
+		component.unfoldCompositePortBindings
 		component.unfoldCompositeChannels
 		for (instance : component.components) {
 			val type = instance.type
@@ -132,6 +133,7 @@ class ModelUnfolder {
 	
 	private dispatch def void copyComponents(AbstractAsynchronousCompositeComponent component,
 			Package gammaPackage, Trace trace) {
+		component.unfoldCompositePortBindings
 		component.unfoldCompositeChannels
 		for (instance : component.components) {
 			val type = instance.type
@@ -214,6 +216,10 @@ class ModelUnfolder {
 				}
 			}
 		}
+	}
+	
+	protected def void unfoldCompositePortBindings(CompositeComponent composite) {
+		
 	}
 	
 	protected def void unfoldCompositeChannels(CompositeComponent composite) {

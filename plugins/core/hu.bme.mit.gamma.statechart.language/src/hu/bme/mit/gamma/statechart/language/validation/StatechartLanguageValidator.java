@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
+import hu.bme.mit.gamma.statechart.composite.CompositePortBinding;
 import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
 import hu.bme.mit.gamma.statechart.composite.EventPassing;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
@@ -39,6 +40,7 @@ import hu.bme.mit.gamma.statechart.composite.SimpleChannel;
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.interface_.AbstractPort;
 import hu.bme.mit.gamma.statechart.interface_.Clock;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.CompositePort;
@@ -395,7 +397,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	}
 	
 	@Check
-	public void checkPortBinding(Port port) {
+	public void checkPortBinding(AbstractPort port) {
 		handleValidationResultMessage(statechartModelValidator.checkPortBinding(port));
 	}
 	
@@ -410,8 +412,13 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	}
 	
 	@Check
-	public void checkPortBinding(PortBinding portDefinition) {
-		handleValidationResultMessage(statechartModelValidator.checkPortBinding(portDefinition));
+	public void checkPortBinding(PortBinding portBinding) {
+		handleValidationResultMessage(statechartModelValidator.checkPortBinding(portBinding));
+	}
+	
+	@Check
+	public void checkPortBinding(CompositePortBinding portBinding) {
+		handleValidationResultMessage(statechartModelValidator.checkPortBinding(portBinding));
 	}
 	
 	@Check

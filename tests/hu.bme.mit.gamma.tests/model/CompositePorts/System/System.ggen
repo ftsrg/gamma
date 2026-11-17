@@ -2,12 +2,14 @@ import "Statechart/_1.gcd"
 import "Statechart/_2.gcd"
 import "Statechart/_3.gcd"
 import "Statechart/_4.gcd"
+import "Statechart/_5.gcd"
 
 import "System/System_1.gcd"
 import "System/System_2.gcd"
 import "System/System_3.gcd"
 import "System/System_4.gcd"
 import "System/System_5.gcd"
+import "System/System_6.gcd"
 
 //
 
@@ -122,6 +124,7 @@ verification {
 	optimize : true
 	serialize-results : false
 }
+
 //
 
 code {

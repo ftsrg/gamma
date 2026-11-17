@@ -73,6 +73,7 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpressio
 import hu.bme.mit.gamma.statechart.composite.CompositeChannel;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
+import hu.bme.mit.gamma.statechart.composite.CompositePortBinding;
 import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
 import hu.bme.mit.gamma.statechart.composite.EventPassing;
 import hu.bme.mit.gamma.statechart.composite.InstanceCompositePortReference;
@@ -88,6 +89,7 @@ import hu.bme.mit.gamma.statechart.contract.ContractModelPackage;
 import hu.bme.mit.gamma.statechart.contract.ScenarioContractAnnotation;
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.interface_.AbstractPort;
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Clock;
 import hu.bme.mit.gamma.statechart.interface_.Component;
@@ -1644,7 +1646,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 		ComponentInstance instance = instancePortReference.getInstance();
 		EObject container = portBinding.eContainer();
 		List<PortBinding> portBindings = ecoreUtil.getContentsOfType(container, PortBinding.class);
-		if (!StatechartModelDerivedFeatures.getOutputEvents(systemPort).isEmpty() && // Valid for only input ports
+		List<Event> outputEvents = StatechartModelDerivedFeatures.getOutputEvents(systemPort);
+		if (!outputEvents.isEmpty() && // Valid for only input ports
 				portBindings.stream().filter(it -> it.getCompositeSystemPort() == systemPort).count() > 1) {
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.ERROR,
@@ -1689,15 +1692,45 @@ public class StatechartModelValidator extends ActionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkPortBinding(Port port) {
+	public Collection<ValidationResultMessage> checkPortBinding(CompositePortBinding portBinding) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		CompositePort compositeSystemPort = portBinding.getCompositeSystemPort();
+		InstanceCompositePortReference instancePortReference = portBinding.getInstancePortReference();
+		CompositePort compositePort = instancePortReference.getCompositePort();
+		if (!StatechartModelDerivedFeatures.areBindable(compositeSystemPort, compositePort)) {
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.ERROR, 
+					"Ports can be connected only if their interface types match and this is not realized in this case: " +
+						compositeSystemPort.getName() + " -> " + compositePort.getName(),
+							new ReferenceInfo(CompositeModelPackage.Literals.COMPOSITE_PORT_BINDING__INSTANCE_PORT_REFERENCE)));
+		}
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkPortBinding(AbstractPort port) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Component container = StatechartModelDerivedFeatures.getContainingComponent(port);
 		if (container instanceof CompositeComponent componentDefinition) {
-			for (PortBinding portDefinition : componentDefinition.getPortBindings()) {
-				if (portDefinition.getCompositeSystemPort() == port) {
+			for (PortBinding binding : componentDefinition.getPortBindings()) {
+				if (binding.getCompositeSystemPort() == port) {
 					return validationResultMessages;
 				}
 			}
+			for (CompositePortBinding binding : componentDefinition.getCompositePortBindings()) {
+				if (binding.getCompositeSystemPort() == port) {
+					return validationResultMessages;
+				}
+			}
+			// Referenced by a composite port
+			if (port instanceof Port) {
+				if (container.getCompositePorts().stream()
+						.map(it -> StatechartModelDerivedFeatures.getAllPorts(it))
+						.anyMatch(it -> it.contains(port))) {
+					return validationResultMessages;
+				}
+			}
+			
 			validationResultMessages.add(
 				new ValidationResultMessage(ValidationResult.WARNING, 
 					"This system port is not connected to any ports of an instance",

@@ -39,6 +39,7 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//SchedulableCompositeComponent/executionList"/>
     </genClasses>
     <genClasses image="false" ecoreClass="composite.ecore#//ComponentInstance"/>
+    <genClasses image="false" ecoreClass="composite.ecore#//AbstractPortBinding"/>
     <genClasses ecoreClass="composite.ecore#//PortBinding">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//PortBinding/compositeSystemPort"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//PortBinding/instancePortReference"/>

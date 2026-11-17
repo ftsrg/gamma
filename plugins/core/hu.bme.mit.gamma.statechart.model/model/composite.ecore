@@ -25,13 +25,14 @@
         eType="#//ComponentInstanceReferenceExpression" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentInstance" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement"/>
-  <eClassifiers xsi:type="ecore:EClass" name="PortBinding">
+  <eClassifiers xsi:type="ecore:EClass" name="AbstractPortBinding" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="PortBinding" eSuperTypes="#//AbstractPortBinding">
     <eStructuralFeatures xsi:type="ecore:EReference" name="compositeSystemPort" lowerBound="1"
         eType="ecore:EClass interface.ecore#//Port"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="instancePortReference"
         lowerBound="1" eType="#//InstancePortReference" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="CompositePortBinding">
+  <eClassifiers xsi:type="ecore:EClass" name="CompositePortBinding" eSuperTypes="#//AbstractPortBinding">
     <eStructuralFeatures xsi:type="ecore:EReference" name="compositeSystemPort" lowerBound="1"
         eType="ecore:EClass interface.ecore#//CompositePort"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="instancePortReference"
