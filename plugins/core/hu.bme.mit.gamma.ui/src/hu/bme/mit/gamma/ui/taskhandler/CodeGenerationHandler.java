@@ -56,7 +56,7 @@ public class CodeGenerationHandler extends TaskHandler {
 		checkArgument(codeGeneration.getProgrammingLanguages().size() == 1, 
 				"A single programming language must be specified: " + codeGeneration.getProgrammingLanguages());
 		
-		ProgrammingLanguage programmingLanguage = codeGeneration.getProgrammingLanguages().get(0);
+		ProgrammingLanguage programmingLanguage = codeGeneration.getProgrammingLanguages().getFirst();
 		checkArgument(programmingLanguage == ProgrammingLanguage.JAVA || programmingLanguage == ProgrammingLanguage.C,
 				"Currently only Java and C supported.");
 		
@@ -101,7 +101,7 @@ public class CodeGenerationHandler extends TaskHandler {
 		URI locationUri = URI.createURI(locationUriString);
 		
 		Resource resource = new ResourceSetImpl().getResource(locationUri, true);
-		XSTS xSts = (XSTS) resource.getContents().get(0);
+		XSTS xSts = (XSTS) resource.getContents().getFirst();
 		
 		logger.info("XSTS model " + xSts.getName() + " successfully loaded.");
 		
@@ -141,6 +141,7 @@ public class CodeGenerationHandler extends TaskHandler {
 		
 		final Component component = codeGeneration.getComponent();
 		preprocessModel(component);
+		List<String> packageName = codeGeneration.getPackageName();
 		String componentName = component.getName();
 		if (component instanceof StatechartDefinition statechart) {
 			logger.info("Starting single statechart code generation: " + componentName);
@@ -152,17 +153,19 @@ public class CodeGenerationHandler extends TaskHandler {
 			}
 			String parent = resourceFile.getParent();
 			singleStatechartCommandHandler.run(statechart, parent,
-					targetFolderUri, codeGeneration.getPackageName().get(0));
+					targetFolderUri, packageName.getFirst());
 		}
 		else {
 			logger.info("Starting composite component code generation: " + componentName);
 			ResourceSet codeGenerationResourceSet = new ResourceSetImpl();
-			codeGenerationResourceSet.getResource(component.eResource().getURI(), true);
+			Resource resource = component.eResource();
+			URI uri = resource.getURI();
+			codeGenerationResourceSet.getResource(uri, true);
 			loadStatechartTraces(codeGenerationResourceSet, component);
 			// The presence of the top level component and statechart traces are sufficient in the resource set
 			// Contained composite components are automatically resolved by VIATRA
 			GlueCodeGenerator generator = new GlueCodeGenerator(codeGenerationResourceSet,
-					codeGeneration.getPackageName().get(0), targetFolderUri);
+					packageName.getFirst(), targetFolderUri);
 			generator.execute();
 			generator.dispose();
 		}
@@ -190,11 +193,14 @@ public class CodeGenerationHandler extends TaskHandler {
 			URI platformUri = ecoreUtil.getPlatformUri(resource);
 			String statechartUri = platformUri.trimFileExtension().toPlatformString(true);
 			// E.g., /hu.bme.mit.gamma.tutorial.extra/model/TrafficLight/TrafficLightCtrl
-			String statechartFileName = statechartUri.substring(statechartUri.lastIndexOf("/") + 1);
-			String traceUri = statechartUri.substring(0, statechartUri.lastIndexOf("/") + 1) + "." + statechartFileName + ".y2g";
-			if (resourceSet.getResources().stream().noneMatch(it -> it.getURI().toString().equals(traceUri))) {
+			int endIndex = statechartUri.lastIndexOf("/") + 1;
+			String statechartFileName = statechartUri.substring(endIndex);
+			String traceUri = statechartUri.substring(0, endIndex) + "." + statechartFileName + ".y2g";
+			List<Resource> resources = resourceSet.getResources();
+			if (resources.stream().noneMatch(it -> it.getURI().toString().equals(traceUri))) {
 				try {
-					resourceSet.getResource(URI.createPlatformResourceURI(traceUri, true), true);
+					URI resourceUri = URI.createPlatformResourceURI(traceUri, true);
+					resourceSet.getResource(resourceUri, true);
 				} catch (Exception e) {
 					logger.info(statechartFileName + " trace is not found. " +
 						"Wrapper is not generated for Gamma statecharts without trace.");
