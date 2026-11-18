@@ -3,6 +3,8 @@ import "Statechart/_2.gcd"
 import "Statechart/_3.gcd"
 import "Statechart/_4.gcd"
 import "Statechart/_5.gcd"
+import "Statechart/_6.gcd"
+import "Statechart/_7.gcd"
 
 import "System/System_1.gcd"
 import "System/System_2.gcd"
@@ -10,6 +12,7 @@ import "System/System_3.gcd"
 import "System/System_4.gcd"
 import "System/System_5.gcd"
 import "System/System_6.gcd"
+import "System/System_7.gcd"
 
 //
 
@@ -35,6 +38,16 @@ code {
 
 code {
 	component : _5
+	language : java
+}
+
+code {
+	component : _6
+	language : java
+}
+
+code {
+	component : _7
 	language : java
 }
 
@@ -170,6 +183,29 @@ analysis {
 verification {
 	file : "System_6"
 	property-file : ".System_6.gpd"
+	language : Theta
+	back-annotate-to-original : true
+	test-language : java
+	optimize : true
+	serialize-results : false
+}
+
+//
+
+code {
+	component : System_7
+	language : java
+}
+
+analysis {
+	component : System_7
+	language : Theta
+	state-coverage
+}
+
+verification {
+	file : "System_7"
+	property-file : ".System_7.gpd"
 	language : Theta
 	back-annotate-to-original : true
 	test-language : java
