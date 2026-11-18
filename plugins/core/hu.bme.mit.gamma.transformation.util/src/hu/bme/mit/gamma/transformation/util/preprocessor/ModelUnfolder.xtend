@@ -106,6 +106,7 @@ class ModelUnfolder {
 			Package gammaPackage, Trace trace) {
 		component.unfoldCompositePortBindings
 		component.unfoldCompositeChannels
+		component.compositePorts.removeAll
 		for (instance : component.components) {
 			val type = instance.type
 			val clonedPackage = type.containingPackage.clone
@@ -135,6 +136,7 @@ class ModelUnfolder {
 			Package gammaPackage, Trace trace) {
 		component.unfoldCompositePortBindings
 		component.unfoldCompositeChannels
+		component.compositePorts.removeAll
 		for (instance : component.components) {
 			val type = instance.type
 			
@@ -219,13 +221,38 @@ class ModelUnfolder {
 	}
 	
 	protected def void unfoldCompositePortBindings(CompositeComponent composite) {
+		val compositePortBindings = composite.compositePortBindings
+		val portBindings = composite.portBindings
 		
+		for (compositePortBinding : compositePortBindings) {
+			val systemPort = compositePortBinding.compositeSystemPort
+			checkState(!systemPort.hasCircularReferencesTo)
+			val compositeInstancePortReference = compositePortBinding.instancePortReference
+			val instance = compositeInstancePortReference.instance
+			val port = compositeInstancePortReference.compositePort
+			
+			val lhs = systemPort.allPorts
+			val rhs = port.allPorts
+			
+			checkState(lhs.size == rhs.size, composite.name + "'s " + compositePortBinding.index + "th composite port binding binds incompatible ports")
+			
+			for (var i = 0; i < lhs.size; i++) {
+				val lhs_ = lhs.get(i)
+				val rhs_ = rhs.get(i)
+				
+				val instancePortReference = instance.createInstancePortReference(rhs_)
+				val portBinding = lhs_.createPortBinding(instancePortReference)
+				portBindings += portBinding
+			}
+		}
+		
+		compositePortBindings.clear
 	}
 	
 	protected def void unfoldCompositeChannels(CompositeComponent composite) {
 		val compositePorts = composite.compositePorts
 		val compositeChannels = composite.compositeChannels
-		checkState(compositePorts.forall[it.hasCircularReferencesTo])
+		checkState(compositePorts.forall[!it.hasCircularReferencesTo])
 		
 		val channels = composite.channels
 		
@@ -244,7 +271,6 @@ class ModelUnfolder {
 			}
 		}
 		
-		compositePorts.clear
 		compositeChannels.clear
 	}
 	

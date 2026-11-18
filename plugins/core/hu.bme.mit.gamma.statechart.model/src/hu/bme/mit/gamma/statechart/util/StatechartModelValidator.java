@@ -2547,6 +2547,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 				new ValidationResultMessage(ValidationResult.ERROR,
 					"There must not be circular dependencies between composite ports",
 						new ReferenceInfo(compositePort)));
+			return validationResultMessages;
 		}
 		
 		List<Port> allPorts = StatechartModelDerivedFeatures.getAllPorts(compositePort);
