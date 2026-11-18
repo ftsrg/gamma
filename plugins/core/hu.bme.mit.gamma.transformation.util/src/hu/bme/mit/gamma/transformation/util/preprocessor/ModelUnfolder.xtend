@@ -99,6 +99,7 @@ class ModelUnfolder {
 	
 	private dispatch def void copyComponents(Component component, Package gammaPackage, Trace trace) {
 		// Simple statecharts are already cloned
+		component.compositePorts.removeAll
 		component.removeAnnotations // To prevent importing unnecessary resources into the resource set
 	}
 	
@@ -164,6 +165,7 @@ class ModelUnfolder {
 	
 	private dispatch def void copyComponents(AsynchronousAdapter component, Package gammaPackage,
 			Trace trace) {
+		component.compositePorts.removeAll
 		val type = component.wrappedComponent.type
 		val clonedPackage = type.containingPackage.clone
 		val clonedComponent = clonedPackage.components
@@ -184,6 +186,7 @@ class ModelUnfolder {
 	
 	private dispatch def void copyComponents(AsynchronousStatechartDefinition component,
 			Package gammaPackage, Trace trace) {
+		component.compositePorts.removeAll
 		val clonedPackage = component.containingPackage.clone
 		val clonedComponent = clonedPackage.components
 				.findFirst[it.helperEquals(component)] as AsynchronousStatechartDefinition

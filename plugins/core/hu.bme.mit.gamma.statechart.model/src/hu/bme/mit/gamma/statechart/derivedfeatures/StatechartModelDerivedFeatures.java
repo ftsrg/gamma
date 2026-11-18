@@ -2858,13 +2858,17 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static Set<Port> getUnusedPorts(ComponentInstance instance) {
-		Component container = (CompositeComponent) getContainingComponent(instance);
+		Component container = (Component) getContainingComponent(instance);
 		Component type = getDerivedType(instance);
 		
-		Set<Port> usedPorts = ecoreUtil.getAllContentsOfType(
-				container, InstancePortReference.class).stream()
+		Collection<Port> usedPorts = new ArrayList<Port>(
+			ecoreUtil.getAllContentsOfType(container, InstancePortReference.class).stream()
 				.filter(it -> it.getInstance() == instance)
-				.map(it -> it.getPort()).collect(Collectors.toSet());
+				.map(it -> it.getPort()).toList());
+		ecoreUtil.getAllContentsOfType(container, InstanceCompositePortReference.class).stream()
+				.filter(it -> it.getInstance() == instance)
+				.forEach(it -> usedPorts.addAll(
+						getAllPorts(it.getCompositePort())));
 		
 		Set<Port> unusedPorts = new HashSet<Port>(
 				getAllPorts(type));
