@@ -5,7 +5,7 @@ import "Interfaces/Interfaces.gcd"
 import "Statechart/_3.gcd"
 import "Statechart/_5.gcd"
 
-cascade System_5 [
+cascade System_6 [
 	port Execute : requires Execute
 	port Execute2 : requires Execute
 	composite-port ExecuteB of Execute, Execute2

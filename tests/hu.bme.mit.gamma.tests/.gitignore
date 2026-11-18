@@ -19,6 +19,11 @@
 *.pmlp
 *.txt
 *.py
+*.prop
+.theta
+.spin
+.nuXmv
+.imandra
 !/model/NonDetChoice/System/NonDetChoice.gpd
 !/model/TMT/System/TMT.gsm
 !/model/TMT/System/TMTComponent.gsm

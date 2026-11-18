@@ -33,6 +33,12 @@ code {
 	language : java
 }
 
+code {
+	component : _5
+	language : java
+}
+
+
 //
 
 code {
@@ -141,6 +147,29 @@ analysis {
 verification {
 	file : "System_5"
 	property-file : ".System_5.gpd"
+	language : Theta
+	back-annotate-to-original : true
+	test-language : java
+	optimize : true
+	serialize-results : false
+}
+
+//
+
+code {
+	component : System_6
+	language : java
+}
+
+analysis {
+	component : System_6
+	language : Theta
+	state-coverage
+}
+
+verification {
+	file : "System_6"
+	property-file : ".System_6.gpd"
 	language : Theta
 	back-annotate-to-original : true
 	test-language : java
