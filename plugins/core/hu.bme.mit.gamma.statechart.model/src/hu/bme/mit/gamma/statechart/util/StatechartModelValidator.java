@@ -2006,7 +2006,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 			
 			CompositePort _providedPort = providedPort.getCompositePort();
 			CompositePort _requiredPort = requiredPort.getCompositePort();
-			if (ecoreUtil.hasCircularReferencesTo(_providedPort) || ecoreUtil.hasCircularReferencesTo(_providedPort)) {
+			if (ecoreUtil.hasCircularReferencesTo(_providedPort) || ecoreUtil.hasCircularReferencesTo(_requiredPort)) {
 				return validationResultMessages;
 			}
 			
@@ -2027,7 +2027,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 						if (ports2.stream().anyMatch(it -> StatechartModelDerivedFeatures.equals(it, port))) {
 							validationResultMessages.add(
 								new ValidationResultMessage(ValidationResult.ERROR, 
-									port.getInstance() + "." + port.getPort().getName() + " is contained in both a simple and a composite channel",
+									port.getInstance().getName()+ "." + port.getPort().getName() + " is contained in both a simple and a composite channel",
 										new ReferenceInfo(channel)));
 						}
 					}
