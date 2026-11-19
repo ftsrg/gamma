@@ -1645,7 +1645,9 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Port instancePort = instancePortReference.getPort();
 		ComponentInstance instance = instancePortReference.getInstance();
 		EObject container = portBinding.eContainer();
-		List<PortBinding> portBindings = ecoreUtil.getContentsOfType(container, PortBinding.class);
+		List<PortBinding> portBindings = (container instanceof CompositeComponent composite) ?
+				StatechartModelDerivedFeatures.getAllUnfoldedPortBindings(composite) : // Considering composite port bindings, too
+					ecoreUtil.getContentsOfType(container, PortBinding.class); // E.g., phase annotations
 		List<Event> outputEvents = StatechartModelDerivedFeatures.getOutputEvents(systemPort);
 		if (!outputEvents.isEmpty() && // Valid for only input ports
 				portBindings.stream().filter(it -> it.getCompositeSystemPort() == systemPort).count() > 1) {
@@ -1664,7 +1666,39 @@ public class StatechartModelValidator extends ActionModelValidator {
 		}
 		return validationResultMessages;
 	}
-	
+
+	public Collection<ValidationResultMessage> checkPortBindingUniqueness(CompositePortBinding compositePortBinding) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+
+		if (!(compositePortBinding.eContainer() instanceof CompositeComponent composite)) {
+			return validationResultMessages;
+		}
+		// The same rules as for simple port bindings, applied to the contained simple ports
+		List<PortBinding> portBindings = StatechartModelDerivedFeatures.getAllUnfoldedPortBindings(composite);
+		for (PortBinding unfoldedPortBinding : StatechartModelDerivedFeatures.getUnfoldedPortBindings(compositePortBinding)) {
+			Port systemPort = unfoldedPortBinding.getCompositeSystemPort();
+			InstancePortReference instancePortReference = unfoldedPortBinding.getInstancePortReference();
+			List<Event> outputEvents = StatechartModelDerivedFeatures.getOutputEvents(systemPort);
+			if (!outputEvents.isEmpty() && // Valid for only input ports
+					portBindings.stream().filter(it -> it.getCompositeSystemPort() == systemPort).count() > 1) {
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR,
+						"System port " + systemPort.getName() + " is connected to multiple ports of instances",
+							new ReferenceInfo(CompositeModelPackage.Literals.COMPOSITE_PORT_BINDING__COMPOSITE_SYSTEM_PORT)));
+			}
+			if (portBindings.stream().filter(it -> StatechartModelDerivedFeatures.equals(
+					it.getInstancePortReference(), instancePortReference)).count() > 1) {
+				// Erroneous even for broadcast ports as "outwards" port binding should be trivial (single path)
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR,
+						"Multiple system ports are connected to port " + instancePortReference.getInstance().getName() + "." + instancePortReference.getPort().getName(),
+							new ReferenceInfo(CompositeModelPackage.Literals.COMPOSITE_PORT_BINDING__INSTANCE_PORT_REFERENCE)));
+			}
+		}
+
+		return validationResultMessages;
+	}
+
 	public Collection<ValidationResultMessage> checkPortBinding(PortBinding portBinding) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		InterfaceRealization compositeInterfaceRealization = portBinding
@@ -1762,8 +1796,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 	public Collection<ValidationResultMessage> checkPortBindingWithSimpleChannel(SimpleChannel channel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
-		EObject root = EcoreUtil.getRootContainer(channel);
-		Collection<PortBinding> portDefinitions = ecoreUtil.getAllContentsOfType(root, PortBinding.class);
+		CompositeComponent root = StatechartModelDerivedFeatures.getContainingCompositeComponent(channel);
+		Collection<PortBinding> portDefinitions = StatechartModelDerivedFeatures.getAllUnfoldedPortBindings(root);
 		for (PortBinding portDefinition : portDefinitions) {
 			// Broadcast ports can be used in multiple places
 			InstancePortReference providedPort = channel.getProvidedPort();
@@ -1790,8 +1824,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 	public Collection<ValidationResultMessage> checkPortBindingWithBroadcastChannel(BroadcastChannel channel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
-		EObject root = EcoreUtil.getRootContainer(channel);
-		Collection<PortBinding> portDefinitions = ecoreUtil.getAllContentsOfType(root, PortBinding.class);
+		CompositeComponent parentComponent = StatechartModelDerivedFeatures.getContainingCompositeComponent(channel);
+		Collection<PortBinding> portDefinitions = StatechartModelDerivedFeatures.getAllUnfoldedPortBindings(parentComponent);
 		for (PortBinding portDefinition : portDefinitions) {
 			for (InstancePortReference output : channel.getRequiredPorts()) {
 				if (StatechartModelDerivedFeatures.equals(output, portDefinition.getInstancePortReference())) {
@@ -1802,6 +1836,35 @@ public class StatechartModelValidator extends ActionModelValidator {
 				}
 			}
 		}
+
+		return validationResultMessages;
+	}
+
+	public Collection<ValidationResultMessage> checkPortBindingWithCompositeChannel(CompositeChannel compositeChannel) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		CompositeComponent parentComponent = StatechartModelDerivedFeatures.getContainingCompositeComponent(compositeChannel);
+		Collection<PortBinding> portDefinitions = StatechartModelDerivedFeatures.getAllUnfoldedPortBindings(parentComponent);
+		// The same rules as for simple channels, applied to the contained simple ports
+		for (Channel channel : StatechartModelDerivedFeatures.getUnfoldedChannels(compositeChannel)) {
+			InstancePortReference providedPort = channel.getProvidedPort();
+			// Broadcast ports can be used in multiple places
+			if (!StatechartModelDerivedFeatures.isBroadcast(providedPort.getPort()) &&
+					portDefinitions.stream().anyMatch(it -> StatechartModelDerivedFeatures.equals(providedPort, it.getInstancePortReference()))) {
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR,
+						providedPort.getInstance().getName() + "." + providedPort.getPort().getName() + " can be included either in a channel or a port binding",
+							new ReferenceInfo(providedPort)));
+			}
+			for (InstancePortReference requiredPort : StatechartModelDerivedFeatures.getRequiredPorts(channel)) {
+				if (portDefinitions.stream().anyMatch(it -> StatechartModelDerivedFeatures.equals(requiredPort, it.getInstancePortReference()))) {
+					validationResultMessages.add(
+						new ValidationResultMessage(ValidationResult.ERROR,
+							requiredPort.getInstance().getName() + "." + requiredPort.getPort().getName() + " can be included either in a channel or a port binding",
+								new ReferenceInfo(requiredPort)));
+				}
+			}
+		}
 		
 		return validationResultMessages;
 	}
@@ -1809,15 +1872,15 @@ public class StatechartModelValidator extends ActionModelValidator {
 	public Collection<ValidationResultMessage> checkChannelProvidedPorts(Channel channel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
-		Component parentComponent = (Component) channel.eContainer();
+		CompositeComponent parentComponent = StatechartModelDerivedFeatures.getContainingCompositeComponent(channel);
 		// Ports inside asynchronous components can be connected to multiple ports
 		if (parentComponent instanceof AbstractAsynchronousCompositeComponent) {
 			return validationResultMessages;
 		}
+		
 		// Checking provided instance ports in different channels
-		EObject root = EcoreUtil.getRootContainer(channel);
 		Collection<InstancePortReference> instancePortReferences = ecoreUtil.
-				getAllContentsOfType(root, InstancePortReference.class);
+				getAllContentsOfType(parentComponent, InstancePortReference.class);
 		for (InstancePortReference instancePortReference : instancePortReferences.stream()
 					.filter(it -> it != channel.getProvidedPort() && it.eContainer() instanceof Channel)
 					.toList()) {
@@ -1829,21 +1892,32 @@ public class StatechartModelValidator extends ActionModelValidator {
 							new ReferenceInfo(CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT)));
 			}
 		}
-		
+		// Checking provided instance ports in composite channels
+		// Broadcast ports can be shared with composite channels, as those cannot express broadcast channels
+		InstancePortReference providedPort = channel.getProvidedPort();
+		if (!StatechartModelDerivedFeatures.isBroadcast(providedPort.getPort()) &&
+				StatechartModelDerivedFeatures.getAllUnfoldedCompositeChannelPorts(parentComponent).stream()
+					.anyMatch(it -> StatechartModelDerivedFeatures.equals(it, providedPort))) {
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.WARNING,
+					"A port of an instance should be included only in a single (composite) channel; else signals may overwrite each other",
+						new ReferenceInfo(CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT)));
+		}
+
 		return validationResultMessages;
 	}
 	
 	public Collection<ValidationResultMessage> checkChannelRequiredPorts(SimpleChannel channel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
-		Component parentComponent = StatechartModelDerivedFeatures.getContainingComponent(channel);
+		CompositeComponent parentComponent = StatechartModelDerivedFeatures.getContainingCompositeComponent(channel);
 		// Ports inside asynchronous components can be connected to multiple ports
 		if (parentComponent instanceof AbstractAsynchronousCompositeComponent) {
 			return validationResultMessages;
 		}
-		EObject root = EcoreUtil.getRootContainer(channel);
+		
 		Collection<InstancePortReference> instancePortReferences = ecoreUtil.
-				getAllContentsOfType(root, InstancePortReference.class);
+				getAllContentsOfType(parentComponent, InstancePortReference.class);
 		// Checking required instance ports in different simple channels
 		for (InstancePortReference instancePortReference : instancePortReferences.stream()
 				.filter(it -> it != channel.getRequiredPort() && it.eContainer() instanceof Channel)
@@ -1855,21 +1929,29 @@ public class StatechartModelValidator extends ActionModelValidator {
 							new ReferenceInfo(CompositeModelPackage.Literals.SIMPLE_CHANNEL__REQUIRED_PORT)));
 			}
 		}
-		
+		// Checking required instance ports in composite channels
+		if (StatechartModelDerivedFeatures.getAllUnfoldedCompositeChannelPorts(parentComponent).stream()
+				.anyMatch(it -> StatechartModelDerivedFeatures.equals(it, channel.getRequiredPort()))) {
+			validationResultMessages.add(
+				new ValidationResultMessage(ValidationResult.WARNING,
+					"A port of an instance should be included only in a single (composite) channel; else signals may overwrite each other",
+						new ReferenceInfo(CompositeModelPackage.Literals.SIMPLE_CHANNEL__REQUIRED_PORT)));
+		}
+
 		return validationResultMessages;
 	}
 	
 	public Collection<ValidationResultMessage> checkChannelRequiredPorts(BroadcastChannel channel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
-		Component parentComponent = ecoreUtil.getContainerOfType(channel, Component.class);
+		CompositeComponent parentComponent = ecoreUtil.getContainerOfType(channel, CompositeComponent.class);
 		// Ports inside asynchronous components can be connected to multiple ports
 		if (parentComponent instanceof AbstractAsynchronousCompositeComponent) {
 			return validationResultMessages;
 		}
-		EObject root = EcoreUtil.getRootContainer(channel);
+		
 		Collection<InstancePortReference> instancePortReferences = ecoreUtil.
-				getAllContentsOfType(root, InstancePortReference.class);
+				getAllContentsOfType(parentComponent, InstancePortReference.class);
 		// Checking required instance ports in different broadcast channels
 		for (InstancePortReference instancePortReference : instancePortReferences.stream()
 				.filter(it -> it.eContainer() != channel && it.eContainer() instanceof Channel)
@@ -1897,8 +1979,80 @@ public class StatechartModelValidator extends ActionModelValidator {
 				}
 			}
 		}
-		
+		// Checking required instance ports in composite channels
+		List<InstancePortReference> compositeChannelPorts = StatechartModelDerivedFeatures.getAllUnfoldedCompositeChannelPorts(parentComponent);
+		for (InstancePortReference requiredPort : channel.getRequiredPorts()) {
+			if (compositeChannelPorts.stream()
+					.anyMatch(it -> StatechartModelDerivedFeatures.equals(it, requiredPort))) {
+				int index = channel.getRequiredPorts().indexOf(requiredPort);
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.WARNING,
+						"A port of an instance should be included only in a single (composite) channel; else signals may overwrite each other",
+							new ReferenceInfo(CompositeModelPackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS, index)));
+			}
+		}
+
 		return validationResultMessages;
+	}
+
+	public Collection<ValidationResultMessage> checkCompositeChannelPorts(CompositeChannel compositeChannel) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+
+		Component parentComponent = ecoreUtil.getContainerOfType(compositeChannel, Component.class);
+		// Ports inside asynchronous components can be connected to multiple ports
+		if (parentComponent instanceof AbstractAsynchronousCompositeComponent) {
+			return validationResultMessages;
+		}
+		// The same rules as for simple channels, applied to the contained simple ports
+		EObject root = EcoreUtil.getRootContainer(compositeChannel);
+		List<Channel> unfoldedChannels = StatechartModelDerivedFeatures.getUnfoldedChannels(compositeChannel);
+		List<List<InstancePortReference>> channelPorts = new ArrayList<List<InstancePortReference>>();
+		for (Channel channel : ecoreUtil.getAllContentsOfType(root, Channel.class)) {
+			channelPorts.add(
+					StatechartModelDerivedFeatures.getAllPorts(channel));
+		}
+		for (CompositeChannel otherCompositeChannel : ecoreUtil.getAllContentsOfType(root, CompositeChannel.class)) {
+			if (otherCompositeChannel != compositeChannel) {
+				for (Channel channel : StatechartModelDerivedFeatures.getUnfoldedChannels(otherCompositeChannel)) {
+					channelPorts.add(
+							StatechartModelDerivedFeatures.getAllPorts(channel));
+				}
+			}
+		}
+		for (Channel unfoldedChannel : unfoldedChannels) {
+			// Other simple channels this composite channel stands for
+			List<List<InstancePortReference>> otherChannelPorts = new ArrayList<List<InstancePortReference>>(channelPorts);
+			for (Channel otherUnfoldedChannel : unfoldedChannels) {
+				if (otherUnfoldedChannel != unfoldedChannel) {
+					otherChannelPorts.add(
+							StatechartModelDerivedFeatures.getAllPorts(otherUnfoldedChannel));
+				}
+			}
+			// Broadcast ports can be shared with composite channels, as those cannot express broadcast channels
+			InstancePortReference providedPort = unfoldedChannel.getProvidedPort();
+			if (!StatechartModelDerivedFeatures.isBroadcast(providedPort.getPort()) &&
+					isContained(providedPort, otherChannelPorts)) {
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.WARNING,
+							providedPort.getInstance().getName() + "." + providedPort.getPort().getName() + " should be included only in a single (composite) channel; else signals may overwrite each other",
+							new ReferenceInfo(providedPort)));
+			}
+			for (InstancePortReference requiredPort : StatechartModelDerivedFeatures.getRequiredPorts(unfoldedChannel)) {
+				if (isContained(requiredPort, otherChannelPorts)) {
+					validationResultMessages.add(
+						new ValidationResultMessage(ValidationResult.WARNING,
+							requiredPort.getInstance().getName() + "." + requiredPort.getPort().getName() + " should be included only in a single (composite) channel; else signals may overwrite each other",
+								new ReferenceInfo(requiredPort)));
+				}
+			}
+		}
+
+		return validationResultMessages;
+	}
+
+	private boolean isContained(InstancePortReference port, List<List<InstancePortReference>> ports) {
+		return ports.stream().flatMap(it -> it.stream())
+				.anyMatch(it -> StatechartModelDerivedFeatures.equals(it, port));
 	}
 	
 	public Collection<ValidationResultMessage> checkChannelInput(Channel channel) {
@@ -1989,7 +2143,6 @@ public class StatechartModelValidator extends ActionModelValidator {
 	public Collection<ValidationResultMessage> checkCompositeChannels(CompositeComponent compositeComponent) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
-		List<Channel> channels = compositeComponent.getChannels();
 		List<CompositeChannel> compositeChannels = compositeComponent.getCompositeChannels();
 		for (CompositeChannel compositeChannel : compositeChannels) {
 			InstanceCompositePortReference providedPort = compositeChannel.getProvidedPort();
@@ -2006,31 +2159,14 @@ public class StatechartModelValidator extends ActionModelValidator {
 			
 			CompositePort _providedPort = providedPort.getCompositePort();
 			CompositePort _requiredPort = requiredPort.getCompositePort();
-			if (ecoreUtil.hasCircularReferencesTo(_providedPort) || ecoreUtil.hasCircularReferencesTo(_requiredPort)) {
-				return validationResultMessages;
-			}
-			
-			List<Port> providedPorts = StatechartModelDerivedFeatures.getAllPorts(_providedPort);
-			List<Port> requiredPorts = StatechartModelDerivedFeatures.getAllPorts(_requiredPort);
-			if (!StatechartModelDerivedFeatures.areCompatible(providedPorts, requiredPorts)) {
-				validationResultMessages.add(
-					new ValidationResultMessage(ValidationResult.ERROR, 
-						"The two composite ports must comprise the same simple ports in compatible realization modes",
-							new ReferenceInfo(compositeChannel)));
-			}
-			
-			List<InstancePortReference> allPorts = StatechartModelDerivedFeatures.getAllPorts(compositeChannel);
-			for (InstancePortReference port : allPorts) {
-				if (!StatechartModelDerivedFeatures.isProvided(port)) {
-					for (Channel channel : channels) {
-						List<InstancePortReference> ports2 = StatechartModelDerivedFeatures.getAllPorts(channel);
-						if (ports2.stream().anyMatch(it -> StatechartModelDerivedFeatures.equals(it, port))) {
-							validationResultMessages.add(
-								new ValidationResultMessage(ValidationResult.ERROR, 
-									port.getInstance().getName()+ "." + port.getPort().getName() + " is contained in both a simple and a composite channel",
-										new ReferenceInfo(channel)));
-						}
-					}
+			if (!(ecoreUtil.hasCircularReferencesTo(_providedPort) || ecoreUtil.hasCircularReferencesTo(_requiredPort))) {
+				List<Port> providedPorts = StatechartModelDerivedFeatures.getAllPorts(_providedPort);
+				List<Port> requiredPorts = StatechartModelDerivedFeatures.getAllPorts(_requiredPort);
+				if (!StatechartModelDerivedFeatures.areCompatible(providedPorts, requiredPorts)) {
+					validationResultMessages.add(
+						new ValidationResultMessage(ValidationResult.ERROR, 
+							"The two composite ports must comprise the same simple ports in compatible realization modes",
+								new ReferenceInfo(compositeChannel)));
 				}
 			}
 		}

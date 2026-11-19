@@ -71,6 +71,7 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstanceStateReferenceExpr
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceTransitionReferenceExpression;
 import hu.bme.mit.gamma.statechart.composite.CompositeChannel;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
+import hu.bme.mit.gamma.statechart.composite.CompositePortBinding;
 import hu.bme.mit.gamma.statechart.composite.ControlFunction;
 import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
 import hu.bme.mit.gamma.statechart.composite.EventPassing;
@@ -2849,8 +2850,90 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			InstancePortReference instancePortReference = statechartUtil.createInstancePortReference(instance, port);
 			references.add(instancePortReference);
 		}
-		
+
 		return references;
+	}
+	
+	public static List<PortBinding> getUnfoldedPortBindings(CompositePortBinding compositePortBinding) {
+		List<PortBinding> portBindings = new ArrayList<PortBinding>();
+
+		CompositePort systemPort = compositePortBinding.getCompositeSystemPort();
+		InstanceCompositePortReference instancePortReference = compositePortBinding.getInstancePortReference();
+		CompositePort instancePort = instancePortReference.getCompositePort();
+		if (systemPort == null || instancePort == null || instancePortReference.getInstance() == null ||
+				ecoreUtil.hasCircularReferencesTo(systemPort) || ecoreUtil.hasCircularReferencesTo(instancePort)) {
+			return portBindings;
+		}
+
+		List<Port> systemPorts = getAllPorts(systemPort);
+		List<InstancePortReference> instancePorts = getAllPorts(instancePortReference);
+		int size = Math.min(systemPorts.size(), instancePorts.size());
+		for (int i = 0; i < size; i++) {
+			Port systemPort_ = systemPorts.get(i);
+			InstancePortReference instancePort_ = instancePorts.get(i);
+			portBindings.add(
+					statechartUtil.createPortBinding(systemPort_, instancePort_));
+		}
+
+		return portBindings;
+	}
+	
+	public static List<PortBinding> getAllUnfoldedPortBindings(CompositeComponent composite) {
+		List<PortBinding> portBindings = new ArrayList<PortBinding>(composite.getPortBindings());
+		for (CompositePortBinding compositePortBinding : composite.getCompositePortBindings()) {
+			portBindings.addAll(
+					getUnfoldedPortBindings(compositePortBinding));
+		}
+		return portBindings;
+	}
+	
+	public static List<Channel> getUnfoldedChannels(CompositeChannel compositeChannel) {
+		List<Channel> channels = new ArrayList<Channel>();
+
+		InstanceCompositePortReference providedPort = compositeChannel.getProvidedPort();
+		InstanceCompositePortReference requiredPort = compositeChannel.getRequiredPort();
+		CompositePort _providedPort = providedPort.getCompositePort();
+		CompositePort _requiredPort = requiredPort.getCompositePort();
+		if (_providedPort == null || _requiredPort == null ||
+				providedPort.getInstance() == null || requiredPort.getInstance() == null ||
+				ecoreUtil.hasCircularReferencesTo(_providedPort) || ecoreUtil.hasCircularReferencesTo(_requiredPort)) {
+			return channels;
+		}
+
+		List<InstancePortReference> lhs = getAllPorts(providedPort);
+		List<InstancePortReference> rhs = getAllPorts(requiredPort);
+		int size = Math.min(lhs.size(), rhs.size());
+		for (int i = 0; i < size; i++) {
+			InstancePortReference lhs_ = lhs.get(i);
+			InstancePortReference rhs_ = rhs.get(i);
+			if (areCompatible(lhs_.getPort(), rhs_.getPort())) {
+				channels.add(
+						statechartUtil.createOrderedChannel(lhs_, rhs_));
+			}
+		}
+
+		return channels;
+	}
+	
+	public static List<Channel> getAllUnfoldedChannels(CompositeComponent composite) {
+		List<Channel> channels = new ArrayList<Channel>(
+				composite.getChannels());
+		for (CompositeChannel compositeChannel : composite.getCompositeChannels()) {
+			channels.addAll(
+					getUnfoldedChannels(compositeChannel));
+		}
+		return channels;
+	}
+	
+	public static List<InstancePortReference> getAllUnfoldedCompositeChannelPorts(CompositeComponent component) {
+		List<InstancePortReference> ports = new ArrayList<InstancePortReference>();
+		for (CompositeChannel compositeChannel : component.getCompositeChannels()) {
+			for (Channel channel : StatechartModelDerivedFeatures.getUnfoldedChannels(compositeChannel)) {
+				ports.addAll(
+						StatechartModelDerivedFeatures.getAllPorts(channel));
+			}
+		}
+		return ports;
 	}
 	
 	public static boolean equals(InstancePortReference p1, InstancePortReference p2) {
@@ -3707,6 +3790,17 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 		EObject container = object.eContainer();
 		return getContainingComponent(container);
+	}
+	
+	public static CompositeComponent getContainingCompositeComponent(EObject object) {
+		if (object == null) {
+			throw new IllegalArgumentException("Not contained by a component: " + object);
+		}
+		if (object instanceof CompositeComponent component) {
+			return component;
+		}
+		EObject container = object.eContainer();
+		return getContainingCompositeComponent(container);
 	}
 	
 	public static Package getContainingPackage(EObject object) {

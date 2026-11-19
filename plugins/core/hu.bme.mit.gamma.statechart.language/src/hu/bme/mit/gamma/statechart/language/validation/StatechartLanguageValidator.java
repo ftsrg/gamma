@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
+import hu.bme.mit.gamma.statechart.composite.CompositeChannel;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.CompositePortBinding;
 import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
@@ -412,6 +413,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	}
 	
 	@Check
+	public void checkPortBindingUniqueness(CompositePortBinding portBinding) {
+		handleValidationResultMessage(statechartModelValidator.checkPortBindingUniqueness(portBinding));
+	}
+
+	@Check
 	public void checkPortBinding(PortBinding portBinding) {
 		handleValidationResultMessage(statechartModelValidator.checkPortBinding(portBinding));
 	}
@@ -437,6 +443,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	}
 	
 	@Check
+	public void checkPortBindingWithCompositeChannel(CompositeChannel channel) {
+		handleValidationResultMessage(statechartModelValidator.checkPortBindingWithCompositeChannel(channel));
+	}
+
+	@Check
 	public void checkChannelProvidedPorts(Channel channel) {
 		handleValidationResultMessage(statechartModelValidator.checkChannelProvidedPorts(channel));
 	}
@@ -451,6 +462,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		handleValidationResultMessage(statechartModelValidator.checkChannelRequiredPorts(channel));
 	}
 	
+	@Check
+	public void checkCompositeChannelPorts(CompositeChannel channel) {
+		handleValidationResultMessage(statechartModelValidator.checkCompositeChannelPorts(channel));
+	}
+
 	@Check
 	public void checkChannelInput(Channel channel) {
 		handleValidationResultMessage(statechartModelValidator.checkChannelInput(channel));		
