@@ -2685,7 +2685,19 @@ public class StatechartModelValidator extends ActionModelValidator {
 						new ReferenceInfo(compositePort)));
 			return validationResultMessages;
 		}
-		
+
+		// Contained composite ports are checked on their own
+		List<AbstractPort> containedPorts = compositePort.getPorts();
+		for (int i = 0; i < containedPorts.size(); i++) {
+			AbstractPort abstractPort = containedPorts.get(i);
+			if (abstractPort instanceof Port port && StatechartModelDerivedFeatures.isInternal(port)) {
+				validationResultMessages.add(
+					new ValidationResultMessage(ValidationResult.ERROR,
+						"Ports exposing internal events cannot be contained by composite ports: " + port.getName(),
+							new ReferenceInfo(InterfaceModelPackage.Literals.COMPOSITE_PORT__PORTS, i)));
+			}
+		}
+
 		List<Port> allPorts = StatechartModelDerivedFeatures.getAllPorts(compositePort);
 		for (int i = 0; i < allPorts.size() - 1; i++) {
 			Port lhs = allPorts.get(i);

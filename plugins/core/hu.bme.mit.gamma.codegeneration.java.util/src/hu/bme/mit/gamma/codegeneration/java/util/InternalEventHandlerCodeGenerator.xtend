@@ -10,7 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegeneration.java.util
 
-import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Port
@@ -32,8 +31,7 @@ class InternalEventHandlerCodeGenerator {
 	def createInternalPortHandlingSettingCode(Component component) '''
 		«FOR internalPort : component.allInternalPorts»
 			«FOR subcomponent : component.instances»
-				«FOR subport : subcomponent.derivedType.allInternalPorts.filter[it === internalPort || it.boundCompositePort === internalPort ||
-						component.isBoundViaCompositePortBinding(subcomponent, it, internalPort)]»
+				«FOR subport : subcomponent.derivedType.allInternalPorts.filter[it === internalPort || it.boundCompositePort === internalPort]»
 					«subcomponent.name».handle«subport.name.toFirstUpper»(false);
 				«ENDFOR»
 			«ENDFOR»
@@ -46,7 +44,7 @@ class InternalEventHandlerCodeGenerator {
 				this.handle«internalPort.name.toFirstUpper» = handle«internalPort.name.toFirstUpper»;
 				«IF component instanceof CompositeComponent»
 					if (handle«internalPort.name.toFirstUpper» == false) {
-						«FOR portBinding : component.allUnfoldedPortBindings.filter[it.compositeSystemPort === internalPort]»
+						«FOR portBinding : component.portBindings.filter[it.compositeSystemPort === internalPort]»
 							«portBinding.instancePortReference.instance.name».handle«portBinding
 									.instancePortReference.port.name.toFirstUpper»(handle«internalPort.name.toFirstUpper»);
 						«ENDFOR»
@@ -71,20 +69,6 @@ class InternalEventHandlerCodeGenerator {
 			}
 		«ENDIF»
 	'''
-	
-	/**
-	 * Returns whether the given instance port is bound to the given system port by a composite port binding.
-	 */
-	protected def isBoundViaCompositePortBinding(Component component,
-			ComponentInstance instance, Port instancePort, Port systemPort) {
-		if (component instanceof CompositeComponent) {
-			return component.compositePortBindings
-				.map[it.unfoldedPortBindings].flatten
-				.exists[it.compositeSystemPort === systemPort &&
-					it.instancePortReference.instance === instance && it.instancePortReference.port === instancePort]
-		}
-		return false
-	}
 	
 	protected def createInternalEventRaisings(Port internalPort) '''
 		«FOR internalEvent : internalPort.internalEvents»
