@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2023 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -394,6 +394,9 @@ class AsynchronousAdapterCodeGenerator {
 		// Wrapped port instances
 		«FOR port : component.wrappedComponent.type.ports»
 			«port.name.toFirstLower» = new «port.name.toFirstUpper»();
+		«ENDFOR»
+		«FOR compositePort : component.allCompositePorts»
+			«compositePort.name.toFirstLower» = new «compositePort.compositePortTypeName»();
 		«ENDFOR»
 	'''
 	

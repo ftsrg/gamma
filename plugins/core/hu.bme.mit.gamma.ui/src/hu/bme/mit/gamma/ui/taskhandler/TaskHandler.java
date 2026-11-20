@@ -45,6 +45,7 @@ import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.util.PropertyUtil;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.language.ui.serializer.StatechartLanguageSerializer;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
@@ -52,6 +53,7 @@ import hu.bme.mit.gamma.theta.verification.ThetaVerification;
 import hu.bme.mit.gamma.trace.language.ui.serializer.TraceLanguageSerializer;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
+import hu.bme.mit.gamma.transformation.util.preprocessor.TimeoutPreprocessor;
 import hu.bme.mit.gamma.uppaal.verification.XstsUppaalVerification;
 import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
@@ -220,6 +222,19 @@ public abstract class TaskHandler {
 	protected void preprocessStatechart(StatechartDefinition statechart) {
 		CompletenessTrapStateInjector trapStateInjector = new CompletenessTrapStateInjector(statechart);
 		trapStateInjector.execute();
+		
+		boolean preprocessTimeouts = false;
+		if (preprocessTimeouts) {
+			TimeoutPreprocessor timeoutPreprocessor = new TimeoutPreprocessor(statechart);
+			Interface _interface = timeoutPreprocessor.execute();
+			if (!_interface.getEventDeclarations().isEmpty()) {
+				Package _package = StatechartModelDerivedFeatures.getContainingPackage(statechart);
+				Package interfacPackage = _package.getImports().stream()
+						.filter(it -> !it.getInterfaces().isEmpty()).findFirst().get();
+				interfacPackage.getInterfaces().add(_interface);
+				ecoreUtil.save(interfacPackage);
+			}
+		}
 	}
 	
 	//

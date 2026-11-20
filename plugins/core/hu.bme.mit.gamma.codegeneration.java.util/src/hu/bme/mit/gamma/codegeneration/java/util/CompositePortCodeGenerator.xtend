@@ -39,7 +39,7 @@ class CompositePortCodeGenerator {
 	 */
 	def generateCompositePortGetterDeclarations(Component component) '''
 		«FOR compositePort : component.allCompositePorts»
-			public «compositePort.compositePortTypeName» get«compositePort.name.toFirstUpper»();
+			«compositePort.compositePortTypeName» get«compositePort.name.toFirstUpper»();
 		«ENDFOR»
 	'''
 
@@ -49,18 +49,32 @@ class CompositePortCodeGenerator {
 	def generateCompositePortInterfaces(Component component) '''
 		«FOR compositePort : component.allCompositePorts SEPARATOR System.lineSeparator»
 			/** Composite port «compositePort.name» of «compositePort.ports.map[it.name].join(", ")». */
-			public interface «compositePort.compositePortTypeName» {
+			interface «compositePort.compositePortTypeName» {
 				«FOR port : compositePort.containedPorts»
-					public «port.portTypeName» get«port.name.toFirstUpper»();
+					«port.portTypeName» get«port.name.toFirstUpper»();
 				«ENDFOR»
 			}
 		«ENDFOR»
 	'''
 
 	/**
-	 * Generates the composite port fields of the component class.
+	 * Generates the composite port field declarations of the component class,
+	 * to be instantiated using {@link #generateCompositePortInstantiations}.
 	 */
 	def generateCompositePortFields(Component component) '''
+		«IF !component.allCompositePorts.empty»
+			// Composite port instances
+		«ENDIF»
+		«FOR compositePort : component.allCompositePorts»
+			private «compositePort.compositePortTypeName» «compositePort.name.toFirstLower»;
+		«ENDFOR»
+	'''
+
+	/**
+	 * Generates the composite port field declarations of the component class with inline instantiation,
+	 * for component classes whose (simple) port fields are instantiated inline, too.
+	 */
+	def generateInitializedCompositePortFields(Component component) '''
 		«IF !component.allCompositePorts.empty»
 			// Composite port instances
 		«ENDIF»

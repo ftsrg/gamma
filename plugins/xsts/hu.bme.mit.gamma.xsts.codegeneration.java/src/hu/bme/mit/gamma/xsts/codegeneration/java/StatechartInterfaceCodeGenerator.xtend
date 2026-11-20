@@ -43,7 +43,7 @@ class StatechartInterfaceCodeGenerator {
 		public interface «INTERFACE_NAME» {
 		
 			«FOR port : gammaStatechart.ports»
-				public «port.implementedInterfaceName» get«port.name.toFirstUpper»();
+				«port.implementedInterfaceName» get«port.name.toFirstUpper»();
 			«ENDFOR»
 			«gammaStatechart.generateCompositePortGetterDeclarations»
 			

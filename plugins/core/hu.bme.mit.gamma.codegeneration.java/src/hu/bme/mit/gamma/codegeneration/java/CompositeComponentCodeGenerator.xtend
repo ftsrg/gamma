@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegeneration.java
 
+import hu.bme.mit.gamma.codegeneration.java.util.CompositePortCodeGenerator
 import hu.bme.mit.gamma.codegeneration.java.util.Namings
 import hu.bme.mit.gamma.codegeneration.java.util.TimingDeterminer
 import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent
@@ -27,6 +28,7 @@ class CompositeComponentCodeGenerator {
 	//
 	protected final extension TimingDeterminer timingDeterminer = TimingDeterminer.INSTANCE
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	protected final extension CompositePortCodeGenerator compositePortCodeGenerator = CompositePortCodeGenerator.INSTANCE
 	protected final extension NameGenerator nameGenerator
 	protected final extension TypeTransformer typeTransformer
 	protected final extension ComponentCodeGenerator componentCodeGenerator
@@ -202,6 +204,9 @@ class CompositeComponentCodeGenerator {
 		«ENDFOR»
 		«FOR port : component.allPorts»
 			«port.name.toFirstLower» = new «port.name.toFirstUpper»(); «IF port.allUnfoldedPortBindings.empty»// Unbound«ENDIF»
+		«ENDFOR»
+		«FOR compositePort : component.allCompositePorts»
+			«compositePort.name.toFirstLower» = new «compositePort.compositePortTypeName»();
 		«ENDFOR»
 	'''
 	

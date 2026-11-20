@@ -65,7 +65,7 @@ class StatechartWrapperCodeGenerator {
 			«FOR port : gammaStatechart.ports»
 				private «port.name.toFirstUpper» «port.name.toFirstLower» = new «port.name.toFirstUpper»();
 			«ENDFOR»
-			«gammaStatechart.generateCompositePortFields»
+			«gammaStatechart.generateInitializedCompositePortFields»
 			// Wrapped statemachine
 			private «gammaStatechart.wrappedStatemachineClassName» «CLASS_NAME.toFirstLower»;
 			// Indicates which queue is active in a cycle
