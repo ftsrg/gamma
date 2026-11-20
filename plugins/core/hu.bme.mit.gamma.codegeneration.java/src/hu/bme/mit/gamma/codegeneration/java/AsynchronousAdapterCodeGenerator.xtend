@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.codegeneration.java.queries.ClockTriggersOfWrappers
 import hu.bme.mit.gamma.codegeneration.java.queries.PortEventTriggersOfWrappers
 import hu.bme.mit.gamma.codegeneration.java.queries.QueuesOfClocks
 import hu.bme.mit.gamma.codegeneration.java.queries.QueuesOfEvents
+import hu.bme.mit.gamma.codegeneration.java.util.CompositePortCodeGenerator
 import hu.bme.mit.gamma.codegeneration.java.util.InternalEventHandlerCodeGenerator
 import hu.bme.mit.gamma.codegeneration.java.util.TimingDeterminer
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
@@ -41,6 +42,7 @@ class AsynchronousAdapterCodeGenerator {
 	protected final extension EventDeclarationHandler gammaEventDeclarationHandler
 	protected final extension ComponentCodeGenerator componentCodeGenerator
 	protected final extension CompositeComponentCodeGenerator compositeComponentCodeGenerator // Due to reset methods
+	protected final extension CompositePortCodeGenerator compositePortCodeGenerator = CompositePortCodeGenerator.INSTANCE
 	protected final extension InternalEventHandlerCodeGenerator internalEventHandler = InternalEventHandlerCodeGenerator.INSTANCE
 	//
 	protected final String EVENT_INSTANCE_NAME = "event"
@@ -78,6 +80,7 @@ class AsynchronousAdapterCodeGenerator {
 			«FOR port : component.wrappedComponent.type.ports»
 				private «port.name.toFirstUpper» «port.name.toFirstLower»;
 			«ENDFOR»
+			«component.generateCompositePortFields»
 			«IF !component.clocks.empty»
 				// Clocks
 				private «YAKINDU_TIMER_INTERFACE» timerService;
@@ -236,6 +239,8 @@ class AsynchronousAdapterCodeGenerator {
 					return «port.name.toFirstLower»;
 				}
 			«ENDFOR»
+			
+			«component.generateCompositePortClasses»
 			
 			/** Manual scheduling. */
 			public void schedule() {

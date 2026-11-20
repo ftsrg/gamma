@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.java
 
+import hu.bme.mit.gamma.codegeneration.java.util.CompositePortCodeGenerator
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 
 import static extension hu.bme.mit.gamma.codegeneration.java.util.Namings.*
@@ -22,6 +23,8 @@ class StatechartInterfaceCodeGenerator {
 	final String INTERFACE_NAME
 	
 	final StatechartDefinition gammaStatechart
+	
+	final extension CompositePortCodeGenerator compositePortCodeGenerator = CompositePortCodeGenerator.INSTANCE
 	
 	new(String basePackageName, String statechartPackageName, StatechartDefinition gammaStatechart) {
 		this.BASE_PACKAGE_NAME = basePackageName
@@ -42,9 +45,12 @@ class StatechartInterfaceCodeGenerator {
 			«FOR port : gammaStatechart.ports»
 				public «port.implementedInterfaceName» get«port.name.toFirstUpper»();
 			«ENDFOR»
+			«gammaStatechart.generateCompositePortGetterDeclarations»
 			
 			void runCycle();
 			void reset();
+			
+			«gammaStatechart.generateCompositePortInterfaces»
 		
 		}
 	'''

@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.codegeneration.java
 
 import hu.bme.mit.gamma.codegeneration.java.queries.BroadcastChannels
 import hu.bme.mit.gamma.codegeneration.java.queries.SimpleChannels
+import hu.bme.mit.gamma.codegeneration.java.util.CompositePortCodeGenerator
 import hu.bme.mit.gamma.codegeneration.java.util.Namings
 import hu.bme.mit.gamma.codegeneration.java.util.TimingDeterminer
 import hu.bme.mit.gamma.statechart.composite.AbstractAsynchronousCompositeComponent
@@ -31,6 +32,7 @@ class AsynchronousCompositeComponentCodeGenerator {
 	protected final extension TypeTransformer typeTransformer
 	protected final extension ComponentCodeGenerator componentCodeGenerator
 	protected final extension CompositeComponentCodeGenerator compositeComponentCodeGenerator
+	protected final extension CompositePortCodeGenerator compositePortCodeGenerator = CompositePortCodeGenerator.INSTANCE
 
 	new(String packageName, Trace trace) {
 		this.PACKAGE_NAME = packageName
@@ -64,6 +66,7 @@ class AsynchronousCompositeComponentCodeGenerator {
 			«FOR port : component.ports»
 				private «port.name.toFirstUpper» «port.name.toFirstLower» = new «port.name.toFirstUpper»();
 			«ENDFOR»
+			«component.generateCompositePortFields»
 			// Channel instances
 			«FOR channel : SimpleChannels.Matcher.on(engine).getAllValuesOfsimpleChannel(component, null, null)»
 				private «channel.providedPort.port.interfaceRealization.interface.generateChannelInterfaceName» channel«channel.providedPort.port.name.toFirstUpper»Of«channel.providedPort.instance.name.toFirstUpper»;
@@ -159,20 +162,20 @@ class AsynchronousCompositeComponentCodeGenerator {
 					
 					@Override
 					public void registerListener(«systemPort.interfaceRealization.interface.implementationName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener) {
-						«FOR portDef : systemPort.portBindings»
+						«FOR portDef : systemPort.allUnfoldedPortBindings»
 							«portDef.instancePortReference.instance.name».get«portDef.instancePortReference.port.name.toFirstUpper»().registerListener(listener);
 						«ENDFOR»
 					}
 					
 					@Override
 					public List<«systemPort.interfaceRealization.interface.implementationName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> getRegisteredListeners() {
-						«IF systemPort.portBindings.empty»
+						«IF systemPort.allUnfoldedPortBindings.empty»
 							return List.of();
-						«ELSEIF systemPort.portBindings.size == 1»
-							return «systemPort.portBindings.head.instancePortReference.instance.name».get«systemPort.portBindings.head.instancePortReference.port.name.toFirstUpper»().getRegisteredListeners();
+						«ELSEIF systemPort.allUnfoldedPortBindings.size == 1»
+							return «systemPort.allUnfoldedPortBindings.head.instancePortReference.instance.name».get«systemPort.allUnfoldedPortBindings.head.instancePortReference.port.name.toFirstUpper»().getRegisteredListeners();
 						«ELSE»
 							List<«systemPort.interfaceRealization.interface.implementationName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> registeredListeners =  new LinkedList<>();
-							«FOR portDef : systemPort.portBindings»
+							«FOR portDef : systemPort.allUnfoldedPortBindings»
 								registeredListeners.addAll(«portDef.instancePortReference.instance.name».get«portDef.instancePortReference.port.name.toFirstUpper»().getRegisteredListeners());
 							«ENDFOR»
 							return registeredListeners;
@@ -186,6 +189,8 @@ class AsynchronousCompositeComponentCodeGenerator {
 					return «systemPort.name.toFirstLower»;
 				}
 			«ENDFOR»
+			
+			«component.generateCompositePortClasses»
 			
 			«IF component instanceof AsynchronousCompositeComponent»
 				/** Starts the running of the asynchronous component. */

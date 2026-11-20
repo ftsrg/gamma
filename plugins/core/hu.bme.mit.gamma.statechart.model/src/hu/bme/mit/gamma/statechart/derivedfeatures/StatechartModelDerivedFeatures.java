@@ -2887,6 +2887,19 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return portBindings;
 	}
 	
+	public static List<PortBinding> getAllUnfoldedPortBindings(Port systemPort) {
+		List<PortBinding> portBindings = new ArrayList<PortBinding>();
+		EObject container = systemPort.eContainer();
+		if (container instanceof CompositeComponent composite) {
+			for (PortBinding portBinding : getAllUnfoldedPortBindings(composite)) {
+				if (portBinding.getCompositeSystemPort() == systemPort) {
+					portBindings.add(portBinding);
+				}
+			}
+		}
+		return portBindings;
+	}
+	
 	public static List<Channel> getUnfoldedChannels(CompositeChannel compositeChannel) {
 		List<Channel> channels = new ArrayList<Channel>();
 

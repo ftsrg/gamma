@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegeneration.java
 
+import hu.bme.mit.gamma.codegeneration.java.util.CompositePortCodeGenerator
 import hu.bme.mit.gamma.codegeneration.java.util.InterfaceCodeGenerator
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
@@ -29,7 +30,8 @@ class ComponentInterfaceGenerator {
 	//
 	protected final extension NameGenerator nameGenerator
 	protected final extension InterfaceCodeGenerator interfaceCodeGenerator
-	
+	protected final extension CompositePortCodeGenerator compositePortCodeGenerator = CompositePortCodeGenerator.INSTANCE
+
 	new(String packageName) {
 		this.PACKAGE_NAME = packageName
 		this.nameGenerator = new NameGenerator(this.PACKAGE_NAME)
@@ -64,13 +66,16 @@ class ComponentInterfaceGenerator {
 				«FOR port : ports»
 					«port.implementedInterfaceName» get«port.name.toFirstUpper»();
 				«ENDFOR»
-				
+				«component.generateCompositePortGetterDeclarations»
+
 				void reset();
-				
+
 				«IF component instanceof SynchronousComponent»void runCycle();«ENDIF»
 				«IF component instanceof AbstractSynchronousCompositeComponent»void runFullCycle();«ENDIF»
 				«IF component instanceof AsynchronousComponent»void start();«ENDIF»
-				
+
+				«component.generateCompositePortInterfaces»
+
 			}
 		'''
 		return interfaceCode

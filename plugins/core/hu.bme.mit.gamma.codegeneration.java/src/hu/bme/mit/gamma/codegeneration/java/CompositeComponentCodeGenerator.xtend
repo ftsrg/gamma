@@ -101,7 +101,7 @@ class CompositeComponentCodeGenerator {
 		«FOR event : systemPort.inputEvents SEPARATOR System.lineSeparator»
 			@Override
 			public void raise«event.name.toFirstUpper»(«event.generateParameters») {
-				«FOR connector : systemPort.portBindings»
+				«FOR connector : systemPort.allUnfoldedPortBindings»
 					«connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().raise«event.name.toFirstUpper»(«event.generateArguments»);
 				«ENDFOR»	
 			}
@@ -116,10 +116,10 @@ class CompositeComponentCodeGenerator {
 		«FOR event : systemPort.outputEvents»
 			@Override
 			public boolean isRaised«event.name.toFirstUpper»() {
-				«IF systemPort.portBindings.empty»
+				«IF systemPort.allUnfoldedPortBindings.empty»
 					return false;
 				«ELSE»
-					«FOR connector : systemPort.portBindings»
+					«FOR connector : systemPort.allUnfoldedPortBindings»
 						return «connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().isRaised«event.name.toFirstUpper»();
 					«ENDFOR»
 				«ENDIF»
@@ -128,14 +128,14 @@ class CompositeComponentCodeGenerator {
 			«FOR parameter : event.parameterDeclarations»
 				@Override
 				public «parameter.type.transformType» get«parameter.name.toFirstUpper»() {
-					«IF systemPort.portBindings.empty»
+					«IF systemPort.allUnfoldedPortBindings.empty»
 						«IF parameter.type.primitive»
 							return «parameter.type.defaultExpression.serialize»;
 						«ELSE»
 							return null;
 						«ENDIF»
 					«ELSE»
-						«FOR connector : systemPort.portBindings»
+						«FOR connector : systemPort.allUnfoldedPortBindings»
 							return «connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().get«parameter.name.toFirstUpper»();
 						«ENDFOR»
 					«ENDIF»
@@ -148,7 +148,7 @@ class CompositeComponentCodeGenerator {
 		«FOR function : systemPort.allFunctionDeclarations SEPARATOR System.lineSeparator»
 			@Override
 			public «function.type.transformType» «function.name»(«function.generateParameters») {
-				«IF !function.isVoid»return «ENDIF»«val connector = systemPort.portBindings.head»«connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().«function.name»(«function.generateArguments»);
+				«IF !function.isVoid»return «ENDIF»«val connector = systemPort.allUnfoldedPortBindings.head»«connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().«function.name»(«function.generateArguments»);
 			}
 			«IF function.hasRecordParameterDeclaration»
 				
@@ -201,7 +201,7 @@ class CompositeComponentCodeGenerator {
 			«instance.name» = new «instance.derivedType.generateComponentClassName»(«FOR argument : instance.getAllArguments(instance.derivedType) SEPARATOR ", "»«argument.serialize»«ENDFOR»);
 		«ENDFOR»
 		«FOR port : component.allPorts»
-			«port.name.toFirstLower» = new «port.name.toFirstUpper»(); «IF !component.portBindings.exists[it.compositeSystemPort === port]»// Unbound«ENDIF»
+			«port.name.toFirstLower» = new «port.name.toFirstUpper»(); «IF port.allUnfoldedPortBindings.empty»// Unbound«ENDIF»
 		«ENDFOR»
 	'''
 	

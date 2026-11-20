@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.codegeneration.java
 
 import hu.bme.mit.gamma.codegeneration.java.queries.BroadcastChannels
 import hu.bme.mit.gamma.codegeneration.java.queries.SimpleChannels
+import hu.bme.mit.gamma.codegeneration.java.util.CompositePortCodeGenerator
 import hu.bme.mit.gamma.codegeneration.java.util.InternalEventHandlerCodeGenerator
 import hu.bme.mit.gamma.codegeneration.java.util.Namings
 import hu.bme.mit.gamma.codegeneration.java.util.TimingDeterminer
@@ -33,6 +34,7 @@ class SynchronousCompositeComponentCodeGenerator {
 	protected final extension EventDeclarationHandler gammaEventDeclarationHandler
 	protected final extension ComponentCodeGenerator componentCodeGenerator
 	protected final extension CompositeComponentCodeGenerator compositeComponentCodeGenerator
+	protected final extension CompositePortCodeGenerator compositePortCodeGenerator = CompositePortCodeGenerator.INSTANCE
 	//
 	protected final extension TimingDeterminer timingDeterminer = TimingDeterminer.INSTANCE
 	protected final extension InternalEventHandlerCodeGenerator internalEventHandler = InternalEventHandlerCodeGenerator.INSTANCE
@@ -67,6 +69,7 @@ class SynchronousCompositeComponentCodeGenerator {
 			«FOR port : component.ports»
 				private «port.name.toFirstUpper» «port.name.toFirstLower»;
 			«ENDFOR»
+			«component.generateCompositePortFields»
 			«component.generateParameterDeclarationFields»
 			«component.createInternalPortHandlingAttributes»
 			
@@ -178,7 +181,7 @@ class SynchronousCompositeComponentCodeGenerator {
 					
 					public «systemPort.name.toFirstUpper»() {
 						// Registering the listener to the contained component
-						«FOR portBinding : systemPort.portBindings»
+						«FOR portBinding : systemPort.allUnfoldedPortBindings»
 							«portBinding.instancePortReference.instance.name».get«portBinding.instancePortReference.port.name.toFirstUpper»().registerListener(new «portBinding.compositeSystemPort.name.toFirstUpper»Util());
 						«ENDFOR»
 					}
@@ -240,9 +243,11 @@ class SynchronousCompositeComponentCodeGenerator {
 				}
 			«ENDFOR»
 			
+			«component.generateCompositePortClasses»
+			
 			/** Clears the the boolean flags of all out-events in each contained port. */
 			private void clearPorts() {
-				«FOR portBinding : component.portBindings»
+				«FOR portBinding : component.allUnfoldedPortBindings»
 					get«portBinding.compositeSystemPort.name.toFirstUpper»().clear();
 				«ENDFOR»
 			}
@@ -261,7 +266,7 @@ class SynchronousCompositeComponentCodeGenerator {
 			}
 			
 			public void notifyListeners() {
-				«FOR portBinding : component.portBindings»
+				«FOR portBinding : component.allUnfoldedPortBindings»
 					get«portBinding.compositeSystemPort.name.toFirstUpper»().notifyListeners();
 				«ENDFOR»
 			}

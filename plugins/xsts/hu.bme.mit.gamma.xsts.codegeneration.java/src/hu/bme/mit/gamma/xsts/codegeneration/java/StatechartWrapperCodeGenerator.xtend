@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.java
 
+import hu.bme.mit.gamma.codegeneration.java.util.CompositePortCodeGenerator
 import hu.bme.mit.gamma.codegeneration.java.util.InternalEventHandlerCodeGenerator
 import hu.bme.mit.gamma.codegeneration.java.util.TypeSerializer
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration
@@ -35,6 +36,7 @@ class StatechartWrapperCodeGenerator {
 	final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	final extension ValueDeclarationAccessor valueDeclarationAccessor = ValueDeclarationAccessor.INSTANCE
 	final extension InternalEventHandlerCodeGenerator internalEventHandler = InternalEventHandlerCodeGenerator.INSTANCE
+	final extension CompositePortCodeGenerator compositePortCodeGenerator = CompositePortCodeGenerator.INSTANCE
 	final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
 	
 	new(String basePackageName, String statechartPackageName, StatechartDefinition gammaStatechart, XSTS xSts) {
@@ -63,6 +65,7 @@ class StatechartWrapperCodeGenerator {
 			«FOR port : gammaStatechart.ports»
 				private «port.name.toFirstUpper» «port.name.toFirstLower» = new «port.name.toFirstUpper»();
 			«ENDFOR»
+			«gammaStatechart.generateCompositePortFields»
 			// Wrapped statemachine
 			private «gammaStatechart.wrappedStatemachineClassName» «CLASS_NAME.toFirstLower»;
 			// Indicates which queue is active in a cycle
@@ -202,6 +205,8 @@ class StatechartWrapperCodeGenerator {
 					return «port.name.toFirstLower»;
 				}
 			«ENDFOR»
+			
+			«gammaStatechart.generateCompositePortClasses»
 			
 			public void runCycle() {
 				changeEventQueues();
