@@ -223,8 +223,8 @@ public abstract class TaskHandler {
 		CompletenessTrapStateInjector trapStateInjector = new CompletenessTrapStateInjector(statechart);
 		trapStateInjector.execute();
 		
-		boolean preprocessTimeouts = false;
-		if (preprocessTimeouts) {
+		boolean preprocessTimeouts = true;
+		if (preprocessTimeouts && this instanceof AnalysisModelTransformationHandler) {
 			TimeoutPreprocessor timeoutPreprocessor = new TimeoutPreprocessor(statechart);
 			Interface _interface = timeoutPreprocessor.execute();
 			if (!_interface.getEventDeclarations().isEmpty()) {

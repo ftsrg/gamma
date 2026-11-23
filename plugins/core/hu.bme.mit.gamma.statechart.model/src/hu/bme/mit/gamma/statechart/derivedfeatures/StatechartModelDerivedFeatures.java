@@ -3817,6 +3817,9 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static Package getContainingPackage(EObject object) {
+		if (object == null) {
+			throw new IllegalArgumentException("Not contained by a package: " + object);
+		}
 		if (object instanceof Package _package) {
 			return _package;
 		}

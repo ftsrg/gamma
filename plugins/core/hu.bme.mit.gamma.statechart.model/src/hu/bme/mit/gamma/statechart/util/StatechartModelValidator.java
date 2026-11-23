@@ -1854,14 +1854,14 @@ public class StatechartModelValidator extends ActionModelValidator {
 				validationResultMessages.add(
 					new ValidationResultMessage(ValidationResult.ERROR,
 						providedPort.getInstance().getName() + "." + providedPort.getPort().getName() + " can be included either in a channel or a port binding",
-							new ReferenceInfo(providedPort)));
+							new ReferenceInfo(compositeChannel)));
 			}
 			for (InstancePortReference requiredPort : StatechartModelDerivedFeatures.getRequiredPorts(channel)) {
 				if (portDefinitions.stream().anyMatch(it -> StatechartModelDerivedFeatures.equals(requiredPort, it.getInstancePortReference()))) {
 					validationResultMessages.add(
 						new ValidationResultMessage(ValidationResult.ERROR,
 							requiredPort.getInstance().getName() + "." + requiredPort.getPort().getName() + " can be included either in a channel or a port binding",
-								new ReferenceInfo(requiredPort)));
+								new ReferenceInfo(compositeChannel)));
 				}
 			}
 		}

@@ -63,10 +63,9 @@ class TimeoutPreprocessor {
 				val portEventReference = port.createPortEventReference(event)
 				portEventReference.replace(timeoutEventReference)
 			}
-			
-			timeoutDeclaration.remove
 		}
 		
+		statechart.timeoutDeclarations.removeAll
 		statechart.getAllContentsOfType(SetTimeoutAction)
 				.forEach[it.remove]
 				
