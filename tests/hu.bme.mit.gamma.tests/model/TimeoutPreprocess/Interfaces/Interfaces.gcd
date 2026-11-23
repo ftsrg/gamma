@@ -1,0 +1,18 @@
+package timeout_preprocess
+
+interface Execute {
+	out event ^execute
+	
+	in event result(value : integer := 9)
+}
+
+interface Execute2 {
+	out event execute2
+}
+
+interface Execute3 {
+	out event execute3
+}
+interface TimeoutInterfaceOf_1 {
+	out event timeout1
+}
