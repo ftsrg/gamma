@@ -1,0 +1,28 @@
+package timeout_preprocess
+
+@TransitionPriority = order-based
+statechart _2() [
+] {
+	var int_ : integer
+	timeout timeout1
+	timeout timeout2
+
+	region main {
+		initial IMain
+		state _0 {
+			region a {
+				initial IA
+				state _1 {
+					entry / set timeout1 := 1 s;
+							set timeout2 := 2 s;
+				}
+				state _2
+				state _3
+			}
+		}
+	}
+	transition from IMain to _0
+	transition from IA to _1
+	transition from _1 to _2 when timeout timeout1 / int_ := int_ - int_;
+	transition from _1 to _3 when timeout timeout2 / int_ := int_ + int_;
+}

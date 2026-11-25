@@ -1,0 +1,19 @@
+package timeout_preprocess
+
+import "Interfaces/Interfaces.gcd"
+
+import "Statechart/_1.gcd"
+import "Statechart/_2.gcd"
+
+cascade System_3 [
+	port Execute : requires Execute
+	port Execute2 : requires Execute // TODO check if removed
+] {
+	component c : _1
+	component d : _1
+	component e : _2
+	
+	bind Execute -> c.Execute
+	bind Execute2 -> d.Execute // TODO check if removed
+	
+}

@@ -13,6 +13,3 @@ interface Execute2 {
 interface Execute3 {
 	out event execute3
 }
-interface TimeoutInterfaceOf_1 {
-	out event timeout1
-}
