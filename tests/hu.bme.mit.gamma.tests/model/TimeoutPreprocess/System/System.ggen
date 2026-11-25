@@ -26,7 +26,7 @@ verification {
 	file : "System_1"
 	property-file : ".System_1.gpd"
 	language : Theta
-	back-annotate-to-original : true
+	back-annotate-to-original : false
 	test-language : java
 	optimize : true
 	serialize-results : false

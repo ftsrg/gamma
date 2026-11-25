@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.interface_.Interface
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
+import hu.bme.mit.gamma.statechart.interface_.RealizationMode
 import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
@@ -69,7 +70,7 @@ class TimeoutPreprocessor {
 		statechart.getAllContentsOfType(SetTimeoutAction)
 				.forEach[it.remove]
 				
-		return _interface // Must be saved by the caller
+		return port // Interface must be saved by the caller
 	}
 	
 	protected def getInterface() {
@@ -82,7 +83,7 @@ class TimeoutPreprocessor {
 	
 	protected def createPort(Interface _interface) {
 		val name = _interface.portName
-		val port = _interface.createPort(name)
+		val port = _interface.createPort(RealizationMode.REQUIRED, name)
 		return port
 	}
 	

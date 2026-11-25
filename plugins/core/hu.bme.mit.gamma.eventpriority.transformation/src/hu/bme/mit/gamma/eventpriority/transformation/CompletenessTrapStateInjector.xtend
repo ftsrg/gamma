@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2025 Contributors to the Gamma project
+ * Copyright (c) 2025-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.statechart.util.TriggerTransformer
 import java.math.BigInteger
 import java.util.Map
 
+import static extension hu.bme.mit.gamma.eventpriority.transformation.CompletenessTrapStateInjector.Namings.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class CompletenessTrapStateInjector {
@@ -34,7 +35,6 @@ class CompletenessTrapStateInjector {
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final extension InterfaceModelFactory interfaceFactory = InterfaceModelFactory.eINSTANCE;
 	protected final extension StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE;
-	
 	
 	new(StatechartDefinition statechart) {
 		this.statechart = statechart
@@ -77,12 +77,20 @@ class CompletenessTrapStateInjector {
 	
 	protected def getOrCreateTrapState(Region region) {
 		if (!trapStates.containsKey(region)) {
-			val name = "_TrapState_" + region.name + "_" // TODO extract
+			val name = region.trapStateName
 			val trapState = region.createState(name)
 			trapStates += region -> trapState
 		}
 		val trapState = trapStates.get(region)
 		return trapState
+	}
+	
+	//
+	
+	static class Namings {
+		
+		static def String getTrapStateName(Region region) '''_TrapState_«region.name»_'''
+		
 	}
 	
 }
