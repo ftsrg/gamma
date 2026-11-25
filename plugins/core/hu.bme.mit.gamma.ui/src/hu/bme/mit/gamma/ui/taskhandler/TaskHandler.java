@@ -14,7 +14,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -45,18 +44,9 @@ import hu.bme.mit.gamma.promela.verification.PromelaVerification;
 import hu.bme.mit.gamma.property.language.ui.serializer.PropertyLanguageSerializer;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.util.PropertyUtil;
-import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
-import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
-import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
-import hu.bme.mit.gamma.statechart.composite.PortBinding;
-import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
-import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
-import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.Package;
-import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.language.ui.serializer.StatechartLanguageSerializer;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.theta.verification.ThetaVerification;
@@ -232,64 +222,25 @@ public abstract class TaskHandler {
 	}
 	
 	protected void preprocessStatechart(StatechartDefinition statechart) {
+		injectTrapStates(statechart);
+	}
+	
+	protected void injectTrapStates(StatechartDefinition statechart) {
 		CompletenessTrapStateInjector trapStateInjector = new CompletenessTrapStateInjector(statechart);
 		trapStateInjector.execute();
 	}
 	
-	protected Collection<Port> preprocessTimeouts(Component component) {
-		switch (component) {
-			case StatechartDefinition statechart -> {
-				List<Port> timeoutPorts = new ArrayList<Port>();
-				
-				boolean preprocessTimeouts = true;
-				if (preprocessTimeouts && this instanceof AnalysisModelTransformationHandler) {
-					TimeoutPreprocessor timeoutPreprocessor = new TimeoutPreprocessor(statechart);
-					Port timeoutPort = timeoutPreprocessor.execute();
-					timeoutPorts.add(timeoutPort);
-					Interface timeoutInterface = StatechartModelDerivedFeatures.getInterface(timeoutPort);
-					
-					if (!timeoutInterface.getEventDeclarations().isEmpty()) {
-						Package statechartPackage = StatechartModelDerivedFeatures.getContainingPackage(statechart);
-						
-						Package interfacePackage = propertyUtil.wrapIntoPackage(timeoutInterface);
-						ResourceSet resourceSet = statechartPackage.eResource().getResourceSet();
-						File statechartFile = ecoreUtil.getFile(statechartPackage);
-						String interfaceFileName = "." + fileNamer.getPackageFileName(timeoutInterface.getName());
-						ecoreUtil.normalSave(resourceSet, interfacePackage,
-								statechartFile.getParent(), interfaceFileName);
-						
-						statechartPackage.getImports().add(interfacePackage);
-					}
-				}
-				
-				return timeoutPorts;
-			}
-			case AsynchronousAdapter adapter -> {
-				SynchronousComponentInstance wrappedComponent = adapter.getWrappedComponent();
-				SynchronousComponent type = wrappedComponent.getType();
-				return preprocessTimeouts(type);
-			}
-			case CompositeComponent compositeComponent -> { // TODO all component instances
-				List<Port> timeoutPorts = new ArrayList<Port>();
-
-				List<? extends ComponentInstance> instances = StatechartModelDerivedFeatures.getDerivedComponents(compositeComponent);
-				for (ComponentInstance instance : instances) {
-					Component subcomponent = StatechartModelDerivedFeatures.getDerivedType(instance);
-					Collection<Port> subports = preprocessTimeouts(subcomponent);
-					for (Port subport : subports) {
-						Port systemPort = ecoreUtil.clone(subport);
-						compositeComponent.getPorts().add(systemPort);
-						timeoutPorts.add(systemPort);
-						InstancePortReference instancePortReference = propertyUtil.createInstancePortReference(instance, subport);
-						PortBinding portBinding = propertyUtil.createPortBinding(systemPort, instancePortReference);
-						compositeComponent.getPortBindings().add(portBinding);
-					}
-				}
-				
-				return timeoutPorts;
-			}
-			case null, default -> {
-				throw new IllegalArgumentException("Unkown: " + component);
+	protected void preprocessTimeouts(Component component) {
+		boolean preprocessTimeouts = true; // TODO Extract
+		if (preprocessTimeouts && this instanceof AnalysisModelTransformationHandler) {
+			TimeoutPreprocessor timeoutPreprocessor = new TimeoutPreprocessor(component);
+			Package timeoutInterfacePackage = timeoutPreprocessor.execute();
+			if (!timeoutInterfacePackage.getInterfaces().isEmpty()) {
+				Package componentPackage = StatechartModelDerivedFeatures.getContainingPackage(component);
+				ResourceSet resourceSet = componentPackage.eResource().getResourceSet();
+				File statechartFile = ecoreUtil.getFile(componentPackage);
+				String interfaceFileName = "." + fileNamer.getPackageFileName(timeoutInterfacePackage.getName());
+				ecoreUtil.normalSave(resourceSet, timeoutInterfacePackage, statechartFile.getParent(), interfaceFileName);
 			}
 		}
 	}
