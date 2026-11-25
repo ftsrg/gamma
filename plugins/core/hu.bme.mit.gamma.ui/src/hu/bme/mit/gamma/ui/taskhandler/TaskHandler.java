@@ -24,6 +24,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
 
 import hu.bme.mit.gamma.eventpriority.transformation.CompletenessTrapStateInjector;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
@@ -226,6 +227,7 @@ public abstract class TaskHandler {
 		for (StatechartDefinition statechart : statecharts) {
 			preprocessStatechart(statechart);
 		}
+		
 		preprocessTimeouts(component);
 	}
 	
@@ -245,19 +247,18 @@ public abstract class TaskHandler {
 					Port timeoutPort = timeoutPreprocessor.execute();
 					timeoutPorts.add(timeoutPort);
 					Interface timeoutInterface = StatechartModelDerivedFeatures.getInterface(timeoutPort);
-					// TODO serialize
+					
 					if (!timeoutInterface.getEventDeclarations().isEmpty()) {
-						Package _package = StatechartModelDerivedFeatures.getContainingPackage(statechart);
-						Package interfacPackage = _package.getImports().stream()
-								.filter(it -> !it.getInterfaces().isEmpty()).findFirst().get();
-						List<Interface> interfaces = interfacPackage.getInterfaces();
-						if (interfaces.stream().noneMatch(it -> it.getName().equals(timeoutInterface.getName()))) {
-							interfaces.add(timeoutInterface);
-							ecoreUtil.save(interfacPackage);
-						}
-						
 						Package statechartPackage = StatechartModelDerivedFeatures.getContainingPackage(statechart);
-						statechartPackage.getImports().add(interfacPackage);
+						
+						Package interfacePackage = propertyUtil.wrapIntoPackage(timeoutInterface);
+						ResourceSet resourceSet = statechartPackage.eResource().getResourceSet();
+						File statechartFile = ecoreUtil.getFile(statechartPackage);
+						String interfaceFileName = "." + fileNamer.getPackageFileName(timeoutInterface.getName());
+						ecoreUtil.normalSave(resourceSet, interfacePackage,
+								statechartFile.getParent(), interfaceFileName);
+						
+						statechartPackage.getImports().add(interfacePackage);
 					}
 				}
 				
@@ -268,7 +269,7 @@ public abstract class TaskHandler {
 				SynchronousComponent type = wrappedComponent.getType();
 				return preprocessTimeouts(type);
 			}
-			case CompositeComponent compositeComponent -> { // TODO exclusiveness
+			case CompositeComponent compositeComponent -> { // TODO all component instances
 				List<Port> timeoutPorts = new ArrayList<Port>();
 
 				List<? extends ComponentInstance> instances = StatechartModelDerivedFeatures.getDerivedComponents(compositeComponent);
@@ -372,9 +373,9 @@ public abstract class TaskHandler {
 				}
 			} catch (RuntimeException e) {
 				throw e;
-//				DialogUtil.showErrorWithStackTrace("Model cannot be serialized", e);
 			}
-			new File(parentFolder + File.separator + fileName).delete();
+			File file = new File(parentFolder + File.separator + fileName);
+			file.delete();
 			// Saving like an EMF model - not working: for this, we would need the corresponding file extension
 			ecoreUtil.normalSave(rootElem, parentFolder, fileName);
 		}
