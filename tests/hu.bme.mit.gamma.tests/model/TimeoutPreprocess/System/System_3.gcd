@@ -7,13 +7,13 @@ import "Statechart/_2.gcd"
 
 cascade System_3 [
 	port Execute : requires Execute
-	port Execute2 : requires Execute // TODO check if removed
+	port Execute2 : requires Execute
 ] {
 	component c : _1
 	component d : _1
 	component e : _2
 	
 	bind Execute -> c.Execute
-	bind Execute2 -> d.Execute // TODO check if removed
+//	bind Execute2 -> d.Execute // Check
 	
 }
