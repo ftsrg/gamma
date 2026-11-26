@@ -1571,7 +1571,7 @@ class ComponentTransformer {
 					.flatMap[it.variables]
 					.map[it.type].filter(TypeReference)
 					.map[it.reference]) {
-				regionType.name = regionType.customizeRegionTypeName(type)
+				regionType.name = regionType.customizeRegionTypeName(instance)
 			}
 		}
 	}

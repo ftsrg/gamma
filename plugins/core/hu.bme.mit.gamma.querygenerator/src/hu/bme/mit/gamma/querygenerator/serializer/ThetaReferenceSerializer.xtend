@@ -34,7 +34,7 @@ class ThetaReferenceSerializer implements AbstractReferenceSerializer {
 	}
 	
 	def protected getSingleTargetStateName(State state, Region parentRegion, ComponentInstanceReferenceExpression instance) {
-		return '''«parentRegion.getId(instance)» == «parentRegion.customizeRegionTypeName».«state.XStsId»'''
+		return '''«parentRegion.getId(instance)» == «parentRegion.customizeRegionTypeName(instance)».«state.XStsId»'''
 	}
 	
 	override getId(Region region, ComponentInstanceReferenceExpression instance) {

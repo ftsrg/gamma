@@ -22,7 +22,6 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.interface_.Clock
-import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
@@ -135,9 +134,11 @@ class Namings {
 	static def List<String> customizeNames(VariableDeclaration variable, NamedElement container, String instance) { getNames(variable, container).map[it.variableName + "_" + instance] }
 	
 	// Region customization
-	
-	static def String customizeRegionTypeName(Region region) '''«region.regionName.regionTypeName.customizeRegionTypeName(region.containingStatechart.name)»'''
-	static def String customizeRegionTypeName(TypeDeclaration type, Component component) '''«getName(type).typeName.customizeRegionTypeName(component.name)»'''
+
+	static def String customizeRegionTypeName(Region region, ComponentInstance instance) '''«region.regionName.regionTypeName.customizeRegionTypeName(instance.name)»'''
+	static def String customizeRegionTypeName(Region region, ComponentInstanceReferenceExpression instance) '''«region.regionName.regionTypeName.customizeRegionTypeName(instance.FQN)»'''
+	static def String customizeRegionTypeName(TypeDeclaration type, ComponentInstance instance) '''«getName(type).typeName.customizeRegionTypeName(instance.name)»'''
+	static def String customizeRegionTypeName(TypeDeclaration type, ComponentInstanceReferenceExpression instance) '''«getName(type).typeName.customizeRegionTypeName(instance.FQN)»'''
 	static def String customizeRegionTypeName(String typeName, String componentName) '''«typeName»_«componentName»'''
 	
 	static def String customizeName(State state) '''«state.stateName.stateEnumLiteralName»''' // They are enum literals

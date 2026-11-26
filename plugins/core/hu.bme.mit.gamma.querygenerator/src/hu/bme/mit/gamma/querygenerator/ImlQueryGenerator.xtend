@@ -44,7 +44,7 @@ class ImlQueryGenerator extends ThetaQueryGenerator {
 	}
 	
 	override protected getSingleTargetStateName(State state, Region parentRegion, SynchronousComponentInstance instance) {
-		return '''«parentRegion.getTargetRegionName(instance)» == «Namings.customizeRegionTypeName(parentRegion).customizeTypeDeclarationName».«Namings.customizeName(state).customizeEnumLiteralName»'''
+		return '''«parentRegion.getTargetRegionName(instance)» == «Namings.customizeRegionTypeName(parentRegion, instance).customizeTypeDeclarationName».«Namings.customizeName(state).customizeEnumLiteralName»'''
 	}
 	
 	override protected getTargetRegionName(Region parentRegion, SynchronousComponentInstance instance) {

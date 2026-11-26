@@ -40,7 +40,7 @@ class ImlReferenceSerializer extends ThetaReferenceSerializer {
 	}
 	
 	override getSingleTargetStateName(State state, Region parentRegion, ComponentInstanceReferenceExpression instance) {
-		return '''«recordIdentifier».«parentRegion.customizeName(instance).customizeDeclarationName» = «Namings.customizeRegionTypeName(parentRegion).customizeTypeDeclarationName».«state.XStsId.customizeEnumLiteralName»'''
+		return '''«recordIdentifier».«parentRegion.customizeName(instance).customizeDeclarationName» = «Namings.customizeRegionTypeName(parentRegion, instance).customizeTypeDeclarationName».«state.XStsId.customizeEnumLiteralName»'''
 	}
 	
 	// Needed by the property adjustor to remove nonexisting state references

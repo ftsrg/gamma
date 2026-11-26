@@ -69,7 +69,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	def protected getSingleTargetStateName(State state, Region parentRegion, SynchronousComponentInstance instance) {
-		return '''«parentRegion.getTargetRegionName(instance)» == «parentRegion.customizeRegionTypeName».«state.customizeName»'''
+		return '''«parentRegion.getTargetRegionName(instance)» == «parentRegion.customizeRegionTypeName(instance)».«state.customizeName»'''
 	}
 	
 	override protected getTargetRegionName(Region parentRegion, SynchronousComponentInstance instance) {
