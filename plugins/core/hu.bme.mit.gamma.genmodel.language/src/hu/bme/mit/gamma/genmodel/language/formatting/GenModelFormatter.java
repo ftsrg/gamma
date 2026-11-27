@@ -65,9 +65,10 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getInitialStateSettingAssignment_3_6_2());
         c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getOptimizeAssignment_3_7_2());
         c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getGroup_3_8());
-        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getSchedulerAssignment_3_9_2());
-        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getConstraintAssignment_3_10_2());
-        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getCoveragesAssignment_3_11());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getGroup_3_9());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getSchedulerAssignment_3_10_2());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getConstraintAssignment_3_11_2());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getCoveragesAssignment_3_12());
         // Constraints
         c.setLinewrap(1).after(f.getOrchestratingConstraintAccess().getMinimumPeriodAssignment_2());
         c.setLinewrap(1).after(f.getOrchestratingConstraintAccess().getMaximumPeriodAssignment_5());

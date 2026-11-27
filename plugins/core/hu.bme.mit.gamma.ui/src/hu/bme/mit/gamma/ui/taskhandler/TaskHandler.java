@@ -16,14 +16,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
 
 import hu.bme.mit.gamma.eventpriority.transformation.CompletenessTrapStateInjector;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
@@ -53,7 +51,6 @@ import hu.bme.mit.gamma.theta.verification.ThetaVerification;
 import hu.bme.mit.gamma.trace.language.ui.serializer.TraceLanguageSerializer;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
-import hu.bme.mit.gamma.transformation.util.preprocessor.TimeoutPreprocessor;
 import hu.bme.mit.gamma.uppaal.verification.XstsUppaalVerification;
 import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
@@ -199,26 +196,12 @@ public abstract class TaskHandler {
 	
 	//
 	
-	protected void preprocessModel(Package _package) {
-		preprocessStatecharts(_package);
-	}
-	
-	protected void preprocessStatecharts(Package _package) {
-		Set<StatechartDefinition> statecharts =
-				StatechartModelDerivedFeatures.getAllStatechartComponents(_package);
-		for (StatechartDefinition statechart : statecharts) {
-			preprocessStatechart(statechart);
-		}
-	}
-	
 	protected void preprocessModel(Component component) {
 		Collection<StatechartDefinition> statecharts =
 				StatechartModelDerivedFeatures.getSelfOrAllContainedStatecharts(component);
 		for (StatechartDefinition statechart : statecharts) {
 			preprocessStatechart(statechart);
 		}
-		
-		preprocessTimeouts(component);
 	}
 	
 	protected void preprocessStatechart(StatechartDefinition statechart) {
@@ -228,21 +211,6 @@ public abstract class TaskHandler {
 	protected void injectTrapStates(StatechartDefinition statechart) {
 		CompletenessTrapStateInjector trapStateInjector = new CompletenessTrapStateInjector(statechart);
 		trapStateInjector.execute();
-	}
-	
-	protected void preprocessTimeouts(Component component) {
-		boolean preprocessTimeouts = true; // TODO Extract
-		if (preprocessTimeouts && this instanceof AnalysisModelTransformationHandler) {
-			TimeoutPreprocessor timeoutPreprocessor = new TimeoutPreprocessor(component);
-			Package timeoutInterfacePackage = timeoutPreprocessor.execute();
-			if (!timeoutInterfacePackage.getInterfaces().isEmpty()) {
-				Package componentPackage = StatechartModelDerivedFeatures.getContainingPackage(component);
-				ResourceSet resourceSet = componentPackage.eResource().getResourceSet();
-				File statechartFile = ecoreUtil.getFile(componentPackage);
-				String interfaceFileName = "." + fileNamer.getPackageFileName(timeoutInterfacePackage.getName());
-				ecoreUtil.normalSave(resourceSet, timeoutInterfacePackage, statechartFile.getParent(), interfaceFileName);
-			}
-		}
 	}
 	
 	//

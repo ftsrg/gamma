@@ -129,6 +129,7 @@ AnalysisModelTransformation returns AnalysisModelTransformation:
 			'initial-state-setting' ':' initialStateSetting=InitialStateSetting |
 			'optimize' ':' optimize=BOOLEAN |
 			'optimize-environmental-message-queues' ':' optimizeEnvironmentalMessageQueues=BOOLEAN |
+			'preprocess-timeouts' ':' preprocessTimeouts?=BOOLEAN |
 			'scheduler' ':' scheduler+=Scheduler |
 			'constraint' ':' constraint=Constraint |
 			coverages+=Coverage

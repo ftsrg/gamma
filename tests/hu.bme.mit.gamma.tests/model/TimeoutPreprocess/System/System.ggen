@@ -28,6 +28,7 @@ analysis {
 	component : System_1
 	language : Theta
 	state-coverage
+	preprocess-timeouts : true
 }
 
 verification {
@@ -35,7 +36,6 @@ verification {
 	property-file : ".System_1.gpd"
 	language : Theta
 	back-annotate-to-original : false
-	test-language : java
 	optimize : true
 	serialize-results : false
 }
@@ -51,6 +51,7 @@ analysis {
 	component : System_2
 	language : Theta
 	state-coverage
+	preprocess-timeouts : true
 }
 
 verification {
@@ -58,7 +59,6 @@ verification {
 	property-file : ".System_2.gpd"
 	language : Theta
 	back-annotate-to-original : false
-	test-language : java
 	optimize : true
 	serialize-results : false
 }
@@ -74,6 +74,7 @@ analysis {
 	component : System_3
 	language : Theta
 	state-coverage
+	preprocess-timeouts : true
 }
 
 verification {
@@ -81,7 +82,6 @@ verification {
 	property-file : ".System_3.gpd"
 	language : Theta
 	back-annotate-to-original : false
-	test-language : java
 	optimize : true
 	serialize-results : false
 }

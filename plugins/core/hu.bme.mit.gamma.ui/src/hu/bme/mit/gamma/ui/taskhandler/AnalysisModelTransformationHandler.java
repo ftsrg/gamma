@@ -22,6 +22,8 @@ import java.util.Optional;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
 
 import com.google.common.collect.Maps;
 
@@ -64,6 +66,7 @@ import hu.bme.mit.gamma.querygenerator.serializer.XstsUppaalPropertySerializer;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReferenceExpression;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
@@ -80,6 +83,7 @@ import hu.bme.mit.gamma.transformation.util.annotations.ComponentVariableReferen
 import hu.bme.mit.gamma.transformation.util.annotations.DataflowCoverageCriterion;
 import hu.bme.mit.gamma.transformation.util.annotations.InteractionCoverageCriterion;
 import hu.bme.mit.gamma.transformation.util.preprocessor.AnalysisModelPreprocessor;
+import hu.bme.mit.gamma.transformation.util.preprocessor.TimeoutPreprocessor;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousInstanceConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.Constraint;
@@ -107,7 +111,6 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		// Setting target folder
 		setTargetFolder(transformation);
 		//
-		ModelReference modelReference = transformation.getModel();
 		setAnalysisModelTransformation(transformation);
 		List<AnalysisLanguage> languagesSet = transformation.getLanguages();
 		AnalysisLanguage theta = AnalysisLanguage.THETA;
@@ -117,6 +120,13 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		}
 		
 		for (AnalysisLanguage analysisLanguage : languagesSet) {
+			ModelReference modelReference = transformation.getModel();
+			if (transformation.isPreprocessTimeouts() &&
+					modelReference instanceof ComponentReference componentReference) {
+				Component component = componentReference.getComponent();
+				preprocessTimeouts(component);
+			}
+			
 			AnalysisModelTransformer transformer;
 			switch (analysisLanguage) {
 				case UPPAAL:
@@ -170,6 +180,20 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		checkArgument(schedulers.size() <= 1);
 		if (schedulers.isEmpty()) {
 			schedulers.add(hu.bme.mit.gamma.genmodel.model.Scheduler.RANDOM);
+		}
+	}
+	
+	private void preprocessTimeouts(Component component) {
+		TimeoutPreprocessor timeoutPreprocessor = new TimeoutPreprocessor(component);
+		Package timeoutInterfacePackage = timeoutPreprocessor.execute();
+		List<Interface> interfaces = timeoutInterfacePackage.getInterfaces();
+		if (!interfaces.isEmpty()) {
+			Package componentPackage = StatechartModelDerivedFeatures.getContainingPackage(component);
+			Resource resource = componentPackage.eResource();
+			ResourceSet resourceSet = resource.getResourceSet();
+			File statechartFile = ecoreUtil.getFile(componentPackage);
+			String interfaceFileName = "." + fileNamer.getPackageFileName(timeoutInterfacePackage.getName());
+			ecoreUtil.normalSave(resourceSet, timeoutInterfacePackage, statechartFile.getParent(), interfaceFileName);
 		}
 	}
 	
