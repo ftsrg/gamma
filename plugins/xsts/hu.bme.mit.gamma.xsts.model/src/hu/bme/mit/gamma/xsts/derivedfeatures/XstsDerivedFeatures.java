@@ -76,7 +76,10 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 
 	protected static final XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE;
 	protected static final XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
-	
+
+	// Functions whose bodies are currently being analyzed (read-write): guard against recursive functions
+	private static final ThreadLocal<Set<FunctionDeclaration>> analyzedFunctions = ThreadLocal.withInitial(() -> new HashSet<FunctionDeclaration>());
+
 	//
 	
 	public static boolean isContainedByXsts(EObject object) {
@@ -568,21 +571,113 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 
 	// Read-write
 
+	/**
+	 * Returns the variables read by the given expression, including the variables read in the
+	 * bodies of the functions (lambdas and procedures) called in the expression. Note that if
+	 * functions are not inlined (e.g., IML), variables can be read only in function bodies.
+	 */
+	public static Set<VariableDeclaration> getReadVariables(Expression expression) {
+		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
+		if (expression == null) {
+			return readVariables;
+		}
+
+		readVariables.addAll(
+				expressionUtil.getReferredVariables(expression));
+		readVariables.addAll(
+				getReadVariablesOfCalledFunctions(expression));
+
+		return readVariables;
+	}
+
+	/**
+	 * Returns the global variables written in the bodies of the procedures called in the given
+	 * expression (transitively).
+	 */
+	public static Set<VariableDeclaration> getWrittenVariablesOfCalledFunctions(EObject object) {
+		Set<VariableDeclaration> writtenVariables = new HashSet<VariableDeclaration>();
+		if (object == null) {
+			return writtenVariables;
+		}
+
+		Set<FunctionDeclaration> functions = analyzedFunctions.get();
+		for (FunctionDeclaration function : getCalledFunctions(object)) {
+			if (function instanceof ProcedureDeclaration procedure && hasDefinition(procedure) &&
+					functions.add(function)) {
+				try {
+					writtenVariables.addAll(
+							getWrittenVariables(procedure.getBody()));
+					writtenVariables.removeAll(
+							ecoreUtil.getAllContentsOfType(procedure, VariableDeclaration.class)); // Locals
+				} finally {
+					functions.remove(function);
+				}
+			}
+		}
+
+		return writtenVariables;
+	}
+
+	private static Set<VariableDeclaration> getReadVariablesOfCalledFunctions(EObject object) {
+		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
+
+		Set<FunctionDeclaration> functions = analyzedFunctions.get();
+		for (FunctionDeclaration function : getCalledFunctions(object)) {
+			if (functions.add(function)) { // Recursion guard
+				try {
+					if (function instanceof LambdaDeclaration lambda) {
+						readVariables.addAll(
+								getReadVariables(lambda.getExpression())); // Can be null: declaration
+					}
+					else if (function instanceof ProcedureDeclaration procedure) {
+						SequentialAction body = procedure.getBody();
+						if (body != null) { // Can be null: declaration
+							readVariables.addAll(
+									getReadVariables(body));
+							readVariables.removeAll(
+									ecoreUtil.getAllContentsOfType(procedure, VariableDeclaration.class)); // Locals
+						}
+					}
+					else {
+						throw new IllegalArgumentException("Not known function: " + function);
+					}
+				} finally {
+					functions.remove(function);
+				}
+			}
+		}
+
+		return readVariables;
+	}
+
+	private static Set<FunctionDeclaration> getCalledFunctions(EObject object) {
+		Set<FunctionDeclaration> functions = new LinkedHashSet<FunctionDeclaration>();
+		for (FunctionAccessExpression functionCall :
+				ecoreUtil.getSelfAndAllContentsOfType(object, FunctionAccessExpression.class)) {
+			Declaration declaration = xStsActionUtil.getDeclaration(
+					functionCall.getOperand());
+			if (declaration instanceof FunctionDeclaration function) {
+				functions.add(function);
+			}
+		}
+		return functions;
+	}
+
 	private static Set<VariableDeclaration> _getReadVariables(AssumeAction action) {
-		return expressionUtil.getReferredVariables(
+		return getReadVariables(
 				action.getAssumption());
 	}
-	
+
 	private static Set<VariableDeclaration> _getReadVariables(AssertAction action) {
-		return expressionUtil.getReferredVariables(
+		return getReadVariables(
 				action.getAssertion());
 	}
-	
+
 	private static Set<VariableDeclaration> _getReadVariables(ReturnAction action) {
-		return expressionUtil.getReferredVariables(
+		return getReadVariables(
 				action.getExpression());
 	}
-	
+
 	private static Set<VariableDeclaration> _getReadVariables(HavocAction action) {
 		return Collections.emptySet();
 	}
@@ -590,25 +685,22 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	private static Set<VariableDeclaration> _getReadVariables(AssignmentAction action) {
 		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
 
-		Set<VariableDeclaration> writtenVariables = getWrittenVariables(action); 
+		ReferenceExpression lhs = action.getLhs();
 		readVariables.addAll(
-				expressionUtil.getReferredVariables(
-						action.getLhs())); // Needed for array indexes
-		readVariables.removeAll(writtenVariables); // Removing the written array
+				getReadVariables(lhs)); // Needed for array indexes
+		readVariables.removeAll(
+				xStsActionUtil.getAccessedDeclarations(lhs)); // Removing the written array
 		readVariables.addAll(
-				expressionUtil.getReferredVariables(
+				getReadVariables(
 						action.getRhs()));
-		
+
 		return readVariables;
 	}
-	
+
 	private static Set<VariableDeclaration> _getReadVariables(VariableDeclarationAction action) {
 		VariableDeclaration variable = action.getVariableDeclaration();
 		Expression initialValue = variable.getExpression();
-		if (initialValue != null) {
-			return expressionUtil.getReferredVariables(initialValue);
-		}
-		return Collections.emptySet();
+		return getReadVariables(initialValue); // Can be null
 	}
 
 	private static Set<VariableDeclaration> _getReadVariables(EmptyAction action) {
@@ -617,59 +709,33 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	private static Set<VariableDeclaration> _getReadVariables(LoopAction action) {
 		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
-		
+
 		IntegerRangeLiteralExpression range = action.getRange();
 		readVariables.addAll(
-				expressionUtil.getReferredVariables(
+				getReadVariables(
 						range.getLeftOperand()));
 		readVariables.addAll(
-				expressionUtil.getReferredVariables(
+				getReadVariables(
 						range.getRightOperand()));
-		
+
 		Action subAction = action.getAction();
 		readVariables.addAll(
 				getReadVariables(subAction));
-		
+
 		return readVariables;
 	}
-	
+
 	private static Set<VariableDeclaration> _getReadVariables(FunctionCallAction action) {
-		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
-		
+		// Arguments and the body of the called function (and the functions called there)
 		FunctionAccessExpression callExpression = action.getFunctionCallExpression();
-		for (Expression argument : callExpression.getArguments()) {
-			readVariables.addAll(
-					xStsActionUtil.getReferredVariables(argument));
-		}
-		
-		Expression operand = callExpression.getOperand();
-		FunctionDeclaration function = (FunctionDeclaration) xStsActionUtil.getDeclaration(operand);
-		if (function instanceof LambdaDeclaration lambda) {
-			Expression expression = lambda.getExpression();
-			if (expression != null) { // Can be null: declaration
-				readVariables.addAll(
-						xStsActionUtil.getReferredVariables(expression));
-			}
-		}
-		else if (function instanceof ProcedureDeclaration procedure) {
-			SequentialAction body = procedure.getBody();
-			if (body != null) { // Can be null: declaration
-				readVariables.addAll(
-						getReadVariables(body));
-			}
-		}
-		else {
-			throw new IllegalArgumentException("Not known function: " + function);
-		}
-		
-		return readVariables;
+		return getReadVariables(callExpression);
 	}
-	
+
 	private static Set<VariableDeclaration> _getReadVariables(IfAction action) {
 		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
-		
+
 		readVariables.addAll(
-				expressionUtil.getReferredVariables(
+				getReadVariables(
 						action.getCondition()));
 		readVariables.addAll(
 				getReadVariables(
@@ -700,21 +766,24 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		
 		readVariables.addAll(
 				getReadVariables(action));
+		// Only the lhs ('a := a - 1'), not the variables written in the bodies of called procedures:
+		// e.g., 'a' is externally read in 'x := f()' if 'f' has a body '{ b := a; a := 0; }'
 		readVariables.removeAll(
-				getWrittenVariables(action));
-		
+				xStsActionUtil.getAccessedDeclarations(
+						action.getLhs()));
+
 		return readVariables;
 	}
-	
+
 	private static Set<VariableDeclaration> _getExternallyReadVariables(LoopAction action) {
 		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
-		
+
 		IntegerRangeLiteralExpression range = action.getRange();
 		readVariables.addAll(
-				expressionUtil.getReferredVariables(
+				getReadVariables(
 						range.getLeftOperand()));
 		readVariables.addAll(
-				expressionUtil.getReferredVariables(
+				getReadVariables(
 						range.getRightOperand()));
 		
 		Action subAction = action.getAction();
@@ -726,9 +795,9 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	private static Set<VariableDeclaration> _getExternallyReadVariables(IfAction action) {
 		Set<VariableDeclaration> readVariables = new HashSet<VariableDeclaration>();
-		
+
 		readVariables.addAll(
-				expressionUtil.getReferredVariables(
+				getReadVariables(
 						action.getCondition()));
 		readVariables.addAll(
 				getExternallyReadVariables(
@@ -755,28 +824,41 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 	
 	private static Set<VariableDeclaration> _getWrittenVariables(AssumeAction action) {
-		return Collections.emptySet();
+		return getWrittenVariablesOfCalledFunctions(
+				action.getAssumption());
 	}
 
 	private static Set<VariableDeclaration> _getWrittenVariables(ReturnAction action) {
-		return Collections.emptySet();
+		return getWrittenVariablesOfCalledFunctions(
+				action.getExpression());
 	}
-	
+
 	private static Set<VariableDeclaration> _getWrittenVariables(AbstractAssignmentAction action) {
 		Set<VariableDeclaration> variableList = new HashSet<VariableDeclaration>();
-		
+
 		ReferenceExpression lhs = action.getLhs();
 		List<Declaration> accessedDeclarations = xStsActionUtil.getAccessedDeclarations(lhs); // Not every variable, just the access
 		for (Declaration declaration : accessedDeclarations) {
 			variableList.add(
 					(VariableDeclaration) declaration);
 		}
-		
+		variableList.addAll(
+				getWrittenVariablesOfCalledFunctions(lhs)); // Array indexes
+		if (action instanceof AssignmentAction assignmentAction) {
+			variableList.addAll(
+					getWrittenVariablesOfCalledFunctions(
+							assignmentAction.getRhs())); // E.g., 'x := f()' if functions are not inlined
+		}
+
 		return variableList;
 	}
-	
+
 	private static Set<VariableDeclaration> _getWrittenVariables(VariableDeclarationAction action) {
-		return Collections.emptySet(); // Empty, as this is a declaration, not a "writing"
+		// The declared variable is not "written", as this is a declaration;
+		// however, the procedures called in the initial value can write variables
+		VariableDeclaration variable = action.getVariableDeclaration();
+		return getWrittenVariablesOfCalledFunctions(
+				variable.getExpression());
 	}
 
 	private static Set<VariableDeclaration> _getWrittenVariables(EmptyAction action) {
@@ -784,28 +866,30 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 	
 	private static Set<VariableDeclaration> _getWrittenVariables(LoopAction action) {
-		Action subAction = action.getAction();
-		return getWrittenVariables(subAction);
-	}
-	
-	private static Set<VariableDeclaration> _getWrittenVariables(FunctionCallAction action) {
 		Set<VariableDeclaration> writtenVariables = new HashSet<VariableDeclaration>();
-		
-		FunctionAccessExpression callExpression = action.getFunctionCallExpression();
-		Expression operand = callExpression.getOperand();
-		FunctionDeclaration function = (FunctionDeclaration) xStsActionUtil.getDeclaration(operand);
-		if (function instanceof ProcedureDeclaration procedure) {
-			SequentialAction body = procedure.getBody();
-			writtenVariables.addAll(
-					getWrittenVariables(body));
-		}
-		
+
+		writtenVariables.addAll(
+				getWrittenVariablesOfCalledFunctions(
+						action.getRange()));
+		Action subAction = action.getAction();
+		writtenVariables.addAll(
+				getWrittenVariables(subAction));
+
 		return writtenVariables;
 	}
-	
+
+	private static Set<VariableDeclaration> _getWrittenVariables(FunctionCallAction action) {
+		// The body of the called procedure and the procedures called in the arguments
+		FunctionAccessExpression callExpression = action.getFunctionCallExpression();
+		return getWrittenVariablesOfCalledFunctions(callExpression);
+	}
+
 	private static Set<VariableDeclaration> _getWrittenVariables(IfAction action) {
 		Set<VariableDeclaration> writtenVariables = new HashSet<VariableDeclaration>();
-		
+
+		writtenVariables.addAll(
+				getWrittenVariablesOfCalledFunctions(
+						action.getCondition()));
 		writtenVariables.addAll(
 				getWrittenVariables(
 						action.getThen()));
