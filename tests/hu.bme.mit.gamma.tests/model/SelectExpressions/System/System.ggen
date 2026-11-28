@@ -22,7 +22,7 @@ verification {
 	property-file : ".System_1.gpd"
 	language : Theta
 	back-annotate-to-original : true
-	test-language : java
+//	test-language : java // random
 	optimize : true
 	serialize-results : false
 }
