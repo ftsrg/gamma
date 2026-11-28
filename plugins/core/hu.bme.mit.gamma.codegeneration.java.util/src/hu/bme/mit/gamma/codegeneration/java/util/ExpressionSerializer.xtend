@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2025 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -30,6 +30,7 @@ import hu.bme.mit.gamma.expression.model.GreaterExpression
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.ImplyExpression
 import hu.bme.mit.gamma.expression.model.InequalityExpression
+import hu.bme.mit.gamma.expression.model.InfinityExpression
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 import hu.bme.mit.gamma.expression.model.LessEqualExpression
 import hu.bme.mit.gamma.expression.model.LessExpression
@@ -74,6 +75,10 @@ class ExpressionSerializer {
 	def dispatch String serialize(ElseExpression expression) {
 		// No operation, this cannot be transformed on this level
 		throw new IllegalArgumentException("Cannot be transformed")
+	}
+	
+	def dispatch String serialize(InfinityExpression expression) {
+		return Integer.MAX_VALUE.toString // Cheating :)
 	}
 	
 	def dispatch String serialize(FunctionAccessExpression expression) {
