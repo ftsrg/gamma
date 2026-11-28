@@ -41,12 +41,12 @@ statechart _7(c : CompositeMultidimensionalArrayRecord :=
 		}
 		intArray := #[c.intArray[0][1], c.intArray[1][0]];
 		boolArray := c.arrayRecord.boolArray;
-		if (c.arrayRecord.boolArray[1] and select->boolean) {
+		if (c.arrayRecord.boolArray[1] and (select->boolean and false)) {
 			boolArray := #[boolArray[0] or c.arrayRecord.boolArray[1], boolArray[1] xor c.arrayRecord.boolArray[0]];
 			intArray[0] := c.arrayRecord.int_ * c.intArray[1][0];
 			intArray[1] := (((c.arrayRecord.boolArray[1]) ?
 				c.arrayRecord.int_ * c.intArray[0][1] : -c.arrayRecord.int_ * c.intArray[1][1]
-			) + select->#[-3 to 3)) mod 5;
+			) + select->#[-3 to -2)) mod 5;
 		}
 		intArray2 := #[ #[c.intArray[1][0], c.intArray[0][1]], #[c.intArray[1][1], c.intArray[0][0]]];
 		raise Execute.result;
