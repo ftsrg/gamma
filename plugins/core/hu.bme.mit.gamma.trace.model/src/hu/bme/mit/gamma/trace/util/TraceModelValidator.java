@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2024 Contributors to the Gamma project
+ * Copyright (c) 2018-2026 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -65,7 +65,8 @@ public class TraceModelValidator extends StatechartModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
 		if (element instanceof RaiseEventAct act) { // Assert acts do not have to have arguments
-			List<Expression> arguments = ExpressionModelDerivedFeatures.getAllArguments(act.getEvent(), act);
+			Event event = act.getEvent();
+			List<Expression> arguments = ExpressionModelDerivedFeatures.getAllArgumentsWithNullFiltered(event, act);
 			if (arguments.isEmpty()) {
 				Step step = ecoreUtil.getContainerOfType(act, Step.class);
 				List<Expression> asserts = step.getAsserts();
@@ -138,7 +139,7 @@ public class TraceModelValidator extends StatechartModelValidator {
 		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
 		if (type instanceof StatechartDefinition) {
 			State state = configuration.getState();
-			List<State> states =  ecoreUtil.getAllContentsOfType(type,
+			List<State> states = ecoreUtil.getAllContentsOfType(type,
 					hu.bme.mit.gamma.statechart.statechart.State.class);
 			if (!states.contains(state)) {
 				validationResultMessages.add(

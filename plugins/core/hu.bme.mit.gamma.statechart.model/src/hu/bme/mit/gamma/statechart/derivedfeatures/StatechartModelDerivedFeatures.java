@@ -3807,7 +3807,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static CompositeComponent getContainingCompositeComponent(EObject object) {
 		if (object == null) {
-			throw new IllegalArgumentException("Not contained by a component: " + object);
+			throw new IllegalArgumentException("Not contained by a composite component: " + object);
 		}
 		if (object instanceof CompositeComponent component) {
 			return component;
@@ -3817,9 +3817,10 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static Package getContainingPackage(EObject object) {
-		if (object == null) {
-			throw new IllegalArgumentException("Not contained by a package: " + object);
-		}
+		// Note: unresolved (not existing) eProxy components do not have a containing package; this solution does not throw an exception during validation...
+//		if (object == null) {
+//			throw new IllegalArgumentException("Not contained by a package: " + object);
+//		}
 		if (object instanceof Package _package) {
 			return _package;
 		}
@@ -3828,12 +3829,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static boolean isContainedByPackage(EObject object) {
-		try {
-			getContainingPackage(object);
-			return true;
-		} catch (NullPointerException e) {
-			return false;
-		}
+		return ecoreUtil.hasContainerOfType(object, Package.class);
 	}
 	
 	public static boolean hasSamePortEvent(RaiseEventAction lhs, RaiseEventAction rhs) {

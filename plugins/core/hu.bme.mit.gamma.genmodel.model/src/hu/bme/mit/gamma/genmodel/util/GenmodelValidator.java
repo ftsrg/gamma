@@ -189,8 +189,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		}
 		Constraint constraint = analysisModelTransformation.getConstraint();
 		if (constraint != null) {
-			if (modelReference instanceof ComponentReference) {
-				ComponentReference componentReference = (ComponentReference)modelReference;
+			if (modelReference instanceof ComponentReference componentReference) {
 				Component component = componentReference.getComponent();
 				if (component instanceof AsynchronousComponent && constraint instanceof OrchestratingConstraint) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
@@ -396,8 +395,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		AnalysisModelTransformation analysisModelTransformation = ecoreUtil.getContainerOfType(
 				constraint, AnalysisModelTransformation.class);
 		ModelReference modelReference = analysisModelTransformation.getModel();
-		if (modelReference instanceof ComponentReference) {
-			ComponentReference componentReference = (ComponentReference)modelReference;
+		if (modelReference instanceof ComponentReference componentReference) {
 			Component component = componentReference.getComponent();
 			if (!hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.isAsynchronous(component)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
@@ -514,11 +512,9 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		
 		AnalysisModelTransformation analysisModelTransformationTask = testGeneration.getModelTransformation();
 		ModelReference modelReference = analysisModelTransformationTask.getModel();
-		if (modelReference instanceof ComponentReference) {
-			ComponentReference componentReference = (ComponentReference) modelReference;
+		if (modelReference instanceof ComponentReference componentReference) {
 			Component component = componentReference.getComponent();
-			if (component instanceof StatechartDefinition) {
-				StatechartDefinition statechartDefinition = (StatechartDefinition) component;
+			if (component instanceof StatechartDefinition statechartDefinition) {
 				if (StatechartModelDerivedFeatures.isAdaptiveContract(statechartDefinition)) {
 					return validationResultMessages; // Everything is correct, returning with empty list
 				}
@@ -602,13 +598,12 @@ public class GenmodelValidator extends ExpressionModelValidator {
 					getUsedPackages(task.getAnalysisModelTransformation()));
 		}
 		for (ReferenceExpression reference : ecoreUtil.getAllContentsOfType(genmodel, ReferenceExpression.class)) {
-			if (reference instanceof ComponentInstanceReferenceExpression) {
-				ComponentInstanceReferenceExpression instanceReference = (ComponentInstanceReferenceExpression) reference;
+			if (reference instanceof ComponentInstanceReferenceExpression instanceReference) {
 				List<ComponentInstance> componentInstanceChain =
 						StatechartModelDerivedFeatures.getComponentInstanceChain(instanceReference);
 				List<Package> packages = componentInstanceChain.stream()
 						.map(it -> StatechartModelDerivedFeatures.getContainingPackage(it))
-						.collect(Collectors.toList());
+						.toList();
 				packageImports.removeAll(packages);
 			}
 			else {
@@ -682,7 +677,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		for (ExecutionTrace traceImport : traceImports) {
 			int index = genmodel.getTraceImports().indexOf(traceImport);
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
-					"This execution trace import is not used",
+				"This execution trace import is not used",
 					new ReferenceInfo(GenmodelModelPackage.Literals.GEN_MODEL__TRACE_IMPORTS, index)));
 		}
 		return validationResultMessages;
@@ -810,7 +805,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 //				List<hu.bme.mit.gamma.statechart.interface_.Event> gammaEvents = mapping.getGammaInterface().getEvents()
 //						.stream().map(it -> it.getEvent())
 //						.filter(it -> it.getName().equals(yakinduEvent.getName()))
-//						.collect(Collectors.toList());
+//						.toList();
 //				if (!(gammaEvents.size() == 1 && checkParameters(yakinduEvent, gammaEvents.get(0))
 //						&& areWellDirected(realizationMode, yakinduEvent, (EventDeclaration) gammaEvents.get(0).eContainer()))) {
 //					String typeName = "";
@@ -864,7 +859,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 //		Set<InterfaceScope> interfaces = new HashSet<InterfaceScope>();
 //		StatechartCompilation statechartCompilation = (StatechartCompilation)mapping.eContainer();
 //		for (InterfaceScope interface_ : statechartCompilation.getInterfaceMappings().stream()
-//				.map(it -> it.getYakinduInterface()).collect(Collectors.toList())) {
+//				.map(it -> it.getYakinduInterface()).toList()) {
 //			if (interfaces.contains(interface_)){
 //				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 //						"Each Yakindu event has to be mapped exactly once",
@@ -956,7 +951,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 //				.collect(Collectors.toSet()); 
 //		List<List<Scope>> interfaceCompilation = javaUtil.filterIntoList(genmodel.getTasks(), InterfaceCompilation.class).stream()
 //				.map(it -> it.getStatechart().getScopes())
-//				.collect(Collectors.toList());
+//				.toList();
 //		Iterable<Scope> flattenList = javaUtil.flattenIntoList(interfaceCompilation);
 //		Set<String> transformedInterfaces = javaUtil.filterIntoList(flattenList, InterfaceScope.class).stream()
 //				.map(it -> it.getName())
@@ -1056,8 +1051,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 			AnalysisModelTransformation model = ecoreUtil.getContainerOfType(reference, AnalysisModelTransformation.class);
 			if (model != null) {
 				ModelReference modelReference = model.getModel();
-				if (modelReference instanceof ComponentReference) {
-					ComponentReference componentReference = (ComponentReference) modelReference;
+				if (modelReference instanceof ComponentReference componentReference) {
 					Component component = componentReference.getComponent();
 					List<ComponentInstance> containedComponents = StatechartModelDerivedFeatures.getInstances(component);
 					if (!containedComponents.contains(instance)) {

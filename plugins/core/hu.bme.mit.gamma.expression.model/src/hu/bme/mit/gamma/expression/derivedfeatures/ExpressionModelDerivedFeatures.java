@@ -546,7 +546,8 @@ public class ExpressionModelDerivedFeatures {
 		}
 		if (type instanceof TypeReference typeReference) {
 			TypeDeclaration reference = typeReference.getReference();
-			return getTypeDefinition(reference.getType());
+			Type type2 = reference.getType();
+			return getTypeDefinition(type2);
 		}
 		throw new IllegalArgumentException("Not known type: " + type);
 	}
@@ -858,6 +859,52 @@ public class ExpressionModelDerivedFeatures {
 		 }
 		 
 		 return extendedArgumentsWithDefaultArguments;
+	}
+	
+	public static List<Expression> getAllArgumentsWithNull(
+			ArgumentedElement argumentedElement, ParametricElement parametricElement) {
+		return getAllArgumentsWithNull(parametricElement, argumentedElement);
+	}
+	
+	public static List<Expression> getAllArgumentsWithNull(
+			ParametricElement parametricElement, ArgumentedElement argumentedElement) {
+		List<ParameterDeclaration> parameterDeclarations = parametricElement.getParameterDeclarations();
+		List<Expression> arguments = argumentedElement.getArguments();
+		return getAllArgumentsWithNull(parameterDeclarations, arguments);
+	}
+	
+	public static List<Expression> getAllArgumentsWithNull(
+			List<? extends ParameterDeclaration> parameterDeclarations, List<? extends Expression> arguments) {
+		 List<Expression> extendedArgumentsWithDefaultArguments = new ArrayList<Expression>(arguments);
+		 
+		 for (int i = arguments.size(); i < parameterDeclarations.size(); i++) {
+			 ParameterDeclaration parameterDeclaration = parameterDeclarations.get(i);
+			 Expression expression = parameterDeclaration.getExpression();
+			 
+			 Expression argument = ecoreUtil.clone(expression); // May be null
+			 extendedArgumentsWithDefaultArguments.add(argument);
+		 }
+		 
+		 return extendedArgumentsWithDefaultArguments;
+	}
+	
+	public static List<Expression> getAllArgumentsWithNullFiltered(
+			ArgumentedElement argumentedElement, ParametricElement parametricElement) {
+		return getAllArgumentsWithNullFiltered(parametricElement, argumentedElement);
+	}
+	
+	public static List<Expression> getAllArgumentsWithNullFiltered(
+			ParametricElement parametricElement, ArgumentedElement argumentedElement) {
+		List<ParameterDeclaration> parameterDeclarations = parametricElement.getParameterDeclarations();
+		List<Expression> arguments = argumentedElement.getArguments();
+		return getAllArgumentsWithNullFiltered(parameterDeclarations, arguments);
+	}
+	
+	public static List<Expression> getAllArgumentsWithNullFiltered(
+			List<? extends ParameterDeclaration> parameterDeclarations, List<? extends Expression> arguments) {
+		List<Expression> allArgumentsWithNull = getAllArgumentsWithNull(parameterDeclarations, arguments);
+		allArgumentsWithNull.removeIf(it -> it == null);
+		return allArgumentsWithNull;
 	}
 	
 	public static int getIndex(ParameterDeclaration parameter) {

@@ -200,7 +200,7 @@ public class ExpressionModelValidator {
 			List<ParameterDeclaration> parameterDeclarations) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
-		List<Expression> arguments = ExpressionModelDerivedFeatures.getAllArguments(parameterDeclarations, extensibleArguments);
+		List<Expression> arguments = ExpressionModelDerivedFeatures.getAllArgumentsWithNullFiltered(parameterDeclarations, extensibleArguments);
 		if (arguments.size() != parameterDeclarations.size()) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 				"The number of arguments must match the number of parameters", 
@@ -210,10 +210,11 @@ public class ExpressionModelValidator {
 		if (!arguments.isEmpty() && !parameterDeclarations.isEmpty()) {
 			for (int i = 0; i < arguments.size() && i < parameterDeclarations.size(); ++i) {
 				ParameterDeclaration parameter = parameterDeclarations.get(i);
+				Type parameterType = parameter.getType();
 				Expression argument = arguments.get(i);
 				validationResultMessages.addAll(
-					checkTypeAndExpressionConformance(parameter.getType(),
-						argument, new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i)));
+					checkTypeAndExpressionConformance(parameterType, argument,
+						new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i)));
 			}
 		}
 		
@@ -227,13 +228,13 @@ public class ExpressionModelValidator {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 				"The condition of the if-then-else expression must be of type boolean, currently it is: " + 
 					typeDeterminator.print(expression.getCondition()), 
-					new ReferenceInfo(ExpressionModelPackage.Literals.IF_THEN_ELSE_EXPRESSION__CONDITION)));
+						new ReferenceInfo(ExpressionModelPackage.Literals.IF_THEN_ELSE_EXPRESSION__CONDITION)));
 		}
 		if (!typeDeterminator.equalsType(expression.getThen(), expression.getElse())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 				"The return type of the else-branch does not match the type of the then-branch, " +
 					"then: " + typeDeterminator.print(expression.getThen()) + " - else: " + typeDeterminator.print(expression.getElse()), 
-					new ReferenceInfo(ExpressionModelPackage.Literals.IF_THEN_ELSE_EXPRESSION__ELSE)));
+						new ReferenceInfo(ExpressionModelPackage.Literals.IF_THEN_ELSE_EXPRESSION__ELSE)));
 		}
 		
 		return validationResultMessages;
